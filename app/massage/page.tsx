@@ -251,7 +251,11 @@ export default function MassagePage() {
         </div>
       </section>
 
-      <BookingCalendar isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
+      <BookingCalendar
+        isOpen={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+        services={SERVICES.map((s) => ({ title: s.title }))}
+      />
     </>
   );
 }
