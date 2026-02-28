@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import ServiceCard from "@/components/ServiceCard";
 import MembershipCard from "@/components/MembershipCard";
-import BookingCalendar from "@/components/BookingCalendar";
 import FloatingCTA from "@/components/FloatingCTA";
 
 const SERVICES = [
@@ -100,7 +99,6 @@ const MEMBERSHIPS = [
 ];
 
 export default function MassagePage() {
-  const [bookingOpen, setBookingOpen] = useState(false);
 
   return (
     <>
@@ -240,7 +238,7 @@ export default function MassagePage() {
           </motion.p>
           <motion.button
             type="button"
-            onClick={() => setBookingOpen(true)}
+            onClick={() => window.location.href = "/booking"}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="px-10 py-4 rounded-lg bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300"
@@ -251,11 +249,6 @@ export default function MassagePage() {
         </div>
       </section>
 
-      <BookingCalendar
-        isOpen={bookingOpen}
-        onClose={() => setBookingOpen(false)}
-        services={SERVICES.map((s) => ({ title: s.title }))}
-      />
     </>
   );
 }

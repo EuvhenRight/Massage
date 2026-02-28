@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const navLinks = [
-  { href: "#services", label: "Services" },
-  { href: "#membership", label: "Membership" },
-  { href: "#booking", label: "Book" },
+  { href: "/massage#services", label: "Services" },
+  { href: "/massage#membership", label: "Membership" },
+  { href: "/booking", label: "Book" },
 ];
 
 export default function Navbar() {
