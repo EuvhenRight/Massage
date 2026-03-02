@@ -97,3 +97,12 @@
 .noise-overlay {
   position: relative;
 }
+
+/* Shared select/dropdown menu style - used by SelectTrigger and native selects */
+.select-menu {
+  @apply w-full rounded-lg border border-white/10 bg-black px-3 py-2 text-sm text-icyWhite;
+  @apply focus:outline-none focus:ring-1 focus:ring-gold-soft/50 focus:border-gold-soft/50;
+}
+.select-menu option {
+  @apply bg-black text-icyWhite;
+}

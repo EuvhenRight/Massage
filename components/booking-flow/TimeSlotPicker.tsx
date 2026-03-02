@@ -3,6 +3,14 @@
 import { useMemo } from "react";
 import type { OccupiedSlot } from "@/lib/availability-firestore";
 import { getAvailableTimeSlots } from "@/lib/availability-firestore";
+import type { ScheduleData } from "@/lib/schedule-firestore";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TimeSlotPickerProps {
   date: Date;
@@ -10,6 +18,7 @@ interface TimeSlotPickerProps {
   onSelectTime: (time: string) => void;
   occupiedSlots: OccupiedSlot[];
   durationMinutes: number;
+  schedule?: ScheduleData | null;
 }
 
 function formatSlot(time: string): string {
@@ -26,44 +35,45 @@ export default function TimeSlotPicker({
   onSelectTime,
   occupiedSlots,
   durationMinutes,
+  schedule = null,
 }: TimeSlotPickerProps) {
   const availableSlots = useMemo(
-    () => getAvailableTimeSlots(date, durationMinutes, occupiedSlots),
-    [date, durationMinutes, occupiedSlots]
+    () => getAvailableTimeSlots(date, durationMinutes, occupiedSlots, schedule),
+    [date, durationMinutes, occupiedSlots, schedule]
   );
 
   if (availableSlots.length === 0) {
     return (
-      <p className="text-sm text-icyWhite/50 py-2">
-        No available times for this date.
-      </p>
+      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-4">
+        <p className="text-sm text-amber-200/90">
+          No available times for this date. Please choose another date.
+        </p>
+      </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      <span className="block text-xs font-medium text-icyWhite/70">Select time</span>
-      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-1.5">
-        {availableSlots.map((slot) => {
-          const isSelected = selectedTime === slot;
-          return (
-            <button
+      <label className="block text-sm font-medium text-icyWhite/90">Available time</label>
+      <Select
+        value={selectedTime ?? ""}
+        onValueChange={(v) => v && onSelectTime(v)}
+      >
+        <SelectTrigger className="w-full h-11 bg-white/5 border-white/10 text-icyWhite hover:bg-white/[0.07] focus:ring-gold-soft/30">
+          <SelectValue placeholder="Choose time" />
+        </SelectTrigger>
+        <SelectContent className="max-h-[200px] z-[100]">
+          {availableSlots.map((slot) => (
+            <SelectItem
               key={slot}
-              type="button"
-              onClick={() => onSelectTime(slot)}
-              className={`
-                px-2 py-2 rounded-lg text-xs font-medium transition-all touch-manipulation
-                ${isSelected
-                  ? "bg-gold-soft text-nearBlack ring-1 ring-gold-soft"
-                  : "bg-white/5 border border-white/10 text-icyWhite hover:border-gold-soft/40 hover:bg-gold-soft/10"
-                }
-              `}
+              value={slot}
+              className="text-icyWhite focus:bg-gold-soft/20 focus:text-icyWhite"
             >
               {formatSlot(slot)}
-            </button>
-          );
-        })}
-      </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

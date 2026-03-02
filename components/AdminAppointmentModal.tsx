@@ -1,10 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+function formatTimeSlot(slot: string): string {
+  const [h, m] = slot.split(":").map(Number);
+  if (h === 0) return `12:${String(m).padStart(2, "0")} am`;
+  if (h < 12) return `${h}:${String(m).padStart(2, "0")} am`;
+  if (h === 12) return `12:${String(m).padStart(2, "0")} pm`;
+  return `${h - 12}:${String(m).padStart(2, "0")} pm`;
+}
 import { toast } from "sonner";
 import { bookAppointmentAdmin, updateAppointment, type AppointmentData, type AdminBookingInput } from "@/lib/book-appointment";
+import { getDateKey } from "@/lib/booking";
+import type { ServiceData } from "@/lib/services";
+import type { Place } from "@/lib/places";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import AdminDatePicker from "@/components/AdminDatePicker";
 import {
   Select,
   SelectContent,
@@ -12,16 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const SERVICES = [
-  "Swedish Massage",
-  "Deep Tissue",
-  "Hot Stone",
-  "Aromatherapy",
-  "Sports Recovery",
-  "Couples Retreat",
-  "Other",
-];
 
 interface AdminAppointmentModalProps {
   isOpen: boolean;
@@ -32,6 +35,8 @@ interface AdminAppointmentModalProps {
   defaultHour?: number;
   defaultMinute?: number;
   appointment?: AppointmentData | null;
+  services?: ServiceData[];
+  place?: Place;
 }
 
 export default function AdminAppointmentModal({
@@ -43,8 +48,16 @@ export default function AdminAppointmentModal({
   defaultHour = 9,
   defaultMinute = 0,
   appointment,
+  services = [],
+  place = "massage",
 }: AdminAppointmentModalProps) {
   const isEdit = mode === "edit" && appointment;
+  const now = Date.now();
+  const endDateForPast =
+    appointment && (appointment.endTime && "toDate" in appointment.endTime ? appointment.endTime.toDate() : new Date(appointment.endTime as Date));
+  const isPastAppointment = Boolean(
+    isEdit && appointment && endDateForPast && endDateForPast.getTime() < now
+  );
 
   const startDate = appointment
     ? (appointment.startTime && "toDate" in appointment.startTime
@@ -61,16 +74,31 @@ export default function AdminAppointmentModal({
     : 60;
 
   const [dateStr, setDateStr] = useState(
-    isEdit ? startDate.toISOString().slice(0, 10) : defaultDate.toISOString().slice(0, 10)
+    isEdit ? getDateKey(startDate) : getDateKey(defaultDate)
   );
   const [hour, setHour] = useState(isEdit ? startDate.getHours() : defaultHour);
-  const [minute, setMinute] = useState(isEdit ? startDate.getMinutes() : defaultMinute);
+  const [minute, setMinute] = useState(
+    isEdit ? Math.round(startDate.getMinutes() / 5) * 5 : Math.round(defaultMinute / 5) * 5
+  );
   const [duration, setDuration] = useState(durationMinutes);
   const [service, setService] = useState(appointment?.service ?? "");
+
+  const selectedService = services.find((s) => s.title === service);
   const [fullName, setFullName] = useState(appointment?.fullName ?? "");
   const [email, setEmail] = useState(appointment?.email ?? "");
   const [phone, setPhone] = useState(appointment?.phone ?? "");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -81,56 +109,106 @@ export default function AdminAppointmentModal({
         const e = appointment.endTime && "toDate" in appointment.endTime
           ? appointment.endTime.toDate()
           : new Date(appointment.endTime as Date);
-        setDateStr(s.toISOString().slice(0, 10));
+        setDateStr(getDateKey(s));
         setHour(s.getHours());
-        setMinute(s.getMinutes());
-        setDuration(Math.round((e.getTime() - s.getTime()) / 60000));
+        setMinute(Math.round(s.getMinutes() / 5) * 5);
+        const dur = Math.round((e.getTime() - s.getTime()) / 60000);
+        setDuration(dur);
         setService(appointment.service ?? "");
         setFullName(appointment.fullName ?? "");
         setEmail(appointment.email ?? "");
         setPhone(appointment.phone ?? "");
       } else {
-        setDateStr(defaultDate.toISOString().slice(0, 10));
+        setDateStr(getDateKey(defaultDate));
         setHour(defaultHour);
-        setMinute(defaultMinute);
-        setDuration(60);
-        setService("");
+        setMinute(Math.round(defaultMinute / 5) * 5);
+        setDuration(services[0]?.durationMinutes ?? 60);
+        setService(services[0]?.title ?? "");
         setFullName("");
         setEmail("");
         setPhone("");
       }
     }
-  }, [isOpen, isEdit, appointment, defaultDate, defaultHour, defaultMinute]);
+  }, [isOpen, isEdit, appointment, defaultDate, defaultHour, defaultMinute, services]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isPastAppointment) return;
+    const startTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    const slotStart = new Date(`${dateStr}T${startTime}:00`);
+    if (!isEdit && slotStart.getTime() < Date.now()) {
+      toast.error("Cannot create appointment in the past.");
+      return;
+    }
     setLoading(true);
     try {
-      const startTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+      const dur = isEdit
+        ? duration
+        : (selectedService ? selectedService.durationMinutes : 60);
 
       if (isEdit && appointment) {
         const newStart = new Date(`${dateStr}T${startTime}:00`);
-        await updateAppointment(appointment.id, {
-          service: service || undefined,
-          fullName: fullName || undefined,
-          email: email || undefined,
-          phone: phone || undefined,
-          startTime: newStart,
-          durationMinutes: duration,
-        });
+        await updateAppointment(
+          appointment.id,
+          {
+            service: service || undefined,
+            fullName: fullName || undefined,
+            email: email || undefined,
+            phone: phone || undefined,
+            startTime: newStart,
+            durationMinutes: dur,
+          },
+          place
+        );
         toast.success("Appointment updated.");
       } else {
         const input: AdminBookingInput = {
           date: dateStr,
           startTime,
-          durationMinutes: duration,
+          durationMinutes: dur,
           service: service || undefined,
           fullName: fullName || undefined,
           email: email || undefined,
           phone: phone || undefined,
         };
-        await bookAppointmentAdmin(input);
-        toast.success("Appointment added.");
+        await bookAppointmentAdmin(input, place);
+        if (email?.trim() && email.includes("@")) {
+          const slotDate = new Date(`${dateStr}T${startTime}:00`);
+          try {
+            const res = await fetch("/api/send-confirmation", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "new",
+                source: "admin",
+                to: email.trim(),
+                customerName: fullName?.trim() || "Customer",
+                date: slotDate.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }),
+                time: slotDate.toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }),
+                service: service || undefined,
+              }),
+            });
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              toast.error(`Appointment added, but email failed: ${data?.error ?? "Could not send"}`);
+            } else {
+              toast.success("Appointment added. Customer notified by email.");
+            }
+          } catch {
+            toast.success("Appointment added. Email could not be sent.");
+          }
+        } else {
+          toast.success("Appointment added.");
+        }
       }
       onSuccess?.();
       onClose();
@@ -156,72 +234,101 @@ export default function AdminAppointmentModal({
         <h2 className="font-serif text-xl text-icyWhite mb-6">
           {isEdit ? "Edit appointment" : "Add appointment"}
         </h2>
+        {isPastAppointment && (
+          <div className="mb-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+            This appointment is in the past. View only — no changes allowed.
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <fieldset disabled={!!isPastAppointment} className="space-y-4 [&:disabled]:opacity-75">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-icyWhite/80 mb-1.5">Date</label>
-              <Input
-                type="date"
+            <div className="space-y-1.5">
+              <Label className="text-icyWhite/80">Date</Label>
+              <AdminDatePicker
                 value={dateStr}
-                onChange={(e) => setDateStr(e.target.value)}
-                className="bg-white/5 border-white/10 text-icyWhite"
+                onChange={setDateStr}
+                minDate={!isEdit ? (() => {
+                  const t = new Date();
+                  t.setHours(0, 0, 0, 0);
+                  return t;
+                })() : undefined}
               />
             </div>
-            <div>
-              <label className="block text-sm text-icyWhite/80 mb-1.5">Time</label>
-              <div className="flex gap-2">
-                <select
-                  value={hour}
-                  onChange={(e) => setHour(Number(e.target.value))}
-                  className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-icyWhite text-sm"
+            <div className="space-y-1.5">
+              <Label className="text-icyWhite/80">Time</Label>
+              <Select
+                value={`${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`}
+                onValueChange={(v) => {
+                  const [h, m] = v.split(":").map(Number);
+                  setHour(h);
+                  setMinute(m);
+                }}
+              >
+                <SelectTrigger className="select-menu">
+                  <SelectValue placeholder="Choose time" />
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  sideOffset={4}
+                  className="z-[100] max-h-[200px]"
                 >
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <option key={i} value={i}>{i}:00</option>
-                  ))}
-                </select>
-                <select
-                  value={minute}
-                  onChange={(e) => setMinute(Number(e.target.value))}
-                  className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-icyWhite text-sm"
-                >
-                  {[0, 15, 30, 45].map((m) => (
-                    <option key={m} value={m}>{String(m).padStart(2, "0")}</option>
-                  ))}
-                </select>
-              </div>
+                  {(() => {
+                    const slots: string[] = [];
+                    for (let h = 0; h <= 23; h++) {
+                      for (let m = 0; m < 60; m += 5) {
+                        slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+                      }
+                    }
+                    return slots.map((slot) => (
+                      <SelectItem key={slot} value={slot}>
+                        {formatTimeSlot(slot)}
+                      </SelectItem>
+                    ));
+                  })()}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm text-icyWhite/80 mb-1.5">Duration (min)</label>
-            <Input
-              type="number"
-              min={15}
-              step={15}
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value) || 60)}
-              className="bg-white/5 border-white/10 text-icyWhite"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-icyWhite/80 mb-1.5">Service (optional)</label>
-            <Select value={service || "none"} onValueChange={(v) => setService(v === "none" ? "" : v)}>
-              <SelectTrigger className="bg-white/5 border-white/10 text-icyWhite">
-                <SelectValue placeholder="Select or leave empty" />
+          <div className="space-y-1.5">
+            <Label className="text-icyWhite/80">Service</Label>
+            <Select
+              value={service || "none"}
+              onValueChange={(v) => {
+                const val = v === "none" ? "" : v;
+                setService(val);
+                const svc = services.find((s) => s.title === val);
+                if (svc) setDuration(svc.durationMinutes);
+              }}
+            >
+              <SelectTrigger className="select-menu">
+                <SelectValue placeholder="Choose service" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">—</SelectItem>
-                {SERVICES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                {services.map((s) => (
+                  <SelectItem key={s.id} value={s.title}>
+                    {s.title}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div>
-            <label className="block text-sm text-icyWhite/80 mb-1.5">Name (optional)</label>
+          <div className="space-y-1.5">
+            <Label className="text-icyWhite/80">Duration</Label>
+            <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-icyWhite text-sm">
+              {selectedService
+                ? `${selectedService.durationMinutes} min`
+                : isEdit
+                  ? `${duration} min`
+                  : "— Select a service"}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-icyWhite/80">Name (optional)</Label>
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -230,8 +337,8 @@ export default function AdminAppointmentModal({
             />
           </div>
 
-          <div>
-            <label className="block text-sm text-icyWhite/80 mb-1.5">Email (optional)</label>
+          <div className="space-y-1.5">
+            <Label className="text-icyWhite/80">Email (optional)</Label>
             <Input
               type="email"
               value={email}
@@ -241,8 +348,8 @@ export default function AdminAppointmentModal({
             />
           </div>
 
-          <div>
-            <label className="block text-sm text-icyWhite/80 mb-1.5">Phone (optional)</label>
+          <div className="space-y-1.5">
+            <Label className="text-icyWhite/80">Phone (optional)</Label>
             <Input
               type="tel"
               value={phone}
@@ -259,16 +366,19 @@ export default function AdminAppointmentModal({
               className="flex-1 border-white/10 text-icyWhite hover:bg-white/10"
               onClick={onClose}
             >
-              Cancel
+              {isPastAppointment ? "Close" : "Cancel"}
             </Button>
-            <Button
-              type="submit"
-              className="flex-1 bg-gold-soft/20 text-gold-soft hover:bg-gold-soft/30"
-              disabled={loading}
-            >
-              {loading ? "Saving..." : isEdit ? "Save" : "Add"}
-            </Button>
+            {!isPastAppointment && (
+              <Button
+                type="submit"
+                className="flex-1 bg-gold-soft/20 text-gold-soft hover:bg-gold-soft/30"
+                disabled={loading}
+              >
+                {loading ? "Saving..." : isEdit ? "Save" : "Add"}
+              </Button>
+            )}
           </div>
+          </fieldset>
         </form>
       </div>
     </>

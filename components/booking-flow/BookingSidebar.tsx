@@ -22,73 +22,83 @@ export default function BookingSidebar() {
 		setStep,
 	} = useBookingFlow()
 
-	return (
-		<aside className='sticky top-[68px] z-10 w-full md:w-64 lg:w-56 shrink-0 md:self-start'>
-			<div className='rounded-xl border border-white/10 bg-nearBlack/70 p-4'>
-				<h3 className='font-serif text-lg text-icyWhite mb-4'>
-					Appointment details
-				</h3>
+	const hasAnySelection = service || date || time
 
-				<div className='space-y-3'>
-					<div>
-						<div className='text-[10px] text-icyWhite/45 uppercase tracking-wider mb-1'>
+	return (
+		<div className='w-full'>
+			<div className='rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] overflow-hidden'>
+				<div className='px-5 py-4 border-b border-white/10'>
+					<h3 className='font-serif text-base font-medium text-icyWhite'>
+						Booking summary
+					</h3>
+					<p className='text-xs text-icyWhite/50 mt-0.5'>
+						{hasAnySelection
+							? 'Review your selection'
+							: 'Your choices will appear here'}
+					</p>
+				</div>
+				<div className='p-5 space-y-4'>
+					<div className='flex flex-col gap-1'>
+						<span className='text-[11px] font-medium text-icyWhite/45 uppercase tracking-wider'>
 							Service
-						</div>
+						</span>
 						{service ? (
-							<div className='text-icyWhite text-sm'>{service}</div>
+							<div className='flex items-center justify-between gap-2'>
+								<span className='text-icyWhite text-sm font-medium'>
+									{service}
+								</span>
+								{durationMinutes > 0 && (
+									<span className='text-icyWhite/50 text-xs shrink-0'>
+										{durationMinutes} min
+									</span>
+								)}
+							</div>
 						) : (
 							<button
 								type='button'
 								onClick={() => setStep(1)}
-								className='text-gold-soft/80 hover:text-gold-soft text-sm transition-colors'
+								className='text-left text-gold-soft/80 hover:text-gold-soft text-sm transition-colors'
 							>
 								Choose service →
 							</button>
 						)}
 					</div>
 
-					<div>
-						<div className='text-[10px] text-icyWhite/45 uppercase tracking-wider mb-1'>
+					<div className='flex flex-col gap-1'>
+						<span className='text-[11px] font-medium text-icyWhite/45 uppercase tracking-wider'>
 							Date
-						</div>
+						</span>
 						{date ? (
-							<div className='text-icyWhite text-sm'>
+							<span className='text-icyWhite text-sm'>
 								{date.toLocaleDateString('en-US', {
 									weekday: 'short',
 									month: 'short',
 									day: 'numeric',
 									year: 'numeric',
 								})}
-							</div>
+							</span>
 						) : (
 							<button
 								type='button'
-								onClick={() => setStep(2)}
-								className='text-gold-soft/80 hover:text-gold-soft text-sm transition-colors'
+								onClick={() => setStep(1)}
+								className='text-left text-gold-soft/80 hover:text-gold-soft text-sm transition-colors'
 							>
 								Select date →
 							</button>
 						)}
 					</div>
 
-					<div>
-						<div className='text-[10px] text-icyWhite/45 uppercase tracking-wider mb-1'>
+					<div className='flex flex-col gap-1'>
+						<span className='text-[11px] font-medium text-icyWhite/45 uppercase tracking-wider'>
 							Time
-						</div>
+						</span>
 						{time ? (
-							<div className='text-icyWhite text-sm'>
-								{formatTime(time)}
-								{durationMinutes > 0 && (
-									<span className='text-icyWhite/55 ml-1'>
-										({durationMinutes} min)
-									</span>
-								)}
-							</div>
+							<span className='text-icyWhite text-sm'>{formatTime(time)}</span>
 						) : date ? (
 							<button
 								type='button'
-								onClick={() => setStep(2)}
-								className='text-gold-soft/80 hover:text-gold-soft text-sm transition-colors'
+								onClick={() => setStep(1)}
+								className='text-left text-gold-soft/80 hover:text-gold-soft text-sm transition-colors'
 							>
 								Select time →
 							</button>
@@ -98,18 +108,18 @@ export default function BookingSidebar() {
 					</div>
 				</div>
 
-				{step === 3 && (fullName || email) && (
-					<div className='pt-3 mt-3 border-t border-white/10 space-y-1'>
-						<div className='text-[10px] text-icyWhite/45 uppercase tracking-wider'>
+				{step === 2 && (fullName || email) && (
+					<div className='px-5 py-4 border-t border-white/10 space-y-1'>
+						<span className='text-[11px] font-medium text-icyWhite/45 uppercase tracking-wider'>
 							Contact
-						</div>
+						</span>
 						{fullName && (
 							<div className='text-icyWhite text-sm'>{fullName}</div>
 						)}
-						{email && <div className='text-icyWhite/70 text-sm'>{email}</div>}
+						{email && <div className='text-icyWhite/60 text-sm'>{email}</div>}
 					</div>
 				)}
 			</div>
-		</aside>
+		</div>
 	)
 }

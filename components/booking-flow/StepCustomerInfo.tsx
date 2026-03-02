@@ -45,25 +45,21 @@ export default function StepCustomerInfo({
   });
 
   return (
-    <div className="space-y-4">
-      <p className="text-icyWhite/60 text-sm">
-        Tell us how to reach you.
-      </p>
-
+    <div className="space-y-5">
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <FormField
             control={form.control}
             name="fullName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-icyWhite/80 text-sm">
+                <FormLabel className="text-icyWhite/90 text-sm font-medium">
                   Full name *
                 </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="John Smith"
-                    className="h-10 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40"
+                    className="h-11 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30"
                     {...field}
                   />
                 </FormControl>
@@ -77,14 +73,14 @@ export default function StepCustomerInfo({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-icyWhite/80 text-sm">
+                <FormLabel className="text-icyWhite/90 text-sm font-medium">
                   Email *
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="email"
                     placeholder="john@example.com"
-                    className="h-10 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40"
+                    className="h-11 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30"
                     {...field}
                   />
                 </FormControl>
@@ -98,14 +94,14 @@ export default function StepCustomerInfo({
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-icyWhite/80 text-sm">
+                <FormLabel className="text-icyWhite/90 text-sm font-medium">
                   Phone *
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="tel"
                     placeholder="+1 234 567 8900"
-                    className="h-10 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40"
+                    className="h-11 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30"
                     {...field}
                   />
                 </FormControl>
@@ -117,7 +113,7 @@ export default function StepCustomerInfo({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-11 rounded-xl text-sm font-medium bg-gold-soft/20 border border-gold-soft/50 text-gold-soft hover:bg-gold-soft/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 rounded-xl text-sm font-semibold bg-gold-soft text-nearBlack hover:bg-gold-glow shadow-lg shadow-gold-soft/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Booking…" : "Confirm booking"}
           </button>

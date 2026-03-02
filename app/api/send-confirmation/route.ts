@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     }
 
     if (type === "new") {
-      const { to, customerName, date, time, service } = body;
+      const { to, customerName, date, time, service, source } = body;
       if (!to || !customerName || !date || !time) {
         return NextResponse.json(
           { error: "Missing required fields: to, customerName, date, time" },
@@ -49,23 +49,25 @@ export async function POST(request: Request) {
       const dateStr = String(date);
       const timeStr = String(time);
       const serviceStr = service ? String(service) : "";
+      const isAdminCreated = source === "admin";
 
-      const [customerResult, adminResult] = await Promise.all([
-        resend.emails.send({
-          from: `${FROM_NAME} <${FROM_EMAIL}>`,
-          to: [toStr],
-          subject: `Aurora Salon — Booking confirmed for ${dateStr} at ${timeStr}`,
-          html: buildConfirmationEmail(nameStr, dateStr, timeStr, serviceStr),
-        }),
-        resend.emails.send({
+      const customerResult = await resend.emails.send({
+        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        to: [toStr],
+        subject: `Aurora Salon — Booking confirmed for ${dateStr} at ${timeStr}`,
+        html: buildConfirmationEmail(nameStr, dateStr, timeStr, serviceStr),
+      });
+
+      let errMsg = customerResult.error?.message;
+      if (!isAdminCreated && !errMsg) {
+        const adminResult = await resend.emails.send({
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: [ADMIN_EMAIL],
           subject: `New booking: ${nameStr} — ${dateStr} ${timeStr}`,
           html: buildAdminNewBooking(nameStr, toStr, dateStr, timeStr, serviceStr),
-        }),
-      ]);
-
-      const errMsg = customerResult.error?.message ?? adminResult.error?.message;
+        });
+        errMsg = adminResult.error?.message;
+      }
       if (errMsg) {
         console.error("[send-confirmation] Resend error:", errMsg);
         return NextResponse.json(

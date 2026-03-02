@@ -64,20 +64,35 @@ export default function DepilationPage() {
         </motion.div>
       </section>
 
-      {/* Coming Soon */}
+      {/* Booking CTA */}
       <section className="py-32 px-6 text-center">
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-icyWhite/60"
+          className="text-icyWhite/60 mb-6"
         >
-          Full depilation experience coming soon. Meanwhile, explore our{" "}
-          <Link href="/massage" className="text-gold-soft hover:underline">
-            massage offerings
-          </Link>
-          .
+          Book your depilation appointment.
         </motion.p>
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="flex flex-wrap justify-center gap-4"
+        >
+          <Link
+            href="/depilation/booking"
+            className="px-10 py-4 rounded-lg bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300"
+          >
+            Book Depilation
+          </Link>
+          <Link
+            href="/massage"
+            className="text-icyWhite/50 hover:text-gold-soft text-sm tracking-[0.2em] uppercase transition-colors"
+          >
+            Explore Massage
+          </Link>
+        </motion.div>
       </section>
     </>
   );

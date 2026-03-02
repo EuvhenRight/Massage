@@ -44,19 +44,38 @@ async function main() {
     }
     console.log("   ✅ Read:", read.id, `- ${read.fullName}, ${read.email}`);
 
-    // UPDATE (move to next hour)
+    // UPDATE 1 (move to next hour, same day)
     const nextHour = hour + 1;
-    console.log(`\n3️⃣  UPDATE - Moving appointment to ${nextHour}:00...`);
-    const newStart = new Date(`${TEST_DATE}T${nextHour}:00:00`);
-    await updateAppointmentTime(created.id, newStart, 60);
-    const afterUpdate = await getAppointment(created.id);
-    const updatedHour = afterUpdate?.startTime && "toDate" in afterUpdate.startTime
-      ? afterUpdate.startTime.toDate().getHours()
-      : "?";
-    console.log("   ✅ Updated - start hour:", updatedHour);
+    console.log(`\n3️⃣  UPDATE (time) - Moving appointment to ${nextHour}:00 on same day...`);
+    const newStartSameDay = new Date(`${TEST_DATE}T${nextHour}:00:00`);
+    await updateAppointmentTime(created.id, newStartSameDay, 60);
+    const afterTimeUpdate = await getAppointment(created.id);
+    const updatedHour =
+      afterTimeUpdate?.startTime && "toDate" in afterTimeUpdate.startTime
+        ? afterTimeUpdate.startTime.toDate().getHours()
+        : "?";
+    console.log("   ✅ Updated time - start hour:", updatedHour);
+
+    // UPDATE 2 (move to next day and different minutes)
+    const nextDay = new Date(newStartSameDay);
+    nextDay.setDate(nextDay.getDate() + 1);
+    nextDay.setMinutes(15, 0, 0); // e.g. move to :15 on next day
+    console.log(
+      `\n4️⃣  UPDATE (day & time) - Moving appointment to ${nextDay.toISOString()}...`,
+    );
+    await updateAppointmentTime(created.id, nextDay, 60);
+    const afterDayUpdate = await getAppointment(created.id);
+    const updatedStart =
+      afterDayUpdate?.startTime && "toDate" in afterDayUpdate.startTime
+        ? afterDayUpdate.startTime.toDate()
+        : null;
+    console.log(
+      "   ✅ Updated day & time - start:",
+      updatedStart?.toISOString() ?? "?",
+    );
 
     // DELETE
-    console.log("\n4️⃣  DELETE - Removing appointment...");
+    console.log("\n5️⃣  DELETE - Removing appointment...");
     await deleteAppointment(created.id);
     const afterDelete = await getAppointment(created.id);
     if (afterDelete) {

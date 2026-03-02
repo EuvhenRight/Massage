@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import type { OccupiedSlot } from "@/lib/availability-firestore";
 import { isDateAvailable } from "@/lib/availability-firestore";
+import type { ScheduleData } from "@/lib/schedule-firestore";
 
 interface PublicDatePickerProps {
   selectedDate: Date | null;
@@ -11,6 +12,7 @@ interface PublicDatePickerProps {
   durationMinutes: number;
   month: Date;
   onMonthChange: (date: Date) => void;
+  schedule?: ScheduleData | null;
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -51,6 +53,7 @@ export default function PublicDatePicker({
   durationMinutes,
   month,
   onMonthChange,
+  schedule = null,
 }: PublicDatePickerProps) {
   const today = useMemo(() => {
     const d = new Date();
@@ -66,9 +69,9 @@ export default function PublicDatePicker({
   const isAvailable = useCallback(
     (date: Date) => {
       if (isPast(date)) return false;
-      return isDateAvailable(date, durationMinutes, occupiedSlots);
+      return isDateAvailable(date, durationMinutes, occupiedSlots, schedule);
     },
-    [durationMinutes, occupiedSlots]
+    [durationMinutes, occupiedSlots, schedule]
   );
 
   return (
@@ -151,7 +154,7 @@ export default function PublicDatePicker({
                   ? "text-gold-soft/90 hover:bg-gold-soft/20 hover:text-gold-soft"
                   : ""}
                 ${!available ? "text-icyWhite/30" : ""}
-                ${isToday && !selected ? "ring-1 ring-icyWhite/50" : ""}
+                ${isToday && !selected ? "ring-2 ring-gold-soft/70 bg-gold-soft/15 text-gold-glow" : ""}
               `}
             >
               {date.getDate()}

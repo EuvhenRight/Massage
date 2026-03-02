@@ -6,26 +6,35 @@ import { db } from "@/lib/firebase";
 import { useBookingFlow } from "./BookingFlowContext";
 import {
   parseOccupiedSlots,
+  getPrepBufferMinutes,
   type OccupiedSlot,
 } from "@/lib/availability-firestore";
+import type { Place } from "@/lib/places";
+import { getSchedule } from "@/lib/schedule-firestore";
 import PublicDatePicker from "./PublicDatePicker";
 import TimeSlotPicker from "./TimeSlotPicker";
 
 interface StepDateTimeProps {
   durationMinutes: number;
+  place?: Place;
 }
 
-export default function StepDateTime({ durationMinutes }: StepDateTimeProps) {
+export default function StepDateTime({ durationMinutes, place = "massage" }: StepDateTimeProps) {
   const { date, time, setDate, setTime } = useBookingFlow();
   const [month, setMonth] = useState(() => {
     const d = date ?? new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
   });
   const [occupiedSlots, setOccupiedSlots] = useState<OccupiedSlot[]>([]);
+  const [schedule, setSchedule] = useState<Awaited<ReturnType<typeof getSchedule>> | null>(null);
   const [loading, setLoading] = useState(true);
 
   const year = month.getFullYear();
   const monthNum = month.getMonth();
+
+  useEffect(() => {
+    getSchedule(place).then(setSchedule).catch(() => setSchedule(null));
+  }, [place]);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,6 +46,7 @@ export default function StepDateTime({ durationMinutes }: StepDateTimeProps) {
         end.setHours(23, 59, 59, 999);
         const q = query(
           collection(db, "appointments"),
+          where("place", "==", place),
           where("startTime", ">=", start),
           where("startTime", "<=", end)
         );
@@ -49,7 +59,7 @@ export default function StepDateTime({ durationMinutes }: StepDateTimeProps) {
             endTime: d.endTime as Timestamp,
           };
         });
-        setOccupiedSlots(parseOccupiedSlots(appointments));
+        setOccupiedSlots(parseOccupiedSlots(appointments, getPrepBufferMinutes(schedule)));
       } catch {
         setOccupiedSlots([]);
       } finally {
@@ -58,7 +68,7 @@ export default function StepDateTime({ durationMinutes }: StepDateTimeProps) {
     }
     fetchAppointments();
     return () => { cancelled = true; };
-  }, [year, monthNum]);
+  }, [year, monthNum, place, schedule]);
 
   return (
     <div className="space-y-4">
@@ -73,6 +83,7 @@ export default function StepDateTime({ durationMinutes }: StepDateTimeProps) {
         durationMinutes={durationMinutes}
         month={month}
         onMonthChange={(d) => setMonth(new Date(d.getFullYear(), d.getMonth(), 1))}
+        schedule={schedule}
       />
 
       {date && (
@@ -82,6 +93,7 @@ export default function StepDateTime({ durationMinutes }: StepDateTimeProps) {
           onSelectTime={setTime}
           occupiedSlots={occupiedSlots}
           durationMinutes={durationMinutes}
+          schedule={schedule}
         />
       )}
 

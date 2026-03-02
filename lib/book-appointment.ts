@@ -7,6 +7,10 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import type { Place } from "./places";
+import { getDateKey } from "./booking";
+import { getPrepBufferMinutes } from "./availability-firestore";
+import { getSchedule } from "./schedule-firestore";
 
 export interface AppointmentData {
   id: string;
@@ -16,6 +20,7 @@ export interface AppointmentData {
   fullName: string;
   email: string;
   phone: string;
+  place?: Place;
   createdAt?: Timestamp;
 }
 
@@ -63,14 +68,17 @@ function overlaps(
   return existingStart < newEnd && existingEnd > newStart;
 }
 
-export async function bookAppointment(input: BookingInput): Promise<AppointmentData> {
+export async function bookAppointment(input: BookingInput, place: Place = "massage"): Promise<AppointmentData> {
   const dateStr = input.date;
   const [startH, startM] = input.startTime.split(":").map(Number);
   const newStart = new Date(`${dateStr}T${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}:00`);
   const newEnd = new Date(newStart.getTime() + input.durationMinutes * 60 * 1000);
+  const dayKey = `${place}_${dateStr}`;
+  const schedule = await getSchedule(place);
+  const prepBuffer = getPrepBufferMinutes(schedule);
 
   return runTransaction(db, async (transaction) => {
-    const dayRef = doc(db, "days", dateStr);
+    const dayRef = doc(db, "days", dayKey);
     const daySnap = await transaction.get(dayRef);
     const slots: { id: string; start: Timestamp; end: Timestamp }[] =
       (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
@@ -78,7 +86,10 @@ export async function bookAppointment(input: BookingInput): Promise<AppointmentD
     for (const slot of slots) {
       const existingStart = slot.start.toDate();
       const existingEnd = slot.end.toDate();
-      if (overlaps(existingStart, existingEnd, newStart, newEnd)) {
+      const existingEndWithBuffer = new Date(
+        existingEnd.getTime() + prepBuffer * 60 * 1000
+      );
+      if (overlaps(existingStart, existingEndWithBuffer, newStart, newEnd)) {
         throw new Error("OVERLAP");
       }
     }
@@ -93,6 +104,7 @@ export async function bookAppointment(input: BookingInput): Promise<AppointmentD
       fullName: input.fullName,
       email: input.email,
       phone: input.phone,
+      place,
       createdAt: serverTimestamp(),
     });
 
@@ -121,7 +133,14 @@ export async function updateAppointmentTime(
   durationMinutes: number
 ): Promise<void> {
   const newEnd = new Date(newStart.getTime() + durationMinutes * 60 * 1000);
-  const newDateStr = newStart.toISOString().slice(0, 10);
+  const newDateStr = getDateKey(newStart);
+
+  const aptSnap = await getDoc(doc(db, "appointments", appointmentId));
+  if (!aptSnap.exists()) throw new Error("APPOINTMENT_NOT_FOUND");
+  const aptPlace = aptSnap.data()?.place as Place | undefined;
+  const place: Place = aptPlace ?? "massage";
+  const schedule = await getSchedule(place);
+  const prepBuffer = getPrepBufferMinutes(schedule);
 
   return runTransaction(db, async (transaction) => {
     const appointmentRef = doc(db, "appointments", appointmentId);
@@ -132,12 +151,20 @@ export async function updateAppointmentTime(
     }
 
     const data = appointmentSnap.data();
+    const newDayKey = `${place}_${newDateStr}`;
     const oldStart = (data.startTime as Timestamp).toDate();
     const oldEnd = (data.endTime as Timestamp).toDate();
-    const oldDateStr = oldStart.toISOString().slice(0, 10);
+    const oldDateStr = getDateKey(oldStart);
+    const oldDayKey = `${place}_${oldDateStr}`;
 
-    const dayRef = doc(db, "days", newDateStr);
-    const daySnap = await transaction.get(dayRef);
+    const dayRef = doc(db, "days", newDayKey);
+    const oldDayRef = doc(db, "days", oldDayKey);
+
+    // Firestore transactions require all reads before any writes.
+    const [daySnap, oldDaySnap] = await Promise.all([
+      transaction.get(dayRef),
+      oldDayKey !== newDayKey ? transaction.get(oldDayRef) : Promise.resolve(null),
+    ]);
     const slots: { id: string; start: Timestamp; end: Timestamp }[] =
       (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
 
@@ -145,7 +172,10 @@ export async function updateAppointmentTime(
       if (slot.id === appointmentId) continue;
       const existingStart = slot.start.toDate();
       const existingEnd = slot.end.toDate();
-      if (overlaps(existingStart, existingEnd, newStart, newEnd)) {
+      const existingEndWithBuffer = new Date(
+        existingEnd.getTime() + prepBuffer * 60 * 1000
+      );
+      if (overlaps(existingStart, existingEndWithBuffer, newStart, newEnd)) {
         throw new Error("OVERLAP");
       }
     }
@@ -163,9 +193,7 @@ export async function updateAppointmentTime(
     });
     transaction.set(dayRef, { slots: newSlots }, { merge: true });
 
-    if (oldDateStr !== newDateStr) {
-      const oldDayRef = doc(db, "days", oldDateStr);
-      const oldDaySnap = await transaction.get(oldDayRef);
+    if (oldDayKey !== newDayKey && oldDaySnap) {
       const oldSlots: { id: string }[] =
         (oldDaySnap.exists() ? (oldDaySnap.data()?.slots as typeof oldSlots) : null) ?? [];
       const filtered = oldSlots.filter((s: { id: string }) => s.id !== appointmentId);
@@ -188,12 +216,13 @@ export async function getAppointment(appointmentId: string): Promise<Appointment
     fullName: (d.fullName as string) ?? "",
     email: (d.email as string) ?? "",
     phone: (d.phone as string) ?? "",
+    place: (d.place as Place) ?? "massage",
     createdAt: d.createdAt as Timestamp | undefined,
   } as AppointmentData;
 }
 
 /** Admin: create appointment with optional fields (defaults for empty) */
-export async function bookAppointmentAdmin(input: AdminBookingInput): Promise<AppointmentData> {
+export async function bookAppointmentAdmin(input: AdminBookingInput, place: Place = "massage"): Promise<AppointmentData> {
   const dateStr = input.date;
   const [startH, startM] = input.startTime.split(":").map(Number);
   const duration = input.durationMinutes ?? 60;
@@ -210,19 +239,21 @@ export async function bookAppointmentAdmin(input: AdminBookingInput): Promise<Ap
     phone: input.phone?.trim() || "—",
   };
 
-  return bookAppointment(normalized);
+  return bookAppointment(normalized, place);
 }
 
 /** Admin: update appointment fields (time change updates slots) */
 export async function updateAppointment(
   appointmentId: string,
-  updates: AdminAppointmentUpdate
+  updates: AdminAppointmentUpdate,
+  place: Place = "massage"
 ): Promise<void> {
   const appointmentRef = doc(db, "appointments", appointmentId);
   const snap = await getDoc(appointmentRef);
   if (!snap.exists()) throw new Error("APPOINTMENT_NOT_FOUND");
 
   const data = snap.data();
+  const aptPlace = (data.place as Place) ?? place;
   const hasTimeChange = updates.startTime != null || updates.durationMinutes != null;
 
   if (hasTimeChange) {
@@ -255,10 +286,12 @@ export async function deleteAppointment(appointmentId: string): Promise<void> {
   }
 
   const data = snap.data();
+  const place = data.place as Place | undefined;
   const start = (data.startTime as Timestamp).toDate();
-  const dateStr = start.toISOString().slice(0, 10);
+  const dateStr = getDateKey(start);
+  const dayKey = place ? `${place}_${dateStr}` : dateStr;
 
-  const dayRef = doc(db, "days", dateStr);
+  const dayRef = doc(db, "days", dayKey);
 
   await runTransaction(db, async (transaction) => {
     // All reads must happen before any writes

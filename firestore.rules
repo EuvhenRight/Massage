@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Services: read for public booking + admin, write for all
+    match /services/{document} {
+      allow read, write: if true;
+    }
+
+    // Schedule: read for public booking, write for admin
+    match /schedule/{document} {
+      allow read, write: if true;
+    }
+
+    // Appointments & days: adjust as needed for your auth setup
+    match /appointments/{document} {
+      allow read, write: if true;
+    }
+    match /days/{document} {
+      allow read, write: if true;
+    }
+  }
+}

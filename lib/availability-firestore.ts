@@ -1,8 +1,16 @@
 import { Timestamp } from "firebase/firestore";
+import type { ScheduleData } from "./schedule-firestore";
+import { getDateKey } from "./booking";
 
-export const SLOT_START_HOUR = 8;
-export const SLOT_END_HOUR = 20;
-export const SLOT_INTERVAL = 30;
+export const SLOT_INTERVAL = 5; // 5-min slots: 13:00, 13:05, 13:10, etc.
+
+/** Default prep buffer when not set in schedule. */
+export const PREP_BUFFER_MINUTES = 15;
+
+export function getPrepBufferMinutes(schedule: ScheduleData | null | undefined): number {
+  const v = schedule?.prepBufferMinutes;
+  return typeof v === "number" && v >= 0 ? v : PREP_BUFFER_MINUTES;
+}
 
 export interface OccupiedSlot {
   start: Date;
@@ -11,9 +19,11 @@ export interface OccupiedSlot {
 
 /**
  * Parse appointment data into occupied time ranges.
+ * Each range includes prepBufferMinutes after the appointment end.
  */
 export function parseOccupiedSlots(
-  appointments: { startTime: Timestamp | Date; endTime: Timestamp | Date }[]
+  appointments: { startTime: Timestamp | Date; endTime: Timestamp | Date }[],
+  prepBufferMinutes: number = PREP_BUFFER_MINUTES
 ): OccupiedSlot[] {
   return appointments.map((apt) => {
     const start =
@@ -24,19 +34,28 @@ export function parseOccupiedSlots(
       apt.endTime && typeof apt.endTime === "object" && "toDate" in apt.endTime
         ? (apt.endTime as Timestamp).toDate()
         : new Date(apt.endTime as Date);
-    return { start, end };
+    const endWithBuffer = new Date(end.getTime() + prepBufferMinutes * 60 * 1000);
+    return { start, end: endWithBuffer };
   });
 }
 
+function timeToMinutes(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return (h ?? 0) * 60 + (m ?? 0);
+}
+
 /**
- * Generate all 30-minute slot start times (HH:mm) for a day.
+ * Generate slot times between open and close (HH:mm), 30-min intervals.
  */
-export function getAllSlotTimes(): string[] {
+function getSlotTimesInRange(open: string, close: string): string[] {
   const slots: string[] = [];
-  for (let h = SLOT_START_HOUR; h < SLOT_END_HOUR; h++) {
-    for (let m = 0; m < 60; m += SLOT_INTERVAL) {
-      slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
-    }
+  let current = timeToMinutes(open);
+  const end = timeToMinutes(close);
+  while (current + SLOT_INTERVAL <= end) {
+    const h = Math.floor(current / 60);
+    const m = current % 60;
+    slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+    current += SLOT_INTERVAL;
   }
   return slots;
 }
@@ -55,24 +74,49 @@ function slotOverlaps(
   slotStart.setHours(h, m, 0, 0);
   const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60 * 1000);
 
-  const dateStr = date.toISOString().slice(0, 10);
+  const dateStr = getDateKey(date);
   for (const { start, end } of occupied) {
-    if (start.toISOString().slice(0, 10) !== dateStr) continue;
+    if (getDateKey(start) !== dateStr) continue;
     if (start < slotEnd && end > slotStart) return true;
   }
   return false;
 }
 
 /**
- * Get available time slots for a date, given occupied ranges.
+ * Get working hours for a date from schedule. Returns null if closed.
+ * Checks date overrides first (YYYY-MM-DD), then month overrides (YYYY-MM), then default weekly schedule.
+ */
+export function getWorkingHoursForDate(
+  schedule: ScheduleData | null,
+  date: Date
+): { open: string; close: string } | null {
+  if (!schedule) return { open: "08:00", close: "20:00" };
+  const dateKey = getDateKey(date);
+  const dateOverride = schedule.dateOverrides?.[dateKey];
+  if (dateOverride !== undefined) return dateOverride;
+  const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  const dayOfWeek = date.getDay();
+  const monthSchedule = schedule.monthOverrides?.[monthKey];
+  const daySchedule = monthSchedule
+    ? monthSchedule[dayOfWeek]
+    : schedule.defaultSchedule[dayOfWeek];
+  return daySchedule ?? null;
+}
+
+/**
+ * Get available time slots for a date, given occupied ranges and optional schedule.
  * Past slots for today are excluded.
  */
 export function getAvailableTimeSlots(
   date: Date,
   durationMinutes: number,
-  occupied: OccupiedSlot[]
+  occupied: OccupiedSlot[],
+  schedule?: ScheduleData | null
 ): string[] {
-  const allSlots = getAllSlotTimes();
+  const daySchedule = getWorkingHoursForDate(schedule ?? null, date);
+  if (!daySchedule) return [];
+
+  const allSlots = getSlotTimesInRange(daySchedule.open, daySchedule.close);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const slotDate = new Date(date);
@@ -99,7 +143,8 @@ export function getAvailableTimeSlots(
 export function isDateAvailable(
   date: Date,
   durationMinutes: number,
-  occupied: OccupiedSlot[]
+  occupied: OccupiedSlot[],
+  schedule?: ScheduleData | null
 ): boolean {
-  return getAvailableTimeSlots(date, durationMinutes, occupied).length > 0;
+  return getAvailableTimeSlots(date, durationMinutes, occupied, schedule).length > 0;
 }

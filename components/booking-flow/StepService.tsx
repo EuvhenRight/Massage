@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 
 interface StepServiceProps {
-  services: { title: string }[];
+  services: { title: string; durationMinutes?: number }[];
 }
 
 export default function StepService({ services }: StepServiceProps) {
@@ -26,12 +26,12 @@ export default function StepService({ services }: StepServiceProps) {
           Service
         </label>
         <Select value={service} onValueChange={setService}>
-          <SelectTrigger className="h-10 bg-white/5 border-white/10 text-icyWhite hover:bg-white/10 transition-colors">
+          <SelectTrigger className="h-10">
             <SelectValue placeholder="Select a service" />
           </SelectTrigger>
           <SelectContent>
             {services.map((s) => (
-              <SelectItem key={s.title} value={s.title} className="text-icyWhite">
+              <SelectItem key={s.title} value={s.title}>
                 {s.title}
               </SelectItem>
             ))}

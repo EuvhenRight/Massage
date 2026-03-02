@@ -1,8 +1,10 @@
 'use client'
 
 import { bookAppointment } from '@/lib/book-appointment'
+import { getDateKey } from '@/lib/booking'
 import type { BookingFormData } from '@/lib/booking-schema'
 import { useCallback, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
 	BookingFlowProvider,
@@ -12,42 +14,59 @@ import {
 import BookingSidebar from './BookingSidebar'
 import BookingStepProgress from './BookingStepProgress'
 import StepCustomerInfo from './StepCustomerInfo'
-import StepDateTime from './StepDateTime'
-import StepService from './StepService'
+import StepServiceAndDate from './StepServiceAndDate'
+
+import type { Place } from '@/lib/places'
 
 export interface BookingFlowProps {
-	services: { title: string }[]
+	services: { title: string; durationMinutes?: number }[]
 	defaultDuration?: number
 	onSuccess?: () => void
+	onCancel?: () => void
+	place?: Place
 }
 
 function BookingFlowInner({
 	services,
 	defaultDuration = 60,
 	onSuccess,
+	onCancel,
+	place = 'massage',
 }: BookingFlowProps) {
+	const router = useRouter()
 	const { step, service, date, time, durationMinutes, nextStep, prevStep } =
 		useBookingFlow()
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	const canNext =
-		(step === 1 && service) || (step === 2 && date && time) || step === 3
+		(step === 1 && service && date && time) || step === 2
+
+	const handleBack = useCallback(() => {
+		if (step > 1) {
+			prevStep()
+		} else {
+			onCancel?.() ?? router.back()
+		}
+	}, [step, prevStep, onCancel, router])
 
 	const handleConfirm = useCallback(
 		async (formData: BookingFormData) => {
 			if (!date || !time) return
 			setIsSubmitting(true)
 			try {
-				const dateStr = date.toISOString().slice(0, 10)
-				await bookAppointment({
-					date: dateStr,
-					startTime: time,
-					durationMinutes,
-					service: (service || formData.service || services[0]?.title) ?? '',
-					fullName: formData.fullName,
-					email: formData.email,
-					phone: formData.phone,
-				})
+				const dateStr = getDateKey(date)
+				await bookAppointment(
+					{
+						date: dateStr,
+						startTime: time,
+						durationMinutes,
+						service: (service || formData.service || services[0]?.title) ?? '',
+						fullName: formData.fullName,
+						email: formData.email,
+						phone: formData.phone,
+					},
+					place
+				)
 
 				const slotDate = new Date(date)
 				const [h, m] = time.split(':').map(Number)
@@ -94,70 +113,77 @@ function BookingFlowInner({
 				setIsSubmitting(false)
 			}
 		},
-		[date, time, durationMinutes, service, services, onSuccess],
+		[date, time, durationMinutes, service, services, onSuccess, place],
 	)
 
-	const stepLabels = ['Next', 'Next', 'Confirm']
-	const showNextButton = step < 3
+	const stepTitles = [
+		'Choose service, date & time',
+		'Your details',
+	]
+	const stepDescriptions = [
+		'Pick your treatment, date and time.',
+		'We\'ll use this to confirm your booking.',
+	]
+	const stepLabels = ['Next', 'Confirm booking']
+	const showNextButton = step < 2
 
 	return (
-		<div className='flex flex-col md:max-h-[calc(100vh-5.5rem)]'>
+		<div className='flex flex-col min-h-[420px]'>
 			<BookingStepProgress currentStep={step} />
 
-			<div className='flex flex-1 flex-col md:flex-row gap-4 md:gap-4 p-4 sm:p-5 md:min-h-0 md:overflow-auto'>
-				<main className='flex-1 min-w-0 space-y-4'>
-					{step > 1 && (
+			<div className='flex flex-1 flex-col lg:flex-row gap-6 lg:gap-8 p-6 sm:p-8 md:min-h-0'>
+				<main className='flex-1 min-w-0'>
+					<div className='mb-6'>
 						<button
 							type='button'
-							onClick={prevStep}
-							className='flex items-center gap-1.5 text-icyWhite/60 hover:text-icyWhite text-sm transition-colors -mb-1'
+							onClick={handleBack}
+							className='flex items-center gap-1.5 text-icyWhite/60 hover:text-icyWhite text-sm transition-colors mb-3'
 						>
-							<svg
-								className='w-4 h-4'
-								fill='none'
-								stroke='currentColor'
-								viewBox='0 0 24 24'
-							>
-								<path
-									strokeLinecap='round'
-									strokeLinejoin='round'
-									strokeWidth={2}
-									d='M15 19l-7-7 7-7'
-								/>
+							<svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+								<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
 							</svg>
-							Back
+							{step === 1 ? 'Cancel' : 'Back'}
 						</button>
-					)}
+						<h2 className='font-serif text-xl sm:text-2xl text-icyWhite mb-1'>
+							{stepTitles[step - 1]}
+						</h2>
+						<p className='text-icyWhite/60 text-sm'>
+							{stepDescriptions[step - 1]}
+						</p>
+					</div>
 
-					{step === 1 && <StepService services={services} />}
-					{step === 2 && <StepDateTime durationMinutes={durationMinutes} />}
-					{step === 3 && (
-						<StepCustomerInfo
-							onSubmit={handleConfirm}
-							isSubmitting={isSubmitting}
-						/>
-					)}
+					<div className='rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8'>
+						{step === 1 && <StepServiceAndDate services={services} place={place} />}
+						{step === 2 && (
+							<StepCustomerInfo
+								onSubmit={handleConfirm}
+								isSubmitting={isSubmitting}
+							/>
+						)}
+					</div>
+				</main>
 
+				<aside className='w-full lg:w-80 shrink-0 lg:self-start lg:pt-[4.5rem] flex flex-col gap-4'>
+					<BookingSidebar />
+					{/* Next under Booking summary */}
 					{showNextButton && (
 						<button
 							type='button'
 							onClick={nextStep}
 							disabled={!canNext}
 							className={`
-                w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-medium transition-all mb-4
-                ${
+								w-full px-8 py-3 rounded-xl text-sm font-semibold transition-all
+								${
 									canNext
-										? 'bg-gold-soft/20 border border-gold-soft/50 text-gold-soft hover:bg-gold-soft/30'
-										: 'bg-white/5 border border-white/10 text-icyWhite/40 cursor-not-allowed'
+										? 'bg-gold-soft text-nearBlack hover:bg-gold-glow shadow-lg shadow-gold-soft/20'
+										: 'bg-white/10 text-icyWhite/40 cursor-not-allowed'
 								}
-              `}
+							`}
 						>
 							{stepLabels[step - 1]}
 						</button>
 					)}
-				</main>
-
-				<BookingSidebar />
+				</aside>
 			</div>
 		</div>
 	)
@@ -174,6 +200,7 @@ export default function BookingFlow(props: BookingFlowProps) {
 		</BookingFlowProvider>
 	)
 }
+
 
 export { BookingFlowProvider, useBookingFlow }
 export type { BookingFlowState }

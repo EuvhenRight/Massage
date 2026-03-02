@@ -1,18 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import BookingFlow from "@/components/booking-flow";
-
-const SERVICES = [
-  { title: "Swedish Massage" },
-  { title: "Deep Tissue" },
-  { title: "Hot Stone" },
-  { title: "Aromatherapy" },
-  { title: "Sports Recovery" },
-  { title: "Couples Retreat" },
-];
+import type { ServiceData } from "@/lib/services";
 
 export default function BookingPage() {
+  const [services, setServices] = useState<ServiceData[]>([]);
+
+  useEffect(() => {
+    fetch("/api/services?place=massage")
+      .then((r) => r.ok && r.json())
+      .then((data) => (Array.isArray(data) ? setServices(data) : []))
+      .catch(() => {});
+  }, []);
+
+  const serviceOptions = services.map((s) => ({
+    title: s.title,
+    durationMinutes: s.durationMinutes,
+  }));
+
   return (
     <main className="min-h-screen bg-nearBlack text-icyWhite">
       <Navbar />
@@ -20,8 +27,9 @@ export default function BookingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="rounded-2xl border border-white/10 bg-nearBlack/50">
             <BookingFlow
-              services={SERVICES}
+              services={serviceOptions.length > 0 ? serviceOptions : [{ title: "Appointment", durationMinutes: 60 }]}
               defaultDuration={60}
+              place="massage"
             />
           </div>
         </div>

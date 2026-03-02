@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-export type BookingStep = 1 | 2 | 3;
+export type BookingStep = 1 | 2;
 
 export interface BookingFlowState {
   step: BookingStep;
@@ -55,7 +55,7 @@ interface BookingFlowProviderProps {
   children: ReactNode;
   defaultService?: string;
   defaultDuration?: number;
-  services: { title: string }[];
+  services: { title: string; durationMinutes?: number }[];
   onComplete?: (state: BookingFlowState) => void;
 }
 
@@ -66,15 +66,20 @@ export function BookingFlowProvider({
   services,
   onComplete,
 }: BookingFlowProviderProps) {
+  const firstService = services[0];
   const [state, setState] = useState<BookingFlowState>({
     ...initialState,
-    service: (defaultService || services[0]?.title) ?? "",
-    durationMinutes: defaultDuration,
+    service: (defaultService || firstService?.title) ?? "",
+    durationMinutes: firstService?.durationMinutes ?? defaultDuration,
   });
 
   const setService = useCallback((service: string) => {
-    setState((s) => ({ ...s, service }));
-  }, []);
+    setState((s) => {
+      const svc = services.find((x) => x.title === service);
+      const duration = svc?.durationMinutes ?? defaultDuration;
+      return { ...s, service, durationMinutes: duration };
+    });
+  }, [services, defaultDuration]);
 
   const setDate = useCallback((date: Date | null) => {
     setState((s) => ({ ...s, date, time: null }));
@@ -98,7 +103,7 @@ export function BookingFlowProvider({
   const nextStep = useCallback(() => {
     setState((s) => ({
       ...s,
-      step: Math.min(3, s.step + 1) as BookingStep,
+      step: Math.min(2, s.step + 1) as BookingStep,
     }));
   }, []);
 
@@ -110,10 +115,11 @@ export function BookingFlowProvider({
   }, []);
 
   const reset = useCallback(() => {
+    const first = services[0];
     setState({
       ...initialState,
-      service: (defaultService || services[0]?.title) ?? "",
-      durationMinutes: defaultDuration,
+      service: (defaultService || first?.title) ?? "",
+      durationMinutes: first?.durationMinutes ?? defaultDuration,
     });
   }, [defaultService, defaultDuration, services]);
 

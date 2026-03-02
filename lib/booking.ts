@@ -36,8 +36,12 @@ export const DEFAULT_SCHEDULE: Schedule = {
   overrides: {},
 };
 
+/** Returns YYYY-MM-DD in local timezone (avoids toISOString UTC shift near midnight). */
 export function getDateKey(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export function parseTime(t: string): { h: number; m: number } {

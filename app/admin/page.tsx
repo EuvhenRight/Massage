@@ -1,141 +1,73 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import BookingCalendarGrid from "@/components/BookingCalendarGrid";
-import AdminAppointmentModal from "@/components/AdminAppointmentModal";
-import type { AppointmentData } from "@/lib/book-appointment";
-
-const SERVICE_LEGEND = [
-  { service: "Swedish Massage", color: "bg-amber-500/30 border-amber-500/60" },
-  { service: "Deep Tissue", color: "bg-rose-500/30 border-rose-500/60" },
-  { service: "Hot Stone", color: "bg-orange-500/30 border-orange-500/60" },
-  { service: "Aromatherapy", color: "bg-violet-500/30 border-violet-500/60" },
-  { service: "Sports Recovery", color: "bg-emerald-500/30 border-emerald-500/60" },
-  { service: "Couples Retreat", color: "bg-pink-500/30 border-pink-500/60" },
-  { service: "Other", color: "bg-aurora-magenta/30 border-aurora-magenta/50" },
-];
-
+import { signOut } from "next-auth/react";
+import { Hand, Sparkles, LogOut } from "lucide-react";
+import { PLACE_LABELS } from "@/lib/places";
 export default function AdminPage() {
   const { data: session } = useSession();
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editSlot, setEditSlot] = useState<{
-    date: Date;
-    hour: number;
-    minute: number;
-  } | null>(null);
-  const [editAppointment, setEditAppointment] = useState<AppointmentData | null>(null);
-
-  const handleCellClick = useCallback((date: Date, hour: number, minute: number) => {
-    setEditSlot({ date, hour, minute });
-    setEditAppointment(null);
-    setAddModalOpen(true);
-  }, []);
-
-  const handleEditAppointment = useCallback((appointment: AppointmentData) => {
-    setEditAppointment(appointment);
-    setEditSlot(null);
-    setEditModalOpen(true);
-  }, []);
 
   return (
-    <main className="min-h-screen bg-nearBlack text-icyWhite p-8">
-      <div className="max-w-[1400px] mx-auto">
-        <div className="flex items-center justify-between mb-8">
+    <main className="min-h-screen bg-nearBlack text-icyWhite flex items-center justify-center p-6">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
+          <h1 className="font-serif text-3xl text-icyWhite">Admin</h1>
+          <p className="text-icyWhite/60 mt-1">
+            Choose which booking system to manage
+          </p>
+        </div>
+
+        <div className="grid gap-4">
           <Link
-            href="/"
-            className="text-gold-soft hover:text-gold-glow transition-colors text-sm"
+            href="/admin/massage"
+            className="flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-gold-soft/30 transition-all group"
           >
-            ← Back to Aurora
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/booking"
-              className="text-sm text-icyWhite/70 hover:text-icyWhite"
-            >
-              Public booking →
-            </Link>
-            {session?.user && (
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-icyWhite/60 truncate max-w-[180px]">
-                  {session.user.email}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="text-sm text-icyWhite/60 hover:text-icyWhite transition-colors"
-                >
-                  Sign out
-                </button>
-              </div>
-            )}
-            <h1 className="font-serif text-2xl text-icyWhite">Admin — Appointments</h1>
-          </div>
-        </div>
-
-        {/* Service color legend */}
-        <div className="mb-6 flex flex-wrap gap-3">
-          {SERVICE_LEGEND.map(({ service, color }) => (
-            <div
-              key={service}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${color}`}
-            >
-              <div className="w-2 h-2 rounded-full bg-current opacity-80" />
-              <span className="text-sm">{service}</span>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-soft/20 border border-gold-soft/40 group-hover:bg-gold-soft/30">
+              <Hand className="h-6 w-6 text-gold-glow" />
             </div>
-          ))}
-        </div>
+            <div className="flex-1 text-left">
+              <h2 className="font-medium text-icyWhite">{PLACE_LABELS.massage}</h2>
+              <p className="text-sm text-icyWhite/50">Services, calendar, appointments</p>
+            </div>
+          </Link>
 
-        <p className="text-icyWhite/70 text-sm mb-6">
-          Click a slot to add, or drag/edit/cancel appointments.
-        </p>
-
-        <div className="mb-6">
-          <button
-            type="button"
-            onClick={() => {
-              const today = new Date();
-              setEditSlot({ date: today, hour: 9, minute: 0 });
-              setEditAppointment(null);
-              setAddModalOpen(true);
-            }}
-            className="rounded-lg border border-gold-soft/50 bg-gold-soft/20 px-4 py-2 text-sm font-medium text-gold-soft hover:bg-gold-soft/30 transition-colors"
+          <Link
+            href="/admin/depilation"
+            className="flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-gold-soft/30 transition-all group"
           >
-            + Add appointment
-          </button>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-soft/20 border border-gold-soft/40 group-hover:bg-gold-soft/30">
+              <Sparkles className="h-6 w-6 text-gold-glow" />
+            </div>
+            <div className="flex-1 text-left">
+              <h2 className="font-medium text-icyWhite">{PLACE_LABELS.depilation}</h2>
+              <p className="text-sm text-icyWhite/50">Services, calendar, appointments</p>
+            </div>
+          </Link>
         </div>
 
-        <BookingCalendarGrid
-          allowCancel
-          allowDrag
-          onCellClick={handleCellClick}
-          onEditAppointment={handleEditAppointment}
-        />
+        {session?.user && (
+          <div className="flex items-center justify-between pt-4 border-t border-white/10">
+            <span className="text-sm text-icyWhite/50 truncate max-w-[200px]">
+              {session.user.email}
+            </span>
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="flex items-center gap-2 text-sm text-icyWhite/60 hover:text-icyWhite transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign out
+            </button>
+          </div>
+        )}
 
-        <AdminAppointmentModal
-          isOpen={addModalOpen}
-          onClose={() => {
-            setAddModalOpen(false);
-            setEditSlot(null);
-          }}
-          mode="add"
-          defaultDate={editSlot?.date}
-          defaultHour={editSlot?.hour}
-          defaultMinute={editSlot?.minute}
-        />
-
-        <AdminAppointmentModal
-          isOpen={editModalOpen}
-          onClose={() => {
-            setEditModalOpen(false);
-            setEditAppointment(null);
-          }}
-          mode="edit"
-          appointment={editAppointment}
-        />
+        <Link
+          href="/"
+          className="block text-center text-sm text-icyWhite/50 hover:text-icyWhite transition-colors"
+        >
+          ← Back to Aurora
+        </Link>
       </div>
     </main>
   );

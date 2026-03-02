@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { bookingSchema, type BookingFormData } from "@/lib/booking-schema";
 import { bookAppointment } from "@/lib/book-appointment";
+import { getDateKey } from "@/lib/booking";
 import {
   Form,
   FormControl,
@@ -76,7 +77,7 @@ export default function BookingFormModal({
   const onSubmit = async (values: BookingFormData) => {
     try {
       const startTime = `${String(defaultHour).padStart(2, "0")}:${String(defaultMinute).padStart(2, "0")}`;
-      const dateStr = date.toISOString().slice(0, 10);
+      const dateStr = getDateKey(date);
       const slotDate = new Date(date);
       slotDate.setHours(defaultHour, defaultMinute, 0, 0);
 
@@ -159,7 +160,7 @@ export default function BookingFormModal({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="select-menu h-10">
                           <SelectValue placeholder="Select a service" />
                         </SelectTrigger>
                       </FormControl>

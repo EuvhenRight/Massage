@@ -238,7 +238,7 @@ export default function MassagePage() {
           </motion.p>
           <motion.button
             type="button"
-            onClick={() => window.location.href = "/booking"}
+            onClick={() => window.location.href = "/massage/booking"}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="px-10 py-4 rounded-lg bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300"

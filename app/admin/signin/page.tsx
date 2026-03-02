@@ -1,9 +1,11 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { signIn } from "next-auth/react";
+import { Suspense, useState, useEffect } from "react";
+import { signIn, getCsrfToken } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 function AdminSignInForm() {
   const searchParams = useSearchParams();
@@ -12,12 +14,16 @@ function AdminSignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [csrfToken, setCsrfToken] = useState("");
 
-  const handleCredentialsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    await signIn("credentials", { email, password, callbackUrl });
-    setLoading(false);
+  useEffect(() => {
+    getCsrfToken().then((token) => setCsrfToken(token ?? ""));
+  }, []);
+
+  const handleCredentialsSubmit = (e: React.FormEvent) => {
+    if (!csrfToken) e.preventDefault();
+    else setLoading(true);
+    // When csrfToken present: native form POST so browser sends cookies (fixes Playwright CSRF)
   };
 
   return (
@@ -47,40 +53,50 @@ function AdminSignInForm() {
             </div>
           )}
 
-          <form onSubmit={handleCredentialsSubmit} className="mb-6 space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm text-icyWhite/80 mb-1.5">
+          <form
+            method="post"
+            action="/api/auth/callback/credentials"
+            onSubmit={handleCredentialsSubmit}
+            className="mb-6 space-y-4"
+          >
+            {csrfToken ? <input type="hidden" name="csrfToken" value={csrfToken} /> : null}
+            <input type="hidden" name="callbackUrl" value={callbackUrl} />
+            <input type="hidden" name="redirect" value="true" />
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-icyWhite/80">
                 Email
-              </label>
-              <input
+              </Label>
+              <Input
                 id="email"
+                name="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-icyWhite placeholder:text-icyWhite/40 focus:border-gold-soft focus:outline-none focus:ring-1 focus:ring-gold-soft"
                 placeholder="admin@example.com"
+                className="h-10"
               />
             </div>
-            <div>
-              <label htmlFor="password" className="block text-sm text-icyWhite/80 mb-1.5">
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-icyWhite/80">
                 Password
-              </label>
-              <input
+              </Label>
+              <Input
                 id="password"
+                name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-icyWhite placeholder:text-icyWhite/40 focus:border-gold-soft focus:outline-none focus:ring-1 focus:ring-gold-soft"
                 placeholder="••••••••"
+                className="h-10"
               />
             </div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !csrfToken}
               className="w-full rounded-xl border border-gold-soft/50 bg-gold-soft/20 px-6 py-3 font-medium text-icyWhite transition-colors hover:bg-gold-soft/30 disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Sign in"}
