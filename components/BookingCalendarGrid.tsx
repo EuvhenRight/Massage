@@ -401,7 +401,7 @@ export default function BookingCalendarGrid({
                   : "bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10"
               )}
             >
-              Day
+              {t("viewDay")}
             </button>
             <button
               type="button"
@@ -416,7 +416,7 @@ export default function BookingCalendarGrid({
                   : "bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10"
               )}
             >
-              Week
+              {t("viewWeek")}
             </button>
           </div>
           {view === "day" ? (
@@ -426,7 +426,7 @@ export default function BookingCalendarGrid({
                 onClick={() => setSelectedDay((d) => addDays(d, -1))}
                 className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10 text-sm"
               >
-                ← Previous day
+                {t("previousDay")}
               </button>
               <button
                 type="button"
@@ -437,14 +437,14 @@ export default function BookingCalendarGrid({
                 }}
                 className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10 text-sm"
               >
-                Today
+                {t("today")}
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedDay((d) => addDays(d, 1))}
                 className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10 text-sm"
               >
-                Next day →
+                {t("nextDay")}
               </button>
             </>
           ) : (
@@ -454,21 +454,21 @@ export default function BookingCalendarGrid({
                 onClick={() => setWeekStart((d) => addDays(d, -7))}
                 className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10 text-sm"
               >
-                ← Previous week
+                {t("previousWeek")}
               </button>
               <button
                 type="button"
                 onClick={() => setWeekStart(startOfWeek(new Date()))}
                 className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10 text-sm"
               >
-                Today
+                {t("today")}
               </button>
               <button
                 type="button"
                 onClick={() => setWeekStart((d) => addDays(d, 7))}
                 className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10 text-sm"
               >
-                Next week →
+                {t("nextWeek")}
               </button>
             </>
           )}

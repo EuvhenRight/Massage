@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
@@ -8,6 +9,8 @@ import { signOut } from "next-auth/react";
 import { Hand, Sparkles, LogOut } from "lucide-react";
 
 export default function AdminPage() {
+  const params = useParams();
+  const locale = (params?.locale as string) ?? "ru";
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
   const { data: session } = useSession();
@@ -27,7 +30,7 @@ export default function AdminPage() {
 
         <div className="grid gap-4">
           <Link
-            href="/ru/admin/massage"
+            href={`/${locale}/admin/massage`}
             className="flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-gold-soft/30 transition-all group"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-soft/20 border border-gold-soft/40 group-hover:bg-gold-soft/30">
@@ -40,7 +43,7 @@ export default function AdminPage() {
           </Link>
 
           <Link
-            href="/ru/admin/depilation"
+            href={`/${locale}/admin/depilation`}
             className="flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-gold-soft/30 transition-all group"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-soft/20 border border-gold-soft/40 group-hover:bg-gold-soft/30">

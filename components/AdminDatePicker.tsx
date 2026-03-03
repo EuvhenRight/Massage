@@ -245,14 +245,14 @@ export default function AdminDatePicker({ value, onChange, id, minDate }: AdminD
               }}
               className="text-sm text-sky-400/90 hover:text-sky-300"
             >
-              Clear
+              {t("clear")}
             </button>
             <button
               type="button"
               onClick={() => handleSelect(today)}
               className="text-sm text-sky-400/90 hover:text-sky-300"
             >
-              Today
+              {t("today")}
             </button>
           </div>
         </div>

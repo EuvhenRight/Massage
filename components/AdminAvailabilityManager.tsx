@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { clsx } from "clsx";
-import { Copy, Info, Lock } from "lucide-react";
+import { Info, Lock } from "lucide-react";
 import type { Place } from "@/lib/places";
 import { getSchedule, saveSchedule, type ScheduleData, type DaySchedule } from "@/lib/schedule-firestore";
 import { getWorkingHoursForDate } from "@/lib/availability-firestore";
@@ -155,14 +155,6 @@ export default function AdminAvailabilityManager({
     }
   };
 
-  const copyFromDefault = () => {
-    if (!schedule || isDefault) return;
-    const overrides = { ...(schedule.monthOverrides ?? {}) };
-    overrides[scope] = { ...schedule.defaultSchedule };
-    setSchedule({ ...schedule, monthOverrides: overrides });
-    toast.success(t("copiedToMonth", { month: formatMonthLabel(scope, monthNames) }));
-  };
-
   const getDateKey = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
@@ -261,18 +253,6 @@ export default function AdminAvailabilityManager({
                 <span className="text-xs text-icyWhite/50 block mb-1">{t("manageScheduleFor")}</span>
                 <AdminMonthPicker value={scope} onChange={setScope} />
               </div>
-              {!isDefault && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={copyFromDefault}
-                  className="border-white/10 text-icyWhite hover:bg-white/10"
-                >
-                  <Copy className="w-3.5 h-3.5 mr-1.5" />
-                  {t("copyFromDefault")}
-                </Button>
-              )}
             </div>
             <div className="space-y-2">
         {WEEKDAYS.map(({ day, label }) => {

@@ -7,12 +7,6 @@ const intlMiddleware = createMiddleware(routing);
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
-  const adminMatch = pathname.match(/^\/([a-z]{2})\/admin(\/|$)/);
-  if (adminMatch && adminMatch[1] !== "ru") {
-    const newPath = pathname.replace(/^\/[a-z]{2}\/admin/, "/ru/admin");
-    return Response.redirect(new URL(newPath, req.nextUrl.origin));
-  }
-
   const intlResult = intlMiddleware(req);
   if (intlResult) return intlResult;
 
@@ -21,7 +15,9 @@ export default auth((req) => {
     !pathname.match(/^\/[a-z]{2}\/admin\/signin/);
 
   if (isAdminRoute && !req.auth) {
-    const signInUrl = new URL("/ru/admin/signin", req.nextUrl.origin);
+    const localeMatch = pathname.match(/^\/([a-z]{2})\//);
+    const locale = localeMatch ? localeMatch[1] : "ru";
+    const signInUrl = new URL(`/${locale}/admin/signin`, req.nextUrl.origin);
     signInUrl.searchParams.set("callbackUrl", pathname);
     return Response.redirect(signInUrl);
   }

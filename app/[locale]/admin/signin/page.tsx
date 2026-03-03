@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { signIn, getCsrfToken } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 
 function AdminSignInForm() {
   const t = useTranslations("adminSignin");
+  const params = useParams();
   const searchParams = useSearchParams();
-  const defaultCallback = "/ru/admin";
+  const locale = (params?.locale as string) ?? "ru";
+  const defaultCallback = `/${locale}/admin`;
   const callbackUrl = searchParams.get("callbackUrl") ?? defaultCallback;
   const error = searchParams.get("error");
   const [email, setEmail] = useState("");
@@ -152,15 +154,18 @@ function AdminSignInForm() {
   );
 }
 
+function SignInLoadingFallback() {
+  const t = useTranslations("common");
+  return (
+    <main className="min-h-screen bg-nearBlack text-icyWhite flex items-center justify-center p-8">
+      <div className="text-icyWhite/60">{t("loading")}</div>
+    </main>
+  );
+}
+
 export default function AdminSignInPage() {
   return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen bg-nearBlack text-icyWhite flex items-center justify-center p-8">
-          <div className="text-icyWhite/60">Loading...</div>
-        </main>
-      }
-    >
+    <Suspense fallback={<SignInLoadingFallback />}>
       <AdminSignInForm />
     </Suspense>
   );
