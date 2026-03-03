@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useBookingFlow } from "./BookingFlowContext";
@@ -30,6 +31,8 @@ export default function StepServiceAndDate({
   services,
   place = "massage",
 }: StepServiceAndDateProps) {
+  const t = useTranslations("booking");
+  const tCommon = useTranslations("common");
   const { service, setService, date, setDate, setTime, time, durationMinutes } = useBookingFlow();
   const [month, setMonth] = useState(() => {
     const d = date ?? new Date();
@@ -85,11 +88,11 @@ export default function StepServiceAndDate({
       <div className="space-y-5">
         <div className="space-y-2">
           <label className="block text-sm font-medium text-icyWhite/90">
-            Service
+            {tCommon("services")}
           </label>
           <Select value={service} onValueChange={setService}>
             <SelectTrigger className="h-11 bg-white/5 border-white/10 text-icyWhite hover:bg-white/[0.07] focus:ring-gold-soft/30">
-              <SelectValue placeholder="Select a service" />
+              <SelectValue placeholder={t("selectService")} />
             </SelectTrigger>
             <SelectContent>
               {services.map((s) => (
@@ -107,7 +110,7 @@ export default function StepServiceAndDate({
         {date && (
           <div className="space-y-2">
             <label className="block text-sm font-medium text-icyWhite/90">
-              Time
+              {t("selectTime")}
             </label>
             <TimeSlotPicker
               date={date}
@@ -122,7 +125,7 @@ export default function StepServiceAndDate({
 
         <div className="space-y-2">
           <label className="block text-sm font-medium text-icyWhite/90">
-            Date
+            {t("selectDate")}
           </label>
           <PublicDatePicker
             selectedDate={date}
@@ -137,7 +140,7 @@ export default function StepServiceAndDate({
       </div>
 
       {loading && (
-        <p className="text-xs text-icyWhite/45">Loading availability…</p>
+        <p className="text-xs text-icyWhite/45">{t("loadingAvailability")}</p>
       )}
     </div>
   );

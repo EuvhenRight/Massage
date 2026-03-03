@@ -3,13 +3,16 @@
 import { Suspense, useState, useEffect } from "react";
 import { signIn, getCsrfToken } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 function AdminSignInForm() {
+  const t = useTranslations("adminSignin");
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/admin";
+  const defaultCallback = "/ru/admin";
+  const callbackUrl = searchParams.get("callbackUrl") ?? defaultCallback;
   const error = searchParams.get("error");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,33 +26,32 @@ function AdminSignInForm() {
   const handleCredentialsSubmit = (e: React.FormEvent) => {
     if (!csrfToken) e.preventDefault();
     else setLoading(true);
-    // When csrfToken present: native form POST so browser sends cookies (fixes Playwright CSRF)
   };
 
   return (
     <main className="min-h-screen bg-nearBlack text-icyWhite flex items-center justify-center p-8">
       <div className="w-full max-w-md">
         <div className="rounded-2xl border border-white/10 bg-nearBlack/80 p-8 shadow-xl">
-          <h1 className="font-serif text-2xl text-icyWhite mb-2">Admin sign in</h1>
+          <h1 className="font-serif text-2xl text-icyWhite mb-2">{t("title")}</h1>
           <p className="text-icyWhite/60 text-sm mb-8">
-            Sign in with email and password to access the admin panel.
+            {t("subtitle")}
           </p>
 
           {error === "AccessDenied" && (
             <div className="mb-6 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-              Access denied. Only authorized administrators can sign in.
+              {t("accessDenied")}
             </div>
           )}
 
           {error === "CredentialsSignin" && (
             <div className="mb-6 rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-              Invalid email or password.
+              {t("invalidCredentials")}
             </div>
           )}
 
           {error && error !== "AccessDenied" && error !== "CredentialsSignin" && (
             <div className="mb-6 rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-              Sign in failed. Please try again.
+              {t("signInFailed")}
             </div>
           )}
 
@@ -64,7 +66,7 @@ function AdminSignInForm() {
             <input type="hidden" name="redirect" value="true" />
             <div className="space-y-2">
               <Label htmlFor="email" className="text-icyWhite/80">
-                Email
+                {t("email")}
               </Label>
               <Input
                 id="email"
@@ -80,7 +82,7 @@ function AdminSignInForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password" className="text-icyWhite/80">
-                Password
+                {t("password")}
               </Label>
               <Input
                 id="password"
@@ -99,7 +101,7 @@ function AdminSignInForm() {
               disabled={loading || !csrfToken}
               className="w-full rounded-xl border border-gold-soft/50 bg-gold-soft/20 px-6 py-3 font-medium text-icyWhite transition-colors hover:bg-gold-soft/30 disabled:opacity-50"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? t("signingIn") : t("signIn")}
             </button>
           </form>
 
@@ -108,7 +110,7 @@ function AdminSignInForm() {
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-xs text-icyWhite/50">
-              <span className="bg-nearBlack/80 px-2">or</span>
+              <span className="bg-nearBlack/80 px-2">{t("orDivider")}</span>
             </div>
           </div>
 
@@ -135,14 +137,14 @@ function AdminSignInForm() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            {t("continueWithGoogle")}
           </button>
 
           <Link
-            href="/"
+            href="/sk"
             className="mt-6 block text-center text-sm text-icyWhite/50 hover:text-icyWhite/80 transition-colors"
           >
-            ← Back to Aurora
+            {t("backToAurora")}
           </Link>
         </div>
       </div>
@@ -152,11 +154,13 @@ function AdminSignInForm() {
 
 export default function AdminSignInPage() {
   return (
-    <Suspense fallback={
-      <main className="min-h-screen bg-nearBlack text-icyWhite flex items-center justify-center p-8">
-        <div className="text-icyWhite/60">Loading...</div>
-      </main>
-    }>
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-nearBlack text-icyWhite flex items-center justify-center p-8">
+          <div className="text-icyWhite/60">Loading...</div>
+        </main>
+      }
+    >
       <AdminSignInForm />
     </Suspense>
   );

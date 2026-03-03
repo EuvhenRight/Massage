@@ -1,5 +1,7 @@
 'use client'
 
+import { useLocale, useTranslations } from 'next-intl'
+import { formatDateForEmail, formatTimeForEmail } from '@/lib/format-date'
 import { bookAppointment } from '@/lib/book-appointment'
 import { getDateKey } from '@/lib/booking'
 import type { BookingFormData } from '@/lib/booking-schema'
@@ -33,6 +35,7 @@ function BookingFlowInner({
 	onCancel,
 	place = 'massage',
 }: BookingFlowProps) {
+	const t = useTranslations('booking')
 	const router = useRouter()
 	const { step, service, date, time, durationMinutes, nextStep, prevStep } =
 		useBookingFlow()
@@ -78,53 +81,36 @@ function BookingFlowInner({
 					body: JSON.stringify({
 						to: formData.email,
 						customerName: formData.fullName,
-						date: slotDate.toLocaleDateString('en-US', {
-							weekday: 'short',
-							month: 'short',
-							day: 'numeric',
-							year: 'numeric',
-						}),
-						time: slotDate.toLocaleTimeString('en-US', {
-							hour: 'numeric',
-							minute: '2-digit',
-							hour12: true,
-						}),
+						date: formatDateForEmail(slotDate),
+						time: formatTimeForEmail(slotDate),
 						service: service || formData.service,
 					}),
 				})
 
 				if (!res.ok) {
 					const data = await res.json().catch(() => ({}))
-					toast.error(
-						`Booking confirmed, but ${data?.error ?? 'email could not be sent'}`,
-					)
+					toast.error(t('emailNotSent', { error: data?.error ?? 'email could not be sent' }))
 				} else {
-					toast.success('Booking confirmed! Check your email.')
+					toast.success(t('bookingConfirmed'))
 				}
 
 				onSuccess?.()
 			} catch (err) {
 				const message =
 					err instanceof Error && err.message === 'OVERLAP'
-						? 'This time slot is no longer available. Please choose another.'
-						: 'Booking failed. Please try again.'
+						? t('slotUnavailable')
+						: t('bookingFailed')
 				toast.error(message)
 			} finally {
 				setIsSubmitting(false)
 			}
 		},
-		[date, time, durationMinutes, service, services, onSuccess, place],
+		[date, time, durationMinutes, service, services, onSuccess, place, t],
 	)
 
-	const stepTitles = [
-		'Choose service, date & time',
-		'Your details',
-	]
-	const stepDescriptions = [
-		'Pick your treatment, date and time.',
-		'We\'ll use this to confirm your booking.',
-	]
-	const stepLabels = ['Next', 'Confirm booking']
+	const stepTitles = [t('step1Title'), t('step2Title')]
+	const stepDescriptions = [t('step1Desc'), t('step2Desc')]
+	const stepLabels = [t('next'), t('confirmBooking')]
 	const showNextButton = step < 2
 
 	return (
@@ -142,7 +128,7 @@ function BookingFlowInner({
 							<svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
 								<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
 							</svg>
-							{step === 1 ? 'Cancel' : 'Back'}
+							{step === 1 ? t('cancel') : t('back')}
 						</button>
 						<h2 className='font-serif text-xl sm:text-2xl text-icyWhite mb-1'>
 							{stepTitles[step - 1]}

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { formatDateForEmail, formatTimeForEmail } from "@/lib/format-date";
 
 function formatTimeSlot(slot: string): string {
   const [h, m] = slot.split(":").map(Number);
@@ -51,6 +53,8 @@ export default function AdminAppointmentModal({
   services = [],
   place = "massage",
 }: AdminAppointmentModalProps) {
+  const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const isEdit = mode === "edit" && appointment;
   const now = Date.now();
   const endDateForPast =
@@ -137,7 +141,7 @@ export default function AdminAppointmentModal({
     const startTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
     const slotStart = new Date(`${dateStr}T${startTime}:00`);
     if (!isEdit && slotStart.getTime() < Date.now()) {
-      toast.error("Cannot create appointment in the past.");
+      toast.error(t("cannotCreatePast"));
       return;
     }
     setLoading(true);
@@ -160,7 +164,7 @@ export default function AdminAppointmentModal({
           },
           place
         );
-        toast.success("Appointment updated.");
+        toast.success(t("appointmentUpdated"));
       } else {
         const input: AdminBookingInput = {
           date: dateStr,
@@ -182,40 +186,31 @@ export default function AdminAppointmentModal({
                 type: "new",
                 source: "admin",
                 to: email.trim(),
-                customerName: fullName?.trim() || "Customer",
-                date: slotDate.toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                }),
-                time: slotDate.toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }),
+                customerName: fullName?.trim() || t("customer"),
+                date: formatDateForEmail(slotDate),
+                time: formatTimeForEmail(slotDate),
                 service: service || undefined,
               }),
             });
             if (!res.ok) {
               const data = await res.json().catch(() => ({}));
-              toast.error(`Appointment added, but email failed: ${data?.error ?? "Could not send"}`);
+              toast.error(t("appointmentAddedEmailFailed", { error: data?.error ?? t("couldNotSend") }));
             } else {
-              toast.success("Appointment added. Customer notified by email.");
+              toast.success(t("appointmentAddedNotified"));
             }
           } catch {
-            toast.success("Appointment added. Email could not be sent.");
+            toast.success(t("appointmentAddedNoEmail"));
           }
         } else {
-          toast.success("Appointment added.");
+          toast.success(t("appointmentAdded"));
         }
       }
       onSuccess?.();
       onClose();
     } catch (err) {
       const msg = err instanceof Error && err.message === "OVERLAP"
-        ? "This time slot is already booked."
-        : "Failed to save. Please try again.";
+        ? t("slotBooked")
+        : t("saveFailed");
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -232,11 +227,11 @@ export default function AdminAppointmentModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-serif text-xl text-icyWhite mb-6">
-          {isEdit ? "Edit appointment" : "Add appointment"}
+          {isEdit ? t("editAppointment") : t("addAppointment")}
         </h2>
         {isPastAppointment && (
           <div className="mb-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-            This appointment is in the past. View only — no changes allowed.
+            {t("pastAppointmentNote")}
           </div>
         )}
 
@@ -244,7 +239,7 @@ export default function AdminAppointmentModal({
           <fieldset disabled={!!isPastAppointment} className="space-y-4 [&:disabled]:opacity-75">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-icyWhite/80">Date</Label>
+              <Label className="text-icyWhite/80">{tCommon("date")}</Label>
               <AdminDatePicker
                 value={dateStr}
                 onChange={setDateStr}
@@ -256,7 +251,7 @@ export default function AdminAppointmentModal({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-icyWhite/80">Time</Label>
+              <Label className="text-icyWhite/80">{tCommon("time")}</Label>
               <Select
                 value={`${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`}
                 onValueChange={(v) => {
@@ -266,7 +261,7 @@ export default function AdminAppointmentModal({
                 }}
               >
                 <SelectTrigger className="select-menu">
-                  <SelectValue placeholder="Choose time" />
+                  <SelectValue placeholder={t("chooseTime")} />
                 </SelectTrigger>
                 <SelectContent
                   position="popper"
@@ -292,7 +287,7 @@ export default function AdminAppointmentModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">Service</Label>
+            <Label className="text-icyWhite/80">{tCommon("services")}</Label>
             <Select
               value={service || "none"}
               onValueChange={(v) => {
@@ -303,7 +298,7 @@ export default function AdminAppointmentModal({
               }}
             >
               <SelectTrigger className="select-menu">
-                <SelectValue placeholder="Choose service" />
+                <SelectValue placeholder={t("chooseService")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">—</SelectItem>
@@ -317,18 +312,18 @@ export default function AdminAppointmentModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">Duration</Label>
+            <Label className="text-icyWhite/80">{t("durationLabel")}</Label>
             <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-icyWhite text-sm">
               {selectedService
                 ? `${selectedService.durationMinutes} min`
                 : isEdit
                   ? `${duration} min`
-                  : "— Select a service"}
+                  : t("selectServicePlaceholder")}
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">Name (optional)</Label>
+            <Label className="text-icyWhite/80">{t("nameOptional")}</Label>
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -338,7 +333,7 @@ export default function AdminAppointmentModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">Email (optional)</Label>
+            <Label className="text-icyWhite/80">{t("emailOptional")}</Label>
             <Input
               type="email"
               value={email}
@@ -349,7 +344,7 @@ export default function AdminAppointmentModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">Phone (optional)</Label>
+            <Label className="text-icyWhite/80">{t("phoneOptional")}</Label>
             <Input
               type="tel"
               value={phone}
@@ -366,7 +361,7 @@ export default function AdminAppointmentModal({
               className="flex-1 border-white/10 text-icyWhite hover:bg-white/10"
               onClick={onClose}
             >
-              {isPastAppointment ? "Close" : "Cancel"}
+              {isPastAppointment ? t("close") : t("cancel")}
             </Button>
             {!isPastAppointment && (
               <Button
@@ -374,7 +369,7 @@ export default function AdminAppointmentModal({
                 className="flex-1 bg-gold-soft/20 text-gold-soft hover:bg-gold-soft/30"
                 disabled={loading}
               >
-                {loading ? "Saving..." : isEdit ? "Save" : "Add"}
+                {loading ? t("saving") : isEdit ? t("save") : t("add")}
               </Button>
             )}
           </div>

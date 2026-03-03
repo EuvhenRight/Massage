@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useBookingFlow } from "./BookingFlowContext";
@@ -22,6 +23,8 @@ export default function StepTime({
   durationMinutes,
   place = "massage",
 }: StepTimeProps) {
+  const locale = useLocale();
+  const t = useTranslations("booking");
   const { date, time, setTime } = useBookingFlow();
   const [occupiedSlots, setOccupiedSlots] = useState<OccupiedSlot[]>([]);
   const [schedule, setSchedule] = useState<Awaited<ReturnType<typeof getSchedule>> | null>(null);
@@ -73,9 +76,9 @@ export default function StepTime({
   return (
     <div className="space-y-4">
       <p className="text-icyWhite/70 text-sm">
-        Available times for{" "}
+        {t("availableTimesFor")}{" "}
         <strong className="text-icyWhite font-medium">
-          {date.toLocaleDateString("en-US", {
+          {date.toLocaleDateString(locale, {
             weekday: "long",
             month: "short",
             day: "numeric",
@@ -93,7 +96,7 @@ export default function StepTime({
       />
 
       {loading && (
-        <p className="text-xs text-icyWhite/45">Loading times…</p>
+        <p className="text-xs text-icyWhite/45">{t("loadingTimes")}</p>
       )}
     </div>
   );

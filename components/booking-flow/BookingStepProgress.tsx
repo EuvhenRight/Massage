@@ -1,11 +1,7 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import type { BookingStep } from './BookingFlowContext'
-
-const STEPS: { step: BookingStep; label: string }[] = [
-	{ step: 1, label: 'Service, date & time' },
-	{ step: 2, label: 'Your details' },
-]
 
 interface BookingStepProgressProps {
 	currentStep: BookingStep
@@ -14,14 +10,20 @@ interface BookingStepProgressProps {
 export default function BookingStepProgress({
 	currentStep,
 }: BookingStepProgressProps) {
+	const t = useTranslations('booking')
+	const STEPS: { step: BookingStep; labelKey: string }[] = [
+		{ step: 1, labelKey: 'serviceDateTime' },
+		{ step: 2, labelKey: 'yourDetails' },
+	]
+
 	return (
 		<nav
 			className='border-b border-white/10 bg-nearBlack/50 px-4 sm:px-6'
-			aria-label='Booking progress'
+			aria-label={t('bookingProgress')}
 		>
 			<div className='max-w-4xl mx-auto'>
 				<ol className='flex items-center justify-center gap-2 sm:gap-8 py-4 overflow-x-auto'>
-					{STEPS.map(({ step, label }, idx) => {
+					{STEPS.map(({ step, labelKey }, idx) => {
 						const isComplete = currentStep > step
 						const isCurrent = currentStep === step
 						const isUpcoming = !isComplete && !isCurrent
@@ -53,7 +55,7 @@ export default function BookingStepProgress({
 											${isUpcoming ? 'text-icyWhite/40' : ''}
 										`}
 									>
-										{label}
+										{t(labelKey)}
 									</span>
 								</div>
 								{idx < STEPS.length - 1 && (

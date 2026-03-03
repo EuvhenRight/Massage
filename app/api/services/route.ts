@@ -6,8 +6,9 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const place = searchParams.get("place") as Place | null;
+    const locale = (searchParams.get("locale") || "sk") as "sk" | "en" | "ru" | "uk";
     const validPlace = place === "massage" || place === "depilation" ? place : undefined;
-    const services = await getServices(validPlace);
+    const services = await getServices(validPlace, locale);
     return NextResponse.json(services);
   } catch (e) {
     return NextResponse.json(

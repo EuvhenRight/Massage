@@ -2,7 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { bookingSchema, type BookingFormData } from "@/lib/booking-schema";
+import { useTranslations } from "next-intl";
+import { getBookingSchema, type BookingFormData } from "@/lib/booking-schema";
 import { useBookingFlow } from "./BookingFlowContext";
 import {
   Form,
@@ -23,10 +24,18 @@ export default function StepCustomerInfo({
   onSubmit,
   isSubmitting = false,
 }: StepCustomerInfoProps) {
+  const t = useTranslations("booking");
+  const tValidation = useTranslations("validation");
   const { fullName, email, phone, setCustomerInfo } = useBookingFlow();
+  const schema = getBookingSchema({
+    fullNameMin: tValidation("fullNameMin"),
+    fullNameMax: tValidation("fullNameMax"),
+    invalidEmail: tValidation("invalidEmail"),
+    invalidPhone: tValidation("invalidPhone"),
+  });
 
   const form = useForm<BookingFormData>({
-    resolver: zodResolver(bookingSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       service: "",
       fullName: fullName || "",
@@ -54,11 +63,11 @@ export default function StepCustomerInfo({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-icyWhite/90 text-sm font-medium">
-                  Full name *
+                  {t("fullName")}
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="John Smith"
+                    placeholder={t("placeholderFullName")}
                     className="h-11 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30"
                     {...field}
                   />
@@ -74,12 +83,12 @@ export default function StepCustomerInfo({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-icyWhite/90 text-sm font-medium">
-                  Email *
+                  {t("email")}
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="john@example.com"
+                    placeholder={t("placeholderEmail")}
                     className="h-11 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30"
                     {...field}
                   />
@@ -95,12 +104,12 @@ export default function StepCustomerInfo({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-icyWhite/90 text-sm font-medium">
-                  Phone *
+                  {t("phone")}
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="tel"
-                    placeholder="+1 234 567 8900"
+                    placeholder={t("placeholderPhone")}
                     className="h-11 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30"
                     {...field}
                   />
@@ -115,7 +124,7 @@ export default function StepCustomerInfo({
             disabled={isSubmitting}
             className="w-full h-12 rounded-xl text-sm font-semibold bg-gold-soft text-nearBlack hover:bg-gold-glow shadow-lg shadow-gold-soft/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Booking…" : "Confirm booking"}
+            {isSubmitting ? t("bookingInProgress") : t("confirmBooking")}
           </button>
         </form>
       </Form>

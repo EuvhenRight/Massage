@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { getDateKey } from "@/lib/booking";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import {
@@ -11,11 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+const MONTH_KEYS = ["month1", "month2", "month3", "month4", "month5", "month6", "month7", "month8", "month9", "month10", "month11", "month12"] as const;
 
 function getDaysInMonth(year: number, month: number): (Date | null)[] {
   const first = new Date(year, month, 1);
@@ -47,6 +44,11 @@ interface AdminDatePickerProps {
 }
 
 export default function AdminDatePicker({ value, onChange, id, minDate }: AdminDatePickerProps) {
+  const locale = useLocale();
+  const t = useTranslations("admin");
+  const MONTHS = MONTH_KEYS.map((k) => t(k));
+  const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+  const weekHeaders = WEEKDAY_KEYS.map((k) => t(k));
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -112,12 +114,12 @@ export default function AdminDatePicker({ value, onChange, id, minDate }: AdminD
       >
         <span>
           {value
-            ? new Date(value + "T12:00:00").toLocaleDateString("en-US", {
+            ? new Date(value + "T12:00:00").toLocaleDateString(locale, {
                 month: "2-digit",
                 day: "2-digit",
                 year: "numeric",
               })
-            : "Select date"}
+            : t("selectDate")}
         </span>
         <ChevronDown className="h-4 w-4 opacity-50" />
       </button>
@@ -133,7 +135,7 @@ export default function AdminDatePicker({ value, onChange, id, minDate }: AdminD
               type="button"
               onClick={() => setViewMonth((m) => new Date(m.getFullYear(), m.getMonth() - 1))}
               className="flex h-8 w-8 items-center justify-center rounded-lg text-icyWhite/70 hover:bg-white/10 hover:text-icyWhite"
-              aria-label="Previous month"
+              aria-label={t("prevMonth")}
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -175,7 +177,7 @@ export default function AdminDatePicker({ value, onChange, id, minDate }: AdminD
               type="button"
               onClick={() => setViewMonth((m) => new Date(m.getFullYear(), m.getMonth() + 1))}
               className="flex h-8 w-8 items-center justify-center rounded-lg text-icyWhite/70 hover:bg-white/10 hover:text-icyWhite"
-              aria-label="Next month"
+              aria-label={t("nextMonth")}
             >
               <ChevronRight className="h-5 w-5" />
             </button>
@@ -183,7 +185,7 @@ export default function AdminDatePicker({ value, onChange, id, minDate }: AdminD
 
           {/* Weekday headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {WEEKDAYS.map((wd) => (
+            {weekHeaders.map((wd) => (
               <div
                 key={wd}
                 className="text-center text-xs font-medium text-icyWhite/50"

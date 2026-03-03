@@ -2,34 +2,42 @@
 
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import { Calendar, Clock, Scissors, ExternalLink, LogOut, ChevronLeft, Info } from "lucide-react";
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Calendar, Clock, ExternalLink, LogOut, ChevronLeft, Info, Settings } from "lucide-react";
 import BookingCalendarGrid from "@/components/BookingCalendarGrid";
 import AdminAppointmentModal from "@/components/AdminAppointmentModal";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import AdminServicesInline from "@/components/AdminServicesInline";
 import AdminAvailabilityManager from "@/components/AdminAvailabilityManager";
 import type { AppointmentData } from "@/lib/book-appointment";
 import type { ServiceData } from "@/lib/services";
 import type { Place } from "@/lib/places";
-import { PLACE_LABELS } from "@/lib/places";
 import { getPrepBufferMinutes } from "@/lib/availability-firestore";
 import { getSchedule } from "@/lib/schedule-firestore";
 import { clsx } from "clsx";
-type AdminSection = "calendar" | "services" | "availability";
-
-const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType }[] = [
-  { id: "calendar", label: "Calendar", icon: Calendar },
-  { id: "services", label: "Services", icon: Scissors },
-  { id: "availability", label: "Working hours", icon: Clock },
-];
+type AdminSection = "calendar" | "settings";
 
 interface AdminPlacePageProps {
   place: Place;
 }
 
 export default function AdminPlacePage({ place }: AdminPlacePageProps) {
+  const params = useParams();
+  const locale = (params?.locale as string) ?? "ru";
+  const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const { data: session } = useSession();
+
+  const placeLabel = tCommon(place === "massage" ? "massage" : "depilation");
+  const navItems: { id: AdminSection; label: string; icon: React.ElementType }[] = [
+    { id: "calendar", label: t("calendar"), icon: Calendar },
+    { id: "settings", label: t("settings"), icon: Settings },
+  ];
   const [section, setSection] = useState<AdminSection>("calendar");
   const [services, setServices] = useState<ServiceData[]>([]);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -41,13 +49,33 @@ export default function AdminPlacePage({ place }: AdminPlacePageProps) {
   } | null>(null);
   const [editAppointment, setEditAppointment] = useState<AppointmentData | null>(null);
 
-  const placeLabel = PLACE_LABELS[place];
-  const bookingUrl = place === "massage" ? "/massage/booking" : "/depilation/booking";
+  const bookingUrl = place === "massage" ? `/${locale}/massage/booking` : `/${locale}/depilation/booking`;
   const [schedule, setSchedule] = useState<Awaited<ReturnType<typeof getSchedule>> | null>(null);
   const prepBuffer = getPrepBufferMinutes(schedule);
 
   useEffect(() => {
     getSchedule(place).then(setSchedule).catch(() => setSchedule(null));
+  }, [place]);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "services"),
+      where("place", "==", place),
+      orderBy("title", "asc")
+    );
+    const unsub = onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          title: (data.title as string) ?? "",
+          color: (data.color as string) ?? "bg-gray-500/30 border-gray-500/60",
+          durationMinutes: (data.durationMinutes as number) ?? 60,
+        };
+      });
+      setServices(list);
+    });
+    return () => unsub();
   }, [place]);
 
 
@@ -70,16 +98,16 @@ export default function AdminPlacePage({ place }: AdminPlacePageProps) {
         <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
           <div className="flex items-center gap-4">
             <Link
-              href="/admin"
+              href={`/${locale}/admin`}
               className="flex items-center gap-1.5 text-sm text-icyWhite/70 hover:text-gold-soft transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
-              Back to cabinet
+              {t("backToCabinet")}
             </Link>
             <span className="text-icyWhite/40 hidden sm:inline">|</span>
             <span className="font-serif text-lg text-icyWhite hidden sm:inline">{placeLabel}</span>
             <nav className="flex gap-1">
-              {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+              {navItems.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   type="button"
@@ -98,6 +126,7 @@ export default function AdminPlacePage({ place }: AdminPlacePageProps) {
             </nav>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher variant="admin" className="mr-2" />
             <Link
               href={bookingUrl}
               target="_blank"
@@ -105,7 +134,7 @@ export default function AdminPlacePage({ place }: AdminPlacePageProps) {
               className="flex items-center gap-1.5 text-sm text-icyWhite/70 hover:text-gold-soft transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
-              <span className="hidden sm:inline">Public booking</span>
+              <span className="hidden sm:inline">{t("publicBooking")}</span>
             </Link>
             {session?.user && (
               <div className="flex items-center gap-3 pl-3 border-l border-white/10">
@@ -114,9 +143,9 @@ export default function AdminPlacePage({ place }: AdminPlacePageProps) {
                 </span>
                 <button
                   type="button"
-                  onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={() => signOut({ callbackUrl: "/sk" })}
                   className="p-2 rounded-lg text-icyWhite/60 hover:text-icyWhite hover:bg-white/5 transition-colors"
-                  aria-label="Sign out"
+                  aria-label={t("signOutAria")}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -130,24 +159,42 @@ export default function AdminPlacePage({ place }: AdminPlacePageProps) {
         {section === "calendar" && (
           <div className="space-y-4 animate-in fade-in-0 duration-200">
             <div>
-              <h1 className="font-serif text-2xl text-icyWhite">Appointments</h1>
+              <h1 className="font-serif text-2xl text-icyWhite">{t("appointments")}</h1>
               <p className="text-icyWhite/60 text-sm mt-0.5">
-                Drag to reschedule. Use <strong>Week</strong> view to move appointments to another day or time. Past times are disabled. Use the Add appointment button to create.
+                {t("appointmentsSubtitle")}
               </p>
               <p className="text-icyWhite/40 text-xs mt-0.5 flex items-center gap-1.5">
                 <span
-                  title={`${prepBuffer} minutes are reserved after each appointment for preparation. This time cannot be booked and ensures clients never overlap. Configure in Working hours.`}
+                  title={t("prepBufferInfoTitle", { minutes: prepBuffer })}
                   className="inline-flex cursor-help rounded-full p-0.5 text-icyWhite/50 hover:text-gold-soft/80 hover:bg-gold-soft/10 transition-colors"
-                  aria-label="Prep buffer info"
+                  aria-label={t("prepBufferInfoTitle", { minutes: prepBuffer })}
                 >
                   <Info className="h-3.5 w-3.5" />
                 </span>
-                {prepBuffer} minute prep time is automatically kept between appointments so clients never overlap.
+                {t("prepBufferNote", { minutes: prepBuffer })}
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden shadow-xl">
-              <AdminServicesInline services={services} onServicesChange={setServices} place={place} />
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
+              <span className="text-xs text-icyWhite/50 mr-2">{t("servicesLabel")}</span>
+              {services.length === 0 ? (
+                <span className="text-sm text-icyWhite/40">{t("noServicesYet")}</span>
+              ) : (
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {services.map((s) => (
+                    <span
+                      key={s.id}
+                      className={clsx(
+                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm",
+                        s.color
+                      )}
+                    >
+                      {s.title}
+                      <span className="text-xs text-icyWhite/70">({s.durationMinutes}m)</span>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="rounded-2xl border border-white/10 overflow-hidden shadow-xl">
@@ -162,28 +209,33 @@ export default function AdminPlacePage({ place }: AdminPlacePageProps) {
           </div>
         )}
 
-        {section === "services" && (
-          <div className="space-y-6 animate-in fade-in-0 duration-200">
+        {section === "settings" && (
+          <div className="space-y-8 animate-in fade-in-0 duration-200">
             <div>
-              <h1 className="font-serif text-2xl text-icyWhite">Services</h1>
+              <h1 className="font-serif text-2xl text-icyWhite">{t("settings")}</h1>
               <p className="text-icyWhite/60 text-sm mt-0.5">
-                Manage services customers can book for {placeLabel}. Each service has a title, color, and duration.
+                {t("settingsSubtitle", { place: placeLabel })}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden shadow-xl max-w-2xl">
-              <AdminServicesInline services={services} onServicesChange={setServices} place={place} />
-            </div>
-          </div>
-        )}
-
-        {section === "availability" && (
-          <div className="animate-in fade-in-0 duration-200">
-            <h1 className="font-serif text-2xl text-icyWhite mb-1">Working hours</h1>
-            <p className="text-icyWhite/60 text-sm mb-6">
-              Set when customers can book {placeLabel}. Use the month picker to set hours for specific months. Closed days won&apos;t appear in the public calendar.
-            </p>
-            <div className="rounded-2xl border border-white/10 overflow-hidden shadow-xl max-w-5xl">
-              <AdminAvailabilityManager place={place} schedule={schedule} onScheduleChange={setSchedule} />
+            <div className="space-y-6 max-w-5xl">
+              <section>
+                <h2 className="font-medium text-icyWhite mb-2">{tCommon("services")}</h2>
+                <p className="text-sm text-icyWhite/60 mb-3">
+                  {t("manageServicesNote")}
+                </p>
+                <div className="rounded-2xl border border-white/10 overflow-hidden shadow-xl">
+                  <AdminServicesInline services={services} onServicesChange={setServices} place={place} />
+                </div>
+              </section>
+              <section>
+                <h2 className="font-medium text-icyWhite mb-2">{t("workingHours")}</h2>
+                <p className="text-sm text-icyWhite/60 mb-3">
+                  {t("manageWorkingHoursNote")}
+                </p>
+                <div className="rounded-2xl border border-white/10 overflow-hidden shadow-xl">
+                  <AdminAvailabilityManager place={place} schedule={schedule} onScheduleChange={setSchedule} />
+                </div>
+              </section>
             </div>
           </div>
         )}
@@ -193,11 +245,11 @@ export default function AdminPlacePage({ place }: AdminPlacePageProps) {
         <button
           type="button"
           onClick={openAddAppointment}
-          aria-label="Add appointment"
+          aria-label={t("addAppointment")}
           className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full bg-gold-soft/25 border border-gold-soft/50 text-gold-glow font-medium shadow-lg shadow-gold-soft/10 hover:bg-gold-soft/35 hover:shadow-gold-soft/20 hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-gold-soft focus:ring-offset-2 focus:ring-offset-nearBlack"
         >
           <span className="text-lg leading-none">+</span>
-          Add appointment
+          {t("addAppointment")}
         </button>
       )}
 

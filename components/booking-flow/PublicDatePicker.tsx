@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import type { OccupiedSlot } from "@/lib/availability-firestore";
 import { isDateAvailable } from "@/lib/availability-firestore";
 import type { ScheduleData } from "@/lib/schedule-firestore";
@@ -15,7 +16,7 @@ interface PublicDatePickerProps {
   schedule?: ScheduleData | null;
 }
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
 function getDaysInMonth(year: number, month: number): (Date | null)[] {
   const first = new Date(year, month, 1);
@@ -55,6 +56,10 @@ export default function PublicDatePicker({
   onMonthChange,
   schedule = null,
 }: PublicDatePickerProps) {
+  const locale = useLocale();
+  const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
+  const weekHeaders = WEEKDAY_KEYS.map((k) => t(k));
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -78,7 +83,7 @@ export default function PublicDatePicker({
     <div
       className="rounded-xl border border-white/10 bg-nearBlack/60 shadow-lg overflow-hidden"
       role="application"
-      aria-label="Calendar"
+      aria-label={tCommon("calendar")}
     >
       {/* Month navigation - 44px min touch targets */}
       <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -88,14 +93,14 @@ export default function PublicDatePicker({
             onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1))
           }
           className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-icyWhite/70 hover:text-icyWhite hover:bg-white/10 active:bg-white/15 transition-colors touch-manipulation focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack"
-          aria-label="Previous month"
+          aria-label={t("prevMonth")}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <h3 className="font-serif text-lg sm:text-xl text-icyWhite font-medium">
-          {month.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+          {month.toLocaleDateString(locale, { month: "long", year: "numeric" })}
         </h3>
         <button
           type="button"
@@ -103,7 +108,7 @@ export default function PublicDatePicker({
             onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1))
           }
           className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-icyWhite/70 hover:text-icyWhite hover:bg-white/10 active:bg-white/15 transition-colors touch-manipulation focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack"
-          aria-label="Next month"
+          aria-label={t("nextMonth")}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -113,7 +118,7 @@ export default function PublicDatePicker({
 
       {/* Weekday headers */}
       <div className="grid grid-cols-7 bg-white/[0.02]">
-        {WEEKDAYS.map((wd) => (
+        {weekHeaders.map((wd) => (
           <div
             key={wd}
             className="text-xs font-medium text-icyWhite/50 text-center py-2 sm:py-2.5"
@@ -140,7 +145,7 @@ export default function PublicDatePicker({
               onClick={() => available && onSelectDate(date)}
               disabled={!available}
               aria-pressed={!!selected}
-              aria-label={`${date.getDate()} ${month.toLocaleDateString("en-US", { month: "long" })}${available ? ", available" : ", unavailable"}`}
+              aria-label={`${date.getDate()} ${month.toLocaleDateString(locale, { month: "long" })}${available ? `, ${tCommon("available")}` : `, ${tCommon("unavailable")}`}`}
               className={`
                 aspect-square min-h-[2.75rem] sm:min-h-[2.25rem] min-w-[2.75rem] sm:min-w-[2.25rem]
                 rounded-lg text-sm font-medium transition-colors touch-manipulation

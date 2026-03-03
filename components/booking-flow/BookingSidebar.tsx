@@ -1,5 +1,6 @@
 'use client'
 
+import { useLocale, useTranslations } from 'next-intl'
 import { useBookingFlow } from './BookingFlowContext'
 
 function formatTime(time: string): string {
@@ -11,6 +12,9 @@ function formatTime(time: string): string {
 }
 
 export default function BookingSidebar() {
+	const locale = useLocale()
+	const t = useTranslations('booking')
+	const tCommon = useTranslations('common')
 	const {
 		service,
 		date,
@@ -29,18 +33,18 @@ export default function BookingSidebar() {
 			<div className='rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] overflow-hidden'>
 				<div className='px-5 py-4 border-b border-white/10'>
 					<h3 className='font-serif text-base font-medium text-icyWhite'>
-						Booking summary
+						{t('bookingSummary')}
 					</h3>
 					<p className='text-xs text-icyWhite/50 mt-0.5'>
 						{hasAnySelection
-							? 'Review your selection'
-							: 'Your choices will appear here'}
+							? t('reviewSelection')
+							: t('choicesAppearHere')}
 					</p>
 				</div>
 				<div className='p-5 space-y-4'>
 					<div className='flex flex-col gap-1'>
 						<span className='text-[11px] font-medium text-icyWhite/45 uppercase tracking-wider'>
-							Service
+							{tCommon('services')}
 						</span>
 						{service ? (
 							<div className='flex items-center justify-between gap-2'>
@@ -59,18 +63,18 @@ export default function BookingSidebar() {
 								onClick={() => setStep(1)}
 								className='text-left text-gold-soft/80 hover:text-gold-soft text-sm transition-colors'
 							>
-								Choose service →
+								{t('chooseService')}
 							</button>
 						)}
 					</div>
 
 					<div className='flex flex-col gap-1'>
 						<span className='text-[11px] font-medium text-icyWhite/45 uppercase tracking-wider'>
-							Date
+							{tCommon('date')}
 						</span>
 						{date ? (
 							<span className='text-icyWhite text-sm'>
-								{date.toLocaleDateString('en-US', {
+								{date.toLocaleDateString(locale, {
 									weekday: 'short',
 									month: 'short',
 									day: 'numeric',
@@ -83,14 +87,14 @@ export default function BookingSidebar() {
 								onClick={() => setStep(1)}
 								className='text-left text-gold-soft/80 hover:text-gold-soft text-sm transition-colors'
 							>
-								Select date →
+								{t('selectDate')}
 							</button>
 						)}
 					</div>
 
 					<div className='flex flex-col gap-1'>
 						<span className='text-[11px] font-medium text-icyWhite/45 uppercase tracking-wider'>
-							Time
+							{tCommon('time')}
 						</span>
 						{time ? (
 							<span className='text-icyWhite text-sm'>{formatTime(time)}</span>
@@ -100,7 +104,7 @@ export default function BookingSidebar() {
 								onClick={() => setStep(1)}
 								className='text-left text-gold-soft/80 hover:text-gold-soft text-sm transition-colors'
 							>
-								Select time →
+								{t('selectTime')}
 							</button>
 						) : (
 							<span className='text-icyWhite/40 text-sm'>—</span>
@@ -111,7 +115,7 @@ export default function BookingSidebar() {
 				{step === 2 && (fullName || email) && (
 					<div className='px-5 py-4 border-t border-white/10 space-y-1'>
 						<span className='text-[11px] font-medium text-icyWhite/45 uppercase tracking-wider'>
-							Contact
+							{t('contact')}
 						</span>
 						{fullName && (
 							<div className='text-icyWhite text-sm'>{fullName}</div>

@@ -16,17 +16,17 @@ test.describe("Admin calendar drag reschedule", () => {
       test.skip();
       return;
     }
-    await page.goto("/admin/signin", { waitUntil: "load" });
-    await page.getByLabel(/email/i).fill(email);
-    await page.getByLabel(/password/i).fill(password);
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.goto("/ru/admin/signin", { waitUntil: "load" });
+    await page.locator('input[name="email"]').fill(email);
+    await page.locator('input[name="password"]').fill(password);
+    await page.locator('form').getByRole("button", { type: "submit" }).click();
     await page.waitForURL(/\/admin/, { timeout: 20000 });
   });
 
   test("calendar loads and has droppable cells with yellow/red highlight on drag", async ({ page }) => {
-    await page.goto("/admin/massage", { waitUntil: "load" });
-    await expect(page.getByRole("heading", { name: /appointments/i })).toBeVisible({ timeout: 15000 });
-    await expect(page.getByRole("button", { name: /add appointment/i })).toBeVisible();
+    await page.goto("/ru/admin/massage", { waitUntil: "load" });
+    await expect(page.getByRole("heading", { name: /appointments|rezervácie|записи/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("button", { name: /add appointment|pridať rezerváciu|добавить запись|додати запис/i })).toBeVisible();
     const cells = page.locator("[data-cell-id]");
     await expect(cells.first()).toBeVisible({ timeout: 5000 });
     expect(await cells.count()).toBeGreaterThan(0);
@@ -91,8 +91,8 @@ test.describe("Admin calendar drag reschedule", () => {
     }
     expect(moveSucceeded, "All target slots occupied (OVERLAP). Try deleting test appointments.").toBe(true);
 
-    await page.goto("/admin/massage", { waitUntil: "load" });
-    await expect(page.getByRole("heading", { name: /appointments/i })).toBeVisible({ timeout: 15000 });
+    await page.goto("/ru/admin/massage", { waitUntil: "load" });
+    await expect(page.getByRole("heading", { name: /appointments|rezervácie|записи/i })).toBeVisible({ timeout: 15000 });
     const movedBlock = page.locator(`[data-appointment-id="${appointmentId}"]`);
     await expect(movedBlock).toBeVisible({ timeout: 5000 });
     const newCell = page.locator(`[data-cell-id="${newCellId}"]`);

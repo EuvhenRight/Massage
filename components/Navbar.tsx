@@ -1,16 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
-const navLinks = [
-  { href: "/massage#services", label: "Services" },
-  { href: "/massage#membership", label: "Membership" },
-  { href: "/booking", label: "Book" },
+const navLinkPaths = [
+  { path: "/massage#services", key: "services" as const },
+  { path: "/massage#membership", key: "membership" as const },
+  { path: "/booking", key: "book" as const },
 ];
 
 export default function Navbar() {
+  const t = useTranslations("common");
+  const params = useParams();
+  const locale = (params?.locale as string) ?? "sk";
+  const navLinks = navLinkPaths.map(({ path, key }) => ({
+    href: `/${locale}${path}`,
+    label: t(key),
+  }));
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -31,18 +42,19 @@ export default function Navbar() {
     >
       <nav
         className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8"
-        aria-label="Main navigation"
+        aria-label={t("mainNav")}
       >
         <Link
-          href="/"
+          href={`/${locale}`}
           className="font-serif text-xl text-icyWhite hover:text-gold-soft transition-colors duration-300"
-          aria-label="Aurora Salon - Home"
+          aria-label={t("auroraHome")}
         >
-          Aurora
+          {t("aurora")}
         </Link>
 
         {/* Desktop Nav */}
-        <ul className="hidden md:flex items-center gap-10">
+        <div className="hidden md:flex items-center gap-10">
+        <ul className="flex items-center gap-10">
           {navLinks.map((link) => (
             <li key={link.href}>
               <Link
@@ -54,6 +66,8 @@ export default function Navbar() {
             </li>
           ))}
         </ul>
+        <LanguageSwitcher variant="site" className="ml-2" />
+        </div>
 
         {/* Mobile Menu Button */}
         <button
@@ -62,7 +76,7 @@ export default function Navbar() {
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-expanded={mobileOpen}
           aria-controls="mobile-menu"
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-label={mobileOpen ? t("closeMenu") : t("openMenu")}
         >
           <svg
             className="w-6 h-6"
@@ -100,6 +114,10 @@ export default function Navbar() {
         }}
         className="md:hidden overflow-hidden border-t border-white/5"
       >
+        <div className="px-6 py-4 flex items-center justify-between border-b border-white/5 pb-4 mb-2">
+          <span className="text-xs text-icyWhite/50 uppercase tracking-wider">Language</span>
+          <LanguageSwitcher variant="site" />
+        </div>
         <ul className="px-6 py-4 space-y-4">
           {navLinks.map((link) => (
             <li key={link.href}>

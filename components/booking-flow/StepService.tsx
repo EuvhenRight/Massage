@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useBookingFlow } from "./BookingFlowContext";
 import {
   Select,
@@ -14,20 +15,22 @@ interface StepServiceProps {
 }
 
 export default function StepService({ services }: StepServiceProps) {
+  const t = useTranslations("booking");
+  const tCommon = useTranslations("common");
   const { service, setService } = useBookingFlow();
 
   return (
     <div className="space-y-4">
       <p className="text-icyWhite/60 text-sm">
-        Select the treatment you would like to book.
+        {t("pickService")}.
       </p>
       <div className="space-y-2">
         <label className="block text-xs font-medium text-icyWhite/70">
-          Service
+          {tCommon("services")}
         </label>
         <Select value={service} onValueChange={setService}>
           <SelectTrigger className="h-10">
-            <SelectValue placeholder="Select a service" />
+            <SelectValue placeholder={t("selectService")} />
           </SelectTrigger>
           <SelectContent>
             {services.map((s) => (

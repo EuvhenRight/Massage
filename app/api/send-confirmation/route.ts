@@ -16,6 +16,14 @@ function getResend() {
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
 const FROM_NAME = "Aurora Salon";
+
+const SUBJECTS = {
+  new: (date: string, time: string) => `Aurora Salon — Rezervácia potvrdená na ${date} o ${time}`,
+  newAdmin: (name: string, date: string, time: string) => `Nová rezervácia: ${name} — ${date} ${time}`,
+  rescheduled: (newDate: string, newTime: string) => `Aurora Salon — Rezervácia presunutá na ${newDate} o ${newTime}`,
+  cancelled: "Aurora Salon — Rezervácia zrušená",
+  cancelledAdmin: (name: string, date: string, time: string) => `Zrušené: ${name} — ${date} ${time}`,
+} as const;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "admin@aurorasalon.com";
 
 type EmailType = "new" | "rescheduled" | "cancelled";
@@ -54,7 +62,7 @@ export async function POST(request: Request) {
       const customerResult = await resend.emails.send({
         from: `${FROM_NAME} <${FROM_EMAIL}>`,
         to: [toStr],
-        subject: `Aurora Salon — Booking confirmed for ${dateStr} at ${timeStr}`,
+        subject: SUBJECTS.new(dateStr, timeStr),
         html: buildConfirmationEmail(nameStr, dateStr, timeStr, serviceStr),
       });
 
@@ -63,7 +71,7 @@ export async function POST(request: Request) {
         const adminResult = await resend.emails.send({
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: [ADMIN_EMAIL],
-          subject: `New booking: ${nameStr} — ${dateStr} ${timeStr}`,
+          subject: SUBJECTS.newAdmin(nameStr, dateStr, timeStr),
           html: buildAdminNewBooking(nameStr, toStr, dateStr, timeStr, serviceStr),
         });
         errMsg = adminResult.error?.message;
@@ -87,7 +95,7 @@ export async function POST(request: Request) {
       const customerResult = await resend.emails.send({
         from: `${FROM_NAME} <${FROM_EMAIL}>`,
         to: [String(to)],
-        subject: `Aurora Salon — Appointment rescheduled to ${newDate} at ${newTime}`,
+        subject: SUBJECTS.rescheduled(String(newDate), String(newTime)),
         html: buildRescheduledEmail(
           String(customerName),
           service ? String(service) : "",
@@ -120,13 +128,13 @@ export async function POST(request: Request) {
         resend.emails.send({
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: [toStr],
-          subject: `Aurora Salon — Appointment cancelled`,
+          subject: SUBJECTS.cancelled,
           html: buildCancelledEmail(nameStr, dateStr, timeStr, serviceStr),
         }),
         resend.emails.send({
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: [ADMIN_EMAIL],
-          subject: `Cancelled: ${nameStr} — ${dateStr} ${timeStr}`,
+          subject: SUBJECTS.cancelledAdmin(nameStr, dateStr, timeStr),
           html: buildAdminCancelled(nameStr, toStr, dateStr, timeStr, serviceStr),
         }),
       ]);

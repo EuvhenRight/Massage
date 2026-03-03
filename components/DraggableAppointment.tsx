@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { X, Pencil, Copy } from "lucide-react";
@@ -13,11 +14,6 @@ function getServiceColor(service: string, services: ServiceData[]): string {
   const s = services.find((x) => x.title === service);
   if (s) return `${s.color} text-icyWhite`;
   return DEFAULT_COLOR;
-}
-
-function formatTime(date: Date | { toDate?: () => Date }): string {
-  const d = typeof date === "object" && "toDate" in date && date.toDate ? date.toDate() : new Date(date as Date);
-  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 }
 
 const PAST_COLOR = "bg-gray-600/30 border-gray-500/50 text-icyWhite/80";
@@ -39,6 +35,13 @@ export default function DraggableAppointment({
   services = [],
   isPast = false,
 }: DraggableAppointmentProps) {
+  const locale = useLocale();
+  const t = useTranslations("admin");
+
+  const formatTime = (date: Date | { toDate?: () => Date }): string => {
+    const d = typeof date === "object" && "toDate" in date && date.toDate ? date.toDate() : new Date(date as Date);
+    return d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12: true });
+  };
   const {
     attributes,
     listeners,
@@ -70,7 +73,7 @@ export default function DraggableAppointment({
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const dateStr = startDate.toLocaleDateString("en-US", {
+    const dateStr = startDate.toLocaleDateString(locale, {
       weekday: "short",
       month: "short",
       day: "numeric",
@@ -85,8 +88,8 @@ export default function DraggableAppointment({
       `${dateStr} at ${timeStr}`,
     ].join("\n");
     navigator.clipboard.writeText(text).then(
-      () => toast.success("Appointment details copied to clipboard"),
-      () => toast.error("Failed to copy")
+      () => toast.success(t("copyDetails")),
+      () => toast.error(t("copyFailed"))
     );
   };
 
@@ -126,7 +129,7 @@ export default function DraggableAppointment({
           type="button"
           onClick={handleCopy}
           className="p-0.5 rounded hover:bg-black/20 opacity-70 hover:opacity-100 transition-opacity"
-          aria-label="Copy appointment details"
+          aria-label={t("copyAria")}
         >
           <Copy className="w-3 h-3" />
         </button>
@@ -138,7 +141,7 @@ export default function DraggableAppointment({
                 onEdit?.();
               }}
               className="p-0.5 rounded hover:bg-black/20 opacity-70 hover:opacity-100 transition-opacity"
-              aria-label="Edit appointment"
+              aria-label={t("editAria")}
             >
               <Pencil className="w-3 h-3" />
             </button>
@@ -151,7 +154,7 @@ export default function DraggableAppointment({
                 onCancel?.();
               }}
               className="p-0.5 rounded hover:bg-black/20 opacity-70 hover:opacity-100 transition-opacity"
-              aria-label="Cancel appointment"
+              aria-label={t("cancelAria")}
             >
               <X className="w-3 h-3" />
             </button>

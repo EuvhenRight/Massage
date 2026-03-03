@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -27,6 +28,7 @@ import {
 } from "@/lib/book-appointment";
 import type { ServiceData } from "@/lib/services";
 import type { Place } from "@/lib/places";
+import { formatDateForEmail, formatTimeForEmail } from "@/lib/format-date";
 import DroppableCell, { makeCellId, cellIdToTimestamp } from "./DroppableCell";
 import { getPrepBufferMinutes } from "@/lib/availability-firestore";
 import DraggableAppointment from "./DraggableAppointment";
@@ -124,22 +126,6 @@ function getAppointmentSlot(apt: AppointmentData): { date: Date; hour: number; m
   };
 }
 
-function formatDateForEmail(d: Date): string {
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function formatTimeForEmail(d: Date): string {
-  return d.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
 
 interface BookingCalendarGridProps {
   weekStart?: Date;
@@ -160,6 +146,8 @@ export default function BookingCalendarGrid({
   services = [],
   place = "massage",
 }: BookingCalendarGridProps) {
+  const locale = useLocale();
+  const t = useTranslations("admin");
   const [view, setView] = useState<"day" | "week">("week");
   const [weekStart, setWeekStart] = useState(() =>
     weekStartProp ? startOfWeek(weekStartProp) : startOfWeek(new Date())
@@ -285,13 +273,13 @@ export default function BookingCalendarGrid({
       }
 
       if (newStart.getTime() < Date.now()) {
-        toast.error("Cannot move appointment to the past.");
+        toast.error(t("cannotMovePast"));
         return;
       }
 
       setPendingMove({ appointment, newCellId: cellId });
     },
-    [appointments, allowDrag, cellsOccupiedBy]
+    [appointments, allowDrag, cellsOccupiedBy, t]
   );
 
   const handleConfirmMove = useCallback(async () => {
@@ -300,7 +288,7 @@ export default function BookingCalendarGrid({
     setPendingMove(null);
     const newStart = cellIdToTimestamp(newCellId);
     if (newStart.getTime() < Date.now()) {
-      toast.error("Cannot move appointment to the past.");
+      toast.error(t("cannotMovePast"));
       return;
     }
 
@@ -331,18 +319,18 @@ export default function BookingCalendarGrid({
       } catch {
         /* email failure */
       }
-      toast.success("Appointment moved. Customer notified by email.");
+      toast.success(t("movedNotified"));
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       const message =
         msg === "OVERLAP"
-          ? "This time slot is already booked."
+          ? t("slotBooked")
           : msg === "APPOINTMENT_NOT_FOUND"
-            ? "Appointment no longer exists."
-            : `Failed to move appointment. ${msg}`;
+            ? t("notFound")
+            : t("moveFailed", { msg: String(msg) });
       toast.error(message);
     }
-  }, [pendingMove]);
+  }, [pendingMove, t]);
 
   const handleCancelMove = useCallback(() => {
     setPendingMove(null);
@@ -382,11 +370,11 @@ export default function BookingCalendarGrid({
       } catch {
         /* email failure */
       }
-      toast.success("Appointment cancelled. Customer notified by email.");
+      toast.success(t("cancelledNotified"));
     } catch (err) {
-      toast.error("Failed to cancel appointment.");
+      toast.error(t("cancelFailed"));
     }
-  }, [pendingCancel]);
+  }, [pendingCancel, t]);
 
   const handleDismissCancel = useCallback(() => setPendingCancel(null), []);
 
@@ -487,13 +475,13 @@ export default function BookingCalendarGrid({
         </div>
         <h2 className="font-serif text-lg text-icyWhite">
           {view === "day"
-            ? selectedDay.toLocaleDateString("en-US", {
+            ? selectedDay.toLocaleDateString(locale, {
                 weekday: "long",
                 month: "long",
                 day: "numeric",
                 year: "numeric",
               })
-            : `${weekDays[0].toLocaleDateString("en-US", { month: "short" })} ${weekDays[0].getDate()} – ${weekDays[6].toLocaleDateString("en-US", { month: "short" })} ${weekDays[6].getDate()}, ${weekStart.getFullYear()}`}
+            : `${weekDays[0].toLocaleDateString(locale, { month: "short" })} ${weekDays[0].getDate()} – ${weekDays[6].toLocaleDateString(locale, { month: "short" })} ${weekDays[6].getDate()}, ${weekStart.getFullYear()}`}
         </h2>
       </div>
 
@@ -526,7 +514,7 @@ export default function BookingCalendarGrid({
                   )}
                 >
                   <div className={cn("text-xs", past ? "text-icyWhite/40" : isToday(day) ? "text-gold-soft/90" : "text-icyWhite/60")}>
-                    {day.toLocaleDateString("en-US", { weekday: "short" })}
+                    {day.toLocaleDateString(locale, { weekday: "short" })}
                   </div>
                   <div className={cn("font-medium", past ? "text-icyWhite/50" : isToday(day) ? "text-gold-glow" : "text-icyWhite")}>{day.getDate()}</div>
                 </div>

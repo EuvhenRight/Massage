@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import ServiceCard from "@/components/ServiceCard";
@@ -99,6 +101,10 @@ const MEMBERSHIPS = [
 ];
 
 export default function MassagePage() {
+  const t = useTranslations("massage");
+  const tCommon = useTranslations("common");
+  const params = useParams();
+  const locale = (params?.locale as string) ?? "sk";
 
   return (
     <>
@@ -135,7 +141,7 @@ export default function MassagePage() {
             id="hero-heading"
             className="font-serif text-6xl md:text-8xl lg:text-9xl text-icyWhite tracking-tight aurora-text"
           >
-            Massage
+            {tCommon("massage")}
           </h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -143,7 +149,7 @@ export default function MassagePage() {
             transition={{ delay: 0.5 }}
             className="mt-6 text-icyWhite/70 text-lg md:text-xl max-w-xl mx-auto"
           >
-            A deep-scroll sanctuary. Surrender to touch.
+            {t("hero")}
           </motion.p>
         </motion.div>
       </section>
@@ -162,7 +168,7 @@ export default function MassagePage() {
             viewport={{ once: true }}
             className="font-serif text-4xl md:text-5xl text-icyWhite text-center mb-4"
           >
-            Destinations
+            {t("destinations")}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
@@ -170,7 +176,7 @@ export default function MassagePage() {
             viewport={{ once: true }}
             className="text-icyWhite/60 text-center mb-16 max-w-2xl mx-auto"
           >
-            Each journey is unique. Choose yours.
+            {t("destinationsDesc")}
           </motion.p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {SERVICES.map((service, i) => (
@@ -194,7 +200,7 @@ export default function MassagePage() {
             viewport={{ once: true }}
             className="font-serif text-4xl md:text-5xl text-icyWhite text-center mb-4"
           >
-            Membership
+            {tCommon("membership")}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
@@ -202,7 +208,7 @@ export default function MassagePage() {
             viewport={{ once: true }}
             className="text-icyWhite/60 text-center mb-16 max-w-2xl mx-auto"
           >
-            Elevate your ritual. Unlock more.
+            {t("membershipDesc")}
           </motion.p>
           <div className="grid md:grid-cols-3 gap-8">
             {MEMBERSHIPS.map((membership, i) => (
@@ -226,7 +232,7 @@ export default function MassagePage() {
             viewport={{ once: true }}
             className="font-serif text-4xl md:text-5xl text-icyWhite mb-4"
           >
-            Reserve Your Time
+            {t("reserveTime")}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
@@ -234,21 +240,17 @@ export default function MassagePage() {
             viewport={{ once: true }}
             className="text-icyWhite/60 mb-10"
           >
-            Select a date and time that works for you.
+            {t("reserveDesc")}
           </motion.p>
-          <motion.button
-            type="button"
-            onClick={() => window.location.href = "/massage/booking"}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-10 py-4 rounded-lg bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300"
-            aria-label="Open booking calendar"
+          <Link
+            href={`/${locale}/massage/booking`}
+            className="inline-block px-10 py-4 rounded-lg bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300"
+            aria-label={t("bookNow")}
           >
-            Book Now
-          </motion.button>
+            {t("bookNow")}
+          </Link>
         </div>
       </section>
-
     </>
   );
 }

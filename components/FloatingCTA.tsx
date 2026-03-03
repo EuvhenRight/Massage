@@ -1,10 +1,13 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 
 const MAPS_URL = "https://maps.google.com/?q=spa+salon";
 
 export default function FloatingCTA() {
+  const t = useTranslations("common");
+
   return (
     <motion.a
       href={MAPS_URL}
@@ -14,7 +17,7 @@ export default function FloatingCTA() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 1 }}
       className="md:hidden fixed bottom-6 left-6 right-6 z-40 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gold-soft/20 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase shadow-glow"
-      aria-label="Get directions to Aurora Salon"
+      aria-label={`${t("getDirections")} - Aurora Salon`}
     >
       <svg
         className="w-5 h-5"
@@ -36,7 +39,7 @@ export default function FloatingCTA() {
           d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
         />
       </svg>
-      Get Directions
+      {t("getDirections")}
     </motion.a>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import { Copy, Info, Lock } from "lucide-react";
@@ -18,20 +19,8 @@ import {
 } from "@/components/ui/select";
 import AdminMonthPicker from "@/components/AdminMonthPicker";
 
-const WEEKDAYS = [
-  { day: 0, label: "Sunday" },
-  { day: 1, label: "Monday" },
-  { day: 2, label: "Tuesday" },
-  { day: 3, label: "Wednesday" },
-  { day: 4, label: "Thursday" },
-  { day: 5, label: "Friday" },
-  { day: 6, label: "Saturday" },
-];
-
-const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+const WEEKDAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
+const MONTH_KEYS = ["month1", "month2", "month3", "month4", "month5", "month6", "month7", "month8", "month9", "month10", "month11", "month12"] as const;
 
 function timeOptions(): string[] {
   const options: string[] = [];
@@ -51,10 +40,10 @@ interface AdminAvailabilityManagerProps {
   onScheduleChange?: (schedule: ScheduleData | null) => void;
 }
 
-function formatMonthLabel(value: string): string {
+function formatMonthLabel(value: string, monthNames: string[]): string {
   const [y, m] = value.split("-").map(Number);
   if (!y || !m) return value;
-  return `${MONTH_NAMES[(m ?? 1) - 1]} ${y}`;
+  return `${monthNames[(m ?? 1) - 1]} ${y}`;
 }
 
 function MonthCalendar({
@@ -62,18 +51,21 @@ function MonthCalendar({
   month,
   schedule,
   onToggle,
+  weekHeaders,
+  getDayToggleTitle,
 }: {
   year: number;
   month: number;
   schedule: ScheduleData;
   onToggle: (date: Date) => void;
+  weekHeaders: string[];
+  getDayToggleTitle: (day: number, status: string) => string;
 }) {
   const first = new Date(year, month - 1, 1);
   const last = new Date(year, month, 0);
   const startPad = first.getDay();
   const daysInMonth = last.getDate();
   const cells: (number | null)[] = [...Array(startPad).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
-  const weekHeaders = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
     <div className="inline-block">
@@ -96,7 +88,7 @@ function MonthCalendar({
               key={day}
               type="button"
               onClick={() => onToggle(date)}
-              title={`${day} – ${isOpen ? "Open" : "Closed"} (click to toggle)`}
+              title={getDayToggleTitle(day, isOpen ? "open" : "closed")}
               className={clsx(
                 "w-9 h-9 rounded-lg text-sm font-medium transition-colors",
                 isOpen
@@ -118,7 +110,13 @@ export default function AdminAvailabilityManager({
   schedule: scheduleProp,
   onScheduleChange,
 }: AdminAvailabilityManagerProps) {
+  const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const [internalSchedule, setInternalSchedule] = useState<ScheduleData | null>(null);
+
+  const monthNames = MONTH_KEYS.map((k) => t(k));
+  const weekHeaders = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map((k) => t(k));
+  const WEEKDAYS = WEEKDAY_KEYS.map((key, i) => ({ day: i, label: t(key) }));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [scope, setScope] = useState<"default" | string>("default");
@@ -133,9 +131,9 @@ export default function AdminAvailabilityManager({
     }
     getSchedule(place)
       .then(setInternalSchedule)
-      .catch(() => toast.error("Failed to load schedule"))
+      .catch(() => toast.error(t("loadScheduleFailed")))
       .finally(() => setLoading(false));
-  }, [place, scheduleProp]);
+  }, [place, scheduleProp, t]);
 
   const isDefault = scope === "default";
   const activeSchedule: Record<number, DaySchedule> = isDefault
@@ -162,7 +160,7 @@ export default function AdminAvailabilityManager({
     const overrides = { ...(schedule.monthOverrides ?? {}) };
     overrides[scope] = { ...schedule.defaultSchedule };
     setSchedule({ ...schedule, monthOverrides: overrides });
-    toast.success(`Copied default schedule to ${formatMonthLabel(scope)}.`);
+    toast.success(t("copiedToMonth", { month: formatMonthLabel(scope, monthNames) }));
   };
 
   const getDateKey = (d: Date) =>
@@ -188,7 +186,7 @@ export default function AdminAvailabilityManager({
     setSaving(true);
     try {
       await saveSchedule(schedule, place);
-      toast.success("Availability saved.");
+      toast.success(t("availabilitySaved"));
     } catch {
       toast.error("Failed to save.");
     } finally {
@@ -199,7 +197,7 @@ export default function AdminAvailabilityManager({
   if (loading) {
     return (
       <div className="rounded-xl border border-white/10 bg-nearBlack/80 p-6">
-        <p className="text-icyWhite/60">Loading...</p>
+        <p className="text-icyWhite/60">{tCommon("loading")}</p>
       </div>
     );
   }
@@ -207,7 +205,7 @@ export default function AdminAvailabilityManager({
   if (!schedule) {
     return (
       <div className="rounded-xl border border-white/10 bg-nearBlack/80 p-6">
-        <p className="text-icyWhite/60">Could not load schedule.</p>
+        <p className="text-icyWhite/60">{t("couldNotLoadSchedule")}</p>
       </div>
     );
   }
@@ -217,7 +215,7 @@ export default function AdminAvailabilityManager({
       {/* Prep time bar */}
       <div className="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-white/10 bg-white/[0.02]">
         <Lock className="h-4 w-4 text-icyWhite/40 shrink-0" />
-        <span className="text-sm text-icyWhite/70">Prep time between appointments:</span>
+        <span className="text-sm text-icyWhite/70">{t("prepTimeBetween")}</span>
         <Select
           value={String(schedule?.prepBufferMinutes ?? 15)}
           onValueChange={async (v) => {
@@ -226,10 +224,10 @@ export default function AdminAvailabilityManager({
             setSchedule(next);
             try {
               await saveSchedule(next, place);
-              toast.success("Prep time updated.");
+              toast.success(t("prepTimeUpdated"));
             } catch {
               setSchedule(schedule);
-              toast.error("Failed to save.");
+              toast.error(t("saveFailed"));
             }
           }}
         >
@@ -245,9 +243,9 @@ export default function AdminAvailabilityManager({
           </SelectContent>
         </Select>
         <span
-          title="Minutes reserved after each appointment for preparation. This time cannot be booked."
+          title={t("prepBufferTitle")}
           className="inline-flex cursor-help rounded-full p-0.5 text-icyWhite/50 hover:text-gold-soft/80 transition-colors"
-          aria-label="Prep buffer info"
+          aria-label={t("prepBufferAria")}
         >
           <Info className="h-3.5 w-3.5" />
         </span>
@@ -260,7 +258,7 @@ export default function AdminAvailabilityManager({
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-end gap-3 mb-4">
               <div>
-                <span className="text-xs text-icyWhite/50 block mb-1">Manage schedule for</span>
+                <span className="text-xs text-icyWhite/50 block mb-1">{t("manageScheduleFor")}</span>
                 <AdminMonthPicker value={scope} onChange={setScope} />
               </div>
               {!isDefault && (
@@ -272,7 +270,7 @@ export default function AdminAvailabilityManager({
                   className="border-white/10 text-icyWhite hover:bg-white/10"
                 >
                   <Copy className="w-3.5 h-3.5 mr-1.5" />
-                  Copy from default
+                  {t("copyFromDefault")}
                 </Button>
               )}
             </div>
@@ -306,7 +304,7 @@ export default function AdminAvailabilityManager({
               </label>
               {isOpen && daySched && (
                 <div className="flex items-center gap-2">
-                  <span className="text-icyWhite/60 text-sm">From</span>
+                  <span className="text-icyWhite/60 text-sm">{t("from")}</span>
                   <Select
                     value={daySched.open}
                     onValueChange={(v) => updateDay(day, { ...daySched, open: v })}
@@ -322,7 +320,7 @@ export default function AdminAvailabilityManager({
                       ))}
                     </SelectContent>
                   </Select>
-                  <span className="text-icyWhite/60 text-sm">to</span>
+                  <span className="text-icyWhite/60 text-sm">{t("to")}</span>
                   <Select
                     value={daySched.close}
                     onValueChange={(v) => updateDay(day, { ...daySched, close: v })}
@@ -341,7 +339,7 @@ export default function AdminAvailabilityManager({
                 </div>
               )}
               {!isOpen && (
-                <span className="text-icyWhite/40 text-sm">Closed</span>
+                <span className="text-icyWhite/40 text-sm">{t("closedShort")}</span>
               )}
             </div>
           );
@@ -352,7 +350,7 @@ export default function AdminAvailabilityManager({
           {/* Right: Toggle days calendar (when month selected) */}
           {!isDefault && (
             <div className="lg:w-[300px] lg:shrink-0 lg:border-l lg:border-white/10 lg:pl-8">
-              <h3 className="font-medium text-icyWhite mb-1">Toggle days for {formatMonthLabel(scope)}</h3>
+              <h3 className="font-medium text-icyWhite mb-1">{t("toggleDaysFor")} {formatMonthLabel(scope, monthNames)}</h3>
               <p className="text-xs text-icyWhite/60 mb-3">
                 Click any day to switch it on or off. Green = open, gray = closed.
               </p>
@@ -361,6 +359,8 @@ export default function AdminAvailabilityManager({
                 month={parseInt(scope.split("-")[1] ?? "1", 10)}
                 schedule={schedule}
                 onToggle={toggleDate}
+                weekHeaders={weekHeaders}
+                getDayToggleTitle={(day, statusKey) => t("dayToggleTitle", { day, status: statusKey === "open" ? t("open") : t("closedShort") })}
               />
             </div>
           )}
@@ -372,7 +372,7 @@ export default function AdminAvailabilityManager({
             disabled={saving}
             className="bg-gold-soft/20 text-gold-soft hover:bg-gold-soft/30"
           >
-            {saving ? "Saving..." : "Save availability"}
+            {saving ? t("saving") : t("saveAvailability")}
           </Button>
         </div>
       </div>

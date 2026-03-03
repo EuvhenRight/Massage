@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +40,7 @@ export default function MembershipCard({
   highlighted = false,
   index = 0,
 }: MembershipCardProps) {
+  const t = useTranslations("massage");
   const styles = tierStyles[tier];
 
   return (
@@ -60,7 +62,7 @@ export default function MembershipCard({
       <div className="p-8 lg:p-10">
         {highlighted && (
           <span className="absolute top-4 right-4 text-xs tracking-[0.2em] uppercase text-gold-soft">
-            Most Popular
+            {t("mostPopular")}
           </span>
         )}
         <h3
@@ -103,9 +105,9 @@ export default function MembershipCard({
             tier === "Obsidian" &&
               "bg-aurora-magenta/20 text-aurora-magenta border border-aurora-magenta/40 hover:bg-aurora-magenta/30"
           )}
-          aria-label={`Select ${tier} membership`}
+          aria-label={t("selectMembership", { tier })}
         >
-          Select
+          {t("select")}
         </motion.button>
       </div>
     </motion.article>

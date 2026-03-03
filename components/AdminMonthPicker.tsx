@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
@@ -9,10 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+const MONTH_KEYS = ["month1", "month2", "month3", "month4", "month5", "month6", "month7", "month8", "month9", "month10", "month11", "month12"] as const;
 
 const YEARS = Array.from({ length: 24 }, (_, i) => new Date().getFullYear() - 1 + i);
 
@@ -23,6 +21,8 @@ interface AdminMonthPickerProps {
 }
 
 export default function AdminMonthPicker({ value, onChange }: AdminMonthPickerProps) {
+  const t = useTranslations("admin");
+  const MONTHS = MONTH_KEYS.map((k) => t(k));
   const isDefault = value === "default";
   const [year, month] = isDefault
     ? [new Date().getFullYear(), new Date().getMonth()]
@@ -65,7 +65,7 @@ export default function AdminMonthPicker({ value, onChange }: AdminMonthPickerPr
   };
 
   const displayLabel = isDefault
-    ? "Default (weekly, all time)"
+    ? t("defaultScope")
     : `${MONTHS[monthNum - 1]} ${yearNum}`;
 
   return (
@@ -78,9 +78,9 @@ export default function AdminMonthPicker({ value, onChange }: AdminMonthPickerPr
           <SelectValue>{displayLabel}</SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="default">Default (weekly, all time)</SelectItem>
+          <SelectItem value="default">{t("defaultScope")}</SelectItem>
           <SelectItem value="month">
-            {isDefault ? "Specific month…" : displayLabel}
+            {isDefault ? t("specificMonth") : displayLabel}
           </SelectItem>
         </SelectContent>
       </Select>
@@ -122,7 +122,7 @@ export default function AdminMonthPicker({ value, onChange }: AdminMonthPickerPr
               type="button"
               onClick={goPrevMonth}
               className="p-2 rounded-lg text-icyWhite/60 hover:bg-white/10 hover:text-icyWhite transition-colors"
-              aria-label="Previous month"
+              aria-label={t("prevMonth")}
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -130,7 +130,7 @@ export default function AdminMonthPicker({ value, onChange }: AdminMonthPickerPr
               type="button"
               onClick={goNextMonth}
               className="p-2 rounded-lg text-icyWhite/60 hover:bg-white/10 hover:text-icyWhite transition-colors"
-              aria-label="Next month"
+              aria-label={t("nextMonth")}
             >
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, Outfit } from "next/font/google";
-import { Providers } from "@/components/providers";
-import { Toaster } from "@/components/ui/sonner";
+import { getLocale, getTranslations } from "next-intl/server";
 import "./globals.css";
 
 const dmSerif = DM_Serif_Display({
@@ -16,32 +15,26 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
-export const metadata: Metadata = {
-  title: "Aurora | Luxury Massage & Depilation Salon",
-  description:
-    "Dark, cinematic, and cozy. Experience ultra-luxury massage and depilation in an intimate sanctuary.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("metadata");
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang={locale} className="dark" suppressHydrationWarning>
       <body
         className={`${dmSerif.variable} ${outfit.variable} font-sans min-h-screen`}
       >
-        <Providers>
-          {children}
-          <Toaster theme="dark" position="bottom-center" />
-        </Providers>
-        <a
-          href="/admin"
-          className="fixed bottom-4 right-4 text-xs text-icyWhite/40 hover:text-icyWhite/70 transition-colors"
-        >
-          Admin
-        </a>
+        {children}
       </body>
     </html>
   );

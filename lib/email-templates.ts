@@ -1,7 +1,34 @@
 /**
  * Professional appointment email templates for Aurora Salon.
+ * Emails are always sent in Slovak (default site language).
  * Uses table-based layout and inline CSS for maximum email client compatibility.
  */
+
+const T = {
+  confirmed: "Potvrdené",
+  rescheduled: "Presunuté",
+  cancelled: "Zrušené",
+  newBooking: "Nová rezervácia",
+  luxurySalon: "Luxusný salón",
+  date: "Dátum",
+  time: "Čas",
+  service: "Služba",
+  customer: "Zákazník",
+  previousTime: "Predchádzajúci termín",
+  newTime: "Nový termín",
+  hi: "Ahoj",
+  confirmedBody: "Vaša rezervácia v salóne Aurora bola potvrdená. Tešíme sa na Vašu návštevu.",
+  arriveEarly: "Prosíme prijdite o 10 minút skôr, aby ste sa v pohode stihli prihlásiť.",
+  rescheduledBody: "Vaša rezervácia bola presunutá. Tu sú aktualizované údaje.",
+  arriveEarlyResched: "Prosíme prijdite o 10 minút skôr na nový termín.",
+  cancelledBody: "Vaša rezervácia v salóne Aurora bola podľa požiadavky zrušená.",
+  hopeToSee: "Dúfame, že sa opäť uvidíme. Rezervujte si nový termín, kedykoľvek budete pripravení.",
+  newBookingAdmin: "Bola vytvorená nová rezervácia.",
+  cancelledAdmin: "Rezervácia bola zrušená.",
+  needChanges: "Potrebujete zmeniť termín?",
+  contactUs: "Kontaktujte nás na presun alebo zrušenie. Odporúčame prijsť o 10 minút skôr.",
+  appointment: "Rezervácia",
+} as const;
 
 const BRAND = {
   name: "Aurora Salon",
@@ -42,7 +69,7 @@ function emailWrapper(html: string): string {
     </tr>
     <tr>
       <td style="padding: 24px; text-align: center; font-size: 12px; color: ${BRAND.muted};">
-        &copy; ${new Date().getFullYear()} Aurora Salon &middot; Luxury Massage &amp; Depilation
+        &copy; ${new Date().getFullYear()} Aurora Salon &middot; Luxusný salón masáží a depilácie
       </td>
     </tr>
   </table>
@@ -59,7 +86,7 @@ function header(status: string, statusColor: string): string {
             Aurora
           </h1>
           <p style="margin: 0; font-size: 12px; color: ${BRAND.goldLight}; letter-spacing: 2px; text-transform: uppercase;">
-            Luxury Salon
+            ${T.luxurySalon}
           </p>
           <span style="display: inline-block; margin-top: 20px; padding: 6px 16px; background: ${statusColor}; color: white; font-size: 12px; font-weight: 600; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px;">
             ${status}
@@ -87,10 +114,10 @@ function footerSection(): string {
       <tr>
         <td style="padding: 24px 40px; background: ${BRAND.bg}; border-top: 1px solid ${BRAND.border};">
           <p style="margin: 0 0 8px 0; font-size: 13px; color: ${BRAND.muted};">
-            <strong>Need to make changes?</strong>
+            <strong>${T.needChanges}</strong>
           </p>
           <p style="margin: 0; font-size: 13px; color: ${BRAND.text};">
-            Contact us to reschedule or cancel. We recommend arriving 10 minutes early.
+            ${T.contactUs}
           </p>
         </td>
       </tr>
@@ -99,23 +126,23 @@ function footerSection(): string {
 
 export function buildConfirmationEmail(customerName: string, date: string, time: string, service: string): string {
   const inner = `
-    ${header("Confirmed", "#059669")}
+    ${header(T.confirmed, "#059669")}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
         <td>
           <p style="margin: 0 0 24px 0; font-size: 16px; color: ${BRAND.text};">
-            Hi ${customerName},
+            ${T.hi} ${customerName},
           </p>
           <p style="margin: 0 0 28px 0; font-size: 15px; color: ${BRAND.text};">
-            Your appointment at Aurora Salon has been confirmed. We look forward to welcoming you.
+            ${T.confirmedBody}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow("Date", date)}
-            ${detailRow("Time", time)}
-            ${detailRow("Service", service || "Appointment")}
+            ${detailRow(T.date, date)}
+            ${detailRow(T.time, time)}
+            ${detailRow(T.service, service || T.appointment)}
           </table>
           <p style="margin: 24px 0 0 0; font-size: 14px; color: ${BRAND.muted};">
-            Please arrive 10 minutes early to ensure a relaxed check-in.
+            ${T.arriveEarly}
           </p>
         </td>
       </tr>
@@ -134,23 +161,23 @@ export function buildRescheduledEmail(
   newTime: string
 ): string {
   const inner = `
-    ${header("Rescheduled", "#d97706")}
+    ${header(T.rescheduled, "#d97706")}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
         <td>
           <p style="margin: 0 0 24px 0; font-size: 16px; color: ${BRAND.text};">
-            Hi ${customerName},
+            ${T.hi} ${customerName},
           </p>
           <p style="margin: 0 0 28px 0; font-size: 15px; color: ${BRAND.text};">
-            Your appointment has been rescheduled. Here are your updated details.
+            ${T.rescheduledBody}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow("Service", service || "Appointment")}
-            ${detailRow("Previous time", `${oldDate} at ${oldTime}`)}
-            ${detailRow("New time", `${newDate} at ${newTime}`)}
+            ${detailRow(T.service, service || T.appointment)}
+            ${detailRow(T.previousTime, `${oldDate} o ${oldTime}`)}
+            ${detailRow(T.newTime, `${newDate} o ${newTime}`)}
           </table>
           <p style="margin: 24px 0 0 0; font-size: 14px; color: ${BRAND.muted};">
-            Please arrive 10 minutes early for your new appointment time.
+            ${T.arriveEarlyResched}
           </p>
         </td>
       </tr>
@@ -162,23 +189,23 @@ export function buildRescheduledEmail(
 
 export function buildCancelledEmail(customerName: string, date: string, time: string, service: string): string {
   const inner = `
-    ${header("Cancelled", "#6b7280")}
+    ${header(T.cancelled, "#6b7280")}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
         <td>
           <p style="margin: 0 0 24px 0; font-size: 16px; color: ${BRAND.text};">
-            Hi ${customerName},
+            ${T.hi} ${customerName},
           </p>
           <p style="margin: 0 0 28px 0; font-size: 15px; color: ${BRAND.text};">
-            Your appointment at Aurora Salon has been cancelled as requested.
+            ${T.cancelledBody}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow("Date", date)}
-            ${detailRow("Time", time)}
-            ${detailRow("Service", service || "Appointment")}
+            ${detailRow(T.date, date)}
+            ${detailRow(T.time, time)}
+            ${detailRow(T.service, service || T.appointment)}
           </table>
           <p style="margin: 24px 0 0 0; font-size: 14px; color: ${BRAND.muted};">
-            We hope to see you again soon. Book a new appointment whenever you're ready.
+            ${T.hopeToSee}
           </p>
         </td>
       </tr>
@@ -190,19 +217,19 @@ export function buildCancelledEmail(customerName: string, date: string, time: st
 
 export function buildAdminNewBooking(customerName: string, email: string, date: string, time: string, service: string): string {
   const inner = `
-    ${header("New Booking", BRAND.gold)}
+    ${header(T.newBooking, BRAND.gold)}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
         <td>
           <p style="margin: 0 0 24px 0; font-size: 16px; color: ${BRAND.text};">
-            A new appointment has been booked.
+            ${T.newBookingAdmin}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow("Customer", customerName)}
+            ${detailRow(T.customer, customerName)}
             ${detailRow("Email", `<a href="mailto:${email}" style="color: ${BRAND.gold}; text-decoration: none;">${email}</a>`)}
-            ${detailRow("Date", date)}
-            ${detailRow("Time", time)}
-            ${detailRow("Service", service || "Appointment")}
+            ${detailRow(T.date, date)}
+            ${detailRow(T.time, time)}
+            ${detailRow(T.service, service || T.appointment)}
           </table>
         </td>
       </tr>
@@ -213,19 +240,19 @@ export function buildAdminNewBooking(customerName: string, email: string, date: 
 
 export function buildAdminCancelled(customerName: string, email: string, date: string, time: string, service: string): string {
   const inner = `
-    ${header("Cancelled", "#6b7280")}
+    ${header(T.cancelled, "#6b7280")}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
         <td>
           <p style="margin: 0 0 24px 0; font-size: 16px; color: ${BRAND.text};">
-            An appointment has been cancelled.
+            ${T.cancelledAdmin}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow("Customer", customerName)}
+            ${detailRow(T.customer, customerName)}
             ${detailRow("Email", `<a href="mailto:${email}" style="color: ${BRAND.gold}; text-decoration: none;">${email}</a>`)}
-            ${detailRow("Date", date)}
-            ${detailRow("Time", time)}
-            ${detailRow("Service", service || "Appointment")}
+            ${detailRow(T.date, date)}
+            ${detailRow(T.time, time)}
+            ${detailRow(T.service, service || T.appointment)}
           </table>
         </td>
       </tr>

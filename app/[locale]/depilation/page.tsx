@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import FloatingCTA from "@/components/FloatingCTA";
 
 export default function DepilationPage() {
+  const t = useTranslations("depilation");
+  const tCommon = useTranslations("common");
+  const params = useParams();
+  const locale = (params?.locale as string) ?? "sk";
+
   return (
     <>
       <Navbar />
@@ -38,7 +45,7 @@ export default function DepilationPage() {
             id="depilation-hero"
             className="font-serif text-6xl md:text-8xl lg:text-9xl text-icyWhite tracking-tight aurora-text"
           >
-            Depilation
+            {tCommon("depilation")}
           </h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -46,7 +53,7 @@ export default function DepilationPage() {
             transition={{ delay: 0.5 }}
             className="mt-6 text-icyWhite/70 text-lg md:text-xl max-w-xl mx-auto"
           >
-            Precision. Care. Lasting smoothness.
+            {t("hero")}
           </motion.p>
           <motion.div
             initial={{ opacity: 0 }}
@@ -55,10 +62,10 @@ export default function DepilationPage() {
             className="mt-12"
           >
             <Link
-              href="/massage"
+              href={`/${locale}/massage`}
               className="text-gold-soft hover:text-gold-glow text-sm tracking-[0.2em] uppercase transition-colors"
             >
-              ← Explore Massage
+              {t("exploreMassage")}
             </Link>
           </motion.div>
         </motion.div>
@@ -72,7 +79,7 @@ export default function DepilationPage() {
           viewport={{ once: true }}
           className="text-icyWhite/60 mb-6"
         >
-          Book your depilation appointment.
+          {t("bookDepilation")}
         </motion.p>
         <motion.div
           initial={{ opacity: 0 }}
@@ -81,16 +88,16 @@ export default function DepilationPage() {
           className="flex flex-wrap justify-center gap-4"
         >
           <Link
-            href="/depilation/booking"
+            href={`/${locale}/depilation/booking`}
             className="px-10 py-4 rounded-lg bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300"
           >
-            Book Depilation
+            {t("bookDepilationButton")}
           </Link>
           <Link
-            href="/massage"
+            href={`/${locale}/massage`}
             className="text-icyWhite/50 hover:text-gold-soft text-sm tracking-[0.2em] uppercase transition-colors"
           >
-            Explore Massage
+            {t("exploreMassage")}
           </Link>
         </motion.div>
       </section>

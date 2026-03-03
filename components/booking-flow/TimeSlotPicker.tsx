@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import type { OccupiedSlot } from "@/lib/availability-firestore";
 import { getAvailableTimeSlots } from "@/lib/availability-firestore";
 import type { ScheduleData } from "@/lib/schedule-firestore";
@@ -42,11 +43,13 @@ export default function TimeSlotPicker({
     [date, durationMinutes, occupiedSlots, schedule]
   );
 
+  const t = useTranslations("booking");
+
   if (availableSlots.length === 0) {
     return (
       <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-4">
         <p className="text-sm text-amber-200/90">
-          No available times for this date. Please choose another date.
+          {t("noSlotsMessage")}
         </p>
       </div>
     );
@@ -54,13 +57,13 @@ export default function TimeSlotPicker({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-icyWhite/90">Available time</label>
+      <label className="block text-sm font-medium text-icyWhite/90">{t("availableTime")}</label>
       <Select
         value={selectedTime ?? ""}
         onValueChange={(v) => v && onSelectTime(v)}
       >
         <SelectTrigger className="w-full h-11 bg-white/5 border-white/10 text-icyWhite hover:bg-white/[0.07] focus:ring-gold-soft/30">
-          <SelectValue placeholder="Choose time" />
+          <SelectValue placeholder={t("chooseTime")} />
         </SelectTrigger>
         <SelectContent className="max-h-[200px] z-[100]">
           {availableSlots.map((slot) => (
