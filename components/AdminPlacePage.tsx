@@ -136,21 +136,22 @@ export default function AdminPlacePage({ place }: AdminPlacePageProps) {
               <ExternalLink className="w-4 h-4" />
               <span className="hidden sm:inline">{t("publicBooking")}</span>
             </Link>
-            {session?.user && (
-              <div className="flex items-center gap-3 pl-3 border-l border-white/10">
+            <div className="flex items-center gap-3 pl-3 border-l border-white/10">
+              {session?.user && (
                 <span className="text-sm text-icyWhite/60 truncate max-w-[140px] hidden md:inline">
                   {session.user.email}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => signOut({ callbackUrl: "/sk" })}
-                  className="p-2 rounded-lg text-icyWhite/60 hover:text-icyWhite hover:bg-white/5 transition-colors"
-                  aria-label={t("signOutAria")}
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+              )}
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/sk" })}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-icyWhite/70 hover:text-icyWhite hover:bg-white/5 transition-colors"
+                aria-label={t("signOutAria")}
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">{t("signOut")}</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>

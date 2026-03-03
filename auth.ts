@@ -44,7 +44,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
-      if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/signin")) {
+      const isAdminSignin =
+        pathname === "/admin/signin" || /^\/[a-z]{2}\/admin\/signin(?:\/|$)/.test(pathname);
+      const isAdminRoute =
+        pathname === "/admin" ||
+        pathname.startsWith("/admin/") ||
+        /^\/[a-z]{2}\/admin(?:\/|$)/.test(pathname);
+      if (isAdminRoute && !isAdminSignin) {
         return !!auth;
       }
       return true;
