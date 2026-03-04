@@ -93,7 +93,7 @@ export default function LanguageSwitcher({
           className="relative h-9 w-9 min-w-9 shrink-0 rounded-full border-0 border-none bg-transparent p-0 shadow-none outline-none text-icyWhite hover:opacity-80 focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack [&>svg]:hidden"
         >
           {isNavigating && (
-            <span className="absolute inset-0 flex items-center justify-center rounded-full z-10" aria-hidden>
+            <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2" aria-hidden>
               <Loader2 className="h-4 w-4 animate-spin text-gold-soft" />
             </span>
           )}
