@@ -116,6 +116,8 @@
     "settings": "Настройки",
     "servicesCalendarAppointments": "Услуги, календарь, записи",
     "manageWorkingHours": "Управление часами работы и услугами",
+    "openMenuAria": "Открыть админ-меню",
+    "closeMenuAria": "Закрыть админ-меню",
     "signOutAria": "Выйти",
     "publicBooking": "Публичное бронирование",
     "appointments": "Записи",

@@ -118,6 +118,8 @@
     "settings": "Nastavenia",
     "servicesCalendarAppointments": "Služby, kalendár, rezervácie",
     "manageWorkingHours": "Spravujte pracovné hodiny a služby",
+    "openMenuAria": "Otvoriť admin menu",
+    "closeMenuAria": "Zavrieť admin menu",
     "publicBooking": "Verejná rezervácia",
     "appointments": "Rezervácie",
     "appointmentsSubtitle": "Presuňte na zmenu. Použite zobrazenie Týždeň na presun na iný deň alebo čas. Minulé časy sú vypnuté. Tlačidlom Pridať rezerváciu vytvoríte.",

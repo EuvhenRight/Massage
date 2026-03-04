@@ -115,6 +115,8 @@
     "settings": "Settings",
     "servicesCalendarAppointments": "Services, calendar, appointments",
     "manageWorkingHours": "Manage working hours and services",
+    "openMenuAria": "Open admin menu",
+    "closeMenuAria": "Close admin menu",
     "signOutAria": "Sign out",
     "publicBooking": "Public booking",
     "appointments": "Appointments",

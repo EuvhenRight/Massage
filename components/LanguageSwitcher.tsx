@@ -20,28 +20,20 @@ const LOCALE_LABELS: Record<Locale, string> = {
   uk: "UK",
 };
 
-/** Country codes for flagcdn.com (ISO 3166-1 alpha-2) */
-const LOCALE_FLAG_CODES: Record<Locale, string> = {
-  sk: "sk",
-  en: "gb",
-  ru: "ru",
-  uk: "ua",
+const LOCALE_FLAG_EMOJI: Record<Locale, string> = {
+  sk: "🇸🇰",
+  en: "🇬🇧",
+  ru: "🇷🇺",
+  uk: "🇺🇦",
 };
 
 function FlagCircle({ locale }: { locale: Locale }) {
-  const isRu = locale === "ru";
   return (
     <span
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full"
+      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/5 text-base"
       aria-hidden
     >
-      <img
-        src={`https://flagcdn.com/w80/${LOCALE_FLAG_CODES[locale]}.png`}
-        alt=""
-        width={32}
-        height={32}
-        className={`h-8 w-8 object-cover ${isRu ? "grayscale" : ""}`}
-      />
+      <span>{LOCALE_FLAG_EMOJI[locale]}</span>
     </span>
   );
 }

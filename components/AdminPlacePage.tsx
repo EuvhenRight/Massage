@@ -8,7 +8,20 @@ import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Calendar, CalendarRange, ExternalLink, LogOut, ChevronLeft, Info, BarChart2, Search, FileDown, Settings } from "lucide-react";
+import {
+  Calendar,
+  CalendarRange,
+  ExternalLink,
+  LogOut,
+  ChevronLeft,
+  Info,
+  BarChart2,
+  Search,
+  FileDown,
+  Settings,
+  Menu,
+  X,
+} from "lucide-react";
 import BookingCalendarGrid from "@/components/BookingCalendarGrid";
 import AdminAppointmentModal from "@/components/AdminAppointmentModal";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -78,6 +91,7 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
   const [agendaAppointments, setAgendaAppointments] = useState<AppointmentData[]>([]);
   const [allAppointments, setAllAppointments] = useState<AppointmentData[]>([]);
   const [analyticsSearch, setAnalyticsSearch] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const prepBuffer = getPrepBufferMinutes(schedule);
 
   const filteredAnalytics = allAppointments.filter((apt) => {
@@ -159,10 +173,11 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
     const q = query(
       collection(db, "appointments"),
       where("place", "==", place),
-      orderBy("startTime", "desc")
+      orderBy("startTime", "asc")
     );
     const unsub = onSnapshot(q, (snapshot) => {
-      setAllAppointments(snapshot.docs.map((doc) => toAppointmentData({ id: doc.id, data: () => doc.data() })));
+      const list = snapshot.docs.map((doc) => toAppointmentData({ id: doc.id, data: () => doc.data() }));
+      setAllAppointments([...list].reverse());
     });
     return () => unsub();
   }, [place]);
@@ -183,18 +198,18 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
   return (
     <main className="min-h-screen bg-nearBlack text-icyWhite">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-nearBlack/95 backdrop-blur-md">
-        <div className="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 h-16 min-h-16">
+        <div className="flex items-center justify-between gap-3 px-4 h-16 min-h-16 sm:px-6 lg:px-8">
           <div className="flex min-w-0 shrink items-center gap-4">
             <Link
               href={`/${locale}/admin`}
-              className="flex shrink-0 items-center gap-1.5 text-sm text-icyWhite/70 hover:text-gold-soft transition-colors whitespace-nowrap min-w-[7rem] sm:min-w-[8.5rem]"
+              aria-label={t("backToCabinet")}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-icyWhite/80 hover:text-gold-soft hover:bg-white/5 transition-colors"
             >
               <ChevronLeft className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("backToCabinet")}</span>
             </Link>
             <span className="hidden shrink-0 text-icyWhite/40 sm:inline">|</span>
             <span className="hidden shrink-0 font-serif text-lg text-icyWhite sm:inline">{placeLabel}</span>
-            <nav className="flex shrink-0 gap-1">
+            <nav className="hidden shrink-0 gap-1 sm:flex">
               {navItems.map(({ id, label, icon: Icon }) => (
                 <Link
                   key={id}
@@ -212,37 +227,95 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
               ))}
             </nav>
           </div>
-          <div className="flex shrink-0 items-center gap-3">
-            <div className="shrink-0">
-              <LanguageSwitcher variant="admin" />
-            </div>
-            <Link
-              href={bookingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-w-[5rem] shrink-0 items-center gap-1.5 text-sm text-icyWhite/70 hover:text-gold-soft transition-colors whitespace-nowrap sm:min-w-[7.5rem]"
+          <div className="flex shrink-0 items-center gap-2">
+            <LanguageSwitcher variant="admin" />
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              className="inline-flex items-center justify-center rounded-lg p-1.5 text-icyWhite/80 hover:text-icyWhite hover:bg-white/5 transition-colors sm:hidden"
+              aria-label={isMobileMenuOpen ? t("closeMenuAria") : t("openMenuAria")}
             >
-              <ExternalLink className="h-4 w-4 shrink-0" />
-              <span className="hidden truncate sm:inline">{t("publicBooking")}</span>
-            </Link>
-            <div className="flex shrink-0 items-center gap-3 border-l border-white/10 pl-3">
-              {session?.user && (
-                <span className="hidden max-w-[140px] truncate text-sm text-icyWhite/60 md:inline">
-                  {session.user.email}
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => signOut({ callbackUrl: "/sk" })}
-                className="flex min-w-[4.5rem] shrink-0 items-center gap-2 px-3 py-2 rounded-lg text-sm text-icyWhite/70 hover:text-icyWhite hover:bg-white/5 transition-colors whitespace-nowrap sm:min-w-[6rem]"
-                aria-label={t("signOutAria")}
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+            <div className="hidden items-center gap-3 sm:flex">
+              <Link
+                href={bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-w-[5rem] shrink-0 items-center gap-1.5 text-sm text-icyWhite/70 hover:text-gold-soft transition-colors whitespace-nowrap sm:min-w-[7.5rem]"
               >
-                <LogOut className="h-4 w-4 shrink-0" />
-                <span className="hidden truncate sm:inline">{t("signOut")}</span>
-              </button>
+                <ExternalLink className="h-4 w-4 shrink-0" />
+                <span className="hidden truncate sm:inline">{t("publicBooking")}</span>
+              </Link>
+              <div className="flex shrink-0 items-center gap-3 border-l border-white/10 pl-3">
+                {session?.user && (
+                  <span className="hidden max-w-[140px] truncate text-sm text-icyWhite/60 md:inline">
+                    {session.user.email}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: "/sk" })}
+                  className="flex min-w-[4.5rem] shrink-0 items-center gap-2 px-3 py-2 rounded-lg text-sm text-icyWhite/70 hover:text-icyWhite hover:bg-white/5 transition-colors whitespace-nowrap sm:min-w-[6rem]"
+                  aria-label={t("signOutAria")}
+                >
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  <span className="hidden truncate sm:inline">{t("signOut")}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
+        {isMobileMenuOpen && (
+          <div className="absolute inset-x-0 top-full z-50 bg-nearBlack text-icyWhite border-y border-gold-soft/40 px-4 pb-4 pt-3 shadow-xl animate-in slide-in-from-top-2 fade-in-0 duration-200 sm:hidden">
+            <div className="mb-3 text-right">
+              <span className="block font-serif text-base text-icyWhite">{placeLabel}</span>
+            </div>
+            <nav className="mb-3 flex flex-col gap-2 items-end text-right">
+              {navItems.map(({ id, label, icon: Icon }) => (
+                <Link
+                  key={id}
+                  href={id === "calendar" ? `/${locale}/admin/${place}` : `/${locale}/admin/${place}/${id}`}
+                  className={clsx(
+                    "flex w-full max-w-xs items-center justify-end gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                    section === id
+                      ? "bg-gold-soft/20 text-gold-glow border border-gold-soft/60"
+                      : "text-icyWhite/80 hover:text-icyWhite hover:bg-white/5"
+                  )}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="truncate">{label}</span>
+                  <Icon className="h-4 w-4 shrink-0" />
+                </Link>
+              ))}
+            </nav>
+            <div className="flex flex-col gap-3 items-end text-right">
+              {session?.user && (
+                <span className="max-w-xs truncate text-xs text-icyWhite/70">
+                  {session.user.email}
+                </span>
+              )}
+              <Link
+                href={bookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full max-w-xs items-center justify-end gap-1.5 rounded-lg px-3 py-2 text-sm text-icyWhite/90 hover:text-icyWhite hover:bg-white/5 transition-colors"
+              >
+                <span className="truncate">{t("publicBooking")}</span>
+                <ExternalLink className="h-4 w-4 shrink-0" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/sk" })}
+                className="inline-flex w-full max-w-xs items-center justify-end gap-1.5 rounded-lg px-3 py-2 text-sm text-icyWhite/90 hover:text-icyWhite hover:bg-white/5 transition-colors"
+                aria-label={t("signOutAria")}
+              >
+                <span className="truncate">{t("signOut")}</span>
+                <LogOut className="h-4 w-4 shrink-0" />
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto">
@@ -313,43 +386,77 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
                   {t("noUpcomingAppointments")}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-white/10 bg-white/[0.02]">
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("date")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("time")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("services")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{t("customer")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider hidden md:table-cell">{t("emailHeader")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider hidden lg:table-cell">{t("phoneHeader")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {agendaAppointments.map((apt) => {
-                        const start = apt.startTime && "toDate" in apt.startTime ? apt.startTime.toDate() : new Date(apt.startTime as Date);
-                        const end = apt.endTime && "toDate" in apt.endTime ? apt.endTime.toDate() : new Date(apt.endTime as Date);
-                        const duration = Math.round((end.getTime() - start.getTime()) / 60000);
-                        return (
-                          <tr
-                            key={apt.id}
-                            className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
-                          >
-                            <td className="px-4 py-3 text-sm text-icyWhite">{formatDate(start, { locale: currentLocale })}</td>
-                            <td className="px-4 py-3 text-sm text-icyWhite">{formatTime(start, { locale: currentLocale })}</td>
-                            <td className="px-4 py-3 text-sm text-icyWhite">
-                              <span>{apt.service}</span>
-                              <span className="text-icyWhite/50 text-xs ml-1">({duration}m)</span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-icyWhite">{apt.fullName || "—"}</td>
-                            <td className="px-4 py-3 text-sm text-icyWhite/80 hidden md:table-cell">{apt.email || "—"}</td>
-                            <td className="px-4 py-3 text-sm text-icyWhite/80 hidden lg:table-cell">{apt.phone || "—"}</td>
+                <>
+                  <div className="space-y-3 p-4 sm:hidden">
+                    {agendaAppointments.map((apt) => {
+                      const start = apt.startTime && "toDate" in apt.startTime ? apt.startTime.toDate() : new Date(apt.startTime as Date);
+                      const end = apt.endTime && "toDate" in apt.endTime ? apt.endTime.toDate() : new Date(apt.endTime as Date);
+                      const duration = Math.round((end.getTime() - start.getTime()) / 60000);
+                      return (
+                        <div
+                          key={apt.id}
+                          className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-icyWhite space-y-1.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium">
+                              {formatDate(start, { locale: currentLocale })} · {formatTime(start, { locale: currentLocale })}
+                            </span>
+                            <span className="text-xs text-icyWhite/60">{duration}m</span>
+                          </div>
+                          <div className="text-icyWhite">
+                            {apt.service}
+                          </div>
+                          <div className="text-xs text-icyWhite/70">
+                            {apt.fullName || "—"}
+                          </div>
+                          <div className="text-[11px] text-icyWhite/60 flex flex-col gap-0.5">
+                            <span>{apt.email || "—"}</span>
+                            <span>{apt.phone || "—"}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="hidden sm:block">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-white/10 bg-white/[0.02]">
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("date")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("time")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("services")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{t("customer")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider hidden md:table-cell">{t("emailHeader")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider hidden lg:table-cell">{t("phoneHeader")}</th>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                        </thead>
+                        <tbody>
+                          {agendaAppointments.map((apt) => {
+                            const start = apt.startTime && "toDate" in apt.startTime ? apt.startTime.toDate() : new Date(apt.startTime as Date);
+                            const end = apt.endTime && "toDate" in apt.endTime ? apt.endTime.toDate() : new Date(apt.endTime as Date);
+                            const duration = Math.round((end.getTime() - start.getTime()) / 60000);
+                            return (
+                              <tr
+                                key={apt.id}
+                                className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                              >
+                                <td className="px-4 py-3 text-sm text-icyWhite">{formatDate(start, { locale: currentLocale })}</td>
+                                <td className="px-4 py-3 text-sm text-icyWhite">{formatTime(start, { locale: currentLocale })}</td>
+                                <td className="px-4 py-3 text-sm text-icyWhite">
+                                  <span>{apt.service}</span>
+                                  <span className="text-icyWhite/50 text-xs ml-1">({duration}m)</span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-icyWhite">{apt.fullName || "—"}</td>
+                                <td className="px-4 py-3 text-sm text-icyWhite/80 hidden md:table-cell">{apt.email || "—"}</td>
+                                <td className="px-4 py-3 text-sm text-icyWhite/80 hidden lg:table-cell">{apt.phone || "—"}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -389,43 +496,77 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
                   {analyticsSearch.trim() ? t("noSearchResults") : t("noCustomersYet")}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-white/10 bg-white/[0.02]">
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("date")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("time")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("services")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{t("customer")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider hidden md:table-cell">{t("emailHeader")}</th>
-                        <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider hidden lg:table-cell">{t("phoneHeader")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredAnalytics.map((apt) => {
-                        const start = apt.startTime && "toDate" in apt.startTime ? apt.startTime.toDate() : new Date(apt.startTime as Date);
-                        const end = apt.endTime && "toDate" in apt.endTime ? apt.endTime.toDate() : new Date(apt.endTime as Date);
-                        const duration = Math.round((end.getTime() - start.getTime()) / 60000);
-                        return (
-                          <tr
-                            key={apt.id}
-                            className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
-                          >
-                            <td className="px-4 py-3 text-sm text-icyWhite">{formatDate(start, { locale: currentLocale })}</td>
-                            <td className="px-4 py-3 text-sm text-icyWhite">{formatTime(start, { locale: currentLocale })}</td>
-                            <td className="px-4 py-3 text-sm text-icyWhite">
-                              <span>{apt.service}</span>
-                              <span className="text-icyWhite/50 text-xs ml-1">({duration}m)</span>
-                            </td>
-                            <td className="px-4 py-3 text-sm text-icyWhite">{apt.fullName || "—"}</td>
-                            <td className="px-4 py-3 text-sm text-icyWhite/80 hidden md:table-cell">{apt.email || "—"}</td>
-                            <td className="px-4 py-3 text-sm text-icyWhite/80 hidden lg:table-cell">{apt.phone || "—"}</td>
+                <>
+                  <div className="space-y-3 p-4 sm:hidden">
+                    {filteredAnalytics.map((apt) => {
+                      const start = apt.startTime && "toDate" in apt.startTime ? apt.startTime.toDate() : new Date(apt.startTime as Date);
+                      const end = apt.endTime && "toDate" in apt.endTime ? apt.endTime.toDate() : new Date(apt.endTime as Date);
+                      const duration = Math.round((end.getTime() - start.getTime()) / 60000);
+                      return (
+                        <div
+                          key={apt.id}
+                          className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-icyWhite space-y-1.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium">
+                              {formatDate(start, { locale: currentLocale })} · {formatTime(start, { locale: currentLocale })}
+                            </span>
+                            <span className="text-xs text-icyWhite/60">{duration}m</span>
+                          </div>
+                          <div className="text-icyWhite">
+                            {apt.service}
+                          </div>
+                          <div className="text-xs text-icyWhite/70">
+                            {apt.fullName || "—"}
+                          </div>
+                          <div className="text-[11px] text-icyWhite/60 flex flex-col gap-0.5">
+                            <span>{apt.email || "—"}</span>
+                            <span>{apt.phone || "—"}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="hidden sm:block">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-white/10 bg-white/[0.02]">
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("date")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("time")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{tCommon("services")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider">{t("customer")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider hidden md:table-cell">{t("emailHeader")}</th>
+                            <th className="px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider hidden lg:table-cell">{t("phoneHeader")}</th>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                        </thead>
+                        <tbody>
+                          {filteredAnalytics.map((apt) => {
+                            const start = apt.startTime && "toDate" in apt.startTime ? apt.startTime.toDate() : new Date(apt.startTime as Date);
+                            const end = apt.endTime && "toDate" in apt.endTime ? apt.endTime.toDate() : new Date(apt.endTime as Date);
+                            const duration = Math.round((end.getTime() - start.getTime()) / 60000);
+                            return (
+                              <tr
+                                key={apt.id}
+                                className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                              >
+                                <td className="px-4 py-3 text-sm text-icyWhite">{formatDate(start, { locale: currentLocale })}</td>
+                                <td className="px-4 py-3 text-sm text-icyWhite">{formatTime(start, { locale: currentLocale })}</td>
+                                <td className="px-4 py-3 text-sm text-icyWhite">
+                                  <span>{apt.service}</span>
+                                  <span className="text-icyWhite/50 text-xs ml-1">({duration}m)</span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-icyWhite">{apt.fullName || "—"}</td>
+                                <td className="px-4 py-3 text-sm text-icyWhite/80 hidden md:table-cell">{apt.email || "—"}</td>
+                                <td className="px-4 py-3 text-sm text-icyWhite/80 hidden lg:table-cell">{apt.phone || "—"}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
