@@ -19,8 +19,13 @@ export default function MassageBookingPage() {
   }, [locale]);
 
   const serviceOptions = services.map((s) => ({
+    id: s.id,
     title: s.title,
     durationMinutes: s.durationMinutes,
+    titleSk: s.titleSk,
+    titleEn: s.titleEn,
+    titleRu: s.titleRu,
+    titleUk: s.titleUk,
   }));
 
   return (

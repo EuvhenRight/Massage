@@ -21,7 +21,15 @@ import StepServiceAndDate from './StepServiceAndDate'
 import type { Place } from '@/lib/places'
 
 export interface BookingFlowProps {
-	services: { title: string; durationMinutes?: number }[]
+	services: {
+		id?: string
+		title: string
+		durationMinutes?: number
+		titleSk?: string
+		titleEn?: string
+		titleRu?: string
+		titleUk?: string
+	}[]
 	defaultDuration?: number
 	onSuccess?: () => void
 	onCancel?: () => void
@@ -61,6 +69,8 @@ function BookingFlowInner({
 			try {
 				const finalService =
 					(service || formData.service || services[0]?.title) ?? ''
+				const selected =
+					services.find((s) => s.title === finalService) ?? services[0]
 				const dateStr = getDateKey(date)
 				await bookAppointment(
 					{
@@ -68,6 +78,11 @@ function BookingFlowInner({
 						startTime: time,
 						durationMinutes,
 						service: finalService,
+						serviceId: selected?.id,
+						serviceSk: selected?.titleSk ?? finalService,
+						serviceEn: selected?.titleEn ?? finalService,
+						serviceRu: selected?.titleRu ?? finalService,
+						serviceUk: selected?.titleUk ?? finalService,
 						fullName: formData.fullName,
 						email: formData.email,
 						phone: formData.phone,

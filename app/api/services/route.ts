@@ -6,7 +6,12 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const place = searchParams.get("place") as Place | null;
-    const locale = (searchParams.get("locale") || "sk") as "sk" | "en" | "ru" | "uk";
+    const rawLocale = searchParams.get("locale") || "sk";
+    const normalized = rawLocale.slice(0, 2) as "sk" | "en" | "ru" | "uk";
+    const locale: "sk" | "en" | "ru" | "uk" =
+      normalized === "sk" || normalized === "en" || normalized === "ru" || normalized === "uk"
+        ? normalized
+        : "sk";
     const validPlace = place === "massage" || place === "depilation" ? place : undefined;
     const services = await getServices(validPlace, locale);
     return NextResponse.json(services);

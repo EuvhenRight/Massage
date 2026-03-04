@@ -55,7 +55,15 @@ interface BookingFlowProviderProps {
   children: ReactNode;
   defaultService?: string;
   defaultDuration?: number;
-  services: { title: string; durationMinutes?: number }[];
+  services: {
+    id?: string;
+    title: string;
+    durationMinutes?: number;
+    titleSk?: string;
+    titleEn?: string;
+    titleRu?: string;
+    titleUk?: string;
+  }[];
   onComplete?: (state: BookingFlowState) => void;
 }
 

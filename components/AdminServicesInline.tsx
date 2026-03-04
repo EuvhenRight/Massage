@@ -191,7 +191,12 @@ export default function AdminServicesInline({
   place = "massage",
 }: AdminServicesInlineProps) {
   const params = useParams();
-  const locale = (params?.locale as "sk" | "en" | "ru" | "uk") ?? "ru";
+  const rawLocale = (params?.locale as string) ?? "ru";
+  const baseLocale = rawLocale.slice(0, 2) as "sk" | "en" | "ru" | "uk";
+  const locale: "sk" | "en" | "ru" | "uk" =
+    baseLocale === "sk" || baseLocale === "en" || baseLocale === "ru" || baseLocale === "uk"
+      ? baseLocale
+      : "ru";
   const t = useTranslations("admin");
   const [modalOpen, setModalOpen] = useState<"add" | "edit" | null>(null);
   const [editService, setEditService] = useState<ServiceData | null>(null);

@@ -17,6 +17,11 @@ export interface AppointmentData {
   startTime: Timestamp | Date;
   endTime: Timestamp | Date;
   service: string;
+  serviceId?: string;
+  serviceSk?: string;
+  serviceEn?: string;
+  serviceRu?: string;
+  serviceUk?: string;
   fullName: string;
   email: string;
   phone: string;
@@ -32,6 +37,11 @@ export interface BookingInput {
   fullName: string;
   email: string;
   phone: string;
+  serviceId?: string;
+  serviceSk?: string;
+  serviceEn?: string;
+  serviceRu?: string;
+  serviceUk?: string;
 }
 
 /** Admin can create with all fields optional */
@@ -97,7 +107,7 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
     const id = `apt-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     const appointmentRef = doc(db, "appointments", id);
 
-    transaction.set(appointmentRef, {
+    const baseData: Record<string, unknown> = {
       startTime: Timestamp.fromDate(newStart),
       endTime: Timestamp.fromDate(newEnd),
       service: input.service,
@@ -106,7 +116,15 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
       phone: input.phone,
       place,
       createdAt: serverTimestamp(),
-    });
+    };
+
+    if (input.serviceId) baseData.serviceId = input.serviceId;
+    if (input.serviceSk) baseData.serviceSk = input.serviceSk;
+    if (input.serviceEn) baseData.serviceEn = input.serviceEn;
+    if (input.serviceRu) baseData.serviceRu = input.serviceRu;
+    if (input.serviceUk) baseData.serviceUk = input.serviceUk;
+
+    transaction.set(appointmentRef, baseData);
 
     transaction.set(dayRef, {
       slots: [
@@ -120,6 +138,11 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
       startTime: Timestamp.fromDate(newStart),
       endTime: Timestamp.fromDate(newEnd),
       service: input.service,
+      serviceId: input.serviceId,
+      serviceSk: input.serviceSk,
+      serviceEn: input.serviceEn,
+      serviceRu: input.serviceRu,
+      serviceUk: input.serviceUk,
       fullName: input.fullName,
       email: input.email,
       phone: input.phone,
@@ -213,6 +236,11 @@ export async function getAppointment(appointmentId: string): Promise<Appointment
     startTime: (d.startTime as Timestamp) ?? new Date(),
     endTime: (d.endTime as Timestamp) ?? new Date(),
     service: (d.service as string) ?? "",
+    serviceId: d.serviceId as string | undefined,
+    serviceSk: d.serviceSk as string | undefined,
+    serviceEn: d.serviceEn as string | undefined,
+    serviceRu: d.serviceRu as string | undefined,
+    serviceUk: d.serviceUk as string | undefined,
     fullName: (d.fullName as string) ?? "",
     email: (d.email as string) ?? "",
     phone: (d.phone as string) ?? "",

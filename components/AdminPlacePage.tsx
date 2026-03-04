@@ -62,7 +62,12 @@ interface AdminPlacePageProps {
 
 export default function AdminPlacePage({ place, section: sectionProp = "calendar" }: AdminPlacePageProps) {
   const params = useParams();
-  const locale = (params?.locale as string) ?? "ru";
+  const rawLocale = (params?.locale as string) ?? "ru";
+  const baseLocale = rawLocale.slice(0, 2) as "sk" | "en" | "ru" | "uk";
+  const locale: "sk" | "en" | "ru" | "uk" =
+    baseLocale === "sk" || baseLocale === "en" || baseLocale === "ru" || baseLocale === "uk"
+      ? baseLocale
+      : "ru";
   const currentLocale = useLocale() as string;
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
@@ -140,11 +145,20 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
       orderBy("title", "asc")
     );
     const unsub = onSnapshot(q, (snapshot) => {
-      const list = snapshot.docs.map((d) => {
+      const list: ServiceData[] = snapshot.docs.map((d) => {
         const data = d.data();
+        const key = `title${locale.charAt(0).toUpperCase()}${locale.slice(
+          1
+        )}` as "titleSk" | "titleEn" | "titleRu" | "titleUk";
+        const localizedTitle =
+          (data[key] as string | undefined) ?? (data.title as string) ?? "";
         return {
           id: d.id,
-          title: (data.title as string) ?? "",
+          title: localizedTitle,
+          titleSk: data.titleSk as string | undefined,
+          titleEn: data.titleEn as string | undefined,
+          titleRu: data.titleRu as string | undefined,
+          titleUk: data.titleUk as string | undefined,
           color: (data.color as string) ?? "bg-gray-500/30 border-gray-500/60",
           durationMinutes: (data.durationMinutes as number) ?? 60,
         };
@@ -152,7 +166,7 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
       setServices(list);
     });
     return () => unsub();
-  }, [place]);
+  }, [place, locale]);
 
   useEffect(() => {
     const startOfToday = new Date();

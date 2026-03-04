@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function EntryPortal() {
   const t = useTranslations("home");
@@ -13,10 +14,13 @@ export default function EntryPortal() {
 
   return (
     <main
-      className="min-h-screen flex flex-col md:flex-row"
+      className="relative min-h-screen flex flex-col md:flex-row"
       role="main"
       aria-label={t("chooseExperience")}
     >
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageSwitcher variant="site" />
+      </div>
       {/* Massage Option */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
