@@ -65,8 +65,9 @@
     "step2Desc": "We'll use this to confirm your booking.",
     "slotUnavailable": "This time slot is no longer available. Please choose another.",
     "bookingFailed": "Booking failed. Please try again.",
-    "bookingConfirmed": "Booking confirmed! Check your email.",
-    "emailNotSent": "Booking confirmed, but {error}"
+    "bookingConfirmed": "{service} booking confirmed. Thank you! Check your email.",
+    "emailNotSent": "Booking confirmed, but {error}",
+    "backToWebsite": "Back to website"
   },
   "validation": {
     "fullNameMin": "Full name must be at least 3 characters",
@@ -100,6 +101,17 @@
     "signOut": "Sign out",
     "backToAurora": "← Back to Aurora",
     "calendar": "Calendar",
+    "agenda": "Agenda",
+    "agendaSubtitle": "Full schedule of upcoming appointments.",
+    "analytics": "Analytics",
+    "analyticsSubtitle": "All customers and appointments. Search by name or phone.",
+    "searchByNameOrPhone": "Search by name or phone…",
+    "exportPdf": "Export PDF",
+    "noSearchResults": "No matches found.",
+    "noCustomersYet": "No customers yet.",
+    "emailHeader": "Email",
+    "phoneHeader": "Phone",
+    "noUpcomingAppointments": "No upcoming appointments.",
     "settings": "Settings",
     "servicesCalendarAppointments": "Services, calendar, appointments",
     "manageWorkingHours": "Manage working hours and services",
@@ -231,7 +243,12 @@
     "loadingSchedule": "Loading schedule…",
     "couldNotLoadSchedule": "Could not load schedule.",
     "loadScheduleFailed": "Failed to load schedule",
-    "prepTimeBetween": "Prep time between appointments:"
+    "prepTimeBetween": "Prep time between appointments:",
+    "dayToggleInfo": "Click any day to switch it on or off. Gold = open, gray = closed.",
+    "dayToggleLegendOpen": "Open",
+    "dayToggleLegendClosed": "Closed",
+    "dayToggleTip": "Changes apply to this month only. Remember to save.",
+    "closeDayWithAppointmentsConfirm": "This day has {count, plural, one {# appointment} other {# appointments}}. Closing will hide it from public booking, but existing appointments will remain. Continue?"
   },
   "adminSignin": {
     "signIn": "Sign in",

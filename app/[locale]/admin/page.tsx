@@ -17,20 +17,22 @@ export default function AdminPage() {
 	return (
 		<main className='min-h-screen bg-nearBlack text-icyWhite'>
 			<header className='sticky top-0 z-40 border-b border-white/10 bg-nearBlack/95 backdrop-blur-md'>
-				<div className='flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16'>
-					<div className='flex items-center gap-4'>
+				<div className='flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 h-16 min-h-16'>
+					<div className='flex shrink-0 items-center gap-4'>
 						<h1 className='font-serif text-lg text-icyWhite'>{t('admin')}</h1>
 					</div>
-					<div className='flex items-center gap-3'>
-						<LanguageSwitcher variant='admin' />
+					<div className='flex shrink-0 items-center gap-3'>
+						<div className='shrink-0'>
+							<LanguageSwitcher variant='admin' />
+						</div>
 						{session?.user && (
 							<button
 								type='button'
 								onClick={() => signOut({ callbackUrl: '/sk' })}
-								className='flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-icyWhite/70 hover:text-icyWhite hover:bg-white/5 transition-colors'
+								className='flex min-w-[4.5rem] shrink-0 items-center gap-2 px-3 py-2 rounded-lg text-sm text-icyWhite/70 hover:text-icyWhite hover:bg-white/5 transition-colors whitespace-nowrap sm:min-w-[6rem]'
 							>
-								<LogOut className='w-4 h-4' />
-								{t('signOut')}
+								<LogOut className='h-4 w-4 shrink-0' />
+								<span className='truncate'>{t('signOut')}</span>
 							</button>
 						)}
 					</div>
@@ -45,7 +47,7 @@ export default function AdminPage() {
 
 				<div className='grid gap-4'>
 					<Link
-						href={`/${locale}/admin/massage`}
+						href={`/${locale}/admin/massage/calendar`}
 						className='flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-gold-soft/30 transition-all group'
 					>
 						<div className='flex h-12 w-12 items-center justify-center rounded-xl bg-gold-soft/20 border border-gold-soft/40 group-hover:bg-gold-soft/30'>
@@ -62,7 +64,7 @@ export default function AdminPage() {
 					</Link>
 
 					<Link
-						href={`/${locale}/admin/depilation`}
+						href={`/${locale}/admin/depilation/calendar`}
 						className='flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-gold-soft/30 transition-all group'
 					>
 						<div className='flex h-12 w-12 items-center justify-center rounded-xl bg-gold-soft/20 border border-gold-soft/40 group-hover:bg-gold-soft/30'>

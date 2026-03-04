@@ -36,10 +36,12 @@ function BookingFlowInner({
 	place = 'massage',
 }: BookingFlowProps) {
 	const t = useTranslations('booking')
+	const locale = useLocale()
 	const router = useRouter()
 	const { step, service, date, time, durationMinutes, nextStep, prevStep } =
 		useBookingFlow()
 	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
 	const canNext =
 		(step === 1 && service && date && time) || step === 2
@@ -57,13 +59,15 @@ function BookingFlowInner({
 			if (!date || !time) return
 			setIsSubmitting(true)
 			try {
+				const finalService =
+					(service || formData.service || services[0]?.title) ?? ''
 				const dateStr = getDateKey(date)
 				await bookAppointment(
 					{
 						date: dateStr,
 						startTime: time,
 						durationMinutes,
-						service: (service || formData.service || services[0]?.title) ?? '',
+						service: finalService,
 						fullName: formData.fullName,
 						email: formData.email,
 						phone: formData.phone,
@@ -83,7 +87,7 @@ function BookingFlowInner({
 						customerName: formData.fullName,
 						date: formatDateForEmail(slotDate),
 						time: formatTimeForEmail(slotDate),
-						service: service || formData.service,
+						service: finalService,
 					}),
 				})
 
@@ -91,7 +95,7 @@ function BookingFlowInner({
 					const data = await res.json().catch(() => ({}))
 					toast.error(t('emailNotSent', { error: data?.error ?? 'email could not be sent' }))
 				} else {
-					toast.success(t('bookingConfirmed'))
+					setSuccessMessage(t('bookingConfirmed', { service: finalService }))
 				}
 
 				onSuccess?.()
@@ -113,9 +117,28 @@ function BookingFlowInner({
 	const stepLabels = [t('next'), t('confirmBooking')]
 	const showNextButton = step < 2
 
+	const backHref = `/${locale}`
+
 	return (
 		<div className='flex flex-col min-h-[420px]'>
 			<BookingStepProgress currentStep={step} />
+
+			{successMessage ? (
+				<div className='flex flex-1 items-center justify-center p-6 sm:p-8'>
+					<div className='text-center space-y-6 max-w-xl'>
+						<p className='font-serif text-xl sm:text-2xl text-icyWhite'>
+							{successMessage}
+						</p>
+						<button
+							type='button'
+							onClick={() => router.push(backHref)}
+							className='inline-flex items-center justify-center px-6 py-3 rounded-full bg-gold-soft text-nearBlack text-sm font-semibold hover:bg-gold-glow transition-colors'
+						>
+							{t('backToWebsite')}
+						</button>
+					</div>
+				</div>
+			) : (
 
 			<div className='flex flex-1 flex-col lg:flex-row gap-6 lg:gap-8 p-6 sm:p-8 md:min-h-0'>
 				<main className='flex-1 min-w-0'>
@@ -171,6 +194,7 @@ function BookingFlowInner({
 					)}
 				</aside>
 			</div>
+			)}
 		</div>
 	)
 }

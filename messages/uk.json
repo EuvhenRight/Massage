@@ -65,8 +65,9 @@
     "step2Desc": "Ми використаємо це для підтвердження броні.",
     "slotUnavailable": "Цей слот більше недоступний. Оберіть інший.",
     "bookingFailed": "Бронювання не вдалося. Спробуйте знову.",
-    "bookingConfirmed": "Бронь підтверджена! Перевірте пошту.",
-    "emailNotSent": "Бронь підтверджена, але {error}"
+    "bookingConfirmed": "Бронювання «{service}» підтверджено. Дякуємо! Перевірте пошту.",
+    "emailNotSent": "Бронь підтверджена, але {error}",
+    "backToWebsite": "Повернутися на сайт"
   },
   "validation": {
     "fullNameMin": "ПІБ має містити не менше 3 символів",
@@ -100,6 +101,17 @@
     "signOut": "Вийти",
     "backToAurora": "← На Aurora",
     "calendar": "Календар",
+    "agenda": "Агенда",
+    "agendaSubtitle": "Повний розклад майбутніх записів.",
+    "analytics": "Аналітика",
+    "analyticsSubtitle": "Усі клієнти та записи. Пошук за ім'ям або телефоном.",
+    "searchByNameOrPhone": "Пошук за ім'ям або телефоном…",
+    "exportPdf": "Експорт PDF",
+    "noSearchResults": "Нічого не знайдено.",
+    "noCustomersYet": "Поки немає клієнтів.",
+    "emailHeader": "Email",
+    "phoneHeader": "Телефон",
+    "noUpcomingAppointments": "Немає майбутніх записів.",
     "settings": "Налаштування",
     "servicesCalendarAppointments": "Послуги, календар, записи",
     "manageWorkingHours": "Керування годинами роботи та послугами",
@@ -231,7 +243,12 @@
     "loadingSchedule": "Завантаження розкладу…",
     "couldNotLoadSchedule": "Не вдалося завантажити розклад.",
     "loadScheduleFailed": "Не вдалося завантажити розклад",
-    "prepTimeBetween": "Час підготовки між записами:"
+    "prepTimeBetween": "Час підготовки між записами:",
+    "dayToggleInfo": "Натисніть на будь-який день, щоб увімкнути або вимкнути. Золотий = відкрито, сірий = закрито.",
+    "dayToggleLegendOpen": "Відкрито",
+    "dayToggleLegendClosed": "Закрито",
+    "dayToggleTip": "Зміни діють лише на цей місяць. Не забудьте зберегти.",
+    "closeDayWithAppointmentsConfirm": "На цей день є {count, plural, one {# запис} few {# записи} other {# записів}}. Закриття приховає день з публічного запису, але існуючі записи залишаться. Продовжити?"
   },
   "adminSignin": {
     "signIn": "Увійти",

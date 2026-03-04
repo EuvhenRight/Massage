@@ -39,6 +39,7 @@
     "loadingTimes": "Загрузка времени…",
     "availableTimesFor": "Доступное время для",
     "loadingAvailability": "Загрузка доступности…",
+    "cancel": "Отмена",
     "back": "Назад",
     "next": "Далее",
     "placeholderFullName": "Иван Иванов",
@@ -65,8 +66,9 @@
     "step2Desc": "Мы используем это для подтверждения брони.",
     "slotUnavailable": "Этот слот больше недоступен. Выберите другой.",
     "bookingFailed": "Бронирование не удалось. Попробуйте снова.",
-    "bookingConfirmed": "Бронь подтверждена! Проверьте почту.",
-    "emailNotSent": "Бронь подтверждена, но {error}"
+    "bookingConfirmed": "Бронь на «{service}» подтверждена. Спасибо! Проверьте почту.",
+    "emailNotSent": "Бронь подтверждена, но {error}",
+    "backToWebsite": "Вернуться на сайт"
   },
   "validation": {
     "fullNameMin": "ФИО должно содержать не менее 3 символов",
@@ -100,6 +102,17 @@
     "signOut": "Выйти",
     "backToAurora": "← На Aurora",
     "calendar": "Календарь",
+    "agenda": "Агенда",
+    "agendaSubtitle": "Полное расписание предстоящих записей.",
+    "analytics": "Аналитика",
+    "analyticsSubtitle": "Все клиенты и записи. Поиск по имени или телефону.",
+    "searchByNameOrPhone": "Поиск по имени или телефону…",
+    "exportPdf": "Экспорт PDF",
+    "noSearchResults": "Ничего не найдено.",
+    "noCustomersYet": "Пока нет клиентов.",
+    "emailHeader": "Email",
+    "phoneHeader": "Телефон",
+    "noUpcomingAppointments": "Нет предстоящих записей.",
     "settings": "Настройки",
     "servicesCalendarAppointments": "Услуги, календарь, записи",
     "manageWorkingHours": "Управление часами работы и услугами",
@@ -231,7 +244,12 @@
     "loadingSchedule": "Загрузка расписания…",
     "couldNotLoadSchedule": "Не удалось загрузить расписание.",
     "loadScheduleFailed": "Не удалось загрузить расписание",
-    "prepTimeBetween": "Время подготовки между записями:"
+    "prepTimeBetween": "Время подготовки между записями:",
+    "dayToggleInfo": "Нажмите на любой день, чтобы включить или выключить. Золотой = открыто, серый = закрыто.",
+    "dayToggleLegendOpen": "Открыто",
+    "dayToggleLegendClosed": "Закрыто",
+    "dayToggleTip": "Изменения действуют только на этот месяц. Не забудьте сохранить.",
+    "closeDayWithAppointmentsConfirm": "На этот день запланировано {count, plural, one {# запись} few {# записи} other {# записей}}. Закрытие скроет день из публичной записи, но существующие записи останутся. Продолжить?"
   },
   "adminSignin": {
     "signIn": "Войти",

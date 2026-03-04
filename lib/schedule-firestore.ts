@@ -89,6 +89,22 @@ export async function getSchedule(place: Place = "massage"): Promise<ScheduleDat
   };
 }
 
+/** Build Firestore-safe payload (no undefined, numeric keys as strings for nested maps) */
+function toFirestorePayload(data: ScheduleData): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
+    defaultSchedule: data.defaultSchedule,
+    slotDurationMinutes: data.slotDurationMinutes,
+    prepBufferMinutes: data.prepBufferMinutes ?? 15,
+  };
+  if (data.monthOverrides && Object.keys(data.monthOverrides).length > 0) {
+    payload.monthOverrides = data.monthOverrides;
+  }
+  if (data.dateOverrides && Object.keys(data.dateOverrides).length > 0) {
+    payload.dateOverrides = data.dateOverrides;
+  }
+  return payload;
+}
+
 export async function saveSchedule(data: ScheduleData, place: Place = "massage"): Promise<void> {
-  await setDoc(doc(db, "schedule", place), data);
+  await setDoc(doc(db, "schedule", place), toFirestorePayload(data));
 }

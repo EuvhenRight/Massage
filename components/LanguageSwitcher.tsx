@@ -1,9 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { locales, type Locale } from "@/i18n";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const LOCALE_LABELS: Record<Locale, string> = {
   sk: "SK",
@@ -11,6 +19,32 @@ const LOCALE_LABELS: Record<Locale, string> = {
   ru: "RU",
   uk: "UK",
 };
+
+/** Country codes for flagcdn.com (ISO 3166-1 alpha-2) */
+const LOCALE_FLAG_CODES: Record<Locale, string> = {
+  sk: "sk",
+  en: "gb",
+  ru: "ru",
+  uk: "ua",
+};
+
+function FlagCircle({ locale }: { locale: Locale }) {
+  const isRu = locale === "ru";
+  return (
+    <span
+      className="inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full"
+      aria-hidden
+    >
+      <img
+        src={`https://flagcdn.com/w80/${LOCALE_FLAG_CODES[locale]}.png`}
+        alt=""
+        width={32}
+        height={32}
+        className={`h-8 w-8 object-cover ${isRu ? "grayscale" : ""}`}
+      />
+    </span>
+  );
+}
 
 interface LanguageSwitcherProps {
   variant?: "site" | "admin";
@@ -22,40 +56,77 @@ export default function LanguageSwitcher({
   className = "",
 }: LanguageSwitcherProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const params = useParams();
   const currentLocale = (params?.locale as Locale) ?? (variant === "admin" ? "ru" : "sk");
+  const [pendingLocale, setPendingLocale] = useState<Locale | null>(null);
 
   const order = variant === "admin"
     ? (["ru", "sk", "en", "uk"] as const)
     : (["sk", "en", "ru", "uk"] as const);
 
-  const switchPath = (newLocale: Locale) => {
-    if (!pathname) return `/${newLocale}`;
+  const getHref = (targetLocale: Locale) => {
+    if (!pathname) return `/${targetLocale}`;
     const segments = pathname.split("/").filter(Boolean);
     if (segments.length > 0 && locales.includes(segments[0] as Locale)) {
-      segments[0] = newLocale;
+      segments[0] = targetLocale;
       return "/" + segments.join("/");
     }
-    return `/${newLocale}${pathname.startsWith("/") ? pathname : "/" + pathname}`;
+    return `/${targetLocale}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
   };
 
+  useEffect(() => {
+    if (pendingLocale && params?.locale === pendingLocale) {
+      setPendingLocale(null);
+    }
+  }, [params?.locale, pendingLocale]);
+
+  const handleLocaleChange = (locale: Locale) => {
+    if (locale === currentLocale) return;
+    setPendingLocale(locale);
+    router.push(getHref(locale), { scroll: false });
+  };
+
+  const isNavigating = pendingLocale !== null;
+
   return (
-    <div className={`flex items-center gap-1 ${className}`}>
-      {order.map((locale) => (
-        <Link
-          key={locale}
-          href={switchPath(locale)}
-          className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
-            currentLocale === locale
-              ? "bg-gold-soft/25 text-gold-glow border border-gold-soft/50"
-              : "text-icyWhite/60 hover:text-icyWhite hover:bg-white/5"
-          }`}
-          aria-label={`Switch to ${LOCALE_LABELS[locale]}`}
-          aria-current={currentLocale === locale ? "true" : undefined}
+    <div className={`flex flex-col items-center gap-1 [&_button]:bg-transparent [&_button]:shadow-none ${className}`}>
+      <Select
+        value={currentLocale}
+        onValueChange={handleLocaleChange}
+        disabled={isNavigating}
+        aria-label="Select language"
+      >
+        <SelectTrigger
+          className="relative h-9 w-9 min-w-9 shrink-0 rounded-full border-0 border-none bg-transparent p-0 shadow-none outline-none text-icyWhite hover:opacity-80 focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack [&>svg]:hidden"
         >
-          {LOCALE_LABELS[locale]}
-        </Link>
-      ))}
+          {isNavigating && (
+            <span className="absolute inset-0 flex items-center justify-center rounded-full z-10" aria-hidden>
+              <Loader2 className="h-4 w-4 animate-spin text-gold-soft" />
+            </span>
+          )}
+          <SelectValue>
+            <span className={`flex h-full w-full items-center justify-center ${isNavigating ? "invisible" : ""}`} aria-hidden>
+              <FlagCircle locale={currentLocale} />
+            </span>
+          </SelectValue>
+        </SelectTrigger>
+      <SelectContent className="min-w-[72px]">
+        {order.map((locale) => (
+          <SelectItem
+            key={locale}
+            value={locale}
+            className="cursor-pointer flex flex-col items-center gap-1 py-2"
+          >
+            <FlagCircle locale={locale} />
+            <span className="text-xs font-semibold uppercase">{LOCALE_LABELS[locale]}</span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+      </Select>
+      <span className="text-[10px] font-semibold uppercase leading-none text-icyWhite pointer-events-none">
+        {LOCALE_LABELS[currentLocale]}
+      </span>
     </div>
   );
 }

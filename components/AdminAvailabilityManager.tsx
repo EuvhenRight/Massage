@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import { Info, Lock } from "lucide-react";
 import type { Place } from "@/lib/places";
 import { getSchedule, saveSchedule, type ScheduleData, type DaySchedule } from "@/lib/schedule-firestore";
+import { getDateKey as getDateKeyUtil } from "@/lib/booking";
 import { getWorkingHoursForDate } from "@/lib/availability-firestore";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,10 +35,15 @@ function timeOptions(): string[] {
 
 const TIME_OPTIONS = timeOptions();
 
+interface AppointmentForDate {
+  startTime: { toDate?: () => Date } | Date;
+}
+
 interface AdminAvailabilityManagerProps {
   place?: Place;
   schedule?: ScheduleData | null;
   onScheduleChange?: (schedule: ScheduleData | null) => void;
+  appointments?: AppointmentForDate[];
 }
 
 function formatMonthLabel(value: string, monthNames: string[]): string {
@@ -105,10 +111,26 @@ function MonthCalendar({
   );
 }
 
+function countAppointmentsOnDate(
+  appointments: AppointmentForDate[] | undefined,
+  date: Date
+): number {
+  if (!appointments?.length) return 0;
+  const key = getDateKeyUtil(date);
+  return appointments.filter((apt) => {
+    const start =
+      apt.startTime && typeof apt.startTime === "object" && "toDate" in apt.startTime
+        ? (apt.startTime as { toDate: () => Date }).toDate()
+        : new Date(apt.startTime as Date);
+    return getDateKeyUtil(start) === key;
+  }).length;
+}
+
 export default function AdminAvailabilityManager({
   place = "massage",
   schedule: scheduleProp,
   onScheduleChange,
+  appointments = [],
 }: AdminAvailabilityManagerProps) {
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
@@ -119,10 +141,19 @@ export default function AdminAvailabilityManager({
   const WEEKDAYS = WEEKDAY_KEYS.map((key, i) => ({ day: i, label: t(key) }));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [scope, setScope] = useState<"default" | string>("default");
+  const [scope, setScope] = useState<string>(() => {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`;
+  });
 
   const schedule = scheduleProp ?? internalSchedule;
-  const setSchedule = onScheduleChange ?? setInternalSchedule;
+  const scheduleRef = useRef(schedule);
+  scheduleRef.current = schedule;
+
+  const setSchedule = (next: ScheduleData | null) => {
+    if (next) scheduleRef.current = next;
+    (onScheduleChange ?? setInternalSchedule)(next);
+  };
 
   useEffect(() => {
     if (scheduleProp != null) {
@@ -135,24 +166,15 @@ export default function AdminAvailabilityManager({
       .finally(() => setLoading(false));
   }, [place, scheduleProp, t]);
 
-  const isDefault = scope === "default";
-  const activeSchedule: Record<number, DaySchedule> = isDefault
-    ? (schedule?.defaultSchedule ?? {})
-    : (schedule?.monthOverrides?.[scope] ?? schedule?.defaultSchedule ?? {});
+  const activeSchedule: Record<number, DaySchedule> =
+    schedule?.monthOverrides?.[scope] ?? schedule?.defaultSchedule ?? {};
 
   const updateDay = (day: number, value: DaySchedule) => {
     if (!schedule) return;
-    if (isDefault) {
-      setSchedule({
-        ...schedule,
-        defaultSchedule: { ...schedule.defaultSchedule, [day]: value },
-      });
-    } else {
-      const overrides = { ...(schedule.monthOverrides ?? {}) };
-      const current = overrides[scope] ?? { ...schedule.defaultSchedule };
-      overrides[scope] = { ...current, [day]: value };
-      setSchedule({ ...schedule, monthOverrides: overrides });
-    }
+    const overrides = { ...(schedule.monthOverrides ?? {}) };
+    const current = overrides[scope] ?? { ...schedule.defaultSchedule };
+    overrides[scope] = { ...current, [day]: value };
+    setSchedule({ ...schedule, monthOverrides: overrides });
   };
 
   const getDateKey = (d: Date) =>
@@ -164,6 +186,10 @@ export default function AdminAvailabilityManager({
     const current = getWorkingHoursForDate(schedule, date);
     const dateOverrides = { ...(schedule.dateOverrides ?? {}) };
     if (current) {
+      const count = countAppointmentsOnDate(appointments, date);
+      if (count > 0 && !window.confirm(t("closeDayWithAppointmentsConfirm", { count }))) {
+        return;
+      }
       dateOverrides[dateKey] = null;
     } else {
       const dayOfWeek = date.getDay();
@@ -174,13 +200,15 @@ export default function AdminAvailabilityManager({
   };
 
   const handleSave = async () => {
-    if (!schedule) return;
+    const toSave = scheduleRef.current;
+    if (!toSave) return;
     setSaving(true);
     try {
-      await saveSchedule(schedule, place);
+      await saveSchedule(toSave, place);
       toast.success(t("availabilitySaved"));
-    } catch {
-      toast.error("Failed to save.");
+    } catch (err) {
+      console.error("Save schedule failed:", err);
+      toast.error(t("saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -327,13 +355,31 @@ export default function AdminAvailabilityManager({
             </div>
           </div>
 
-          {/* Right: Toggle days calendar (when month selected) */}
-          {!isDefault && (
+          {/* Right: Toggle days calendar */}
+          {(
             <div className="lg:w-[300px] lg:shrink-0 lg:border-l lg:border-white/10 lg:pl-8">
-              <h3 className="font-medium text-icyWhite mb-1">{t("toggleDaysFor")} {formatMonthLabel(scope, monthNames)}</h3>
-              <p className="text-xs text-icyWhite/60 mb-3">
-                Click any day to switch it on or off. Green = open, gray = closed.
-              </p>
+              <h3 className="font-medium text-icyWhite mb-3">{t("toggleDaysFor")} {formatMonthLabel(scope, monthNames)}</h3>
+              <div className="mb-4 rounded-xl border border-gold-soft/20 bg-gold-soft/5 px-4 py-3">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-soft/20 text-gold-soft">
+                    <Info className="h-3.5 w-3.5" />
+                  </span>
+                  <div className="min-w-0 space-y-2">
+                    <p className="text-sm text-icyWhite/90">{t("dayToggleInfo")}</p>
+                    <div className="flex flex-wrap items-center gap-3 text-xs">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-3 w-3 rounded border border-gold-soft/40 bg-gold-soft/20" aria-hidden />
+                        <span className="text-icyWhite/80">{t("dayToggleLegendOpen")}</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-3 w-3 rounded border border-white/10 bg-white/5" aria-hidden />
+                        <span className="text-icyWhite/80">{t("dayToggleLegendClosed")}</span>
+                      </span>
+                    </div>
+                    <p className="text-xs text-icyWhite/60">{t("dayToggleTip")}</p>
+                  </div>
+                </div>
+              </div>
               <MonthCalendar
                 year={parseInt(scope.split("-")[0] ?? "2025", 10)}
                 month={parseInt(scope.split("-")[1] ?? "1", 10)}
