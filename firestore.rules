@@ -18,5 +18,10 @@ service cloud.firestore {
     match /days/{document} {
       allow read, write: if true;
     }
+
+    // Price catalog: read for public Price page, write via API (auth checked in route)
+    match /priceCatalog/{document} {
+      allow read, write: if true;
+    }
   }
 }

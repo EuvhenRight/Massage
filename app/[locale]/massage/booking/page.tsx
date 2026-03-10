@@ -32,7 +32,7 @@ export default function MassageBookingPage() {
     <main className="min-h-screen bg-nearBlack text-icyWhite">
       <Navbar />
       <div className="pt-20 pb-6 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="rounded-2xl border border-white/10 bg-nearBlack/50">
             <BookingFlow
               services={serviceOptions.length > 0 ? serviceOptions : [{ title: t("appointmentFallback"), durationMinutes: 60 }]}

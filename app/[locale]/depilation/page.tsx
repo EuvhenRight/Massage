@@ -21,6 +21,7 @@ export default function DepilationPage() {
 
       {/* Hero */}
       <section
+        id="services"
         className="relative min-h-screen flex items-center justify-center overflow-hidden noise-overlay"
         aria-labelledby="depilation-hero"
       >
@@ -72,7 +73,7 @@ export default function DepilationPage() {
       </section>
 
       {/* Booking CTA */}
-      <section className="py-32 px-6 text-center">
+      <section id="membership" className="py-32 px-6 text-center">
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

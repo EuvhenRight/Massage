@@ -2,7 +2,7 @@ import { Timestamp } from "firebase/firestore";
 import type { ScheduleData } from "./schedule-firestore";
 import { getDateKey } from "./booking";
 
-export const SLOT_INTERVAL = 5; // 5-min slots: 13:00, 13:05, 13:10, etc.
+export const SLOT_INTERVAL = 15; // 15-min slots: 13:00, 13:15, 13:30, 13:45 — 4 per hour
 
 /** Default prep buffer when not set in schedule. */
 export const PREP_BUFFER_MINUTES = 15;

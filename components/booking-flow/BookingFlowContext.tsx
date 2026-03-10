@@ -5,10 +5,18 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
+  useRef,
   type ReactNode,
 } from "react";
+import {
+  loadBookingDraft,
+  saveBookingDraft,
+  clearBookingDraft,
+  parseDraftToState,
+} from "@/lib/booking-draft-storage";
 
-export type BookingStep = 1 | 2;
+export type BookingStep = 1 | 2 | 3;
 
 export interface BookingFlowState {
   step: BookingStep;
@@ -41,6 +49,7 @@ interface BookingFlowContextValue extends BookingFlowState {
   nextStep: () => void;
   prevStep: () => void;
   reset: () => void;
+  clearDraft: () => void;
 }
 
 const BookingFlowContext = createContext<BookingFlowContextValue | null>(null);
@@ -55,6 +64,7 @@ interface BookingFlowProviderProps {
   children: ReactNode;
   defaultService?: string;
   defaultDuration?: number;
+  place?: string;
   services: {
     id?: string;
     title: string;
@@ -71,15 +81,71 @@ export function BookingFlowProvider({
   children,
   defaultService = "",
   defaultDuration = 60,
+  place = "massage",
   services,
   onComplete,
 }: BookingFlowProviderProps) {
   const firstService = services[0];
-  const [state, setState] = useState<BookingFlowState>({
-    ...initialState,
-    service: (defaultService || firstService?.title) ?? "",
-    durationMinutes: firstService?.durationMinutes ?? defaultDuration,
+  const [state, setState] = useState<BookingFlowState>(() => {
+    if (typeof window === "undefined") {
+      return {
+        ...initialState,
+        service: (defaultService || firstService?.title) ?? "",
+        durationMinutes: firstService?.durationMinutes ?? defaultDuration,
+      };
+    }
+    const draft = loadBookingDraft(place);
+    if (draft) {
+      const parsed = parseDraftToState(draft);
+      return {
+        step: parsed.step as BookingFlowState["step"],
+        service: parsed.service,
+        date: parsed.date,
+        time: parsed.time,
+        durationMinutes: parsed.durationMinutes,
+        fullName: parsed.fullName,
+        email: parsed.email,
+        phone: parsed.phone,
+      };
+    }
+    return {
+      ...initialState,
+      service: "",
+      durationMinutes: firstService?.durationMinutes ?? defaultDuration,
+    };
   });
+
+  const isFirstMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    saveBookingDraft(place, {
+      step: state.step,
+      service: state.service,
+      date: state.date,
+      time: state.time,
+      durationMinutes: state.durationMinutes,
+      fullName: state.fullName,
+      email: state.email,
+      phone: state.phone,
+    });
+  }, [
+    place,
+    state.step,
+    state.service,
+    state.date,
+    state.time,
+    state.durationMinutes,
+    state.fullName,
+    state.email,
+    state.phone,
+  ]);
+
+  const clearDraft = useCallback(() => {
+    clearBookingDraft(place);
+  }, [place]);
 
   const setService = useCallback((service: string) => {
     setState((s) => {
@@ -111,7 +177,7 @@ export function BookingFlowProvider({
   const nextStep = useCallback(() => {
     setState((s) => ({
       ...s,
-      step: Math.min(2, s.step + 1) as BookingStep,
+      step: Math.min(3, s.step + 1) as BookingStep,
     }));
   }, []);
 
@@ -126,10 +192,10 @@ export function BookingFlowProvider({
     const first = services[0];
     setState({
       ...initialState,
-      service: (defaultService || first?.title) ?? "",
+      service: "",
       durationMinutes: first?.durationMinutes ?? defaultDuration,
     });
-  }, [defaultService, defaultDuration, services]);
+  }, [defaultDuration, services]);
 
   const value: BookingFlowContextValue = {
     ...state,
@@ -141,6 +207,7 @@ export function BookingFlowProvider({
     nextStep,
     prevStep,
     reset,
+    clearDraft,
   };
 
   return (

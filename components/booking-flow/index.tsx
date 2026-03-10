@@ -1,24 +1,28 @@
 'use client'
 
-import { useLocale, useTranslations } from 'next-intl'
-import { formatDateForEmail, formatTimeForEmail } from '@/lib/format-date'
 import { bookAppointment } from '@/lib/book-appointment'
 import { getDateKey } from '@/lib/booking'
 import type { BookingFormData } from '@/lib/booking-schema'
-import { useCallback, useState } from 'react'
+import { formatDateForEmail, formatTimeForEmail } from '@/lib/format-date'
+import type { Place } from '@/lib/places'
+import type { PriceCatalogStructure } from '@/types/price-catalog'
+import { Search as SearchIcon } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
+import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
 	BookingFlowProvider,
 	useBookingFlow,
 	type BookingFlowState,
 } from './BookingFlowContext'
 import BookingSidebar from './BookingSidebar'
+import BookingSummaryMobile from './BookingSummaryMobile'
 import BookingStepProgress from './BookingStepProgress'
 import StepCustomerInfo from './StepCustomerInfo'
 import StepServiceAndDate from './StepServiceAndDate'
-
-import type { Place } from '@/lib/places'
+import StepServiceFromPriceCatalog from './StepServiceFromPriceCatalog'
 
 export interface BookingFlowProps {
 	services: {
@@ -31,6 +35,8 @@ export interface BookingFlowProps {
 		titleUk?: string
 	}[]
 	defaultDuration?: number
+	defaultService?: string
+	priceCatalog?: PriceCatalogStructure | null
 	onSuccess?: () => void
 	onCancel?: () => void
 	place?: Place
@@ -39,6 +45,7 @@ export interface BookingFlowProps {
 function BookingFlowInner({
 	services,
 	defaultDuration = 60,
+	priceCatalog,
 	onSuccess,
 	onCancel,
 	place = 'massage',
@@ -46,20 +53,20 @@ function BookingFlowInner({
 	const t = useTranslations('booking')
 	const locale = useLocale()
 	const router = useRouter()
-	const { step, service, date, time, durationMinutes, nextStep, prevStep } =
+	const { step, service, date, time, durationMinutes, nextStep, prevStep, clearDraft } =
 		useBookingFlow()
+	const [searchQuery, setSearchQuery] = useState('')
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
 	const canNext =
-		(step === 1 && service && date && time) || step === 2
+		(step === 1 && !!service) ||
+		(step === 2 && !!date && !!time) ||
+		step === 3
 
 	const handleBack = useCallback(() => {
-		if (step > 1) {
-			prevStep()
-		} else {
-			onCancel?.() ?? router.back()
-		}
+		if (step > 1) prevStep()
+		else onCancel?.() ?? router.back()
 	}, [step, prevStep, onCancel, router])
 
 	const handleConfirm = useCallback(
@@ -67,10 +74,8 @@ function BookingFlowInner({
 			if (!date || !time) return
 			setIsSubmitting(true)
 			try {
-				const finalService =
-					(service || formData.service || services[0]?.title) ?? ''
-				const selected =
-					services.find((s) => s.title === finalService) ?? services[0]
+				const finalService = (service || formData.service || services[0]?.title) ?? ''
+				const selected = services.find(s => s.title === finalService) ?? services[0]
 				const dateStr = getDateKey(date)
 				await bookAppointment(
 					{
@@ -87,7 +92,7 @@ function BookingFlowInner({
 						email: formData.email,
 						phone: formData.phone,
 					},
-					place
+					place,
 				)
 
 				const slotDate = new Date(date)
@@ -110,106 +115,201 @@ function BookingFlowInner({
 					const data = await res.json().catch(() => ({}))
 					toast.error(t('emailNotSent', { error: data?.error ?? 'email could not be sent' }))
 				} else {
-					setSuccessMessage(t('bookingConfirmed', { service: finalService }))
+					clearDraft()
+					const itemName = finalService.includes(' › ') ? finalService.split(' › ').pop() ?? finalService : finalService
+					setSuccessMessage(JSON.stringify({ title: t('bookingConfirmed'), service: itemName }))
 				}
-
 				onSuccess?.()
 			} catch (err) {
-				const message =
-					err instanceof Error && err.message === 'OVERLAP'
-						? t('slotUnavailable')
-						: t('bookingFailed')
-				toast.error(message)
+				const msg = err instanceof Error && err.message === 'OVERLAP' ? t('slotUnavailable') : t('bookingFailed')
+				toast.error(msg)
 			} finally {
 				setIsSubmitting(false)
 			}
 		},
-		[date, time, durationMinutes, service, services, onSuccess, place, t],
+		[date, time, durationMinutes, service, services, onSuccess, place, t, clearDraft],
 	)
 
-	const stepTitles = [t('step1Title'), t('step2Title')]
-	const stepDescriptions = [t('step1Desc'), t('step2Desc')]
-	const stepLabels = [t('next'), t('confirmBooking')]
-	const showNextButton = step < 2
+	const stepLabels = [t('next'), t('next'), t('confirmBooking')]
+	const showNextButton = step < 3
 
-	const backHref = `/${locale}`
+	if (successMessage) {
+		let title = t('bookingConfirmed')
+		let serviceName = ''
+		try {
+			const parsed = JSON.parse(successMessage)
+			title = parsed.title ?? title
+			serviceName = parsed.service ?? ''
+		} catch {
+			title = successMessage
+		}
+		return (
+			<motion.div
+				className="flex-1 flex items-center justify-center p-6 sm:p-8"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: 0.3 }}
+			>
+				<motion.div
+					className="text-center space-y-6 max-w-md"
+					initial={{ opacity: 0, y: 16 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.35, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+				>
+					<p className="font-serif text-xl sm:text-2xl text-icyWhite">{title}</p>
+					{serviceName && (
+						<p className="text-icyWhite/80 text-base sm:text-lg">{serviceName}</p>
+					)}
+					<button
+						type="button"
+						onClick={() => router.push(`/${locale}`)}
+						className="min-h-[48px] px-6 py-3 rounded-xl bg-gold-soft text-nearBlack text-sm font-semibold hover:bg-gold-glow active:scale-[0.98] transition-all touch-manipulation"
+					>
+						{t('backToWebsite')}
+					</button>
+				</motion.div>
+			</motion.div>
+		)
+	}
 
 	return (
-		<div className='flex flex-col min-h-[420px]'>
+		<div className="flex-1 flex flex-col min-h-0">
+			{/* Progress — static top */}
 			<BookingStepProgress currentStep={step} />
 
-			{successMessage ? (
-				<div className='flex flex-1 items-center justify-center p-6 sm:p-8'>
-					<div className='text-center space-y-6 max-w-xl'>
-						<p className='font-serif text-xl sm:text-2xl text-icyWhite'>
-							{successMessage}
-						</p>
+			{/* Body: main + sidebar — tablet/laptop: row; mobile: column, sidebar hidden */}
+			<div className="flex-1 flex min-h-0 md:flex-row flex-col overflow-hidden">
+				{/* Main content — full width mobile, flex-1 tablet+ */}
+				<main
+					className={`flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden ${
+						/* mobile steps 1-2: pad bottom for fixed Next bar */
+						step < 3 ? 'pb-20 md:pb-0' : ''
+					}`}
+				>
+					<div className="p-4 sm:p-5 flex-shrink-0 flex items-center justify-between gap-3 sm:gap-4">
 						<button
-							type='button'
-							onClick={() => router.push(backHref)}
-							className='inline-flex items-center justify-center px-6 py-3 rounded-full bg-gold-soft text-nearBlack text-sm font-semibold hover:bg-gold-glow transition-colors'
-						>
-							{t('backToWebsite')}
-						</button>
-					</div>
-				</div>
-			) : (
-
-			<div className='flex flex-1 flex-col lg:flex-row gap-6 lg:gap-8 p-6 sm:p-8 md:min-h-0'>
-				<main className='flex-1 min-w-0'>
-					<div className='mb-6'>
-						<button
-							type='button'
+							type="button"
 							onClick={handleBack}
-							className='flex items-center gap-1.5 text-icyWhite/60 hover:text-icyWhite text-sm transition-colors mb-3'
+							className="flex items-center gap-1.5 text-icyWhite/60 hover:text-icyWhite text-sm font-medium transition-colors shrink-0 min-h-[44px] pl-0 pr-1 py-2 -ml-1 rounded-lg active:bg-white/5 touch-manipulation"
+							aria-label={step === 1 ? t('cancel') : t('back')}
 						>
-							<svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-								<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+							<svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
 							</svg>
-							{step === 1 ? t('cancel') : t('back')}
+							<span>{step === 1 ? t('cancel') : t('back')}</span>
 						</button>
-						<h2 className='font-serif text-xl sm:text-2xl text-icyWhite mb-1'>
-							{stepTitles[step - 1]}
-						</h2>
-						<p className='text-icyWhite/60 text-sm'>
-							{stepDescriptions[step - 1]}
-						</p>
+						{step === 1 && priceCatalog && (priceCatalog.man.services?.length || priceCatalog.woman.services?.length) && (
+							<div className="flex-1 min-w-0 max-w-[240px] sm:max-w-[280px] relative">
+								<SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-icyWhite/50 pointer-events-none" aria-hidden />
+								<input
+									type="search"
+									value={searchQuery}
+									onChange={e => setSearchQuery(e.target.value)}
+									placeholder={t('searchServicePlaceholder')}
+									aria-label={t('searchServicePlaceholder')}
+									className="w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-xl border border-white/10 bg-white/5 text-icyWhite placeholder:text-icyWhite/40 text-sm focus:outline-none focus:ring-2 focus:ring-gold-soft/40 focus:border-gold-soft transition-shadow"
+								/>
+							</div>
+						)}
 					</div>
 
-					<div className='rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8'>
-						{step === 1 && <StepServiceAndDate services={services} place={place} />}
-						{step === 2 && (
-							<StepCustomerInfo
-								onSubmit={handleConfirm}
-								isSubmitting={isSubmitting}
-							/>
-						)}
+					<div className="flex-1 min-h-0 flex flex-col overflow-hidden px-4 sm:px-5 pb-4 sm:pb-5">
+						<div className="flex-1 min-h-0 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 md:p-5">
+							<AnimatePresence mode="wait">
+								{step <= 2 && priceCatalog && (priceCatalog.man.services?.length || priceCatalog.woman.services?.length) ? (
+									<motion.div
+										key="step-price-catalog"
+										initial={{ opacity: 0, x: -8 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: 8 }}
+										transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+										className="flex-1 min-h-0 flex flex-col"
+									>
+										<StepServiceFromPriceCatalog place={place} catalog={priceCatalog} services={services} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+									</motion.div>
+								) : step <= 2 ? (
+									<motion.div
+										key="step-service-date"
+										initial={{ opacity: 0, x: -8 }}
+										animate={{ opacity: 1, x: 0 }}
+										exit={{ opacity: 0, x: 8 }}
+										transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+										className="flex-1 min-h-0 flex flex-col"
+									>
+										<StepServiceAndDate services={services} place={place} />
+									</motion.div>
+								) : null}
+								{step === 3 && (
+									<motion.div
+										key="step-customer"
+										initial={{ opacity: 0, x: 8 }}
+										animate={{ opacity: 1, x: 0 }}
+										transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+										className="flex flex-col min-h-0 overflow-y-auto"
+									>
+										{/* Mobile-only: booking summary above form */}
+										<div className="md:hidden">
+											<BookingSummaryMobile />
+										</div>
+										<StepCustomerInfo onSubmit={handleConfirm} isSubmitting={isSubmitting} />
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</div>
 					</div>
 				</main>
 
-				<aside className='w-full lg:w-80 shrink-0 lg:self-start lg:pt-[4.5rem] flex flex-col gap-4'>
-					<BookingSidebar />
-					{/* Next under Booking summary */}
+				{/* Sidebar — tablet (md) and laptop: visible, same layout. Mobile: hidden (summary in step 3) */}
+				<aside className="hidden md:flex w-80 lg:w-96 shrink-0 flex-col border-l border-white/10 min-h-0">
+					<div className="flex-1 min-h-0 overflow-y-auto">
+						<BookingSidebar />
+					</div>
 					{showNextButton && (
-						<button
-							type='button'
-							onClick={nextStep}
-							disabled={!canNext}
-							className={`
-								w-full px-8 py-3 rounded-xl text-sm font-semibold transition-all
-								${
+						<div className="p-4 lg:p-5 border-t border-white/10 flex-shrink-0">
+							<button
+								type="button"
+								onClick={nextStep}
+								disabled={!canNext}
+								className={`w-full py-3 sm:py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
 									canNext
-										? 'bg-gold-soft text-nearBlack hover:bg-gold-glow shadow-lg shadow-gold-soft/20'
+										? 'bg-gold-soft text-nearBlack hover:bg-gold-glow active:scale-[0.99]'
 										: 'bg-white/10 text-icyWhite/40 cursor-not-allowed'
-								}
-							`}
-						>
-							{stepLabels[step - 1]}
-						</button>
+								}`}
+							>
+								{stepLabels[step - 1]}
+							</button>
+						</div>
 					)}
 				</aside>
 			</div>
-			)}
+
+			{/* Mobile-only: fixed bottom Next button for steps 1–2 */}
+			<AnimatePresence>
+				{showNextButton && (
+					<motion.div
+						initial={{ height: 0, opacity: 0 }}
+						animate={{ height: 'auto', opacity: 1 }}
+						exit={{ height: 0, opacity: 0 }}
+						transition={{ duration: 0.2 }}
+						className="md:hidden fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-nearBlack/95 backdrop-blur-md pb-[env(safe-area-inset-bottom,0)]"
+					>
+						<div className="px-4 py-3 sm:py-4">
+							<button
+								type="button"
+								onClick={nextStep}
+								disabled={!canNext}
+								className={`w-full min-h-[48px] sm:min-h-[52px] py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+									canNext
+										? 'bg-gold-soft text-nearBlack hover:bg-gold-glow active:scale-[0.98]'
+										: 'bg-white/10 text-icyWhite/40 cursor-not-allowed'
+								}`}
+							>
+								{stepLabels[step - 1]}
+							</button>
+						</div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</div>
 	)
 }
@@ -219,13 +319,13 @@ export default function BookingFlow(props: BookingFlowProps) {
 		<BookingFlowProvider
 			services={props.services}
 			defaultDuration={props.defaultDuration}
-			defaultService={props.services[0]?.title}
+			defaultService={props.defaultService ?? props.services[0]?.title}
+			place={props.place}
 		>
 			<BookingFlowInner {...props} />
 		</BookingFlowProvider>
 	)
 }
-
 
 export { BookingFlowProvider, useBookingFlow }
 export type { BookingFlowState }

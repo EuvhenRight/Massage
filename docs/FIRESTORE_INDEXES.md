@@ -69,6 +69,7 @@ All of these use the **same composite index**: `place` (ASC) + `startTime` (ASC)
 
 - **lib/schedule-firestore.ts** – `getDoc(doc(db, "schedule", place))` — document read, no composite index.
 - **lib/book-appointment.ts** – `getDoc(doc(db, "appointments", id))` — document read.
+- **lib/price-catalog-firestore.ts** – `getDoc(doc(db, "priceCatalog", place))` — document read. One document per place (e.g. `depilation`); stores full price structure (sex → services → sections → zones → items).
 
 ---
 

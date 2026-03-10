@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import type { Place } from "@/lib/places";
 
 const VALID_PLACES: Place[] = ["massage", "depilation"];
-const VALID_SECTIONS = ["calendar", "agenda", "analytics", "settings"] as const;
+const VALID_SECTIONS = ["calendar", "agenda", "analytics", "settings", "price"] as const;
 
 type AdminSection = (typeof VALID_SECTIONS)[number];
 

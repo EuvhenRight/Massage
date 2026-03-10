@@ -21,12 +21,14 @@ import {
   Settings,
   Menu,
   X,
+  Banknote,
 } from "lucide-react";
 import BookingCalendarGrid from "@/components/BookingCalendarGrid";
 import AdminAppointmentModal from "@/components/AdminAppointmentModal";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import AdminServicesInline from "@/components/AdminServicesInline";
 import AdminAvailabilityManager from "@/components/AdminAvailabilityManager";
+import AdminPriceCatalog from "@/components/AdminPriceCatalog";
 import type { AppointmentData } from "@/lib/book-appointment";
 import type { ServiceData } from "@/lib/services";
 import type { Place } from "@/lib/places";
@@ -38,7 +40,7 @@ import { clsx } from "clsx";
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 
-type AdminSection = "calendar" | "settings" | "agenda" | "analytics";
+type AdminSection = "calendar" | "settings" | "agenda" | "analytics" | "price";
 
 function toAppointmentData(doc: { id: string; data: () => Record<string, unknown> }): AppointmentData {
   const d = doc.data();
@@ -79,6 +81,7 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
     { id: "calendar", label: t("calendar"), icon: Calendar },
     { id: "agenda", label: t("agenda"), icon: CalendarRange },
     { id: "analytics", label: t("analytics"), icon: BarChart2 },
+    ...(place === "depilation" ? [{ id: "price" as const, label: t("priceCatalog"), icon: Banknote }] : []),
     { id: "settings", label: t("settings"), icon: Settings },
   ];
   const [services, setServices] = useState<ServiceData[]>([]);
@@ -619,6 +622,12 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
                 </div>
               </section>
             </div>
+          </div>
+        )}
+
+        {section === "price" && place === "depilation" && (
+          <div className="animate-in fade-in-0 duration-200">
+            <AdminPriceCatalog place={place} />
           </div>
         )}
       </div>

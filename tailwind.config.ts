@@ -88,11 +88,22 @@ const config: Config = {
   			'noise-texture': "url('/noise.png')"
   		},
   		animation: {
+  			"accordion-down": "accordion-down 0.2s ease-out",
+  			"accordion-up": "accordion-up 0.2s ease-out",
   			aurora: 'aurora 8s ease-in-out infinite',
   			'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
-  			'shimmer': 'shimmer 3s linear infinite'
+  			'shimmer': 'shimmer 3s linear infinite',
+  			'shimmer-sweep': 'shimmer-sweep 1.5s ease-in-out infinite'
   		},
   		keyframes: {
+  			"accordion-down": {
+  				from: { height: "0" },
+  				to: { height: "var(--radix-accordion-content-height)" },
+  			},
+  			"accordion-up": {
+  				from: { height: "var(--radix-accordion-content-height)" },
+  				to: { height: "0" },
+  			},
   			aurora: {
   				'0%, 100%': {
   					opacity: '1',
@@ -118,6 +129,10 @@ const config: Config = {
   				'100%': {
   					backgroundPosition: '200% 0'
   				}
+  			},
+  			"shimmer-sweep": {
+  				"0%": { transform: "translateX(-100%)" },
+  				"100%": { transform: "translateX(100%)" }
   			}
   		},
   		backdropBlur: {

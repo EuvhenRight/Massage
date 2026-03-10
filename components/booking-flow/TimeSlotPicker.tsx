@@ -47,8 +47,8 @@ export default function TimeSlotPicker({
 
   if (availableSlots.length === 0) {
     return (
-      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-4">
-        <p className="text-sm text-amber-200/90">
+      <div className="rounded-lg border border-gold-soft/20 bg-gold-soft/5 px-4 py-4">
+        <p className="text-sm text-gold-soft/90">
           {t("noSlotsMessage")}
         </p>
       </div>
@@ -56,14 +56,13 @@ export default function TimeSlotPicker({
   }
 
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-icyWhite/90">{t("availableTime")}</label>
+    <div>
       <Select
         value={selectedTime ?? ""}
         onValueChange={(v) => v && onSelectTime(v)}
       >
-        <SelectTrigger className="w-full h-11 bg-white/5 border-white/10 text-icyWhite hover:bg-white/[0.07] focus:ring-gold-soft/30">
-          <SelectValue placeholder={t("chooseTime")} />
+        <SelectTrigger className="w-full min-h-[48px] sm:min-h-[48px] h-12 bg-white/5 border-white/10 text-icyWhite hover:bg-white/[0.07] focus:ring-gold-soft/30 text-base touch-manipulation">
+          <SelectValue placeholder={t("availableTime")} />
         </SelectTrigger>
         <SelectContent className="max-h-[200px] z-[100]">
           {availableSlots.map((slot) => (

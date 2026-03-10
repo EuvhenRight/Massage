@@ -2,25 +2,39 @@
 
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
-const navLinkPaths = [
-  { path: "/massage#services", key: "services" as const },
-  { path: "/massage#membership", key: "membership" as const },
-  { path: "/booking", key: "book" as const },
+type NavLink = { path: string; key: string };
+
+const MASSAGE_LINKS: NavLink[] = [
+  { path: "/massage#services", key: "services" },
+  { path: "/massage#membership", key: "membership" },
+  { path: "/massage/booking", key: "book" },
+];
+
+const DEPILATION_LINKS: NavLink[] = [
+  { path: "/depilation#services", key: "services" },
+  { path: "/depilation#membership", key: "membership" },
+  { path: "/depilation/booking", key: "book" },
 ];
 
 export default function Navbar() {
   const t = useTranslations("common");
   const params = useParams();
+  const pathname = usePathname();
   const locale = (params?.locale as string) ?? "sk";
-  const navLinks = navLinkPaths.map(({ path, key }) => ({
-    href: `/${locale}${path}`,
-    label: t(key),
-  }));
+  const isDepilation = pathname?.includes("/depilation") ?? false;
+
+  const navLinks = useMemo(() => {
+    const links = isDepilation ? DEPILATION_LINKS : MASSAGE_LINKS;
+    return links.map(({ path, key }) => ({
+      href: `/${locale}${path}`,
+      label: t(key),
+    }));
+  }, [locale, isDepilation, t]);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

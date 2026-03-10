@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
+import { motion } from "framer-motion";
 import { getBookingSchema, type BookingFormData } from "@/lib/booking-schema";
 import { useBookingFlow } from "./BookingFlowContext";
 import {
@@ -54,9 +55,14 @@ export default function StepCustomerInfo({
   });
 
   return (
-    <div className="space-y-5">
+    <motion.div
+      className="space-y-5 sm:space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+    >
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
           <FormField
             control={form.control}
             name="fullName"
@@ -68,7 +74,7 @@ export default function StepCustomerInfo({
                 <FormControl>
                   <Input
                     placeholder={t("placeholderFullName")}
-                    className="h-11 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30"
+                    className="min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30 touch-manipulation"
                     {...field}
                   />
                 </FormControl>
@@ -88,8 +94,10 @@ export default function StepCustomerInfo({
                 <FormControl>
                   <Input
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
                     placeholder={t("placeholderEmail")}
-                    className="h-11 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30"
+                    className="min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30 touch-manipulation"
                     {...field}
                   />
                 </FormControl>
@@ -109,8 +117,10 @@ export default function StepCustomerInfo({
                 <FormControl>
                   <Input
                     type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
                     placeholder={t("placeholderPhone")}
-                    className="h-11 bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30"
+                    className="min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30 touch-manipulation"
                     {...field}
                   />
                 </FormControl>
@@ -122,12 +132,12 @@ export default function StepCustomerInfo({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-12 rounded-xl text-sm font-semibold bg-gold-soft text-nearBlack hover:bg-gold-glow shadow-lg shadow-gold-soft/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full min-h-[52px] sm:min-h-[48px] py-3 sm:py-2.5 rounded-xl text-sm font-semibold bg-gold-soft text-nearBlack hover:bg-gold-glow active:scale-[0.99] shadow-lg shadow-gold-soft/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 touch-manipulation"
           >
             {isSubmitting ? t("bookingInProgress") : t("confirmBooking")}
           </button>
         </form>
       </Form>
-    </div>
+    </motion.div>
   );
 }

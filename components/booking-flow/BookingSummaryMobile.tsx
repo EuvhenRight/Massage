@@ -1,0 +1,72 @@
+'use client'
+
+import { useLocale, useTranslations } from 'next-intl'
+import { motion } from 'framer-motion'
+import { useBookingFlow } from './BookingFlowContext'
+
+function formatTime(time: string): string {
+	const [h, m] = time.split(':').map(Number)
+	if (h === 0) return `12:${String(m).padStart(2, '0')} am`
+	if (h < 12) return `${h}:${String(m).padStart(2, '0')} am`
+	if (h === 12) return `12:${String(m).padStart(2, '0')} pm`
+	return `${h - 12}:${String(m).padStart(2, '0')} pm`
+}
+
+/** Compact booking summary shown only on mobile at step 3 (confirm) — replaces sidebar */
+export default function BookingSummaryMobile() {
+	const locale = useLocale()
+	const t = useTranslations('booking')
+	const tCommon = useTranslations('common')
+	const { service, date, time, durationMinutes } = useBookingFlow()
+
+	if (!service && !date && !time) return null
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: -12 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+			className="rounded-xl border border-gold-soft/20 bg-gold-soft/5 p-4 mb-6"
+			role="region"
+			aria-label={t('bookingSummary')}
+		>
+			<h4 className="text-[11px] font-semibold text-gold-soft/90 uppercase tracking-wider mb-3">
+				{t('bookingSummary')}
+			</h4>
+			<dl className="space-y-2.5 text-sm">
+				{service && (
+					<div className="flex items-center justify-between gap-3">
+						<dt className="text-icyWhite/50 shrink-0 min-w-[3.5rem]">{tCommon('services')}</dt>
+						<dd className="flex-1 min-w-0 text-icyWhite font-medium text-right truncate">
+							{service}
+							{durationMinutes > 0 && (
+								<span className="text-icyWhite/50 text-xs ml-1 tabular-nums">
+									({durationMinutes} min)
+								</span>
+							)}
+						</dd>
+					</div>
+				)}
+				{date && (
+					<div className="flex items-center justify-between gap-3">
+						<dt className="text-icyWhite/50 shrink-0 min-w-[3rem]">{tCommon('date')}</dt>
+						<dd className="text-icyWhite font-medium">
+							{date.toLocaleDateString(locale, {
+								weekday: 'short',
+								month: 'short',
+								day: 'numeric',
+								year: 'numeric',
+							})}
+						</dd>
+					</div>
+				)}
+				{time && (
+					<div className="flex items-center justify-between gap-3">
+						<dt className="text-icyWhite/50 shrink-0 min-w-[3rem]">{tCommon('time')}</dt>
+						<dd className="text-icyWhite font-medium">{formatTime(time)}</dd>
+					</div>
+				)}
+			</dl>
+		</motion.div>
+	)
+}
