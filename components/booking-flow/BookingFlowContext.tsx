@@ -16,7 +16,7 @@ import {
   parseDraftToState,
 } from "@/lib/booking-draft-storage";
 
-export type BookingStep = 1 | 2 | 3;
+export type BookingStep = 1 | 2 | 3 | 4;
 
 export interface BookingFlowState {
   step: BookingStep;
@@ -177,7 +177,7 @@ export function BookingFlowProvider({
   const nextStep = useCallback(() => {
     setState((s) => ({
       ...s,
-      step: Math.min(3, s.step + 1) as BookingStep,
+      step: Math.min(4, s.step + 1) as BookingStep,
     }));
   }, []);
 

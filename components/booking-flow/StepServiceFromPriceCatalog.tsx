@@ -5,6 +5,7 @@ import {
 	parseOccupiedSlots,
 	type OccupiedSlot,
 } from '@/lib/availability-firestore'
+import { TruncateText } from '@/components/ui/truncate-text'
 import { db } from '@/lib/firebase'
 import type { Place } from '@/lib/places'
 import { getSchedule } from '@/lib/schedule-firestore'
@@ -23,6 +24,7 @@ import {
 	Timestamp,
 	where,
 } from 'firebase/firestore'
+import { Undo2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
@@ -420,7 +422,12 @@ export default function StepServiceFromPriceCatalog({
 											}}
 											className='min-h-[44px] sm:min-h-0 py-3 px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
 										>
-											{getTitleForLocale(svc, priceLocale)}
+											<TruncateText
+												className="text-left"
+												tooltipThreshold={25}
+											>
+												{getTitleForLocale(svc, priceLocale)}
+											</TruncateText>
 										</button>
 									))}
 								</div>
@@ -428,13 +435,13 @@ export default function StepServiceFromPriceCatalog({
 						)}
 					</div>
 
-					{/* Section + Zone: fixed, no scroll. Items list: only scrollable. */}
+					{/* Section + Zone: scrollable on mobile so zone picker + items fit */}
 					{selectedSex && (activeServiceId || isSearching) && (
-						<div className='flex-1 min-h-0 flex flex-col mt-4'>
-							{/* Sections — fixed */}
+						<div className='flex-1 min-h-0 flex flex-col mt-4 overflow-y-auto'>
+							{/* Sections — hidden on mobile when zone open (show only zones + items) */}
 							{!isSearching && (
 								<div
-									className={`grid ${sectionGridCols} gap-2 sm:gap-3 flex-shrink-0 mb-3`}
+									className={`${openZoneId ? 'hidden md:grid' : 'grid'} ${sectionGridCols} gap-2 sm:gap-3 flex-shrink-0 mb-3`}
 								>
 									{filteredSections.map(sec => (
 										<motion.button
@@ -453,7 +460,12 @@ export default function StepServiceFromPriceCatalog({
 													: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
 											}`}
 										>
-											{sec.sectionTitle}
+											<TruncateText
+												className="text-left"
+												tooltipThreshold={25}
+											>
+												{sec.sectionTitle}
+											</TruncateText>
 										</motion.button>
 									))}
 								</div>
@@ -484,7 +496,7 @@ export default function StepServiceFromPriceCatalog({
 											className='flex-1 min-h-0 flex flex-col gap-2'
 										>
 											{sec.sectionDescription && (
-												<div className='flex-shrink-0 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm font-normal text-icyWhite'>
+												<div className={`flex-shrink-0 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm font-normal text-icyWhite ${openZoneId ? 'hidden md:block' : ''}`}>
 													<p className='break-words'>
 														{expandedSectionDescriptions.has(sec.sectionId)
 															? sec.sectionDescription
@@ -553,9 +565,17 @@ export default function StepServiceFromPriceCatalog({
 																}
 																className='w-full min-h-[48px] flex items-center justify-between px-4 py-3 sm:py-2.5 hover:bg-white/5 active:bg-white/[0.07] text-icyWhite text-left text-sm font-medium flex-shrink-0 transition-colors touch-manipulation'
 															>
-																<span>{zone.zoneTitle}</span>
-																<span className='text-icyWhite/70 text-base tabular-nums'>
-																	{isOpen ? '−' : '+'}
+																<span className='flex-1 min-w-0 text-left'>
+																	<TruncateText tooltipThreshold={20}>
+																		{zone.zoneTitle}
+																	</TruncateText>
+																</span>
+																<span className='text-icyWhite/70 shrink-0'>
+																	{isOpen ? (
+																		<Undo2 className='w-5 h-5' aria-hidden />
+																	) : (
+																		<span className='text-base'>+</span>
+																	)}
 																</span>
 															</button>
 															{isOpen && (
@@ -604,18 +624,24 @@ export default function StepServiceFromPriceCatalog({
 																							}}
 																						>
 																							<div className='flex-1 min-w-0'>
-																								{path && (
-																									<p className='text-xs text-icyWhite/50 truncate mb-0.5'>
-																										{path}
-																									</p>
-																								)}
+																	{path && (
+																	<p
+																		className='text-xs text-icyWhite/50 truncate mb-0.5'
+																		title={path.length > 30 ? path : undefined}
+																	>
+																		{path}
+																	</p>
+																	)}
 																								<div className='flex items-center justify-between gap-2'>
-																									<span className='font-medium text-icyWhite text-sm truncate'>
+																									<TruncateText
+																										className='font-medium text-icyWhite text-sm flex-1 min-w-0'
+																										tooltipThreshold={25}
+																									>
 																										{getTitleForLocale(
 																											item,
 																											priceLocale,
 																										)}
-																									</span>
+																									</TruncateText>
 																									<span className='text-gold-soft/90 text-sm shrink-0'>
 																										{formatPrice(item.price)} €
 																									</span>

@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { useBookingFlow } from './BookingFlowContext'
+import { TruncateText } from '@/components/ui/truncate-text'
 
 function formatTime(time: string): string {
 	const [h, m] = time.split(':').map(Number)
@@ -35,12 +36,17 @@ export default function BookingSummaryMobile() {
 			</h4>
 			<dl className="space-y-2.5 text-sm">
 				{service && (
-					<div className="flex items-center justify-between gap-3">
+					<div className="flex items-center justify-between gap-3 min-w-0">
 						<dt className="text-icyWhite/50 shrink-0 min-w-[3.5rem]">{tCommon('services')}</dt>
-						<dd className="flex-1 min-w-0 text-icyWhite font-medium text-right truncate">
-							{service}
+						<dd className="flex-1 min-w-0 flex items-center justify-end gap-1">
+							<TruncateText
+								className="text-icyWhite font-medium text-right"
+								tooltipThreshold={25}
+							>
+								{service}
+							</TruncateText>
 							{durationMinutes > 0 && (
-								<span className="text-icyWhite/50 text-xs ml-1 tabular-nums">
+								<span className="text-icyWhite/50 text-xs shrink-0 tabular-nums">
 									({durationMinutes} min)
 								</span>
 							)}

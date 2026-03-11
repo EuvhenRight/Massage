@@ -1,5 +1,6 @@
 "use client";
 
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
@@ -16,15 +17,23 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+export interface StepCustomerInfoHandle {
+  submitForSave: () => Promise<boolean>;
+  submitForConfirm: (onConfirm: (data: BookingFormData) => void | Promise<void>) => void | Promise<void>;
+  isValid: boolean;
+}
+
 interface StepCustomerInfoProps {
   onSubmit: (data: BookingFormData) => void | Promise<void>;
   isSubmitting?: boolean;
+  onValidityChange?: (valid: boolean) => void;
 }
 
-export default function StepCustomerInfo({
+const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProps>(function StepCustomerInfo({
   onSubmit,
   isSubmitting = false,
-}: StepCustomerInfoProps) {
+  onValidityChange,
+}, ref) {
   const t = useTranslations("booking");
   const tValidation = useTranslations("validation");
   const { fullName, email, phone, setCustomerInfo } = useBookingFlow();
@@ -37,6 +46,7 @@ export default function StepCustomerInfo({
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(schema),
+    mode: "onChange",
     defaultValues: {
       service: "",
       fullName: fullName || "",
@@ -45,14 +55,49 @@ export default function StepCustomerInfo({
     },
   });
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const isValid = form.formState.isValid;
+  useEffect(() => {
+    onValidityChange?.(isValid);
+  }, [isValid, onValidityChange]);
+
+  const submitForSave = useCallback(async () => {
+    const ok = await form.trigger();
+    if (!ok) return false;
+    const values = form.getValues();
     setCustomerInfo({
       fullName: values.fullName,
       email: values.email,
       phone: values.phone,
     });
-    await onSubmit(values);
-  });
+    return true;
+  }, [form, setCustomerInfo]);
+
+  const submitForConfirm = useCallback(
+    async (onConfirm: (data: BookingFormData) => void | Promise<void>) => {
+      const values = form.getValues();
+      const ok = await form.trigger();
+      if (!ok) return;
+      setCustomerInfo({
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone,
+      });
+      await onConfirm(values);
+    },
+    [form, setCustomerInfo],
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      submitForSave,
+      submitForConfirm,
+      get isValid() {
+        return form.formState.isValid;
+      },
+    }),
+    [submitForSave, submitForConfirm, form.formState.isValid],
+  );
 
   return (
     <motion.div
@@ -62,7 +107,7 @@ export default function StepCustomerInfo({
       transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+        <form className="space-y-5 sm:space-y-6" onSubmit={(e) => e.preventDefault()}>
           <FormField
             control={form.control}
             name="fullName"
@@ -74,6 +119,8 @@ export default function StepCustomerInfo({
                 <FormControl>
                   <Input
                     placeholder={t("placeholderFullName")}
+                    maxLength={100}
+                    autoComplete="name"
                     className="min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30 touch-manipulation"
                     {...field}
                   />
@@ -96,6 +143,7 @@ export default function StepCustomerInfo({
                     type="email"
                     inputMode="email"
                     autoComplete="email"
+                    maxLength={254}
                     placeholder={t("placeholderEmail")}
                     className="min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30 touch-manipulation"
                     {...field}
@@ -119,6 +167,7 @@ export default function StepCustomerInfo({
                     type="tel"
                     inputMode="tel"
                     autoComplete="tel"
+                    maxLength={20}
                     placeholder={t("placeholderPhone")}
                     className="min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30 touch-manipulation"
                     {...field}
@@ -129,15 +178,11 @@ export default function StepCustomerInfo({
             )}
           />
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full min-h-[52px] sm:min-h-[48px] py-3 sm:py-2.5 rounded-xl text-sm font-semibold bg-gold-soft text-nearBlack hover:bg-gold-glow active:scale-[0.99] shadow-lg shadow-gold-soft/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 touch-manipulation"
-          >
-            {isSubmitting ? t("bookingInProgress") : t("confirmBooking")}
-          </button>
+          <p className="text-xs text-icyWhite/50 leading-relaxed">{t("bookingInfo")}</p>
         </form>
       </Form>
     </motion.div>
   );
-}
+});
+
+export default StepCustomerInfo;

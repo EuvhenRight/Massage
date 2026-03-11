@@ -29,11 +29,11 @@ export default function MassageBookingPage() {
   }));
 
   return (
-    <main className="min-h-screen bg-nearBlack text-icyWhite">
+    <main className="h-screen bg-nearBlack text-icyWhite flex flex-col overflow-hidden">
       <Navbar />
-      <div className="pt-20 pb-6 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="rounded-2xl border border-white/10 bg-nearBlack/50">
+      <div className="flex-1 flex flex-col min-h-0 pt-16 md:pt-20 pb-4 md:pb-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex-1 flex flex-col min-h-0 max-w-7xl mx-auto w-full">
+          <div className="flex-1 flex flex-col min-h-0 rounded-2xl border border-white/10 bg-nearBlack/50 overflow-hidden">
             <BookingFlow
               services={serviceOptions.length > 0 ? serviceOptions : [{ title: t("appointmentFallback"), durationMinutes: 60 }]}
               defaultDuration={60}
