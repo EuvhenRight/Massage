@@ -317,7 +317,7 @@ function BookingFlowInner({
 										onChange={e => setSearchQuery(e.target.value)}
 										placeholder={t('searchServicePlaceholder')}
 										aria-label={t('searchServicePlaceholder')}
-										className='w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-xl border border-white/10 bg-white/5 text-icyWhite placeholder:text-icyWhite/40 text-sm focus:outline-none focus:ring-2 focus:ring-gold-soft/40 focus:border-gold-soft transition-shadow'
+										className='w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-xl border border-white/10 bg-white/5 text-icyWhite placeholder:text-icyWhite/40 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-gold-soft/40 focus:border-gold-soft transition-shadow'
 									/>
 								</div>
 							)}

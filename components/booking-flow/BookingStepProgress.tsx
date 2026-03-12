@@ -35,7 +35,7 @@ export default function BookingStepProgress({ currentStep }: BookingStepProgress
 						const isUpcoming = !isComplete && !isCurrent
 						return (
 							<li key={step} className='flex items-center shrink-0'>
-								<div className='flex items-center gap-2'>
+								<div className='flex flex-col md:flex-row items-center gap-1 md:gap-2'>
 									<span
 										className={`
 											flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-all duration-200
@@ -53,16 +53,11 @@ export default function BookingStepProgress({ currentStep }: BookingStepProgress
 											step
 										)}
 									</span>
-									<span
-										className={`
-											hidden md:inline text-sm font-medium
-											${isCurrent ? 'text-icyWhite' : ''}
-											${isComplete ? 'text-gold-soft/90' : ''}
-											${isUpcoming ? 'text-icyWhite/40' : ''}
-										`}
-									>
-										{t(labelKey)}
-									</span>
+									{isCurrent && (
+										<span className='text-xs md:text-sm font-medium text-center md:text-left text-icyWhite'>
+											{t(labelKey)}
+										</span>
+									)}
 								</div>
 								{idx < STEPS.length - 1 && (
 									<span
