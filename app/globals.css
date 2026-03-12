@@ -59,18 +59,24 @@
     color: hsl(var(--foreground));
   }
 
-  /* Prevent page scroll on booking flow (mobile iOS Safari) */
-  html.booking-page-no-scroll,
+  /* Prevent page scroll on booking flow — lock html/body so only inner components scroll */
+  html.booking-page-no-scroll {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
   html.booking-page-no-scroll body {
-    height: 100dvh;
+    height: 100%;
     max-height: 100dvh;
-    min-height: 0;
+    min-height: 0 !important;
     overflow: hidden;
     overscroll-behavior: none;
     position: fixed;
     width: 100%;
     left: 0;
     right: 0;
+    top: 0;
+    bottom: 0;
   }
 }
 
