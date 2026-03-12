@@ -64,6 +64,7 @@
   html.booking-page-no-scroll body {
     height: 100dvh;
     max-height: 100dvh;
+    min-height: 0;
     overflow: hidden;
     overscroll-behavior: none;
     position: fixed;
