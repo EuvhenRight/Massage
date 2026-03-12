@@ -31,6 +31,13 @@ export default async function RootLayout({
   const locale = await getLocale();
   return (
     <html lang={locale} className="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var p=typeof window!=='undefined'?window.location.pathname:'';if(/\\/booking$|\\/booking\\//.test(p)||p.endsWith('/booking')){document.documentElement.classList.add('booking-page-no-scroll');}})();`,
+          }}
+        />
+      </head>
       <body
         className={`${dmSerif.variable} ${outfit.variable} font-sans min-h-screen`}
       >
