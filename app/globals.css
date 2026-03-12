@@ -58,6 +58,19 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+
+  /* Prevent page scroll on booking flow (mobile iOS Safari) */
+  html.booking-page-no-scroll,
+  html.booking-page-no-scroll body {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
 }
 
 .aurora-text {

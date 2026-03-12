@@ -270,7 +270,7 @@ function BookingFlowInner({
 	const progressStep = step === 4 ? 3 : step
 
 	return (
-		<div className='flex flex-col h-full min-h-[calc(100dvh-6rem)] md:min-h-[420px]'>
+		<div className='flex flex-col h-full min-h-0 md:min-h-[420px]'>
 			{/* Progress — static top */}
 			<div className='shrink-0'>
 				<BookingStepProgress currentStep={progressStep} />
