@@ -18,7 +18,11 @@
     "getDirections": "Get directions",
     "date": "Date",
     "time": "Time",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "about": "About",
+    "team": "Team",
+    "faq": "FAQ",
+    "contact": "Contact"
   },
   "home": {
     "chooseExperience": "Choose your experience",
@@ -105,18 +109,29 @@
   },
   "depilation": {
     "hero": "Precision. Care. Lasting smoothness.",
-    "heroSubtitle": "Premium depilation with 14 years of expertise",
+    "heroSubtitle": "Premium depilation with 14 years of expertise. Medical precision meets comfort.",
+    "heroBadge": "V Studio — Premium Depilation, Bratislava",
+    "heroBookButton": "Book Your Appointment",
+    "heroPricesButton": "View Prices",
     "exploreMassage": "← Explore Massage",
     "bookDepilation": "Book your depilation appointment.",
     "bookDepilationButton": "Book Depilation",
     "viewPricesAndBook": "View full price list and book your appointment.",
     "pricePageButton": "Prices & Book",
+    "trustBarLabel": "Credentials",
+    "trust": {
+      "trustYears": "14+ Years of Experience",
+      "trustChampion": "Champion of Ukraine",
+      "trustMedical": "Medical Education",
+      "trustTechniques": "5 Depilation Techniques",
+      "trustClients": "1000+ Satisfied Clients"
+    },
     "aboutTitle": "About Me",
-    "aboutIntro": "I'm Natalie Volik — a premium depilation master with 14 years of professional experience and medical education. Welcome to our studio.",
-    "aboutJourney": "My career began in Kyiv, where I built high standards of quality, safety, and client service. Today I continue my practice in Bratislava, maintaining the same level of professionalism, precision, and care for every client.",
-    "aboutExpertise": "I master all depilation techniques offered in the studio and always choose the method individually — according to skin type, hair structure, and sensitivity.",
-    "aboutMedical": "My medical background allows me to understand skin physiology deeply and perform procedures with maximum delicacy, safety, and effectiveness.",
-    "aboutContinuous": "I constantly improve my skills, attend professional trainings, and participate in industry forums. This enables me to apply modern techniques, work with the best materials, and deliver a truly premium result.",
+    "aboutIntro": "I'm Natalie Volik — a premium depilation specialist with 14 years of professional experience and medical education. Welcome to V Studio in Bratislava.",
+    "aboutJourney": "My career began in Kyiv, where I set the highest standards for quality, safety, and client care. Today I continue my practice in Bratislava, bringing the same precision and warmth to every session.",
+    "aboutExpertise": "I master every depilation technique offered in the studio. Each method is selected individually — based on your skin type, hair structure, and sensitivity level.",
+    "aboutMedical": "My medical background means I understand skin physiology at a clinical level. Every procedure is performed with maximum precision, safety, and gentleness.",
+    "aboutContinuous": "I continuously advance my skills through professional trainings, conferences, and industry exhibitions — ensuring you always receive the most effective, modern techniques available.",
     "philosophyTitle": "Philosophy",
     "philosophyQuote": "For me, depilation is not just a procedure. It's confidence, aesthetics, and a sense of being well-groomed.",
     "howIHelpTitle": "How I Can Help You",
@@ -132,6 +147,109 @@
     "achievement3": "Judge at international depilation championships",
     "achievement4": "Speaker at professional conferences and training marathons",
     "achievement5": "Participant in international beauty industry exhibitions",
+    "serviceMenu": {
+      "title": "Service Menu",
+      "subtitle": "All techniques. All zones. Transparent pricing. I select the optimal method for your skin individually.",
+      "from": "from",
+      "min": "min",
+      "book": "Book",
+      "zone": {
+        "face": "Face",
+        "body": "Body",
+        "intimate": "Intimate Zone"
+      },
+      "items": {
+        "sugaringUpperLip": { "name": "Sugaring — Upper Lip", "desc": "Gentle sugar paste, no redness. Done in minutes." },
+        "sugaringFullFace": { "name": "Sugaring — Full Face", "desc": "Forehead, cheeks, chin, upper lip — complete treatment." },
+        "waxUpperLip": { "name": "Wax — Upper Lip", "desc": "Classic warm wax for fast, precise removal." },
+        "waxEyebrow": { "name": "Wax — Eyebrow Shaping", "desc": "Clean, defined brow line. Pain-minimized technique." },
+        "electroFace": { "name": "Electroepilation — Face", "desc": "Permanent removal of fine and ingrown hairs. Precision work." },
+        "sugaringUnderarms": { "name": "Sugaring — Underarms", "desc": "Smooth, irritation-free underarms. Natural paste, minimal discomfort." },
+        "sugaringFullArms": { "name": "Sugaring — Full Arms", "desc": "Complete arm treatment from wrist to shoulder." },
+        "sugaringFullLegs": { "name": "Sugaring — Full Legs", "desc": "Silky legs from ankle to hip. Lasts 3–4 weeks." },
+        "waxFullLegs": { "name": "Wax — Full Legs", "desc": "Classic warm wax for longer-lasting smoothness." },
+        "bioFullBody": { "name": "Bio Depilation — Full Body", "desc": "Premium Biolaif formula. Maximum skin care during removal." },
+        "laserFullLegs": { "name": "Laser — Full Legs", "desc": "Long-term hair reduction. Professional diode laser." },
+        "sugaringClassicBikini": { "name": "Sugaring — Classic Bikini", "desc": "Bikini line — gentle and precise. Minimal irritation." },
+        "sugaringDeepBikini": { "name": "Sugaring — Deep Bikini", "desc": "Complete intimate zone. Maximum comfort, absolute privacy." },
+        "waxClassicBikini": { "name": "Wax — Classic Bikini", "desc": "Fast bikini line treatment with warm wax." },
+        "waxDeepBikini": { "name": "Wax — Deep Bikini", "desc": "Full intimate depilation. Discreet, professional, painless." }
+      }
+    },
+    "process": {
+      "title": "How Your Visit Works",
+      "subtitle": "From the first step to lasting smoothness — simple, comfortable, and professional.",
+      "consultation": { "title": "Consultation", "desc": "We discuss your goals, skin type, and select the ideal technique together." },
+      "preparation": { "title": "Preparation", "desc": "Skin is gently cleansed and prepared. Sterile, single-use tools are opened in front of you." },
+      "procedure": { "title": "Procedure", "desc": "The technique is performed with precision and care. I work at your comfort pace." },
+      "aftercare": { "title": "Aftercare", "desc": "You receive personal aftercare recommendations for the best, longest-lasting result." },
+      "expectation": "Most clients describe the sensation as a brief, tolerable warmth. First sessions may be more sensitive — each subsequent visit becomes easier as hair grows thinner. Results typically last 3–5 weeks depending on the zone and technique."
+    },
+    "team": {
+      "title": "Your Specialist",
+      "subtitle": "Every procedure is performed personally by a certified professional.",
+      "natalie": {
+        "name": "Natalie Volik",
+        "role": "Founder & Lead Depilation Specialist",
+        "specialty": "Sugaring · Wax · Bio · Laser · Electroepilation",
+        "bio": "14 years of experience. Medical education. Champion of Ukraine in depilation. Certified technologist for Terra, Enova, and Biolaif. I treat every client as the only one."
+      },
+      "workspace": {
+        "title": "Our Studio",
+        "desc": "A calm, private space designed for your comfort. Every detail — from lighting to temperature — is carefully considered to make your experience as relaxing as possible."
+      }
+    },
+    "hygiene": {
+      "title": "Safety & Hygiene",
+      "subtitle": "Your health is non-negotiable. Every detail is controlled.",
+      "singleUse": { "title": "Single-Use Tools", "desc": "All applicators, spatulas, and contact materials are opened from sealed packaging in front of you and disposed of immediately after use." },
+      "sanitization": { "title": "Medical-Grade Sanitization", "desc": "Surfaces and equipment are disinfected with hospital-grade antiseptics between every client. No exceptions." },
+      "sterilization": { "title": "Autoclave Sterilization", "desc": "All reusable instruments undergo autoclave sterilization at 134°C — the same standard used in medical facilities." },
+      "certified": { "title": "Certified Materials", "desc": "We work exclusively with certified professional brands: Terra, Enova, Biolaif. All products are dermatologically tested and hypoallergenic." }
+    },
+    "testimonials": {
+      "title": "What Clients Say",
+      "subtitle": "Real experiences from real people.",
+      "review1": { "text": "I was terrified of bikini depilation. Natalie made me feel completely at ease — zero awkwardness, minimal pain, perfect result. I've been coming back for 2 years.", "author": "Maria K.", "service": "Sugaring" },
+      "review2": { "text": "The most hygienic salon I've ever visited. Everything opened in front of me, everything explained. I felt safe from the first minute.", "author": "Elena S.", "service": "General" },
+      "review3": { "text": "I switched from another salon after one visit here. The difference in quality and gentleness is night and day. Natalie truly knows skin.", "author": "Katarina P.", "service": "Wax" },
+      "review4": { "text": "As a man, I was hesitant. But the professionalism and discretion here are absolute. Highly recommend for everyone.", "author": "Andrej M.", "service": "Sugaring" },
+      "review5": { "text": "My electroepilation results are incredible. Small sessions, big difference. Finally dealing with those stubborn facial hairs.", "author": "Oksana D.", "service": "Electroepilation" },
+      "review6": { "text": "I booked online and received a confirmation instantly. The process from booking to aftercare is seamless and professional.", "author": "Lucia T.", "service": "General" }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know before your first visit.",
+      "painful": { "q": "Is depilation painful?", "a": "Most clients describe it as a brief, tolerable warmth. I use techniques that minimize discomfort, and the sensation decreases with each subsequent session as hair becomes finer. If you're sensitive, I'll adapt the approach specifically for you." },
+      "prepare": { "q": "How should I prepare for my appointment?", "a": "Hair should be 3–5 mm long (about 10–14 days of growth). Avoid sunbathing, tanning beds, and exfoliating 24 hours before. No creams or lotions on the day of the procedure. That's it — I'll take care of the rest." },
+      "results": { "q": "How long do results last?", "a": "Depending on the technique and body zone, results last 3–5 weeks. With regular sessions, hair grows thinner and slower over time. Laser epilation provides long-term reduction after a course of sessions." },
+      "technique": { "q": "Which technique is best for me?", "a": "It depends on your skin type, hair structure, and sensitivity. During the first visit, I'll assess your needs and recommend the most effective method. I'm certified in all five techniques — sugaring, wax, bio, laser, and electroepilation." },
+      "men": { "q": "Do you work with men?", "a": "Absolutely. I work with both women and men, ensuring full tact, confidentiality, and professionalism. All services are available regardless of gender." },
+      "aftercare": { "q": "What aftercare do you recommend?", "a": "Avoid hot baths, saunas, direct sun, and tight clothing for 24–48 hours. I'll give you a personalized aftercare card after every session with specific recommendations for your skin type." },
+      "booking": { "q": "How do I book and can I cancel?", "a": "Book online through this website — select a service, date, and time. You'll receive an instant email confirmation. Need to reschedule? Just contact me at least 24 hours in advance." },
+      "sensitive": { "q": "Is it safe for sensitive skin or allergies?", "a": "Yes. My medical education allows me to work safely with all skin types, including sensitive and allergy-prone skin. All materials are dermatologically tested and hypoallergenic. I always do a patch test if there's any concern." }
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "subtitle": "Questions? Prefer to talk? I'm here for you.",
+      "mapTitle": "V Studio location",
+      "hours": "Mon–Fri: 9:00–19:00 · Sat: 10:00–16:00",
+      "formTitle": "Send a Message",
+      "nameLabel": "Your name",
+      "namePlaceholder": "Jane Smith",
+      "emailLabel": "Email",
+      "emailPlaceholder": "jane@example.com",
+      "phoneLabel": "Phone (optional)",
+      "phonePlaceholder": "+421 ...",
+      "messageLabel": "Your message",
+      "messagePlaceholder": "Tell me about your needs or ask any question...",
+      "submit": "Send Message",
+      "success": "Thank you! I'll get back to you within 24 hours."
+    },
+    "reserveTitle": "Your Smoothness Starts Today",
+    "reserveDesc": "I look forward to welcoming you. Book your appointment now and experience the difference that 14 years of expertise, medical precision, and genuine care can make.",
+    "bookNow": "Book Now",
+    "callNow": "Call Now",
     "servicesTitle": "Services",
     "servicesDesc": "I work with both women and men, ensuring tact, confidentiality, and professionalism in every detail.",
     "serviceSugaring": "Sugaring",
@@ -140,9 +258,14 @@
     "serviceWaxDesc": "Classic warm or hot wax for longer-lasting smoothness. Suitable for all skin types.",
     "serviceBio": "Bio Depilation",
     "serviceBioDesc": "Premium natural formulas. Maximum care for your skin with professional brands.",
-    "reserveTitle": "Reserve Your Time",
-    "reserveDesc": "I look forward to welcoming you. I'm confident you'll leave not only satisfied with the result, but also with the atmosphere of care, comfort, and ease.",
-    "bookNow": "Book Now",
+    "footer": {
+      "tagline": "Premium depilation studio in Bratislava. 14 years of expertise, medical precision, absolute care.",
+      "navTitle": "Navigation",
+      "socialTitle": "Follow Us",
+      "rights": "All rights reserved.",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy"
+    },
     "myServices": {
       "title": "My Services",
       "subtitle": "Professional depilation techniques. I choose the method individually — for your skin type, hair structure, and sensitivity.",

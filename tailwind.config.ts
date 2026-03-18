@@ -37,10 +37,10 @@ const config: Config = {
   				yellow: '#fbbf24',
   				magenta: '#ec4899'
   			},
-  			gold: {
-  				soft: '#d4af37',
-  				glow: '#f5d87a'
-  			},
+			gold: {
+ 				soft: '#E8B800',
+ 				glow: '#FFD633'
+ 			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -116,10 +116,10 @@ const config: Config = {
   			},
   			'glow-pulse': {
   				'0%, 100%': {
-  					boxShadow: '0 0 20px rgba(212, 175, 55, 0.3)'
-  				},
-  				'50%': {
-  					boxShadow: '0 0 40px rgba(212, 175, 55, 0.6)'
+					boxShadow: '0 0 20px rgba(232, 184, 0, 0.3)'
+ 				},
+ 				'50%': {
+ 					boxShadow: '0 0 40px rgba(232, 184, 0, 0.6)'
   				}
   			},
   			shimmer: {
@@ -139,10 +139,10 @@ const config: Config = {
   			xs: '2px'
   		},
   		boxShadow: {
-  			glow: '0 0 30px rgba(212, 175, 55, 0.4)',
-  			'glow-strong': '0 0 50px rgba(212, 175, 55, 0.5)',
-  			card: '0 4px 30px rgba(0, 0, 0, 0.3)',
-  			'card-hover': '0 8px 40px rgba(212, 175, 55, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+ 			glow: '0 0 30px rgba(232, 184, 0, 0.4)',
+ 			'glow-strong': '0 0 50px rgba(232, 184, 0, 0.5)',
+ 			card: '0 4px 30px rgba(0, 0, 0, 0.3)',
+ 			'card-hover': '0 8px 40px rgba(232, 184, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

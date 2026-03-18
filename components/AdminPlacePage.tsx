@@ -132,7 +132,7 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
       }),
       startY: 22,
       theme: "grid",
-      headStyles: { fillColor: [212, 175, 55] },
+      headStyles: { fillColor: [232, 184, 0] },
     });
     doc.save(`analytics-${place}-${new Date().toISOString().slice(0, 10)}.pdf`);
   }, [filteredAnalytics, place, placeLabel, t, tCommon, currentLocale]);

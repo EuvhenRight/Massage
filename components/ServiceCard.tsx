@@ -32,7 +32,7 @@ export default function ServiceCard({
     mouseY.set(clientY - top);
   }
 
-  const glowStyle = useMotionTemplate`radial-gradient(300px circle at ${mouseX}px ${mouseY}px, rgba(212, 175, 55, 0.15), transparent 80%)`;
+  const glowStyle = useMotionTemplate`radial-gradient(300px circle at ${mouseX}px ${mouseY}px, rgba(232, 184, 0, 0.15), transparent 80%)`;
 
   return (
     <motion.article

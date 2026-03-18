@@ -32,8 +32,8 @@ const T = {
 
 const BRAND = {
   name: "Aurora Salon",
-  gold: "#b8860b",
-  goldLight: "#d4af37",
+  gold: "#C89E00",
+  goldLight: "#E8B800",
   dark: "#1a1a1a",
   text: "#333333",
   muted: "#6b7280",

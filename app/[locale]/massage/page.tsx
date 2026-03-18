@@ -127,7 +127,7 @@ export default function MassagePage() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-nearBlack/70 via-nearBlack/50 to-nearBlack" />
           <div
-            className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.08)_0%,transparent_70%)]"
+            className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(232,184,0,0.08)_0%,transparent_70%)]"
             aria-hidden
           />
         </div>

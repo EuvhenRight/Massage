@@ -18,7 +18,11 @@
     "getDirections": "Získať navigáciu",
     "date": "Dátum",
     "time": "Čas",
-    "loading": "Načítava sa..."
+    "loading": "Načítava sa...",
+    "about": "O nás",
+    "team": "Tím",
+    "faq": "FAQ",
+    "contact": "Kontakt"
   },
   "home": {
     "chooseExperience": "Vyberte svoju skúsenosť",
@@ -145,6 +149,125 @@
     "reserveTitle": "Rezervujte si čas",
     "reserveDesc": "Teším sa na vašu návštevu. Som si istá, že budete spokojní nielen s výsledkom, ale aj s atmosférou starostlivosti a pohody.",
     "bookNow": "Rezervovať",
+    "heroBadge": "V Studio — Prémiová Depilácia, Bratislava",
+    "heroBookButton": "Rezervovať Termín",
+    "heroPricesButton": "Zobraziť Ceny",
+    "trustBarLabel": "Referencie",
+    "trust": {
+      "trustYears": "14+ Rokov Skúseností",
+      "trustChampion": "Šampiónka Ukrajiny",
+      "trustMedical": "Medicínske Vzdelanie",
+      "trustTechniques": "5 Techník Depilácie",
+      "trustClients": "1000+ Spokojných Klientov"
+    },
+    "callNow": "Zavolajte Teraz",
+    "serviceMenu": {
+      "title": "Cenník Služieb",
+      "subtitle": "Všetky techniky. Všetky zóny. Transparentné ceny. Optimálnu metódu vyberiem individuálne pre vašu pokožku.",
+      "from": "od",
+      "min": "min",
+      "book": "Rezervovať",
+      "zone": {
+        "face": "Tvár",
+        "body": "Telo",
+        "intimate": "Intímna Zóna"
+      },
+      "items": {
+        "sugaringUpperLip": { "name": "Sugaring — Horná Pera", "desc": "Jemná cukrová pasta, bez začervenania. Hotové za pár minút." },
+        "sugaringFullFace": { "name": "Sugaring — Celá Tvár", "desc": "Čelo, líca, brada, horná pera — kompletné ošetrenie." },
+        "waxUpperLip": { "name": "Vosk — Horná Pera", "desc": "Klasický teplý vosk pre rýchle a presné odstránenie." },
+        "waxEyebrow": { "name": "Vosk — Tvarovanie Obočia", "desc": "Čisté, definované obočie. Technika s minimálnou bolesťou." },
+        "electroFace": { "name": "Elektroepilácia — Tvár", "desc": "Trvalé odstránenie jemných a zarastajúcich chlpov. Presná práca." },
+        "sugaringUnderarms": { "name": "Sugaring — Podpazušie", "desc": "Hladké, bez podráždenia. Prírodná pasta, minimálny diskomfort." },
+        "sugaringFullArms": { "name": "Sugaring — Celé Ruky", "desc": "Kompletné ošetrenie rúk od zápästia po rameno." },
+        "sugaringFullLegs": { "name": "Sugaring — Celé Nohy", "desc": "Hodvábne nohy od členka po bedrá. Vydrží 3–4 týždne." },
+        "waxFullLegs": { "name": "Vosk — Celé Nohy", "desc": "Klasický teplý vosk pre dlhotrvajúcu hladkosť." },
+        "bioFullBody": { "name": "Bio Depilácia — Celé Telo", "desc": "Prémiová formula Biolaif. Maximálna starostlivosť o pokožku." },
+        "laserFullLegs": { "name": "Laser — Celé Nohy", "desc": "Dlhodobá redukcia chlpov. Profesionálny diódový laser." },
+        "sugaringClassicBikini": { "name": "Sugaring — Klasické Bikiní", "desc": "Linka bikiní — jemne a presne. Minimálne podráždenie." },
+        "sugaringDeepBikini": { "name": "Sugaring — Hĺbkové Bikiní", "desc": "Kompletná intímna zóna. Maximálny komfort, absolútne súkromie." },
+        "waxClassicBikini": { "name": "Vosk — Klasické Bikiní", "desc": "Rýchle ošetrenie línie bikiní teplým voskom." },
+        "waxDeepBikini": { "name": "Vosk — Hĺbkové Bikiní", "desc": "Kompletná intímna depilácia. Diskrétne, profesionálne, bezbolestné." }
+      }
+    },
+    "process": {
+      "title": "Ako Prebieha Vaša Návšteva",
+      "subtitle": "Od prvého kroku po trvalú hladkosť — jednoducho, pohodlne a profesionálne.",
+      "consultation": { "title": "Konzultácia", "desc": "Prediskutujeme vaše ciele, typ pokožky a spoločne vyberieme ideálnu techniku." },
+      "preparation": { "title": "Príprava", "desc": "Pokožku jemne očistíme a pripravíme. Sterilné jednorazové nástroje otvárame pred vami." },
+      "procedure": { "title": "Procedúra", "desc": "Technika sa vykonáva s presnosťou a starostlivosťou. Pracujem vaším tempom komfortu." },
+      "aftercare": { "title": "Následná Starostlivosť", "desc": "Dostanete osobné odporúčania pre najlepší a najdlhšie trvajúci výsledok." },
+      "expectation": "Väčšina klientov opisuje pocit ako krátke, znesiteľné teplo. Prvé sedenia môžu byť citlivejšie — každá ďalšia návšteva je ľahšia. Výsledky zvyčajne trvajú 3–5 týždňov."
+    },
+    "team": {
+      "title": "Vaša Špecialistka",
+      "subtitle": "Každý zákrok vykonáva osobne certifikovaná profesionálka.",
+      "natalie": {
+        "name": "Natálie Volik",
+        "role": "Zakladateľka a Hlavná Špecialistka na Depiláciu",
+        "specialty": "Sugaring · Vosk · Bio · Laser · Elektroepilácia",
+        "bio": "14 rokov skúseností. Medicínske vzdelanie. Šampiónka Ukrajiny v depilácii. Certifikovaná technologička Terra, Enova, Biolaif."
+      },
+      "workspace": {
+        "title": "Naše Štúdio",
+        "desc": "Pokojný, súkromný priestor navrhnutý pre váš komfort. Každý detail je starostlivo premyslený."
+      }
+    },
+    "hygiene": {
+      "title": "Bezpečnosť a Hygiena",
+      "subtitle": "Vaše zdravie je neodiskutovateľné. Každý detail je kontrolovaný.",
+      "singleUse": { "title": "Jednorazové Nástroje", "desc": "Všetky aplikátory a kontaktné materiály otvárame pred vami zo zapečatených obalov." },
+      "sanitization": { "title": "Sanitácia Medicínskej Kvality", "desc": "Povrchy a zariadenia dezinfikujeme nemocničnými antiseptikami medzi každým klientom." },
+      "sterilization": { "title": "Autokláv Sterilizácia", "desc": "Všetky opakovane použiteľné nástroje prechádzajú sterilizáciou autoklávu pri 134°C." },
+      "certified": { "title": "Certifikované Materiály", "desc": "Pracujeme výhradne s certifikovanými profesionálnymi značkami: Terra, Enova, Biolaif." }
+    },
+    "testimonials": {
+      "title": "Čo Hovoria Klientky",
+      "subtitle": "Skutočné skúsenosti od skutočných ľudí.",
+      "review1": { "text": "Bála som sa bikiní depilácie. Natálie ma úplne upokojila — nulová trapnosť, minimálna bolesť, perfektný výsledok.", "author": "Mária K.", "service": "Sugaring" },
+      "review2": { "text": "Najhygienickejší salón, aký som navštívila. Všetko otvorené predo mnou, všetko vysvetlené.", "author": "Elena S.", "service": "Všeobecné" },
+      "review3": { "text": "Prešla som z iného salónu po jednej návšteve tu. Rozdiel v kvalite a jemnosti je obrovský.", "author": "Katarína P.", "service": "Vosk" },
+      "review4": { "text": "Ako muž som váhal. Ale profesionalizmus a diskrétnosť sú tu absolútne.", "author": "Andrej M.", "service": "Sugaring" },
+      "review5": { "text": "Výsledky elektroepilácie sú neuveriteľné. Malé sedenia, veľký rozdiel.", "author": "Oksana D.", "service": "Elektroepilácia" },
+      "review6": { "text": "Rezervovala som online a okamžite som dostala potvrdenie. Celý proces je profesionálny.", "author": "Lucia T.", "service": "Všeobecné" }
+    },
+    "faq": {
+      "title": "Často Kladené Otázky",
+      "subtitle": "Všetko, čo potrebujete vedieť pred prvou návštevou.",
+      "painful": { "q": "Je depilácia bolestivá?", "a": "Väčšina klientov to opisuje ako krátke, znesiteľné teplo. Používam techniky minimalizujúce diskomfort a pocit sa s každým sedením znižuje." },
+      "prepare": { "q": "Ako sa mám pripraviť?", "a": "Chlpy by mali mať 3–5 mm. Vyhnite sa opaľovaniu a peelingom 24 hodín pred zákrokom. Žiadne krémy v deň procedúry." },
+      "results": { "q": "Ako dlho trvajú výsledky?", "a": "Výsledky trvajú 3–5 týždňov podľa techniky a zóny. Pri pravidelných sedeniach chlpy rastú tenšie a pomalšie." },
+      "technique": { "q": "Ktorá technika je pre mňa najlepšia?", "a": "Závisí od typu pokožky, štruktúry chlpov a citlivosti. Na prvej návšteve posúdim vaše potreby a odporučím najefektívnejšiu metódu." },
+      "men": { "q": "Pracujete aj s mužmi?", "a": "Určite. Pracujem so ženami aj mužmi s plnou taktnosťou, diskrétnosťou a profesionalitou." },
+      "aftercare": { "q": "Akú následnú starostlivosť odporúčate?", "a": "Vyhnite sa horúcim kúpeľom, saune, priamemu slnku a tesným odevom 24–48 hodín. Po každom sedení dostanete odporúčania." },
+      "booking": { "q": "Ako si rezervujem a môžem zrušiť?", "a": "Rezervujte online cez túto stránku. Dostanete okamžité potvrdenie e-mailom. Zmenu termínu nahláste minimálne 24 hodín vopred." },
+      "sensitive": { "q": "Je to bezpečné pre citlivú pokožku?", "a": "Áno. Moje medicínske vzdelanie mi umožňuje bezpečne pracovať so všetkými typmi pokožky. Všetky materiály sú dermatologicky testované." }
+    },
+    "contact": {
+      "title": "Kontaktujte Nás",
+      "subtitle": "Máte otázky? Uprednostňujete telefonát? Som tu pre vás.",
+      "mapTitle": "Poloha V Studio",
+      "hours": "Po–Pi: 9:00–19:00 · So: 10:00–16:00",
+      "formTitle": "Poslať Správu",
+      "nameLabel": "Vaše meno",
+      "namePlaceholder": "Jana Nováková",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "jana@example.com",
+      "phoneLabel": "Telefón (nepovinné)",
+      "phonePlaceholder": "+421 ...",
+      "messageLabel": "Vaša správa",
+      "messagePlaceholder": "Povedzte mi o vašich potrebách alebo sa na čokoľvek opýtajte...",
+      "submit": "Odoslať Správu",
+      "success": "Ďakujem! Ozvem sa do 24 hodín."
+    },
+    "footer": {
+      "tagline": "Prémiové depilačné štúdio v Bratislave. 14 rokov skúseností, medicínska precíznosť, absolútna starostlivosť.",
+      "navTitle": "Navigácia",
+      "socialTitle": "Sledujte Nás",
+      "rights": "Všetky práva vyhradené.",
+      "privacy": "Ochrana Súkromia",
+      "cookies": "Zásady Cookies"
+    },
     "myServices": {
       "title": "Moje služby",
       "subtitle": "Profesionálne techniky depilácie. Metódu vyberám individuálne podľa typu pokožky a citlivosti.",
