@@ -20,10 +20,10 @@ const tierStyles = {
     gradient: "from-white/5 to-transparent",
   },
   Black: {
-    border: "border-gold-soft/40",
-    hover: "hover:border-gold-soft/60",
-    accent: "text-gold-soft",
-    gradient: "from-gold-soft/10 to-transparent",
+    border: "border-purple-soft/40",
+    hover: "hover:border-purple-soft/60",
+    accent: "text-purple-soft",
+    gradient: "from-purple-soft/10 to-transparent",
   },
   Obsidian: {
     border: "border-aurora-magenta/40",
@@ -56,12 +56,12 @@ export default function MembershipCard({
         styles.border,
         styles.hover,
         "transition-all duration-500",
-        highlighted && "ring-1 ring-gold-soft/30 shadow-glow"
+        highlighted && "ring-1 ring-purple-soft/30 shadow-glow"
       )}
     >
       <div className="p-8 lg:p-10">
         {highlighted && (
-          <span className="absolute top-4 right-4 text-xs tracking-[0.2em] uppercase text-gold-soft">
+          <span className="absolute top-4 right-4 text-xs tracking-[0.2em] uppercase text-purple-soft">
             {t("mostPopular")}
           </span>
         )}
@@ -84,7 +84,7 @@ export default function MembershipCard({
                 className={cn(
                   "mt-1.5 w-1.5 h-1.5 rounded-full shrink-0",
                   tier === "Silver" && "bg-white/60",
-                  tier === "Black" && "bg-gold-soft",
+                  tier === "Black" && "bg-purple-soft",
                   tier === "Obsidian" && "bg-aurora-magenta"
                 )}
               />
@@ -101,7 +101,7 @@ export default function MembershipCard({
             tier === "Silver" &&
               "bg-white/10 text-icyWhite hover:bg-white/20",
             tier === "Black" &&
-              "bg-gold-soft/20 text-gold-soft border border-gold-soft/40 hover:bg-gold-soft/30 hover:shadow-glow",
+              "bg-purple-soft/20 text-purple-soft border border-purple-soft/40 hover:bg-purple-soft/30 hover:shadow-glow",
             tier === "Obsidian" &&
               "bg-aurora-magenta/20 text-aurora-magenta border border-aurora-magenta/40 hover:bg-aurora-magenta/30"
           )}

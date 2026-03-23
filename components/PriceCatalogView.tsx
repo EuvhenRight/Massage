@@ -52,12 +52,12 @@ function ZoneItemsList({
               <span className="text-icyWhite/70 text-sm">
                 {item.durationMinutes} {t("min")}
               </span>
-              <span className="text-gold-soft/90 font-medium">
+              <span className="text-purple-soft/90 font-medium">
                 {formatPrice(item.price)} €
               </span>
               <Link
                 href={bookingHref}
-                className="text-gold-soft/80 hover:text-gold-soft text-xs uppercase tracking-wider"
+                className="text-purple-soft/80 hover:text-purple-soft text-xs uppercase tracking-wider"
               >
                 {t("bookThis")}
               </Link>
@@ -116,7 +116,7 @@ function SectionBlock({
   if (zones.length === 0) return null;
   return (
     <div className="mb-10">
-      <h2 className="text-xl font-semibold text-gold-soft/90 mb-2">{title}</h2>
+      <h2 className="text-xl font-semibold text-purple-soft/90 mb-2">{title}</h2>
       {desc ? (
         <p className="text-icyWhite/60 text-sm mb-4">{desc}</p>
       ) : null}

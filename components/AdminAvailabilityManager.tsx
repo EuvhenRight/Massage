@@ -98,7 +98,7 @@ function MonthCalendar({
               className={clsx(
                 "w-9 h-9 rounded-lg text-sm font-medium transition-colors",
                 isOpen
-                  ? "bg-gold-soft/20 text-gold-glow border border-gold-soft/40 hover:bg-gold-soft/30"
+                  ? "bg-purple-soft/20 text-purple-glow border border-purple-soft/40 hover:bg-purple-soft/30"
                   : "bg-white/5 text-icyWhite/40 border border-white/10 hover:bg-white/10 hover:text-icyWhite/60"
               )}
             >
@@ -264,7 +264,7 @@ export default function AdminAvailabilityManager({
         </Select>
         <span
           title={t("prepBufferTitle")}
-          className="inline-flex cursor-help rounded-full p-0.5 text-icyWhite/50 hover:text-gold-soft/80 transition-colors"
+          className="inline-flex cursor-help rounded-full p-0.5 text-icyWhite/50 hover:text-purple-soft/80 transition-colors"
           aria-label={t("prepBufferAria")}
         >
           <Info className="h-3.5 w-3.5" />
@@ -359,16 +359,16 @@ export default function AdminAvailabilityManager({
           {(
             <div className="lg:w-[300px] lg:shrink-0 lg:border-l lg:border-white/10 lg:pl-8">
               <h3 className="font-medium text-icyWhite mb-3">{t("toggleDaysFor")} {formatMonthLabel(scope, monthNames)}</h3>
-              <div className="mb-4 rounded-xl border border-gold-soft/20 bg-gold-soft/5 px-4 py-3">
+              <div className="mb-4 rounded-xl border border-purple-soft/20 bg-purple-soft/5 px-4 py-3">
                 <div className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-soft/20 text-gold-soft">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-soft/20 text-purple-soft">
                     <Info className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 space-y-2">
                     <p className="text-sm text-icyWhite/90">{t("dayToggleInfo")}</p>
                     <div className="flex flex-wrap items-center gap-3 text-xs">
                       <span className="flex items-center gap-1.5">
-                        <span className="h-3 w-3 rounded border border-gold-soft/40 bg-gold-soft/20" aria-hidden />
+                        <span className="h-3 w-3 rounded border border-purple-soft/40 bg-purple-soft/20" aria-hidden />
                         <span className="text-icyWhite/80">{t("dayToggleLegendOpen")}</span>
                       </span>
                       <span className="flex items-center gap-1.5">
@@ -396,7 +396,7 @@ export default function AdminAvailabilityManager({
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-gold-soft/20 text-gold-soft hover:bg-gold-soft/30"
+            className="bg-purple-soft/20 text-purple-soft hover:bg-purple-soft/30"
           >
             {saving ? t("saving") : t("saveAvailability")}
           </Button>

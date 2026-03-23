@@ -10,12 +10,25 @@ interface GlowTextProps {
 	colorScheme?: ColorScheme
 }
 
-const PALETTES: Record<ColorScheme, { primary: { r: number; g: number; b: number }; light: { r: number; g: number; b: number } }> = {
+const PALETTES: Record<
+	ColorScheme,
+	{
+		primary: { r: number; g: number; b: number }
+		light: { r: number; g: number; b: number }
+	}
+> = {
 	gold: { primary: { r: 232, g: 184, b: 0 }, light: { r: 255, g: 214, b: 51 } },
-	purple: { primary: { r: 147, g: 51, b: 234 }, light: { r: 192, g: 132, b: 252 } },
+	purple: {
+		primary: { r: 147, g: 51, b: 234 },
+		light: { r: 192, g: 132, b: 252 },
+	},
 }
 
-export default function GlowText({ text, className = '', colorScheme = 'gold' }: GlowTextProps) {
+export default function GlowText({
+	text,
+	className = '',
+	colorScheme = 'gold',
+}: GlowTextProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null)
 	const mouse = useRef({ x: 0.5, y: 0.5, active: false })
 	const raf = useRef<number>(0)
@@ -91,8 +104,12 @@ export default function GlowText({ text, className = '', colorScheme = 'gold' }:
 			ctx.textBaseline = 'alphabetic'
 
 			const grad = ctx.createRadialGradient(
-				lightX, lightY, 0,
-				lightX, lightY, maxRadius,
+				lightX,
+				lightY,
+				0,
+				lightX,
+				lightY,
+				maxRadius,
 			)
 			const { r, g, b } = layer.color
 			const baseAlpha = mouse.current.active ? 0.15 : 0.35
@@ -112,8 +129,12 @@ export default function GlowText({ text, className = '', colorScheme = 'gold' }:
 		ctx.textBaseline = 'alphabetic'
 
 		const whiteGrad = ctx.createRadialGradient(
-			lightX, lightY, 0,
-			lightX, lightY, maxRadius * 0.6,
+			lightX,
+			lightY,
+			0,
+			lightX,
+			lightY,
+			maxRadius * 0.6,
 		)
 		const peak = mouse.current.active ? 1 : 0.9
 		whiteGrad.addColorStop(0, `rgba(255,255,255,${peak})`)
@@ -142,17 +163,20 @@ export default function GlowText({ text, className = '', colorScheme = 'gold' }:
 		}
 	}, [draw, animate])
 
-	const handleMouseMove = useCallback((e: React.MouseEvent) => {
-		const canvas = canvasRef.current
-		if (!canvas) return
-		const rect = canvas.getBoundingClientRect()
-		mouse.current = {
-			x: (e.clientX - rect.left) / rect.width,
-			y: (e.clientY - rect.top) / rect.height,
-			active: true,
-		}
-		if (!raf.current) raf.current = requestAnimationFrame(animate)
-	}, [animate])
+	const handleMouseMove = useCallback(
+		(e: React.MouseEvent) => {
+			const canvas = canvasRef.current
+			if (!canvas) return
+			const rect = canvas.getBoundingClientRect()
+			mouse.current = {
+				x: (e.clientX - rect.left) / rect.width,
+				y: (e.clientY - rect.top) / rect.height,
+				active: true,
+			}
+			if (!raf.current) raf.current = requestAnimationFrame(animate)
+		},
+		[animate],
+	)
 
 	const handleMouseLeave = useCallback(() => {
 		mouse.current = { x: 0.5, y: 0.5, active: false }
@@ -162,7 +186,10 @@ export default function GlowText({ text, className = '', colorScheme = 'gold' }:
 	}, [draw])
 
 	return (
-		<div ref={containerRef} className={`relative inline-flex justify-center ${className}`}>
+		<div
+			ref={containerRef}
+			className={`relative inline-flex justify-center ${className}`}
+		>
 			<canvas
 				ref={canvasRef}
 				onMouseMove={handleMouseMove}
@@ -170,10 +197,7 @@ export default function GlowText({ text, className = '', colorScheme = 'gold' }:
 				className='block'
 				aria-hidden='true'
 			/>
-			<h1
-				id='depilation-hero'
-				className='sr-only'
-			>
+			<h1 id='depilation-hero' className='sr-only'>
 				{text}
 			</h1>
 		</div>

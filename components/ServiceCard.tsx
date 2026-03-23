@@ -44,7 +44,7 @@ export default function ServiceCard({
       className={cn(
         "group relative overflow-hidden rounded-2xl border border-white/5",
         "bg-nearBlack/80 backdrop-blur-sm",
-        "transition-all duration-500 hover:border-gold-soft/30 hover:shadow-card-hover",
+        "transition-all duration-500 hover:border-purple-soft/30 hover:shadow-card-hover",
         "cursor-default"
       )}
       style={{
@@ -75,7 +75,7 @@ export default function ServiceCard({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/20 to-transparent" />
           <div className="absolute bottom-4 left-6 right-6">
-            <span className="text-gold-soft text-sm font-medium tracking-wider">
+            <span className="text-purple-soft text-sm font-medium tracking-wider">
               {price}
             </span>
           </div>

@@ -5,42 +5,47 @@
  */
 
 const T = {
-  confirmed: "Potvrdené",
-  rescheduled: "Presunuté",
-  cancelled: "Zrušené",
-  newBooking: "Nová rezervácia",
-  luxurySalon: "Luxusný salón",
-  date: "Dátum",
-  time: "Čas",
-  service: "Služba",
-  customer: "Zákazník",
-  previousTime: "Predchádzajúci termín",
-  newTime: "Nový termín",
-  hi: "Ahoj",
-  confirmedBody: "Vaša rezervácia v salóne Aurora bola potvrdená. Tešíme sa na Vašu návštevu.",
-  arriveEarly: "Prosíme prijdite o 10 minút skôr, aby ste sa v pohode stihli prihlásiť.",
-  rescheduledBody: "Vaša rezervácia bola presunutá. Tu sú aktualizované údaje.",
-  arriveEarlyResched: "Prosíme prijdite o 10 minút skôr na nový termín.",
-  cancelledBody: "Vaša rezervácia v salóne Aurora bola podľa požiadavky zrušená.",
-  hopeToSee: "Dúfame, že sa opäť uvidíme. Rezervujte si nový termín, kedykoľvek budete pripravení.",
-  newBookingAdmin: "Bola vytvorená nová rezervácia.",
-  cancelledAdmin: "Rezervácia bola zrušená.",
-  needChanges: "Potrebujete zmeniť termín?",
-  contactUs: "Kontaktujte nás na presun alebo zrušenie. Odporúčame prijsť o 10 minút skôr.",
-  appointment: "Rezervácia",
-} as const;
+	confirmed: 'Potvrdené',
+	rescheduled: 'Presunuté',
+	cancelled: 'Zrušené',
+	newBooking: 'Nová rezervácia',
+	luxurySalon: 'Luxusný salón',
+	date: 'Dátum',
+	time: 'Čas',
+	service: 'Služba',
+	customer: 'Zákazník',
+	previousTime: 'Predchádzajúci termín',
+	newTime: 'Nový termín',
+	hi: 'Ahoj',
+	confirmedBody:
+		'Vaša rezervácia v salóne Aurora bola potvrdená. Tešíme sa na Vašu návštevu.',
+	arriveEarly:
+		'Prosíme prijdite o 10 minút skôr, aby ste sa v pohode stihli prihlásiť.',
+	rescheduledBody: 'Vaša rezervácia bola presunutá. Tu sú aktualizované údaje.',
+	arriveEarlyResched: 'Prosíme prijdite o 10 minút skôr na nový termín.',
+	cancelledBody:
+		'Vaša rezervácia v salóne Aurora bola podľa požiadavky zrušená.',
+	hopeToSee:
+		'Dúfame, že sa opäť uvidíme. Rezervujte si nový termín, kedykoľvek budete pripravení.',
+	newBookingAdmin: 'Bola vytvorená nová rezervácia.',
+	cancelledAdmin: 'Rezervácia bola zrušená.',
+	needChanges: 'Potrebujete zmeniť termín?',
+	contactUs:
+		'Kontaktujte nás na presun alebo zrušenie. Odporúčame prijsť o 10 minút skôr.',
+	appointment: 'Rezervácia',
+} as const
 
 const BRAND = {
-  name: "Aurora Salon",
-  gold: "#C89E00",
-  goldLight: "#E8B800",
-  dark: "#1a1a1a",
-  text: "#333333",
-  muted: "#6b7280",
-  border: "#e5e7eb",
-  bg: "#f9fafb",
-  white: "#ffffff",
-};
+	name: 'Aurora Salon',
+	gold: '#C89E00',
+	goldLight: '#E8B800',
+	dark: '#1a1a1a',
+	text: '#333333',
+	muted: '#6b7280',
+	border: '#e5e7eb',
+	bg: '#f9fafb',
+	white: '#ffffff',
+}
 
 const BASE_STYLES = `
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -49,10 +54,10 @@ const BASE_STYLES = `
   color: ${BRAND.text};
   margin: 0;
   padding: 0;
-`;
+`
 
 function emailWrapper(html: string): string {
-  return `
+	return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -74,11 +79,11 @@ function emailWrapper(html: string): string {
     </tr>
   </table>
 </body>
-</html>`;
+</html>`
 }
 
 function header(status: string, statusColor: string): string {
-  return `
+	return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, ${BRAND.dark} 0%, #2d2d2d 100%);">
       <tr>
         <td style="padding: 32px 40px; text-align: center;">
@@ -93,11 +98,11 @@ function header(status: string, statusColor: string): string {
           </span>
         </td>
       </tr>
-    </table>`;
+    </table>`
 }
 
 function detailRow(label: string, value: string): string {
-  return `
+	return `
     <tr>
       <td style="padding: 12px 0; border-bottom: 1px solid ${BRAND.border}; font-size: 14px; color: ${BRAND.muted}; width: 40%;">
         ${label}
@@ -105,11 +110,11 @@ function detailRow(label: string, value: string): string {
       <td style="padding: 12px 0; border-bottom: 1px solid ${BRAND.border}; font-size: 14px; font-weight: 500; color: ${BRAND.text};">
         ${value}
       </td>
-    </tr>`;
+    </tr>`
 }
 
 function footerSection(): string {
-  return `
+	return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 8px;">
       <tr>
         <td style="padding: 24px 40px; background: ${BRAND.bg}; border-top: 1px solid ${BRAND.border};">
@@ -121,12 +126,17 @@ function footerSection(): string {
           </p>
         </td>
       </tr>
-    </table>`;
+    </table>`
 }
 
-export function buildConfirmationEmail(customerName: string, date: string, time: string, service: string): string {
-  const inner = `
-    ${header(T.confirmed, "#059669")}
+export function buildConfirmationEmail(
+	customerName: string,
+	date: string,
+	time: string,
+	service: string,
+): string {
+	const inner = `
+    ${header(T.confirmed, '#059669')}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
         <td>
@@ -147,21 +157,21 @@ export function buildConfirmationEmail(customerName: string, date: string, time:
         </td>
       </tr>
     </table>
-    ${footerSection()}`;
+    ${footerSection()}`
 
-  return emailWrapper(inner);
+	return emailWrapper(inner)
 }
 
 export function buildRescheduledEmail(
-  customerName: string,
-  service: string,
-  oldDate: string,
-  oldTime: string,
-  newDate: string,
-  newTime: string
+	customerName: string,
+	service: string,
+	oldDate: string,
+	oldTime: string,
+	newDate: string,
+	newTime: string,
 ): string {
-  const inner = `
-    ${header(T.rescheduled, "#d97706")}
+	const inner = `
+    ${header(T.rescheduled, '#d97706')}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
         <td>
@@ -182,14 +192,19 @@ export function buildRescheduledEmail(
         </td>
       </tr>
     </table>
-    ${footerSection()}`;
+    ${footerSection()}`
 
-  return emailWrapper(inner);
+	return emailWrapper(inner)
 }
 
-export function buildCancelledEmail(customerName: string, date: string, time: string, service: string): string {
-  const inner = `
-    ${header(T.cancelled, "#6b7280")}
+export function buildCancelledEmail(
+	customerName: string,
+	date: string,
+	time: string,
+	service: string,
+): string {
+	const inner = `
+    ${header(T.cancelled, '#6b7280')}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
         <td>
@@ -210,13 +225,19 @@ export function buildCancelledEmail(customerName: string, date: string, time: st
         </td>
       </tr>
     </table>
-    ${footerSection()}`;
+    ${footerSection()}`
 
-  return emailWrapper(inner);
+	return emailWrapper(inner)
 }
 
-export function buildAdminNewBooking(customerName: string, email: string, date: string, time: string, service: string): string {
-  const inner = `
+export function buildAdminNewBooking(
+	customerName: string,
+	email: string,
+	date: string,
+	time: string,
+	service: string,
+): string {
+	const inner = `
     ${header(T.newBooking, BRAND.gold)}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
@@ -226,21 +247,27 @@ export function buildAdminNewBooking(customerName: string, email: string, date: 
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
             ${detailRow(T.customer, customerName)}
-            ${detailRow("Email", `<a href="mailto:${email}" style="color: ${BRAND.gold}; text-decoration: none;">${email}</a>`)}
+            ${detailRow('Email', `<a href="mailto:${email}" style="color: ${BRAND.gold}; text-decoration: none;">${email}</a>`)}
             ${detailRow(T.date, date)}
             ${detailRow(T.time, time)}
             ${detailRow(T.service, service || T.appointment)}
           </table>
         </td>
       </tr>
-    </table>`;
+    </table>`
 
-  return emailWrapper(inner);
+	return emailWrapper(inner)
 }
 
-export function buildAdminCancelled(customerName: string, email: string, date: string, time: string, service: string): string {
-  const inner = `
-    ${header(T.cancelled, "#6b7280")}
+export function buildAdminCancelled(
+	customerName: string,
+	email: string,
+	date: string,
+	time: string,
+	service: string,
+): string {
+	const inner = `
+    ${header(T.cancelled, '#6b7280')}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
       <tr>
         <td>
@@ -249,14 +276,14 @@ export function buildAdminCancelled(customerName: string, email: string, date: s
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
             ${detailRow(T.customer, customerName)}
-            ${detailRow("Email", `<a href="mailto:${email}" style="color: ${BRAND.gold}; text-decoration: none;">${email}</a>`)}
+            ${detailRow('Email', `<a href="mailto:${email}" style="color: ${BRAND.gold}; text-decoration: none;">${email}</a>`)}
             ${detailRow(T.date, date)}
             ${detailRow(T.time, time)}
             ${detailRow(T.service, service || T.appointment)}
           </table>
         </td>
       </tr>
-    </table>`;
+    </table>`
 
-  return emailWrapper(inner);
+	return emailWrapper(inner)
 }

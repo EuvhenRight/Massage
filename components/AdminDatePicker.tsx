@@ -225,7 +225,7 @@ export default function AdminDatePicker({ value, onChange, id, minDate }: AdminD
                     ${selected
                       ? "bg-sky-500/80 text-white ring-1 ring-sky-400/60"
                       : "text-icyWhite hover:bg-white/10"}
-                    ${isToday && !selected ? "ring-2 ring-gold-soft/70 bg-gold-soft/15 text-gold-glow" : ""}
+                    ${isToday && !selected ? "ring-2 ring-purple-soft/70 bg-purple-soft/15 text-purple-glow" : ""}
                     ${isPast ? "opacity-40 cursor-not-allowed hover:bg-transparent" : ""}
                   `}
                 >

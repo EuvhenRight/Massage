@@ -6,6 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
+import { getPlaceAccentUi } from '@/lib/place-accent-ui'
+import type { Place } from '@/lib/places'
 import LanguageSwitcher from './LanguageSwitcher'
 
 type NavLink = { path: string; key: string }
@@ -53,6 +55,8 @@ export default function Navbar() {
 	const pathname = usePathname()
 	const locale = (params?.locale as string) ?? 'sk'
 	const isDepilation = pathname?.includes('/depilation') ?? false
+	const place: Place = isDepilation ? 'depilation' : 'massage'
+	const ui = useMemo(() => getPlaceAccentUi(place), [place])
 
 	const navLinks = useMemo(() => {
 		const links = isDepilation ? DEPILATION_LINKS : MASSAGE_LINKS
@@ -116,7 +120,7 @@ export default function Navbar() {
 						<button
 							type='button'
 							onClick={() => setOpen(v => !v)}
-							className='relative w-10 h-10 flex items-center justify-center rounded-xl border border-white/10 hover:border-gold-soft/30 bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-300'
+							className={`relative w-10 h-10 flex items-center justify-center rounded-xl border bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-300 ${ui.burgerBorder}`}
 							aria-expanded={open}
 							aria-controls='nav-menu'
 							aria-label={open ? t('closeMenu') : t('openMenu')}
@@ -182,14 +186,14 @@ export default function Navbar() {
 											onClick={() => setOpen(false)}
 											className='group flex items-center gap-4 py-4 border-b border-white/5'
 										>
-											<span className='text-gold-soft/30 text-sm font-mono tabular-nums'>
+											<span className={`${ui.menuNumber} text-sm font-mono tabular-nums`}>
 												{String(i + 1).padStart(2, '0')}
 											</span>
-											<span className='font-serif text-3xl sm:text-4xl lg:text-5xl text-icyWhite/90 group-hover:text-gold-soft transition-colors duration-300 tracking-tight'>
+											<span className={ui.menuTitle}>
 												{link.label}
 											</span>
 											<motion.span
-												className='ml-auto text-gold-soft/0 group-hover:text-gold-soft/60 transition-colors duration-300'
+												className={ui.menuArrow}
 												aria-hidden
 											>
 												<svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -206,7 +210,7 @@ export default function Navbar() {
 								<Link
 									href={`/${locale}/${isDepilation ? 'depilation' : 'massage'}/booking`}
 									onClick={() => setOpen(false)}
-									className='inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-[0.2em] uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-all duration-300'
+									className={ui.navMenuCta}
 								>
 									{t('book')}
 									<svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>

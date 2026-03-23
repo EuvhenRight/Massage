@@ -366,7 +366,7 @@ export default function BookingCalendar({
 									exit={{ opacity: 0 }}
 									className='py-12 text-center'
 								>
-									<p className='text-gold-glow text-xl font-serif mb-4'>
+									<p className='text-purple-glow text-xl font-serif mb-4'>
 										Booking confirmed!
 									</p>
 									<p className='text-icyWhite/80 mb-6'>
@@ -385,7 +385,7 @@ export default function BookingCalendar({
 										<button
 											type='button'
 											onClick={resetBooking}
-											className='px-4 py-2 rounded-lg bg-gold-soft/20 border border-gold-soft/40 text-gold-glow hover:bg-gold-soft/30'
+											className='px-4 py-2 rounded-lg bg-purple-soft/20 border border-purple-soft/40 text-purple-glow hover:bg-purple-soft/30'
 										>
 											Book another
 										</button>
@@ -412,7 +412,7 @@ export default function BookingCalendar({
 									>
 										← Back to calendar
 									</button>
-									<h3 className='font-serif text-lg text-gold-soft mb-4'>
+									<h3 className='font-serif text-lg text-purple-soft mb-4'>
 										{selectedDate.toLocaleDateString('en-US', {
 											weekday: 'long',
 											month: 'long',
@@ -438,8 +438,8 @@ export default function BookingCalendar({
 															className={clsx(
 																'px-4 py-2 rounded-lg text-sm transition-all',
 																selectedSlot === slot
-																	? 'bg-gold-soft/30 border border-gold-soft text-gold-glow'
-																	: 'bg-white/5 border border-white/10 text-icyWhite/80 hover:border-gold-soft/40',
+																	? 'bg-purple-soft/30 border border-purple-soft text-purple-glow'
+																	: 'bg-white/5 border border-white/10 text-icyWhite/80 hover:border-purple-soft/40',
 															)}
 														>
 															{formatTimeSlot(slot)}
@@ -525,7 +525,7 @@ export default function BookingCalendar({
 													<button
 														type='submit'
 														disabled={submitting}
-														className='px-6 py-3 rounded-lg bg-gold-soft/20 border border-gold-soft/50 text-gold-glow font-medium hover:bg-gold-soft/30 disabled:opacity-50'
+														className='px-6 py-3 rounded-lg bg-purple-soft/20 border border-purple-soft/50 text-purple-glow font-medium hover:bg-purple-soft/30 disabled:opacity-50'
 													>
 														{submitting ? 'Booking...' : 'Confirm booking'}
 													</button>
@@ -552,14 +552,14 @@ export default function BookingCalendar({
 															: addWeeks(d, -1),
 													)
 												}
-												className='px-4 py-2 rounded-lg bg-aurora-yellow/15 border border-gold-soft/40 text-icyWhite hover:bg-aurora-yellow/25 transition-all'
+												className='px-4 py-2 rounded-lg bg-aurora-yellow/15 border border-purple-soft/40 text-icyWhite hover:bg-aurora-yellow/25 transition-all'
 											>
 												Prev
 											</button>
 											<button
 												type='button'
 												onClick={() => setCurrentDate(new Date())}
-												className='px-4 py-2 rounded-lg bg-aurora-yellow/15 border border-gold-soft/40 text-icyWhite hover:bg-aurora-yellow/25 transition-all'
+												className='px-4 py-2 rounded-lg bg-aurora-yellow/15 border border-purple-soft/40 text-icyWhite hover:bg-aurora-yellow/25 transition-all'
 											>
 												Today
 											</button>
@@ -572,7 +572,7 @@ export default function BookingCalendar({
 															: addWeeks(d, 1),
 													)
 												}
-												className='px-4 py-2 rounded-lg bg-aurora-yellow/15 border border-gold-soft/40 text-icyWhite hover:bg-aurora-yellow/25 transition-all'
+												className='px-4 py-2 rounded-lg bg-aurora-yellow/15 border border-purple-soft/40 text-icyWhite hover:bg-aurora-yellow/25 transition-all'
 											>
 												Next
 											</button>
@@ -591,8 +591,8 @@ export default function BookingCalendar({
 													className={clsx(
 														'px-3 py-1.5 rounded-lg text-sm capitalize transition-all',
 														view === v
-															? 'bg-aurora-yellow/35 border border-gold-soft/70 text-icyWhite'
-															: 'bg-aurora-yellow/15 border border-gold-soft/40 text-icyWhite/80 hover:bg-aurora-yellow/25',
+															? 'bg-aurora-yellow/35 border border-purple-soft/70 text-icyWhite'
+															: 'bg-aurora-yellow/15 border border-purple-soft/40 text-icyWhite/80 hover:bg-aurora-yellow/25',
 													)}
 												>
 													{v === 'month'
@@ -650,7 +650,7 @@ export default function BookingCalendar({
 																				'opacity-50 cursor-not-allowed text-icyWhite/50',
 																			working &&
 																				isToday(day) &&
-																				'bg-aurora-yellow/20 text-gold-glow',
+																				'bg-aurora-yellow/20 text-purple-glow',
 																			working &&
 																				!isToday(day) &&
 																				'text-icyWhite/70 hover:bg-white/10 hover:text-icyWhite',
@@ -696,7 +696,7 @@ export default function BookingCalendar({
 																className={clsx(
 																	'border-r border-white/6 py-2 text-center text-sm',
 																	isToday(d)
-																		? 'bg-gold-soft/20 text-gold-glow'
+																		? 'bg-purple-soft/20 text-purple-glow'
 																		: 'text-icyWhite/80',
 																)}
 															>
@@ -789,7 +789,7 @@ export default function BookingCalendar({
 																	key={event.start + event.title}
 																	className='w-full flex items-center gap-4 p-4 rounded-lg bg-nearBlack/80 border border-white/8'
 																>
-																	<div className='flex flex-col items-center min-w-[60px] text-gold-glow'>
+																	<div className='flex flex-col items-center min-w-[60px] text-purple-glow'>
 																		<span className='text-lg font-serif'>
 																			{date.getDate()}
 																		</span>

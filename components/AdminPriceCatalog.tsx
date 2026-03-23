@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { getPlaceAccentUi } from "@/lib/place-accent-ui";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { getTitleForLocale } from "@/types/price-catalog";
@@ -66,6 +67,7 @@ type SelectedNode =
 
 export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
   const t = useTranslations("admin");
+  const ui = useMemo(() => getPlaceAccentUi(place), [place]);
   const locale = (useLocale() || "en") as "sk" | "en" | "ru" | "uk";
   const [catalog, setCatalog] = useState<PriceCatalogStructure>(EMPTY_CATALOG);
   const [loading, setLoading] = useState(true);
@@ -533,7 +535,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
           <button
             type="button"
             onClick={() => addZoneItem(sex, serviceIndex, sectionIndex, zoneIndex)}
-            className="text-gold-soft/80 hover:text-gold-soft text-xs"
+            className={ui.priceCatalogLink}
           >
             + {t("add")} item
           </button>
@@ -587,7 +589,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
           <button
             type="button"
             onClick={() => addZone(sex, serviceIndex, sectionIndex)}
-            className="text-gold-soft/80 hover:text-gold-soft text-xs"
+            className={ui.priceCatalogLink}
           >
             + Zone
           </button>
@@ -612,7 +614,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
   const renderService = (sex: SexKey, service: PriceService | undefined, serviceIndex: number) => {
     if (!service) return null;
     return (
-    <div key={service.id} className="mb-8 rounded-2xl border border-gold-soft/20 p-5 bg-white/[0.02]">
+    <div key={service.id} className={ui.priceCatalogCard}>
       <div className="flex justify-between items-start gap-2 mb-4">
         <div className="flex-1 min-w-0">
           <span className="text-xs text-icyWhite/50 uppercase">Service</span>
@@ -624,21 +626,21 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
           <button
             type="button"
             onClick={() => addSection(sex, serviceIndex)}
-            className="text-gold-soft/80 hover:text-gold-soft text-xs"
+            className={ui.priceCatalogLink}
           >
             + Section
           </button>
           <button
             type="button"
             onClick={() => addZone(sex, serviceIndex, null)}
-            className="text-gold-soft/80 hover:text-gold-soft text-xs"
+            className={ui.priceCatalogLink}
           >
             + Zone
           </button>
           <button
             type="button"
             onClick={() => addServiceItem(sex, serviceIndex)}
-            className="text-gold-soft/80 hover:text-gold-soft text-xs"
+            className={ui.priceCatalogLink}
           >
             + Item
           </button>
@@ -724,7 +726,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
           <button
             type="button"
             onClick={() => setCatalog(ensureIds(getPriceCatalogExample(place)))}
-            className="px-4 py-2.5 rounded-lg border border-gold-soft/40 text-gold-soft text-sm hover:bg-gold-soft/10"
+            className={ui.priceCatalogOutlineBtn}
           >
             {t("loadExample")}
           </button>
@@ -732,7 +734,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
             type="button"
             onClick={save}
             disabled={saving}
-            className="px-5 py-2.5 rounded-lg bg-gold-soft text-nearBlack font-medium text-sm hover:bg-gold-glow disabled:opacity-50"
+            className={ui.priceCatalogSaveBtn}
           >
             {saving ? t("saving") : t("save")}
           </button>
@@ -753,7 +755,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
                   onClick={() => setSelected({ type: "sex", sex })}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
                     isSelected({ type: "sex", sex })
-                      ? "bg-gold-soft/20 text-gold-soft"
+                      ? ui.priceCatalogPill
                       : "hover:bg-white/5 text-icyWhite"
                   }`}
                 >
@@ -767,7 +769,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
                         onClick={() => setSelected({ type: "service", sex, serviceIndex: si })}
                         className={`w-full text-left px-3 py-1.5 rounded text-sm truncate ${
                           isSelected({ type: "service", sex, serviceIndex: si })
-                            ? "bg-gold-soft/15 text-gold-soft"
+                            ? ui.priceCatalogPillMuted
                             : "hover:bg-white/5 text-icyWhite/90"
                         }`}
                       >
@@ -793,7 +795,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
                                 serviceIndex: si,
                                 sectionIndex: sei,
                               })
-                                ? "bg-gold-soft/15 text-gold-soft"
+                                ? ui.priceCatalogPillMuted
                                 : "hover:bg-white/5 text-icyWhite/70"
                             }`}
                           >
@@ -821,7 +823,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
                                     sectionIndex: sei,
                                     zoneIndex: zi,
                                   })
-                                    ? "bg-gold-soft/15 text-gold-soft"
+                                    ? ui.priceCatalogPillMuted
                                     : "hover:bg-white/5 text-icyWhite/60"
                                 }`}
                               >
@@ -853,7 +855,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
                                 sectionIndex: null,
                                 zoneIndex: zi,
                               })
-                                ? "bg-gold-soft/15 text-gold-soft"
+                                ? ui.priceCatalogPillMuted
                                 : "hover:bg-white/5 text-icyWhite/60"
                             }`}
                           >
@@ -881,7 +883,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
                 <button
                   type="button"
                   onClick={() => addService(selected.sex)}
-                  className="text-gold-soft/80 hover:text-gold-soft text-sm"
+                  className={ui.priceCatalogLinkSm}
                 >
                   + {t("addService")}
                 </button>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getPlaceAccentUi } from "@/lib/place-accent-ui";
 import { useTranslations } from "next-intl";
 import { formatDateForEmail, formatTimeForEmail } from "@/lib/format-date";
 
@@ -53,6 +54,7 @@ export default function AdminAppointmentModal({
   services = [],
   place = "massage",
 }: AdminAppointmentModalProps) {
+  const ui = useMemo(() => getPlaceAccentUi(place), [place]);
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
   const isEdit = mode === "edit" && appointment;
@@ -366,7 +368,7 @@ export default function AdminAppointmentModal({
             {!isPastAppointment && (
               <Button
                 type="submit"
-                className="flex-1 bg-gold-soft/20 text-gold-soft hover:bg-gold-soft/30"
+                className={`flex-1 ${ui.btnPrimarySm}`}
                 disabled={loading}
               >
                 {loading ? t("saving") : isEdit ? t("save") : t("add")}

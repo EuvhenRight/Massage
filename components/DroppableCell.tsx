@@ -65,7 +65,7 @@ export default function DroppableCell({
 				isPast && 'bg-white/5',
 				showOver &&
 					(canDrop
-						? 'bg-gold-soft/20 ring-1 ring-gold-soft/50'
+						? 'bg-purple-soft/20 ring-1 ring-purple-soft/50'
 						: 'bg-red-500/10 ring-1 ring-red-400/60'),
 				className,
 			)}

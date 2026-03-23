@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { getPlaceAccentUi } from "@/lib/place-accent-ui";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
@@ -40,12 +41,15 @@ function ServiceForm({
   service,
   onSave,
   onCancel,
+  place = "massage",
 }: {
   service?: ServiceData | null;
   onSave: (input: ServiceInput) => Promise<void>;
   onCancel: () => void;
+  place?: Place;
 }) {
   const t = useTranslations("admin");
+  const ui = useMemo(() => getPlaceAccentUi(place), [place]);
   const [titleSk, setTitleSk] = useState(service?.titleSk ?? service?.title ?? "");
   const [titleEn, setTitleEn] = useState(service?.titleEn ?? "");
   const [titleRu, setTitleRu] = useState(service?.titleRu ?? "");
@@ -135,7 +139,7 @@ function ServiceForm({
                 "px-3 py-1.5 rounded-lg border text-sm transition-all",
                 preset.value,
                 color === preset.value
-                  ? "ring-2 ring-gold-soft ring-offset-2 ring-offset-nearBlack"
+                  ? ui.ringSelected
                   : "opacity-70 hover:opacity-100"
               )}
             >
@@ -169,7 +173,7 @@ function ServiceForm({
         </Button>
         <Button
           type="submit"
-          className="flex-1 bg-gold-soft/20 text-gold-soft hover:bg-gold-soft/30"
+          className={`flex-1 ${ui.btnPrimarySm}`}
           disabled={loading}
         >
           {loading ? t("saving") : service ? t("update") : t("add")}
@@ -198,6 +202,7 @@ export default function AdminServicesInline({
       ? baseLocale
       : "ru";
   const t = useTranslations("admin");
+  const ui = useMemo(() => getPlaceAccentUi(place), [place]);
   const [modalOpen, setModalOpen] = useState<"add" | "edit" | null>(null);
   const [editService, setEditService] = useState<ServiceData | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<ServiceData | null>(null);
@@ -302,7 +307,7 @@ export default function AdminServicesInline({
               setEditService(null);
               setModalOpen("add");
             }}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-dashed border-white/20 text-icyWhite/60 hover:text-icyWhite hover:border-gold-soft/40 transition-colors text-sm"
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border border-dashed border-white/20 text-icyWhite/60 hover:text-icyWhite transition-colors text-sm ${ui.addServiceBorder}`}
           >
             <Plus className="w-3.5 h-3.5" />
             {t("addButton")}
@@ -329,6 +334,7 @@ export default function AdminServicesInline({
               {modalOpen === "add" ? t("addService") : t("editService")}
             </h3>
             <ServiceForm
+              place={place}
               service={modalOpen === "edit" ? editService : null}
               onSave={modalOpen === "add" ? handleSaveAdd : handleSaveEdit}
               onCancel={() => {

@@ -1,6 +1,7 @@
 'use client'
 
 import { getPrepBufferMinutes } from '@/lib/availability-firestore'
+import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import {
 	deleteAppointment,
 	updateAppointmentTime,
@@ -171,6 +172,7 @@ export default function BookingCalendarGrid({
 	services = [],
 	place = 'massage',
 }: BookingCalendarGridProps) {
+	const ui = useMemo(() => getPlaceAccentUi(place), [place])
 	const locale = useLocale()
 	const t = useTranslations('admin')
 	const [view, setView] = useState<'day' | 'week'>('week')
@@ -457,7 +459,7 @@ export default function BookingCalendarGrid({
 							className={cn(
 								'inline-flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-sm transition-colors min-w-[2.5rem] sm:min-w-0',
 								view === 'day'
-									? 'bg-gold-soft/25 border border-gold-soft/50 text-gold-glow'
+									? ui.toolbarActive
 									: 'bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10',
 							)}
 							aria-label={t('viewDay')}
@@ -474,7 +476,7 @@ export default function BookingCalendarGrid({
 							className={cn(
 								'inline-flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-sm transition-colors min-w-[2.5rem] sm:min-w-0',
 								view === 'week'
-									? 'bg-gold-soft/25 border border-gold-soft/50 text-gold-glow'
+									? ui.toolbarActive
 									: 'bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10',
 							)}
 							aria-label={t('viewWeek')}
@@ -589,7 +591,7 @@ export default function BookingCalendarGrid({
 										past
 											? 'bg-white/5 text-icyWhite/40'
 											: isToday(day)
-												? 'bg-gold-soft/20 text-gold-glow'
+												? ui.todayHeader
 												: 'bg-nearBlack/90',
 									)}
 								>
@@ -599,7 +601,7 @@ export default function BookingCalendarGrid({
 											past
 												? 'text-icyWhite/40'
 												: isToday(day)
-													? 'text-gold-soft/90'
+													? ui.todayHeaderSub
 													: 'text-icyWhite/60',
 										)}
 									>
@@ -611,7 +613,7 @@ export default function BookingCalendarGrid({
 											past
 												? 'text-icyWhite/50'
 												: isToday(day)
-													? 'text-gold-glow'
+													? ui.todayHeaderDay
 													: 'text-icyWhite',
 										)}
 									>
@@ -748,7 +750,7 @@ export default function BookingCalendarGrid({
 							<button
 								type='button'
 								onClick={handleConfirmMove}
-								className='flex-1 rounded-lg bg-gold-soft/20 text-gold-soft px-4 py-2 text-sm font-medium hover:bg-gold-soft/30'
+								className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium ${ui.btnPrimarySm}`}
 							>
 								Confirm move
 							</button>
