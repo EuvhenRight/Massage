@@ -2,15 +2,20 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 
+type ColorScheme = 'gold' | 'purple'
+
 interface GlowTextProps {
 	text: string
 	className?: string
+	colorScheme?: ColorScheme
 }
 
-const GOLD = { r: 232, g: 184, b: 0 }
-const LIGHT_GOLD = { r: 255, g: 214, b: 51 }
+const PALETTES: Record<ColorScheme, { primary: { r: number; g: number; b: number }; light: { r: number; g: number; b: number } }> = {
+	gold: { primary: { r: 232, g: 184, b: 0 }, light: { r: 255, g: 214, b: 51 } },
+	purple: { primary: { r: 147, g: 51, b: 234 }, light: { r: 192, g: 132, b: 252 } },
+}
 
-export default function GlowText({ text, className = '' }: GlowTextProps) {
+export default function GlowText({ text, className = '', colorScheme = 'gold' }: GlowTextProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null)
 	const mouse = useRef({ x: 0.5, y: 0.5, active: false })
 	const raf = useRef<number>(0)
@@ -67,13 +72,15 @@ export default function GlowText({ text, className = '' }: GlowTextProps) {
 
 		const maxRadius = Math.max(w, h) * 0.9
 
+		const { primary: PRIM, light: LITE } = PALETTES[colorScheme]
+
 		const glowLayers = [
-			{ blur: 60, alpha: 0.12, color: GOLD },
-			{ blur: 40, alpha: 0.2, color: GOLD },
-			{ blur: 25, alpha: 0.3, color: LIGHT_GOLD },
-			{ blur: 15, alpha: 0.4, color: GOLD },
-			{ blur: 8, alpha: 0.5, color: LIGHT_GOLD },
-			{ blur: 4, alpha: 0.6, color: GOLD },
+			{ blur: 60, alpha: 0.12, color: PRIM },
+			{ blur: 40, alpha: 0.2, color: PRIM },
+			{ blur: 25, alpha: 0.3, color: LITE },
+			{ blur: 15, alpha: 0.4, color: PRIM },
+			{ blur: 8, alpha: 0.5, color: LITE },
+			{ blur: 4, alpha: 0.6, color: PRIM },
 		]
 
 		for (const layer of glowLayers) {
@@ -117,7 +124,7 @@ export default function GlowText({ text, className = '' }: GlowTextProps) {
 		ctx.fillStyle = whiteGrad
 		ctx.fillText(text, textX, textY)
 		ctx.restore()
-	}, [text, getFontSize])
+	}, [text, getFontSize, colorScheme])
 
 	const animate = useCallback(() => {
 		draw()

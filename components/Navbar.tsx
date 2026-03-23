@@ -11,8 +11,11 @@ import LanguageSwitcher from './LanguageSwitcher'
 type NavLink = { path: string; key: string }
 
 const MASSAGE_LINKS: NavLink[] = [
+	{ path: '/massage#about', key: 'about' },
 	{ path: '/massage#services', key: 'services' },
-	{ path: '/massage#membership', key: 'membership' },
+	{ path: '/massage#team', key: 'team' },
+	{ path: '/massage#faq', key: 'faq' },
+	{ path: '/massage#contact', key: 'contact' },
 ]
 
 const DEPILATION_LINKS: NavLink[] = [

@@ -25,7 +25,6 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	Clock,
-	ExternalLink,
 	Facebook,
 	Heart,
 	Instagram,
@@ -226,16 +225,23 @@ export default function DepilationPage() {
 					<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/80 via-nearBlack/60 to-nearBlack' />
 				</div>
 
-				<div className='relative z-10 flex-1 flex flex-col items-center justify-center px-6'>
+				{/* Badge line — pinned to top (below fixed header) */}
+				<motion.p
+					initial={{ opacity: 0, y: -8 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.5 }}
+					className='relative z-10 w-full text-center text-gold-soft/70 text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.3em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
+				>
+					{t('heroBadge')}
+				</motion.p>
+
+				<div className='relative z-10 flex-1 flex flex-col items-center justify-center px-6 min-h-0'>
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.7 }}
 						className='text-center'
 					>
-						<p className='text-gold-soft/70 text-xs tracking-[0.3em] uppercase mb-2'>
-							{t('heroBadge')}
-						</p>
 						<div className='flex justify-center mb-0'>
 							<Image
 								src='/images/Gemini_yellow2.png'
@@ -251,9 +257,6 @@ export default function DepilationPage() {
 
 						<p className='-mt-1 text-gold-soft/90 text-sm tracking-wider uppercase'>
 							{t('hero')}
-						</p>
-						<p className='mt-1 text-icyWhite/60 text-sm sm:text-base max-w-md mx-auto'>
-							{t('heroSubtitle')}
 						</p>
 
 						<div className='mt-4 flex flex-wrap justify-center gap-3'>
@@ -985,8 +988,12 @@ export default function DepilationPage() {
 								<div className='flex items-start gap-3 min-w-0'>
 									<MapPin className='w-5 h-5 text-gold-soft shrink-0 mt-0.5' />
 									<div>
-										<p className='text-icyWhite font-medium text-sm'>{SITE_CONFIG.addressSubtitle}</p>
-										<p className='text-icyWhite/60 text-sm mt-0.5'>{SITE_CONFIG.address}</p>
+										<p className='text-icyWhite font-medium text-sm'>
+											{SITE_CONFIG.addressSubtitle}
+										</p>
+										<p className='text-icyWhite/60 text-sm mt-0.5'>
+											{SITE_CONFIG.address}
+										</p>
 									</div>
 								</div>
 								<a
@@ -1023,7 +1030,9 @@ export default function DepilationPage() {
 										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-gold-soft/10 text-gold-soft group-hover:bg-gold-soft/20 transition-colors'>
 											<Phone className='w-4 h-4' />
 										</span>
-										<span className='text-icyWhite text-sm font-medium group-hover:text-gold-soft transition-colors'>{SITE_CONFIG.phone}</span>
+										<span className='text-icyWhite text-sm font-medium group-hover:text-gold-soft transition-colors'>
+											{SITE_CONFIG.phone}
+										</span>
 									</a>
 									<a
 										href={SITE_CONFIG.whatsapp}
@@ -1034,7 +1043,9 @@ export default function DepilationPage() {
 										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-[#25D366]/15 text-[#25D366] group-hover:bg-[#25D366]/25 transition-colors'>
 											<MessageCircle className='w-4 h-4' />
 										</span>
-										<span className='text-icyWhite text-sm font-medium group-hover:text-[#25D366] transition-colors'>WhatsApp</span>
+										<span className='text-icyWhite text-sm font-medium group-hover:text-[#25D366] transition-colors'>
+											WhatsApp
+										</span>
 									</a>
 									<a
 										href={`mailto:${SITE_CONFIG.email}`}
@@ -1043,7 +1054,9 @@ export default function DepilationPage() {
 										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-gold-soft/10 text-gold-soft group-hover:bg-gold-soft/20 transition-colors'>
 											<Mail className='w-4 h-4' />
 										</span>
-										<span className='text-icyWhite text-sm font-medium truncate group-hover:text-gold-soft transition-colors'>{SITE_CONFIG.email}</span>
+										<span className='text-icyWhite text-sm font-medium truncate group-hover:text-gold-soft transition-colors'>
+											{SITE_CONFIG.email}
+										</span>
 									</a>
 								</div>
 
@@ -1080,89 +1093,103 @@ export default function DepilationPage() {
 											{t('contact.formTitle')}
 										</button>
 									</DialogTrigger>
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle>{t('contact.formTitle')}</DialogTitle>
-										<DialogDescription>{t('contact.subtitle')}</DialogDescription>
-									</DialogHeader>
-									{contactSent ? (
-										<motion.div
-											initial={{ opacity: 0, scale: 0.95 }}
-											animate={{ opacity: 1, scale: 1 }}
-											className='p-8 rounded-xl border border-gold-soft/20 bg-gold-soft/[0.04] text-center'
-										>
-											<BadgeCheck className='w-12 h-12 text-gold-soft mx-auto mb-4' />
-											<p className='text-icyWhite/80 text-sm'>
-												{t('contact.success')}
-											</p>
-										</motion.div>
-									) : (
-										<form
-											onSubmit={e => {
-												e.preventDefault()
-												setContactSent(true)
-											}}
-											className='space-y-4'
-										>
-											<div>
-												<label htmlFor='dlg-name' className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'>
-													{t('contact.nameLabel')}
-												</label>
-												<input
-													id='dlg-name'
-													type='text'
-													required
-													className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors'
-													placeholder={t('contact.namePlaceholder')}
-												/>
-											</div>
-											<div className='grid sm:grid-cols-2 gap-3'>
+									<DialogContent>
+										<DialogHeader>
+											<DialogTitle>{t('contact.formTitle')}</DialogTitle>
+											<DialogDescription>
+												{t('contact.subtitle')}
+											</DialogDescription>
+										</DialogHeader>
+										{contactSent ? (
+											<motion.div
+												initial={{ opacity: 0, scale: 0.95 }}
+												animate={{ opacity: 1, scale: 1 }}
+												className='p-8 rounded-xl border border-gold-soft/20 bg-gold-soft/[0.04] text-center'
+											>
+												<BadgeCheck className='w-12 h-12 text-gold-soft mx-auto mb-4' />
+												<p className='text-icyWhite/80 text-sm'>
+													{t('contact.success')}
+												</p>
+											</motion.div>
+										) : (
+											<form
+												onSubmit={e => {
+													e.preventDefault()
+													setContactSent(true)
+												}}
+												className='space-y-4'
+											>
 												<div>
-													<label htmlFor='dlg-email' className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'>
-														{t('contact.emailLabel')}
+													<label
+														htmlFor='dlg-name'
+														className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+													>
+														{t('contact.nameLabel')}
 													</label>
 													<input
-														id='dlg-email'
-														type='email'
+														id='dlg-name'
+														type='text'
 														required
 														className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors'
-														placeholder={t('contact.emailPlaceholder')}
+														placeholder={t('contact.namePlaceholder')}
 													/>
+												</div>
+												<div className='grid sm:grid-cols-2 gap-3'>
+													<div>
+														<label
+															htmlFor='dlg-email'
+															className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+														>
+															{t('contact.emailLabel')}
+														</label>
+														<input
+															id='dlg-email'
+															type='email'
+															required
+															className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors'
+															placeholder={t('contact.emailPlaceholder')}
+														/>
+													</div>
+													<div>
+														<label
+															htmlFor='dlg-phone'
+															className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+														>
+															{t('contact.phoneLabel')}
+														</label>
+														<input
+															id='dlg-phone'
+															type='tel'
+															className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors'
+															placeholder={t('contact.phonePlaceholder')}
+														/>
+													</div>
 												</div>
 												<div>
-													<label htmlFor='dlg-phone' className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'>
-														{t('contact.phoneLabel')}
+													<label
+														htmlFor='dlg-msg'
+														className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+													>
+														{t('contact.messageLabel')}
 													</label>
-													<input
-														id='dlg-phone'
-														type='tel'
-														className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors'
-														placeholder={t('contact.phonePlaceholder')}
+													<textarea
+														id='dlg-msg'
+														rows={4}
+														required
+														className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors resize-none'
+														placeholder={t('contact.messagePlaceholder')}
 													/>
 												</div>
-											</div>
-											<div>
-												<label htmlFor='dlg-msg' className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'>
-													{t('contact.messageLabel')}
-												</label>
-												<textarea
-													id='dlg-msg'
-													rows={4}
-													required
-													className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors resize-none'
-													placeholder={t('contact.messagePlaceholder')}
-												/>
-											</div>
-											<button
-												type='submit'
-												className='w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300'
-											>
-												<Send className='w-4 h-4' />
-												{t('contact.submit')}
-											</button>
-										</form>
-									)}
-								</DialogContent>
+												<button
+													type='submit'
+													className='w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300'
+												>
+													<Send className='w-4 h-4' />
+													{t('contact.submit')}
+												</button>
+											</form>
+										)}
+									</DialogContent>
 								</Dialog>
 							</div>
 						</motion.div>

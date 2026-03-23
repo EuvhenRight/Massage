@@ -41,6 +41,10 @@ const config: Config = {
  				soft: '#E8B800',
  				glow: '#FFD633'
  			},
+			purple: {
+				soft: '#9333EA',
+				glow: '#C084FC'
+			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -92,6 +96,7 @@ const config: Config = {
   			"accordion-up": "accordion-up 0.2s ease-out",
   			aurora: 'aurora 8s ease-in-out infinite',
   			'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+			'glow-pulse-purple': 'glow-pulse-purple 2s ease-in-out infinite',
   			'shimmer': 'shimmer 3s linear infinite',
   			'shimmer-sweep': 'shimmer-sweep 1.5s ease-in-out infinite'
   		},
@@ -122,7 +127,15 @@ const config: Config = {
  					boxShadow: '0 0 40px rgba(232, 184, 0, 0.6)'
   				}
   			},
-  			shimmer: {
+  			'glow-pulse-purple': {
+				'0%, 100%': {
+					boxShadow: '0 0 20px rgba(147, 51, 234, 0.3)'
+				},
+				'50%': {
+					boxShadow: '0 0 40px rgba(147, 51, 234, 0.6)'
+				}
+			},
+			shimmer: {
   				'0%': {
   					backgroundPosition: '-200% 0'
   				},
@@ -141,8 +154,11 @@ const config: Config = {
   		boxShadow: {
  			glow: '0 0 30px rgba(232, 184, 0, 0.4)',
  			'glow-strong': '0 0 50px rgba(232, 184, 0, 0.5)',
+			'glow-purple': '0 0 30px rgba(147, 51, 234, 0.4)',
+			'glow-purple-strong': '0 0 50px rgba(147, 51, 234, 0.5)',
  			card: '0 4px 30px rgba(0, 0, 0, 0.3)',
- 			'card-hover': '0 8px 40px rgba(232, 184, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+ 			'card-hover': '0 8px 40px rgba(232, 184, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+			'card-hover-purple': '0 8px 40px rgba(147, 51, 234, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
