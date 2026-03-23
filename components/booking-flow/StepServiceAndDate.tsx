@@ -13,6 +13,7 @@ import {
 	type OccupiedSlot,
 } from '@/lib/availability-firestore'
 import { db } from '@/lib/firebase'
+import { getBookingAccent } from '@/lib/booking-accent'
 import type { Place } from '@/lib/places'
 import { getSchedule } from '@/lib/schedule-firestore'
 import {
@@ -23,7 +24,7 @@ import {
 	where,
 } from 'firebase/firestore'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useBookingFlow } from './BookingFlowContext'
 import PublicDatePicker from './PublicDatePicker'
 import TimeSlotPicker from './TimeSlotPicker'
@@ -37,6 +38,7 @@ export default function StepServiceAndDate({
 	services,
 	place = 'massage',
 }: StepServiceAndDateProps) {
+	const accent = useMemo(() => getBookingAccent(place), [place])
 	const t = useTranslations('booking')
 	const tCommon = useTranslations('common')
 	const {
@@ -115,7 +117,9 @@ export default function StepServiceAndDate({
 							{tCommon('services')}
 						</label>
 						<Select value={service} onValueChange={setService}>
-							<SelectTrigger className='h-11 bg-white/5 border-white/10 text-icyWhite hover:bg-white/[0.07] focus:ring-gold-soft/30'>
+							<SelectTrigger
+								className={`h-11 bg-white/5 border-0 ${accent.inputBorder} text-icyWhite hover:bg-white/[0.07] ${accent.selectTriggerRing}`}
+							>
 								<SelectValue placeholder={t('selectService')} />
 							</SelectTrigger>
 							<SelectContent>
@@ -138,6 +142,7 @@ export default function StepServiceAndDate({
 					<div className='flex flex-col flex-1 min-h-0'>
 						<div className='flex-1 min-h-0 flex flex-col overflow-hidden'>
 							<PublicDatePicker
+								accent={accent}
 								selectedDate={date}
 								onSelectDate={setDate}
 								occupiedSlots={occupiedSlots}
@@ -152,6 +157,7 @@ export default function StepServiceAndDate({
 						{date && (
 							<div className='flex-shrink-0 pt-4'>
 								<TimeSlotPicker
+									accent={accent}
 									date={date}
 									selectedTime={time}
 									onSelectTime={setTime}

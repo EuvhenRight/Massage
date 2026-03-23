@@ -1,5 +1,6 @@
 "use client";
 
+import type { BookingAccent } from "@/lib/booking-accent";
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import type { OccupiedSlot } from "@/lib/availability-firestore";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/select";
 
 interface TimeSlotPickerProps {
+  accent: BookingAccent;
   date: Date;
   selectedTime: string | null;
   onSelectTime: (time: string) => void;
@@ -31,6 +33,7 @@ function formatSlot(time: string): string {
 }
 
 export default function TimeSlotPicker({
+  accent,
   date,
   selectedTime,
   onSelectTime,
@@ -47,8 +50,8 @@ export default function TimeSlotPicker({
 
   if (availableSlots.length === 0) {
     return (
-      <div className="rounded-lg border border-gold-soft/20 bg-gold-soft/5 px-4 py-4">
-        <p className="text-sm text-gold-soft/90">
+      <div className={`rounded-lg border px-4 py-4 ${accent.timeSlotEmptyBorder} ${accent.timeSlotEmptyBg}`}>
+        <p className={`text-sm ${accent.timeSlotEmptyText}`}>
           {t("noSlotsMessage")}
         </p>
       </div>
@@ -61,7 +64,7 @@ export default function TimeSlotPicker({
         value={selectedTime ?? ""}
         onValueChange={(v) => v && onSelectTime(v)}
       >
-        <SelectTrigger className="w-full min-h-[48px] sm:min-h-[48px] h-12 bg-white/5 border-white/10 text-icyWhite hover:bg-white/[0.07] focus:ring-gold-soft/30 text-base touch-manipulation">
+        <SelectTrigger className={`w-full min-h-[48px] sm:min-h-[48px] h-12 bg-white/5 border-0 ${accent.inputBorder} text-icyWhite hover:bg-white/[0.07] text-base touch-manipulation ${accent.selectTriggerRing}`}>
           <SelectValue placeholder={t("availableTime")} />
         </SelectTrigger>
         <SelectContent className="max-h-[200px] z-[100]">
@@ -69,7 +72,7 @@ export default function TimeSlotPicker({
             <SelectItem
               key={slot}
               value={slot}
-              className="text-icyWhite focus:bg-gold-soft/20 focus:text-icyWhite"
+              className={accent.selectItemFocus}
             >
               {formatSlot(slot)}
             </SelectItem>

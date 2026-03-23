@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 import { auth } from "@/auth";
 import { getPriceCatalog, setPriceCatalog } from "@/lib/price-catalog-firestore";
+import { getMassagePriceCatalogExample } from "@/lib/price-catalog-seed";
+import { isPriceCatalogEmpty } from "@/lib/price-catalog-utils";
 import type { Place } from "@/lib/places";
 import type { PriceCatalogStructure } from "@/types/price-catalog";
 
@@ -18,7 +20,12 @@ export async function GET(request: NextRequest) {
       );
     }
     const catalog = await getPriceCatalog(place);
-    return NextResponse.json(catalog ?? { man: { services: [] }, woman: { services: [] } });
+    if (place === "massage" && isPriceCatalogEmpty(catalog)) {
+      return NextResponse.json(getMassagePriceCatalogExample());
+    }
+    return NextResponse.json(
+      catalog ?? { man: { services: [] }, woman: { services: [] } }
+    );
   } catch (e) {
     return NextResponse.json(
       { error: "Failed to fetch price catalog" },

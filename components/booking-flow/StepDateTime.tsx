@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useBookingFlow } from "./BookingFlowContext";
@@ -9,6 +9,7 @@ import {
   getPrepBufferMinutes,
   type OccupiedSlot,
 } from "@/lib/availability-firestore";
+import { getBookingAccent } from "@/lib/booking-accent";
 import type { Place } from "@/lib/places";
 import { getSchedule } from "@/lib/schedule-firestore";
 import PublicDatePicker from "./PublicDatePicker";
@@ -20,6 +21,7 @@ interface StepDateTimeProps {
 }
 
 export default function StepDateTime({ durationMinutes, place = "massage" }: StepDateTimeProps) {
+  const accent = useMemo(() => getBookingAccent(place), [place]);
   const { date, time, setDate, setTime } = useBookingFlow();
   const [month, setMonth] = useState(() => {
     const d = date ?? new Date();
@@ -77,6 +79,7 @@ export default function StepDateTime({ durationMinutes, place = "massage" }: Ste
       </p>
 
       <PublicDatePicker
+        accent={accent}
         selectedDate={date}
         onSelectDate={setDate}
         occupiedSlots={occupiedSlots}
@@ -88,6 +91,7 @@ export default function StepDateTime({ durationMinutes, place = "massage" }: Ste
 
       {date && (
         <TimeSlotPicker
+          accent={accent}
           date={date}
           selectedTime={time}
           onSelectTime={setTime}

@@ -50,3 +50,28 @@ export function flattenPriceCatalogToServices(
 
   return result;
 }
+
+export function isPriceCatalogEmpty(
+  catalog: PriceCatalogStructure | null | undefined
+): boolean {
+  if (!catalog) return true;
+  const m = catalog.man?.services?.length ?? 0;
+  const w = catalog.woman?.services?.length ?? 0;
+  return m === 0 && w === 0;
+}
+
+/** Map marketing short titles (e.g. "Swedish — Classic") to full catalog path titles. */
+export function matchPresetToCatalogTitle(
+  flat: { title: string; durationMinutes: number }[],
+  preset: string | null | undefined
+): string | undefined {
+  if (!preset?.trim()) return undefined;
+  const p = preset.trim();
+  const exact = flat.find((s) => s.title === p);
+  if (exact) return exact.title;
+  const byLast = flat.find((s) => {
+    const last = s.title.split(" › ").pop()?.trim();
+    return last === p;
+  });
+  return byLast?.title;
+}

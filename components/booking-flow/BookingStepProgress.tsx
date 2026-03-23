@@ -1,14 +1,22 @@
 'use client'
 
+import { getBookingAccent } from '@/lib/booking-accent'
+import type { Place } from '@/lib/places'
 import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
+import { useMemo } from 'react'
 import type { BookingStep } from './BookingFlowContext'
 
 interface BookingStepProgressProps {
 	currentStep: BookingStep
+	place?: Place
 }
 
-export default function BookingStepProgress({ currentStep }: BookingStepProgressProps) {
+export default function BookingStepProgress({
+	currentStep,
+	place = 'massage',
+}: BookingStepProgressProps) {
+	const accent = useMemo(() => getBookingAccent(place), [place])
 	const t = useTranslations('booking')
 	const STEPS: { step: BookingStep; labelKey: string }[] = [
 		{ step: 1, labelKey: 'step1Label' },
@@ -22,7 +30,7 @@ export default function BookingStepProgress({ currentStep }: BookingStepProgress
 			<div className="max-w-4xl mx-auto">
 				<div className="h-0.5 bg-white/10 rounded-full overflow-hidden">
 					<motion.div
-						className='h-full bg-gold-soft rounded-full'
+						className={accent.progressBar}
 						initial={false}
 						animate={{ width: `${progressPercent}%` }}
 						transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -39,8 +47,8 @@ export default function BookingStepProgress({ currentStep }: BookingStepProgress
 									<span
 										className={`
 											flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-all duration-200
-											${isComplete ? 'bg-gold-soft/20 text-gold-soft border border-gold-soft/50' : ''}
-											${isCurrent ? 'bg-gold-soft text-nearBlack border-2 border-gold-soft shadow-lg shadow-gold-soft/25' : ''}
+											${isComplete ? accent.stepComplete : ''}
+											${isCurrent ? accent.stepCurrent : ''}
 											${isUpcoming ? 'border border-white/15 text-icyWhite/35 bg-white/[0.02]' : ''}
 										`}
 										aria-current={isCurrent ? 'step' : undefined}
@@ -62,7 +70,7 @@ export default function BookingStepProgress({ currentStep }: BookingStepProgress
 								{idx < STEPS.length - 1 && (
 									<span
 										className={`mx-1 sm:mx-3 md:mx-4 h-0.5 w-4 sm:w-8 md:w-12 rounded-full flex-shrink-0 ${
-											isComplete ? 'bg-gold-soft/40' : 'bg-white/10'
+											isComplete ? accent.stepConnector : 'bg-white/10'
 										}`}
 										aria-hidden
 									/>

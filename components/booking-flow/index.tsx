@@ -10,7 +10,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Search as SearchIcon } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { getBookingAccent } from '@/lib/booking-accent'
 import { toast } from 'sonner'
 import {
 	BookingFlowProvider,
@@ -51,6 +52,7 @@ function BookingFlowInner({
 	onCancel,
 	place = 'massage',
 }: BookingFlowProps) {
+	const accent = useMemo(() => getBookingAccent(place), [place])
 	const t = useTranslations('booking')
 	const locale = useLocale()
 	const router = useRouter()
@@ -258,7 +260,7 @@ function BookingFlowInner({
 					<button
 						type='button'
 						onClick={() => router.push(`/${locale}`)}
-						className='min-h-[48px] px-6 py-3 rounded-xl bg-gold-soft text-nearBlack text-sm font-semibold hover:bg-gold-glow active:scale-[0.98] transition-all touch-manipulation'
+						className={accent.successBtn}
 					>
 						{t('backToWebsite')}
 					</button>
@@ -273,7 +275,7 @@ function BookingFlowInner({
 		<div className='flex flex-col h-full min-h-0 md:min-h-[420px]'>
 			{/* Progress — static top */}
 			<div className='shrink-0'>
-				<BookingStepProgress currentStep={progressStep} />
+				<BookingStepProgress currentStep={progressStep} place={place} />
 			</div>
 
 			{/* Body: main + sidebar — tablet/laptop: row; mobile: column, full height to bottom button */}
@@ -317,7 +319,7 @@ function BookingFlowInner({
 										onChange={e => setSearchQuery(e.target.value)}
 										placeholder={t('searchServicePlaceholder')}
 										aria-label={t('searchServicePlaceholder')}
-										className='w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-xl border border-white/10 bg-white/5 text-icyWhite placeholder:text-icyWhite/40 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-gold-soft/40 focus:border-gold-soft transition-shadow'
+										className={accent.searchFocus}
 									/>
 								</div>
 							)}
@@ -343,6 +345,7 @@ function BookingFlowInner({
 									>
 										<StepServiceFromPriceCatalog
 											place={place}
+											accent={accent}
 											catalog={priceCatalog}
 											services={services}
 											searchQuery={searchQuery}
@@ -377,6 +380,7 @@ function BookingFlowInner({
 									>
 										<StepCustomerInfo
 											ref={stepCustomerRef}
+											place={place}
 											onSubmit={handleConfirm}
 											isSubmitting={isSubmitting}
 											onValidityChange={setFormValid}
@@ -415,7 +419,7 @@ function BookingFlowInner({
 							disabled={!getDesktopCanProceed() || isSubmitting}
 							className={`w-full py-3 sm:py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
 								getDesktopCanProceed() && !isSubmitting
-									? 'bg-gold-soft text-nearBlack hover:bg-gold-glow active:scale-[0.99]'
+									? accent.btnPrimaryDesktop
 									: 'bg-white/10 text-icyWhite/40 cursor-not-allowed'
 							}`}
 						>
@@ -436,7 +440,7 @@ function BookingFlowInner({
 						disabled={!getMobileCanProceed() || (step === 4 && isSubmitting)}
 						className={`w-full min-h-[48px] sm:min-h-[52px] py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
 							getMobileCanProceed() && !(step === 4 && isSubmitting)
-								? 'bg-gold-soft text-nearBlack hover:bg-gold-glow active:scale-[0.98]'
+								? accent.btnPrimaryMobile
 								: 'bg-white/10 text-icyWhite/40 cursor-not-allowed'
 						}`}
 					>

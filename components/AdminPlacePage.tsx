@@ -81,7 +81,7 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
     { id: "calendar", label: t("calendar"), icon: Calendar },
     { id: "agenda", label: t("agenda"), icon: CalendarRange },
     { id: "analytics", label: t("analytics"), icon: BarChart2 },
-    ...(place === "depilation" ? [{ id: "price" as const, label: t("priceCatalog"), icon: Banknote }] : []),
+    { id: "price" as const, label: t("priceCatalog"), icon: Banknote },
     { id: "settings", label: t("settings"), icon: Settings },
   ];
   const [services, setServices] = useState<ServiceData[]>([]);
@@ -625,7 +625,7 @@ export default function AdminPlacePage({ place, section: sectionProp = "calendar
           </div>
         )}
 
-        {section === "price" && place === "depilation" && (
+        {section === "price" && (
           <div className="animate-in fade-in-0 duration-200">
             <AdminPriceCatalog place={place} />
           </div>

@@ -14,7 +14,7 @@ import type {
   SexKey,
 } from "@/types/price-catalog";
 import { generatePriceItemId } from "@/types/price-catalog";
-import { getDepilationPriceCatalogExample } from "@/lib/price-catalog-seed";
+import { getPriceCatalogExample } from "@/lib/price-catalog-seed";
 
 const EMPTY_CATALOG: PriceCatalogStructure = {
   man: { services: [] },
@@ -721,15 +721,13 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
           <p className="text-icyWhite/60 text-sm mt-0.5">{t("priceCatalogSubtitle")}</p>
         </div>
         <div className="flex gap-2">
-          {place === "depilation" && (
-            <button
-              type="button"
-              onClick={() => setCatalog(ensureIds(getDepilationPriceCatalogExample()))}
-              className="px-4 py-2.5 rounded-lg border border-gold-soft/40 text-gold-soft text-sm hover:bg-gold-soft/10"
-            >
-              {t("loadExample")}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setCatalog(ensureIds(getPriceCatalogExample(place)))}
+            className="px-4 py-2.5 rounded-lg border border-gold-soft/40 text-gold-soft text-sm hover:bg-gold-soft/10"
+          >
+            {t("loadExample")}
+          </button>
           <button
             type="button"
             onClick={save}

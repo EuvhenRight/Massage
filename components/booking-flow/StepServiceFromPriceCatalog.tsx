@@ -7,6 +7,7 @@ import {
 } from '@/lib/availability-firestore'
 import { TruncateText } from '@/components/ui/truncate-text'
 import { db } from '@/lib/firebase'
+import type { BookingAccent } from '@/lib/booking-accent'
 import type { Place } from '@/lib/places'
 import { getSchedule } from '@/lib/schedule-firestore'
 import {
@@ -34,6 +35,7 @@ import TimeSlotPicker from './TimeSlotPicker'
 
 interface StepServiceFromPriceCatalogProps {
 	place: Place
+	accent: BookingAccent
 	catalog: PriceCatalogStructure | null
 	services: { title: string; durationMinutes?: number }[]
 	searchQuery: string
@@ -147,6 +149,7 @@ function buildSectionsWithZones(
 
 export default function StepServiceFromPriceCatalog({
 	place,
+	accent,
 	catalog,
 	services,
 	searchQuery,
@@ -375,7 +378,7 @@ export default function StepServiceFromPriceCatalog({
 										}}
 										className={`min-h-[44px] sm:min-h-0 py-3 px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] ${
 											selectedSex === 'woman'
-												? 'bg-gold-soft text-nearBlack'
+												? accent.pillActive
 												: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
 										}`}
 									>
@@ -394,7 +397,7 @@ export default function StepServiceFromPriceCatalog({
 										}}
 										className={`min-h-[44px] sm:min-h-0 py-3 px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] ${
 											selectedSex === 'man'
-												? 'bg-gold-soft text-nearBlack'
+												? accent.pillActive
 												: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
 										}`}
 									>
@@ -456,7 +459,7 @@ export default function StepServiceFromPriceCatalog({
 											transition={{ duration: 0.2 }}
 											className={`min-h-[44px] sm:min-h-0 py-3 px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] ${
 												effectiveSectionId === sec.sectionId
-													? 'bg-gold-soft text-nearBlack'
+													? accent.sectionPillActive
 													: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
 											}`}
 										>
@@ -531,7 +534,7 @@ export default function StepServiceFromPriceCatalog({
 																	? t('showLess')
 																	: t('showMore')
 															}
-															className='text-gold-soft/90 hover:text-gold-soft text-xs font-medium mt-1.5 py-0.5 -ml-1 focus:outline-none focus:ring-2 focus:ring-gold-soft/40 focus:ring-offset-1 focus:ring-offset-transparent rounded'
+															className={accent.showMoreLink}
 														>
 															{expandedSectionDescriptions.has(sec.sectionId)
 																? t('showLess')
@@ -616,7 +619,7 @@ export default function StepServiceFromPriceCatalog({
 																							}}
 																							className={`flex items-center justify-between gap-3 px-3 py-2.5 sm:py-2 rounded-lg border cursor-pointer transition-all touch-manipulation active:scale-[0.99] ${
 																								isSelected
-																									? 'border-gold-soft/50 bg-gold-soft/10'
+																									? accent.itemSelected
 																									: 'border-white/10 bg-white/5 hover:border-white/20 active:border-white/25'
 																							}`}
 																							whileTap={{
@@ -642,7 +645,7 @@ export default function StepServiceFromPriceCatalog({
 																											priceLocale,
 																										)}
 																									</TruncateText>
-																									<span className='text-gold-soft/90 text-sm shrink-0'>
+																									<span className={accent.priceText}>
 																										{formatPrice(item.price)} €
 																									</span>
 																								</div>
@@ -660,7 +663,7 @@ export default function StepServiceFromPriceCatalog({
 																													item.id,
 																												)
 																											}
-																											className='text-gold-soft/80 text-xs hover:underline'
+																											className={accent.descLink}
 																										>
 																											{isExpanded
 																												? t('showLess')
@@ -711,6 +714,7 @@ export default function StepServiceFromPriceCatalog({
 				>
 					<div className='flex-1 min-h-0 flex flex-col overflow-hidden'>
 						<PublicDatePicker
+							accent={accent}
 							selectedDate={date}
 							onSelectDate={setDate}
 							occupiedSlots={occupiedSlots}
@@ -725,6 +729,7 @@ export default function StepServiceFromPriceCatalog({
 					{date && (
 						<div className='flex-shrink-0 pt-4'>
 							<TimeSlotPicker
+								accent={accent}
 								date={date}
 								selectedTime={time}
 								onSelectTime={setTime}

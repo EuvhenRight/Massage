@@ -1,5 +1,6 @@
 'use client'
 
+import type { BookingAccent } from '@/lib/booking-accent'
 import type { OccupiedSlot } from '@/lib/availability-firestore'
 import { isDateAvailable } from '@/lib/availability-firestore'
 import type { ScheduleData } from '@/lib/schedule-firestore'
@@ -7,6 +8,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useMemo } from 'react'
 
 interface PublicDatePickerProps {
+	accent: BookingAccent
 	selectedDate: Date | null
 	onSelectDate: (date: Date) => void
 	occupiedSlots: OccupiedSlot[]
@@ -48,6 +50,7 @@ function sameDay(a: Date, b: Date): boolean {
 }
 
 export default function PublicDatePicker({
+	accent,
 	selectedDate,
 	onSelectDate,
 	occupiedSlots,
@@ -92,7 +95,7 @@ export default function PublicDatePicker({
 					onClick={() =>
 						onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1))
 					}
-					className='min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg text-icyWhite/70 hover:text-icyWhite hover:bg-white/10 active:bg-white/15 transition-colors touch-manipulation focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack'
+					className={`min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg text-icyWhite/70 hover:text-icyWhite hover:bg-white/10 active:bg-white/15 transition-colors touch-manipulation ${accent.navMonthFocus}`}
 					aria-label={t('prevMonth')}
 				>
 					<svg
@@ -117,7 +120,7 @@ export default function PublicDatePicker({
 					onClick={() =>
 						onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1))
 					}
-					className='min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg text-icyWhite/70 hover:text-icyWhite hover:bg-white/10 active:bg-white/15 transition-colors touch-manipulation focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack'
+					className={`min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg text-icyWhite/70 hover:text-icyWhite hover:bg-white/10 active:bg-white/15 transition-colors touch-manipulation ${accent.navMonthFocus}`}
 					aria-label={t('nextMonth')}
 				>
 					<svg
@@ -169,20 +172,20 @@ export default function PublicDatePicker({
 							className={`
                 min-h-[36px] sm:min-h-0 rounded-lg sm:rounded text-sm font-medium transition-colors touch-manipulation w-full h-full min-w-0
                 flex items-center justify-center
-                focus:outline-none focus:ring-2 focus:ring-gold-soft/60 focus:ring-offset-2 focus:ring-offset-nearBlack
+                ${accent.dayFocus}
                 ${available ? 'cursor-pointer' : 'cursor-not-allowed'}
                 ${
 									selected
-										? 'bg-gold-soft text-nearBlack ring-1 ring-gold-soft'
+										? accent.daySelected
 										: ''
 								}
                 ${
 									available && !selected
-										? 'text-gold-soft/90 hover:bg-gold-soft/25 hover:text-gold-soft hover:ring-1 hover:ring-gold-soft/50'
+										? accent.dayAvailableHover
 										: ''
 								}
                 ${!available ? 'text-icyWhite/30' : ''}
-                ${isToday && !selected ? 'ring-1 ring-gold-soft/70 bg-gold-soft/15 text-gold-glow' : ''}
+                ${isToday && !selected ? accent.dayToday : ''}
               `}
 						>
 							{date.getDate()}

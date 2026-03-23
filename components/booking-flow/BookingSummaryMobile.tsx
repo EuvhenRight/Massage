@@ -1,9 +1,12 @@
 'use client'
 
+import { getBookingAccent } from '@/lib/booking-accent'
+import type { Place } from '@/lib/places'
 import { useLocale, useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
-import { useBookingFlow } from './BookingFlowContext'
+import { useMemo } from 'react'
 import { TruncateText } from '@/components/ui/truncate-text'
+import { useBookingFlow } from './BookingFlowContext'
 
 function formatTime(time: string): string {
 	const [h, m] = time.split(':').map(Number)
@@ -13,8 +16,13 @@ function formatTime(time: string): string {
 	return `${h - 12}:${String(m).padStart(2, '0')} pm`
 }
 
+interface BookingSummaryMobileProps {
+	place?: Place
+}
+
 /** Compact booking summary shown only on mobile at step 3 (confirm) — replaces sidebar */
-export default function BookingSummaryMobile() {
+export default function BookingSummaryMobile({ place = 'massage' }: BookingSummaryMobileProps) {
+	const accent = useMemo(() => getBookingAccent(place), [place])
 	const locale = useLocale()
 	const t = useTranslations('booking')
 	const tCommon = useTranslations('common')
@@ -27,11 +35,11 @@ export default function BookingSummaryMobile() {
 			initial={{ opacity: 0, y: -12 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-			className="rounded-xl border border-gold-soft/20 bg-gold-soft/5 p-4 mb-6"
+			className={`rounded-xl border p-4 mb-6 ${accent.summaryBorder} ${accent.summaryBg}`}
 			role="region"
 			aria-label={t('bookingSummary')}
 		>
-			<h4 className="text-[11px] font-semibold text-gold-soft/90 uppercase tracking-wider mb-3">
+			<h4 className={`text-[11px] font-semibold uppercase tracking-wider mb-3 ${accent.summaryHeading}`}>
 				{t('bookingSummary')}
 			</h4>
 			<dl className="space-y-2.5 text-sm">

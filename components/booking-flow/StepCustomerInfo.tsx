@@ -1,11 +1,13 @@
 "use client";
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import { getBookingAccent } from "@/lib/booking-accent";
 import { getBookingSchema, type BookingFormData } from "@/lib/booking-schema";
+import type { Place } from "@/lib/places";
 import { useBookingFlow } from "./BookingFlowContext";
 import {
   Form,
@@ -24,16 +26,19 @@ export interface StepCustomerInfoHandle {
 }
 
 interface StepCustomerInfoProps {
+  place?: Place;
   onSubmit: (data: BookingFormData) => void | Promise<void>;
   isSubmitting?: boolean;
   onValidityChange?: (valid: boolean) => void;
 }
 
 const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProps>(function StepCustomerInfo({
+  place = "massage",
   onSubmit,
   isSubmitting = false,
   onValidityChange,
 }, ref) {
+  const accent = useMemo(() => getBookingAccent(place), [place]);
   const t = useTranslations("booking");
   const tValidation = useTranslations("validation");
   const { fullName, email, phone, setCustomerInfo } = useBookingFlow();
@@ -121,7 +126,7 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
                     placeholder={t("placeholderFullName")}
                     maxLength={100}
                     autoComplete="name"
-                    className="min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30 touch-manipulation"
+                    className={`min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 ${accent.inputBorder} text-icyWhite placeholder:text-icyWhite/40 ${accent.inputFocus}`}
                     {...field}
                   />
                 </FormControl>
@@ -145,7 +150,7 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
                     autoComplete="email"
                     maxLength={254}
                     placeholder={t("placeholderEmail")}
-                    className="min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30 touch-manipulation"
+                    className={`min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 ${accent.inputBorder} text-icyWhite placeholder:text-icyWhite/40 ${accent.inputFocus}`}
                     {...field}
                   />
                 </FormControl>
@@ -169,7 +174,7 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
                     autoComplete="tel"
                     maxLength={20}
                     placeholder={t("placeholderPhone")}
-                    className="min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:ring-gold-soft/30 touch-manipulation"
+                    className={`min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 ${accent.inputBorder} text-icyWhite placeholder:text-icyWhite/40 ${accent.inputFocus}`}
                     {...field}
                   />
                 </FormControl>

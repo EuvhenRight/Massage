@@ -6,11 +6,14 @@ import Navbar from '@/components/Navbar'
 interface BookingPageLayoutProps {
 	children: React.ReactNode
 	maxWidth?: '5xl' | '7xl'
+	/** Massage booking uses purple accents on the shell; depilation stays neutral gold via inner flow only. */
+	variant?: 'default' | 'massage'
 }
 
 export default function BookingPageLayout({
 	children,
 	maxWidth = '7xl',
+	variant = 'default',
 }: BookingPageLayoutProps) {
 	useEffect(() => {
 		document.documentElement.classList.add('booking-page-no-scroll')
@@ -25,7 +28,13 @@ export default function BookingPageLayout({
 					maxWidth === '7xl' ? 'max-w-7xl' : 'max-w-5xl'
 				} mx-auto w-full`}
 			>
-				<div className="flex-1 flex flex-col min-h-0 rounded-2xl border border-white/10 bg-nearBlack/50 overflow-hidden">
+				<div
+					className={
+						variant === 'massage'
+							? 'flex-1 flex flex-col min-h-0 rounded-2xl border border-purple-soft/25 bg-nearBlack/50 shadow-[0_0_48px_-16px_rgba(147,51,234,0.35)] overflow-hidden'
+							: 'flex-1 flex flex-col min-h-0 rounded-2xl border border-white/10 bg-nearBlack/50 overflow-hidden'
+					}
+				>
 					{children}
 				</div>
 			</div>

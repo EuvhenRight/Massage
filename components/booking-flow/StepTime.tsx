@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -10,6 +10,7 @@ import {
   getPrepBufferMinutes,
   type OccupiedSlot,
 } from "@/lib/availability-firestore";
+import { getBookingAccent } from "@/lib/booking-accent";
 import type { Place } from "@/lib/places";
 import { getSchedule } from "@/lib/schedule-firestore";
 import TimeSlotPicker from "./TimeSlotPicker";
@@ -23,6 +24,7 @@ export default function StepTime({
   durationMinutes,
   place = "massage",
 }: StepTimeProps) {
+  const accent = useMemo(() => getBookingAccent(place), [place]);
   const locale = useLocale();
   const t = useTranslations("booking");
   const { date, time, setTime } = useBookingFlow();
@@ -87,6 +89,7 @@ export default function StepTime({
       </p>
 
       <TimeSlotPicker
+        accent={accent}
         date={date}
         selectedTime={time}
         onSelectTime={setTime}
