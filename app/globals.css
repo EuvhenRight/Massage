@@ -120,6 +120,61 @@
 	position: relative;
 }
 
+/* Infinite horizontal marquee — trust bar */
+.marquee-track {
+	display: flex;
+	width: max-content;
+	animation: marquee 30s linear infinite;
+}
+.marquee-track:hover {
+	animation-play-state: paused;
+}
+
+/* Glass card for premium feel */
+.glass-card {
+	background: rgba(255, 255, 255, 0.03);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.glass-card:hover {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(232, 184, 0, 0.2);
+}
+
+/* Animated gradient border effect */
+.gradient-border {
+	position: relative;
+}
+.gradient-border::before {
+	content: '';
+	position: absolute;
+	inset: -1px;
+	border-radius: inherit;
+	padding: 1px;
+	background: linear-gradient(
+		135deg,
+		rgba(232, 184, 0, 0.4),
+		transparent 40%,
+		transparent 60%,
+		rgba(232, 184, 0, 0.2)
+	);
+	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+	mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+	pointer-events: none;
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+	display: none;
+}
+
 /* Shared select/dropdown menu style - used by SelectTrigger and native selects */
 .select-menu {
 	@apply w-full rounded-lg border border-white/10 bg-black px-3 py-2 text-sm text-icyWhite;

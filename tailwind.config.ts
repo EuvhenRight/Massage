@@ -93,6 +93,14 @@ const config: Config = {
 				'glow-pulse-purple': 'glow-pulse-purple 2s ease-in-out infinite',
 				shimmer: 'shimmer 3s linear infinite',
 				'shimmer-sweep': 'shimmer-sweep 1.5s ease-in-out infinite',
+				float: 'float 6s ease-in-out infinite',
+				'float-delayed': 'float 6s ease-in-out 3s infinite',
+				'gradient-x': 'gradient-x 8s ease infinite',
+				'marquee': 'marquee 30s linear infinite',
+				'border-glow': 'border-glow 4s ease-in-out infinite',
+				'scale-in': 'scale-in 0.5s ease-out',
+				'slide-up-fade': 'slide-up-fade 0.6s ease-out',
+				'pulse-soft': 'pulse-soft 3s ease-in-out infinite',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -140,6 +148,40 @@ const config: Config = {
 				'shimmer-sweep': {
 					'0%': { transform: 'translateX(-100%)' },
 					'100%': { transform: 'translateX(100%)' },
+				},
+				float: {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-12px)' },
+				},
+				'gradient-x': {
+					'0%, 100%': { backgroundPosition: '0% 50%' },
+					'50%': { backgroundPosition: '100% 50%' },
+				},
+				marquee: {
+					'0%': { transform: 'translateX(0%)' },
+					'100%': { transform: 'translateX(-50%)' },
+				},
+				'border-glow': {
+					'0%, 100%': {
+						borderColor: 'rgba(232, 184, 0, 0.15)',
+						boxShadow: '0 0 15px rgba(232, 184, 0, 0.05)',
+					},
+					'50%': {
+						borderColor: 'rgba(232, 184, 0, 0.4)',
+						boxShadow: '0 0 25px rgba(232, 184, 0, 0.15)',
+					},
+				},
+				'scale-in': {
+					'0%': { transform: 'scale(0.9)', opacity: '0' },
+					'100%': { transform: 'scale(1)', opacity: '1' },
+				},
+				'slide-up-fade': {
+					'0%': { transform: 'translateY(20px)', opacity: '0' },
+					'100%': { transform: 'translateY(0)', opacity: '1' },
+				},
+				'pulse-soft': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.7' },
 				},
 			},
 			backdropBlur: {

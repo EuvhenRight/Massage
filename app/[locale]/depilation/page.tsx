@@ -17,8 +17,14 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog'
 import { SITE_CONFIG } from '@/lib/site-config'
-import { motion } from 'framer-motion'
 import {
+	motion,
+	useMotionValueEvent,
+	useScroll,
+	useTransform,
+} from 'framer-motion'
+import {
+	ArrowDown,
 	Award,
 	BadgeCheck,
 	Calendar,
@@ -39,6 +45,7 @@ import {
 	Sparkles,
 	Star,
 	ThermometerSun,
+	Trophy,
 	Users,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -71,12 +78,12 @@ const VALUES = [
 ]
 
 const ACHIEVEMENTS = [
-	'achievement1',
-	'achievement2',
-	'achievement3',
-	'achievement4',
-	'achievement5',
-] as const
+	{ key: 'achievement1' as const, icon: Trophy },
+	{ key: 'achievement2' as const, icon: Award },
+	{ key: 'achievement3' as const, icon: BadgeCheck },
+	{ key: 'achievement4' as const, icon: Sparkles },
+	{ key: 'achievement5' as const, icon: Star },
+]
 
 const TRUST_ITEMS = [
 	'trustYears',
@@ -153,6 +160,23 @@ const FAQ_ITEMS = [
 	'sensitive',
 ] as const
 
+const stagger = {
+	hidden: {},
+	show: { transition: { staggerChildren: 0.08 } },
+}
+const fadeUp = {
+	hidden: { opacity: 0, y: 28 },
+	show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+}
+const fadeIn = {
+	hidden: { opacity: 0 },
+	show: { opacity: 1, transition: { duration: 0.7 } },
+}
+const scaleUp = {
+	hidden: { opacity: 0, scale: 0.92 },
+	show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+}
+
 export default function DepilationPage() {
 	const t = useTranslations('depilation')
 	const tCommon = useTranslations('common')
@@ -161,6 +185,19 @@ export default function DepilationPage() {
 	const sliderRef = useRef<HTMLDivElement>(null)
 	const testimonialRef = useRef<HTMLDivElement>(null)
 	const [contactSent, setContactSent] = useState(false)
+
+	const heroRef = useRef<HTMLElement>(null)
+	const { scrollYProgress } = useScroll({
+		target: heroRef,
+		offset: ['start start', 'end start'],
+	})
+	const heroImgY = useTransform(scrollYProgress, [0, 1], ['0%', '25%'])
+	const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
+
+	const [heroScrolled, setHeroScrolled] = useState(false)
+	useMotionValueEvent(scrollYProgress, 'change', v => {
+		setHeroScrolled(v > 0.1)
+	})
 
 	const scrollSlider = (
 		ref: React.RefObject<HTMLDivElement | null>,
@@ -187,6 +224,9 @@ export default function DepilationPage() {
 		})),
 	}
 
+	const trustContent = TRUST_ITEMS.map(key => t(`trust.${key}`))
+	const duplicatedTrust = [...trustContent, ...trustContent]
+
 	return (
 		<>
 			<Navbar />
@@ -195,51 +235,63 @@ export default function DepilationPage() {
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
-				transition={{ delay: 1 }}
+				transition={{ delay: 1.2 }}
 				className='md:hidden fixed bottom-6 left-6 right-6 z-40'
 			>
 				<Link
 					href={`/${locale}/depilation/booking`}
-					className='flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gold-soft/90 text-nearBlack font-medium text-sm tracking-wider uppercase shadow-glow'
+					className='flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wider uppercase shadow-glow-strong backdrop-blur-sm'
 				>
 					<Calendar className='w-4 h-4' />
 					{t('bookNow')}
 				</Link>
 			</motion.div>
 
-			{/* ── 1. HERO (single viewport) ── */}
+			{/* ── 1. HERO — cinematic fullscreen with parallax ── */}
 			<section
+				ref={heroRef}
 				id='hero'
 				className='relative h-screen flex flex-col overflow-hidden noise-overlay'
 				aria-labelledby='depilation-hero'
 			>
-				<div className='absolute inset-0'>
+				{/* Parallax background */}
+				<motion.div className='absolute inset-0' style={{ y: heroImgY }}>
 					<Image
 						src={IMG.portrait}
 						alt=''
 						fill
-						className='object-cover opacity-50'
+						className='object-cover scale-110'
 						priority
 						sizes='100vw'
 					/>
-					<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/80 via-nearBlack/60 to-nearBlack' />
+					<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/70 via-nearBlack/50 to-nearBlack' />
+				</motion.div>
+
+				{/* Ambient glow orbs */}
+				<div className='absolute inset-0 overflow-hidden pointer-events-none'>
+					<div className='absolute -top-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-gold-soft/[0.04] blur-[120px] animate-float' />
+					<div className='absolute -bottom-1/4 -left-1/4 w-[500px] h-[500px] rounded-full bg-gold-soft/[0.03] blur-[100px] animate-float-delayed' />
 				</div>
 
-				{/* Badge line — pinned to top (below fixed header) */}
+				{/* Badge line */}
 				<motion.p
-					initial={{ opacity: 0, y: -8 }}
+					initial={{ opacity: 0, y: -12 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5 }}
-					className='relative z-10 w-full text-center text-gold-soft/70 text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.3em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
+					transition={{ duration: 0.6, delay: 0.2 }}
+					className='relative z-10 w-full text-center text-gold-soft/60 text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
 				>
 					{t('heroBadge')}
 				</motion.p>
 
-				<div className='relative z-10 flex-1 flex flex-col items-center justify-center px-6 min-h-0'>
+				{/* Main hero content */}
+				<motion.div
+					style={{ opacity: heroOpacity }}
+					className='relative z-10 flex-1 flex flex-col items-center justify-center px-6 min-h-0'
+				>
 					<motion.div
-						initial={{ opacity: 0, y: 20 }}
+						initial={{ opacity: 0, y: 30 }}
 						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.7 }}
+						transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
 						className='text-center'
 					>
 						<div className='flex justify-center mb-0'>
@@ -248,321 +300,396 @@ export default function DepilationPage() {
 								alt='V2studio'
 								width={180}
 								height={200}
-								className='h-20 sm:h-24 md:h-32 lg:h-36 w-auto drop-shadow-[0_0_30px_rgba(232,184,0,0.15)]'
+								className='h-20 sm:h-24 md:h-32 lg:h-36 w-auto drop-shadow-[0_0_40px_rgba(232,184,0,0.2)]'
 								priority
 							/>
 						</div>
 
 						<GlowText text={tCommon('depilation')} />
 
-						<p className='-mt-1 text-gold-soft/90 text-sm tracking-wider uppercase'>
+						<motion.p
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.8, duration: 0.8 }}
+							className='-mt-1 text-gold-soft/80 text-xs sm:text-sm tracking-wider uppercase max-w-lg mx-auto leading-relaxed'
+						>
 							{t('hero')}
-						</p>
+						</motion.p>
 
-						<div className='mt-4 flex flex-wrap justify-center gap-3'>
+						<motion.div
+							initial={{ opacity: 0, y: 16 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 1, duration: 0.6 }}
+							className='mt-6 flex flex-wrap justify-center gap-3'
+						>
 							<Link
 								href={`/${locale}/depilation/booking`}
-								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-soft text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300'
+								className='group inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/25 hover:border-gold-soft/60 hover:shadow-glow transition-all duration-500'
 							>
 								{t('heroBookButton')}
-								<ChevronRight className='w-4 h-4' />
+								<ChevronRight className='w-4 h-4 group-hover:translate-x-0.5 transition-transform' />
 							</Link>
 							<a
 								href='#services'
-								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/15 text-icyWhite/70 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/40 hover:text-gold-soft transition-all duration-300'
+								className='inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-white/10 text-icyWhite/60 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/30 hover:text-gold-soft/80 transition-all duration-500'
 							>
 								{t('heroPricesButton')}
 							</a>
-						</div>
+						</motion.div>
 					</motion.div>
-				</div>
 
-				{/* Trust bar pinned to bottom of hero viewport */}
+					{/* Scroll indicator */}
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: heroScrolled ? 0 : 1 }}
+						transition={{ duration: 0.4 }}
+						className='absolute bottom-24 sm:bottom-16 left-1/2 -translate-x-1/2'
+					>
+						<motion.div
+							animate={{ y: [0, 8, 0] }}
+							transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+						>
+							<ArrowDown className='w-5 h-5 text-gold-soft/40' />
+						</motion.div>
+					</motion.div>
+				</motion.div>
+
+				{/* Trust bar — infinite marquee */}
 				<motion.div
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.6, duration: 0.5 }}
-					className='relative z-10 py-3 border-t border-white/5 bg-nearBlack/60 backdrop-blur-sm'
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ delay: 1.2, duration: 0.6 }}
+					className='relative z-10 py-4 border-t border-white/[0.06] bg-nearBlack/70 backdrop-blur-md overflow-hidden'
 					aria-label={t('trustBarLabel')}
 				>
-					<div className='max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-8 gap-y-1.5'>
-						{TRUST_ITEMS.map((key, i) => (
+					<div className='marquee-track'>
+						{duplicatedTrust.map((text, i) => (
 							<span
-								key={key}
-								className='text-gold-soft/80 text-[10px] sm:text-xs lg:text-sm tracking-wider uppercase whitespace-nowrap'
+								key={i}
+								className='flex items-center gap-3 sm:gap-4 px-4 sm:px-6 shrink-0'
 							>
-								{i > 0 && (
-									<span
-										className='text-white/20 mr-4 sm:mr-8 hidden sm:inline'
-										aria-hidden
-									>
-										|
-									</span>
-								)}
-								{t(`trust.${key}`)}
+								<span className='w-1 h-1 rounded-full bg-gold-soft/50' aria-hidden />
+								<span className='text-gold-soft/70 text-[11px] sm:text-xs tracking-[0.2em] uppercase whitespace-nowrap font-medium'>
+									{text}
+								</span>
 							</span>
 						))}
 					</div>
 				</motion.div>
 			</section>
 
-			{/* ── 3. ABOUT ME ── */}
+			{/* ── 2. ABOUT ME — editorial split layout ── */}
 			<section
 				id='about'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8'
+				className='relative py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8 overflow-hidden'
 				aria-labelledby='about-heading'
 			>
+				{/* Subtle ambient glow */}
+				<div className='absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-gold-soft/[0.02] blur-[150px] pointer-events-none' />
+
 				<div className='max-w-6xl mx-auto'>
-					<div className='grid lg:grid-cols-2 gap-12 lg:gap-16 items-center'>
+					<div className='grid lg:grid-cols-2 gap-12 lg:gap-20 items-center'>
 						<motion.div
-							initial={{ opacity: 0, x: -24 }}
-							whileInView={{ opacity: 1, x: 0 }}
-							viewport={{ once: true }}
-							className='relative aspect-[4/3] rounded-2xl overflow-hidden border border-white/10'
+							initial={{ opacity: 0, x: -40, scale: 0.96 }}
+							whileInView={{ opacity: 1, x: 0, scale: 1 }}
+							viewport={{ once: true, margin: '-80px' }}
+							transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+							className='relative'
 						>
-							<Image
-								src={IMG.about}
-								alt='Natalie Volik'
-								fill
-								className='object-cover'
-								sizes='(max-width: 1024px) 100vw, 50vw'
-							/>
-							<div className='absolute inset-0 bg-gradient-to-t from-nearBlack/40 to-transparent' />
+							<div className='relative aspect-[3/4] rounded-3xl overflow-hidden'>
+								<Image
+									src={IMG.about}
+									alt='Natalie Volik'
+									fill
+									className='object-cover'
+									sizes='(max-width: 1024px) 100vw, 50vw'
+								/>
+								<div className='absolute inset-0 bg-gradient-to-t from-nearBlack/60 via-transparent to-transparent' />
+							</div>
+							{/* Floating accent frame */}
+							<div className='absolute -bottom-4 -right-4 w-full h-full rounded-3xl border border-gold-soft/15 pointer-events-none' />
 						</motion.div>
-						<div>
+
+						<motion.div
+							variants={stagger}
+							initial='hidden'
+							whileInView='show'
+							viewport={{ once: true, margin: '-80px' }}
+						>
 							<motion.h2
 								id='about-heading'
-								initial={{ opacity: 0, y: 16 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-6'
+								variants={fadeUp}
+								className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-8'
 							>
 								{t('aboutTitle')}
 							</motion.h2>
 							<motion.p
-								initial={{ opacity: 0 }}
-								whileInView={{ opacity: 1 }}
-								viewport={{ once: true }}
-								className='text-icyWhite/80 leading-relaxed mb-4'
+								variants={fadeUp}
+								className='text-gold-soft/90 text-lg sm:text-xl font-medium leading-relaxed mb-5'
 							>
 								{t('aboutIntro')}
 							</motion.p>
 							<motion.p
-								initial={{ opacity: 0 }}
-								whileInView={{ opacity: 1 }}
-								viewport={{ once: true }}
+								variants={fadeUp}
 								className='text-icyWhite/70 leading-relaxed mb-4'
 							>
 								{t('aboutJourney')}
 							</motion.p>
-							<motion.p
-								initial={{ opacity: 0 }}
-								whileInView={{ opacity: 1 }}
-								viewport={{ once: true }}
-								className='text-icyWhite/70 leading-relaxed mb-4'
+							<motion.div
+								variants={fadeUp}
+								className='my-6 p-4 rounded-2xl glass-card'
 							>
-								{t('aboutExpertise')}
+								<p className='text-gold-soft/80 font-medium text-sm tracking-wide'>
+									{t('aboutExpertise')}
+								</p>
+							</motion.div>
+							<motion.p
+								variants={fadeUp}
+								className='text-icyWhite/65 leading-relaxed mb-4'
+							>
+								{t('aboutMedical')}
 							</motion.p>
 							<motion.p
-								initial={{ opacity: 0 }}
-								whileInView={{ opacity: 1 }}
-								viewport={{ once: true }}
-								className='text-icyWhite/70 leading-relaxed'
+								variants={fadeUp}
+								className='text-icyWhite/60 leading-relaxed italic'
 							>
-								{t('aboutMedical')} {t('aboutContinuous')}
+								{t('aboutContinuous')}
 							</motion.p>
-						</div>
+						</motion.div>
 					</div>
 				</div>
 			</section>
 
-			{/* ── 4. PHILOSOPHY ── */}
+			{/* ── 3. PHILOSOPHY — immersive quote ── */}
 			<section
 				id='philosophy'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
+				className='relative py-24 sm:py-32 lg:py-40 px-5 sm:px-6 lg:px-8 overflow-hidden'
 				aria-labelledby='philosophy-heading'
 			>
-				<div className='max-w-4xl mx-auto text-center'>
-					<motion.h2
-						id='philosophy-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
+				{/* Gradient backdrop */}
+				<div className='absolute inset-0 bg-gradient-to-b from-nearBlack via-nearBlack/95 to-nearBlack' />
+				<div className='absolute inset-0 overflow-hidden pointer-events-none'>
+					<div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full bg-gold-soft/[0.03] blur-[150px]' />
+				</div>
+
+				<div className='relative max-w-4xl mx-auto text-center'>
+					<motion.div
+						initial={{ opacity: 0, scale: 0.95 }}
+						whileInView={{ opacity: 1, scale: 1 }}
 						viewport={{ once: true }}
-						className='font-serif text-3xl md:text-4xl text-icyWhite mb-8'
+						transition={{ duration: 0.8 }}
 					>
-						{t('philosophyTitle')}
-					</motion.h2>
-					<motion.blockquote
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='font-serif text-2xl md:text-3xl lg:text-4xl text-gold-soft/95 leading-relaxed'
-					>
-						&ldquo;{t('philosophyQuote')}&rdquo;
-					</motion.blockquote>
+						<motion.span
+							initial={{ width: 0 }}
+							whileInView={{ width: 64 }}
+							viewport={{ once: true }}
+							transition={{ duration: 0.6, delay: 0.2 }}
+							className='block h-px bg-gold-soft/40 mx-auto mb-10'
+						/>
+						<h2
+							id='philosophy-heading'
+							className='font-serif text-2xl md:text-3xl text-icyWhite/50 mb-8 tracking-wide'
+						>
+							{t('philosophyTitle')}
+						</h2>
+						<blockquote className='font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] text-gold-soft/90 leading-snug sm:leading-relaxed'>
+							&ldquo;{t('philosophyQuote')}&rdquo;
+						</blockquote>
+						<motion.span
+							initial={{ width: 0 }}
+							whileInView={{ width: 64 }}
+							viewport={{ once: true }}
+							transition={{ duration: 0.6, delay: 0.4 }}
+							className='block h-px bg-gold-soft/40 mx-auto mt-10'
+						/>
+					</motion.div>
 				</div>
 			</section>
 
-			{/* ── 5. HOW I CAN HELP ── */}
+			{/* ── 4. WHAT YOU GET — value cards with glass effect ── */}
 			<section
 				id='how-i-help'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8'
+				className='py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8'
 				aria-labelledby='how-i-help-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2
-						id='how-i-help-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-60px' }}
+						className='text-center mb-14'
 					>
-						{t('howIHelpTitle')}
-					</motion.h2>
-					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='text-icyWhite/60 text-center mb-12'
+						<motion.h2
+							variants={fadeUp}
+							id='how-i-help-heading'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+						>
+							{t('howIHelpTitle')}
+						</motion.h2>
+						<motion.p variants={fadeUp} className='text-icyWhite/50 text-lg'>
+							{t('howIHelpIntro')}
+						</motion.p>
+					</motion.div>
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-40px' }}
+						className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4'
 					>
-						{t('howIHelpIntro')}
-					</motion.p>
-					<div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4'>
-						{VALUES.map(({ key, icon: Icon }, i) => (
+						{VALUES.map(({ key, icon: Icon }) => (
 							<motion.div
 								key={key}
-								initial={{ opacity: 0, y: 24 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: i * 0.06 }}
-								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/30 hover:bg-white/[0.04] transition-all duration-300'
+								variants={scaleUp}
+								className='group relative p-6 sm:p-7 rounded-2xl glass-card hover:shadow-card-hover transition-all duration-500 cursor-default'
 							>
-								<Icon className='w-8 h-8 text-gold-soft/90 mb-3' aria-hidden />
-								<p className='text-icyWhite font-medium text-sm'>{t(key)}</p>
+								<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-4 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-all duration-500'>
+									<Icon className='w-6 h-6 text-gold-soft/90' aria-hidden />
+								</div>
+								<p className='text-icyWhite font-medium text-sm leading-snug'>
+									{t(key)}
+								</p>
 							</motion.div>
 						))}
-					</div>
+					</motion.div>
 				</div>
 			</section>
 
-			{/* ── 6. ACHIEVEMENTS ── */}
+			{/* ── 5. ACHIEVEMENTS — horizontal scroll cards ── */}
 			<section
 				id='achievements'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
+				className='relative py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8 overflow-hidden'
 				aria-labelledby='achievements-heading'
 			>
-				<div className='max-w-6xl mx-auto'>
-					<div className='grid lg:grid-cols-2 gap-12 lg:gap-16 items-center'>
+				<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/50 via-nearBlack/80 to-nearBlack/50' />
+
+				<div className='relative max-w-6xl mx-auto'>
+					<div className='grid lg:grid-cols-2 gap-12 lg:gap-20 items-center'>
 						<motion.div
-							initial={{ opacity: 0, x: -24 }}
+							initial={{ opacity: 0, x: -40 }}
 							whileInView={{ opacity: 1, x: 0 }}
-							viewport={{ once: true }}
-							className='relative aspect-[4/3] rounded-2xl overflow-hidden border border-white/10 order-2 lg:order-1'
+							viewport={{ once: true, margin: '-60px' }}
+							transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+							className='relative order-2 lg:order-1'
 						>
-							<Image
-								src={IMG.certificate}
-								alt=''
-								fill
-								className='object-cover'
-								sizes='(max-width: 1024px) 100vw, 50vw'
-							/>
-						</motion.div>
-						<div className='order-1 lg:order-2'>
-							<motion.h2
-								id='achievements-heading'
-								initial={{ opacity: 0, y: 16 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-8 flex items-center gap-3'
-							>
-								<Award
-									className='w-10 h-10 text-gold-soft shrink-0'
-									aria-hidden
+							<div className='relative aspect-[4/3] rounded-3xl overflow-hidden'>
+								<Image
+									src={IMG.certificate}
+									alt=''
+									fill
+									className='object-cover'
+									sizes='(max-width: 1024px) 100vw, 50vw'
 								/>
+								<div className='absolute inset-0 bg-gradient-to-tr from-nearBlack/50 to-transparent' />
+							</div>
+						</motion.div>
+
+						<motion.div
+							variants={stagger}
+							initial='hidden'
+							whileInView='show'
+							viewport={{ once: true, margin: '-60px' }}
+							className='order-1 lg:order-2'
+						>
+							<motion.h2
+								variants={fadeUp}
+								id='achievements-heading'
+								className='font-serif text-4xl sm:text-5xl text-icyWhite mb-10'
+							>
 								{t('achievementsTitle')}
 							</motion.h2>
-							<ul className='space-y-3'>
-								{ACHIEVEMENTS.map((key, i) => (
-									<motion.li
+							<div className='space-y-3'>
+								{ACHIEVEMENTS.map(({ key, icon: Icon }) => (
+									<motion.div
 										key={key}
-										initial={{ opacity: 0, x: 16 }}
-										whileInView={{ opacity: 1, x: 0 }}
-										viewport={{ once: true }}
-										transition={{ delay: i * 0.05 }}
-										className='flex items-start gap-3 text-icyWhite/80'
+										variants={fadeUp}
+										className='flex items-center gap-4 p-4 rounded-xl glass-card group hover:border-gold-soft/20 transition-all duration-400'
 									>
-										<span className='text-gold-soft shrink-0 mt-0.5'>✦</span>
-										{t(key)}
-									</motion.li>
+										<div className='w-10 h-10 rounded-lg bg-gold-soft/10 flex items-center justify-center shrink-0 group-hover:bg-gold-soft/20 transition-colors'>
+											<Icon className='w-5 h-5 text-gold-soft/80' aria-hidden />
+										</div>
+										<p className='text-icyWhite/80 text-sm font-medium'>
+											{t(key)}
+										</p>
+									</motion.div>
 								))}
-							</ul>
-						</div>
+							</div>
+						</motion.div>
 					</div>
 				</div>
 			</section>
 
-			{/* ── 7. SERVICE MENU ── */}
+			{/* ── 6. SERVICE MENU — premium card grid ── */}
 			<section
 				id='services'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8'
+				className='py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8'
 				aria-labelledby='services-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2
-						id='services-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-60px' }}
+						className='text-center mb-16'
 					>
-						{t('serviceMenu.title')}
-					</motion.h2>
-					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'
-					>
-						{t('serviceMenu.subtitle')}
-					</motion.p>
+						<motion.h2
+							variants={fadeUp}
+							id='services-heading'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+						>
+							{t('serviceMenu.title')}
+						</motion.h2>
+						<motion.p
+							variants={fadeUp}
+							className='text-icyWhite/50 max-w-2xl mx-auto text-lg'
+						>
+							{t('serviceMenu.subtitle')}
+						</motion.p>
+					</motion.div>
 
 					<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8'>
 						{SERVICE_ZONES.map(({ key: zoneKey, items }, zi) => (
 							<motion.div
 								key={zoneKey}
-								initial={{ opacity: 0, y: 32 }}
+								initial={{ opacity: 0, y: 40 }}
 								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: zi * 0.1 }}
-								className='rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden'
+								viewport={{ once: true, margin: '-40px' }}
+								transition={{
+									delay: zi * 0.12,
+									duration: 0.7,
+									ease: [0.22, 1, 0.36, 1],
+								}}
+								className='rounded-3xl glass-card overflow-hidden group'
 							>
-								<div className='px-6 py-5 border-b border-white/10'>
+								<div className='px-6 py-5 border-b border-white/[0.06] bg-white/[0.02]'>
 									<h3 className='font-serif text-2xl text-icyWhite'>
 										{t(`serviceMenu.zone.${zoneKey}`)}
 									</h3>
 								</div>
-								<ul className='divide-y divide-white/5'>
+								<ul className='divide-y divide-white/[0.04]'>
 									{items.map(item => {
 										const title = t(`serviceMenu.items.${item.key}.name`)
 										return (
 											<li
 												key={item.key}
-												className='px-6 py-4 hover:bg-white/[0.02] transition-colors'
+												className='px-6 py-4 hover:bg-white/[0.03] transition-colors duration-300'
 											>
 												<div className='flex items-start justify-between gap-3'>
 													<div className='min-w-0'>
 														<p className='text-icyWhite font-medium text-sm'>
 															{title}
 														</p>
-														<p className='text-icyWhite/50 text-xs mt-1'>
+														<p className='text-icyWhite/45 text-xs mt-1 leading-relaxed'>
 															{t(`serviceMenu.items.${item.key}.desc`)}
 														</p>
 													</div>
 													<div className='shrink-0 text-right'>
-														<p className='text-gold-soft font-medium text-sm'>
+														<p className='text-gold-soft font-semibold text-sm'>
 															{t('serviceMenu.from')} {item.price} &euro;
 														</p>
-														<p className='text-icyWhite/40 text-xs flex items-center justify-end gap-1 mt-0.5'>
+														<p className='text-icyWhite/35 text-xs flex items-center justify-end gap-1 mt-0.5'>
 															<Clock className='w-3 h-3' />
 															{item.duration} {t('serviceMenu.min')}
 														</p>
@@ -570,7 +697,7 @@ export default function DepilationPage() {
 												</div>
 												<Link
 													href={`/${locale}/depilation/booking?service=${encodeURIComponent(title)}&duration=${item.duration}`}
-													className='inline-flex items-center gap-1 text-gold-soft/70 hover:text-gold-soft text-xs tracking-wider uppercase mt-2 transition-colors'
+													className='inline-flex items-center gap-1 text-gold-soft/60 hover:text-gold-soft text-xs tracking-wider uppercase mt-2.5 transition-colors duration-300'
 												>
 													{t('serviceMenu.book')}
 													<ChevronRight className='w-3 h-3' />
@@ -585,48 +712,61 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			{/* ── 8. RESULTS & PROCESS ── */}
+			{/* ── 7. PROCESS — connected timeline ── */}
 			<section
 				id='process'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
+				className='relative py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8 overflow-hidden'
 				aria-labelledby='process-heading'
 			>
-				<div className='max-w-6xl mx-auto'>
-					<motion.h2
-						id='process-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+				<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/50 via-nearBlack/80 to-nearBlack/50' />
+
+				<div className='relative max-w-6xl mx-auto'>
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-60px' }}
+						className='text-center mb-16'
 					>
-						{t('process.title')}
-					</motion.h2>
-					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'
-					>
-						{t('process.subtitle')}
-					</motion.p>
+						<motion.h2
+							variants={fadeUp}
+							id='process-heading'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+						>
+							{t('process.title')}
+						</motion.h2>
+						<motion.p
+							variants={fadeUp}
+							className='text-icyWhite/50 max-w-2xl mx-auto text-lg'
+						>
+							{t('process.subtitle')}
+						</motion.p>
+					</motion.div>
 
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-6'>
 						{PROCESS_STEPS.map(({ key, step }, i) => (
 							<motion.div
 								key={key}
-								initial={{ opacity: 0, y: 24 }}
+								initial={{ opacity: 0, y: 32 }}
 								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: i * 0.1 }}
-								className='relative p-6 rounded-2xl border border-white/10 bg-white/[0.02]'
+								viewport={{ once: true, margin: '-40px' }}
+								transition={{
+									delay: i * 0.1,
+									duration: 0.6,
+									ease: [0.22, 1, 0.36, 1],
+								}}
+								className='relative p-7 rounded-3xl glass-card group'
 							>
-								<span className='text-gold-soft/30 font-serif text-5xl absolute top-4 right-5'>
+								{/* Step number watermark */}
+								<span className='absolute top-4 right-5 font-serif text-6xl text-gold-soft/[0.08] group-hover:text-gold-soft/[0.15] transition-colors duration-500'>
 									{step}
 								</span>
+								{/* Gold top accent line */}
+								<div className='w-8 h-0.5 bg-gold-soft/40 rounded-full mb-5 group-hover:w-12 transition-all duration-500' />
 								<h3 className='font-serif text-xl text-icyWhite mb-3 relative'>
 									{t(`process.${key}.title`)}
 								</h3>
-								<p className='text-icyWhite/60 text-sm leading-relaxed relative'>
+								<p className='text-icyWhite/55 text-sm leading-relaxed relative'>
 									{t(`process.${key}.desc`)}
 								</p>
 							</motion.div>
@@ -634,109 +774,111 @@ export default function DepilationPage() {
 					</div>
 
 					<motion.div
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true }}
-						className='mt-12 max-w-3xl mx-auto p-6 rounded-2xl border border-gold-soft/15 bg-gold-soft/[0.03]'
+						transition={{ delay: 0.4, duration: 0.6 }}
+						className='mt-14 max-w-3xl mx-auto p-7 rounded-3xl border border-gold-soft/10 bg-gold-soft/[0.02] backdrop-blur-sm'
 					>
-						<p className='text-icyWhite/70 text-sm leading-relaxed text-center'>
+						<p className='text-icyWhite/65 text-sm leading-relaxed text-center'>
 							{t('process.expectation')}
 						</p>
 					</motion.div>
 				</div>
 			</section>
 
-			{/* ── 9. TEAM SPOTLIGHT ── */}
+			{/* ── 8. TEAM SPOTLIGHT — cinematic cards ── */}
 			<section
 				id='team'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8'
+				className='py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8'
 				aria-labelledby='team-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2
-						id='team-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-60px' }}
+						className='text-center mb-14'
 					>
-						{t('team.title')}
-					</motion.h2>
-					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='text-icyWhite/60 text-center mb-12'
-					>
-						{t('team.subtitle')}
-					</motion.p>
+						<motion.h2
+							variants={fadeUp}
+							id='team-heading'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+						>
+							{t('team.title')}
+						</motion.h2>
+						<motion.p variants={fadeUp} className='text-icyWhite/50 text-lg'>
+							{t('team.subtitle')}
+						</motion.p>
+					</motion.div>
 
 					<div className='relative'>
 						<div
 							ref={sliderRef}
 							className='flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
-							style={{ scrollbarWidth: 'none' }}
 						>
 							{/* Natalie card */}
 							<motion.article
-								initial={{ opacity: 0, y: 24 }}
+								initial={{ opacity: 0, y: 32 }}
 								whileInView={{ opacity: 1, y: 0 }}
 								viewport={{ once: true }}
-								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
+								transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
-								<div className='relative aspect-[3/4]'>
+								<div className='relative aspect-[3/4] overflow-hidden'>
 									<Image
 										src={IMG.portrait2}
 										alt={t('team.natalie.name')}
 										fill
-										className='object-cover'
-										sizes='360px'
+										className='object-cover group-hover:scale-105 transition-transform duration-700'
+										sizes='380px'
 									/>
-									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/20 to-transparent' />
-									<div className='absolute bottom-0 left-0 right-0 p-6'>
+									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/30 to-transparent' />
+									<div className='absolute bottom-0 left-0 right-0 p-7'>
 										<h3 className='font-serif text-2xl text-icyWhite'>
 											{t('team.natalie.name')}
 										</h3>
-										<p className='text-gold-soft/90 text-sm mt-1'>
+										<p className='text-gold-soft/80 text-sm mt-1'>
 											{t('team.natalie.role')}
 										</p>
 									</div>
 								</div>
-								<div className='p-6'>
-									<p className='text-icyWhite/50 text-xs tracking-wider uppercase mb-3'>
+								<div className='p-7'>
+									<p className='text-icyWhite/40 text-xs tracking-[0.15em] uppercase mb-3'>
 										{t('team.natalie.specialty')}
 									</p>
-									<p className='text-icyWhite/70 text-sm leading-relaxed'>
+									<p className='text-icyWhite/65 text-sm leading-relaxed'>
 										{t('team.natalie.bio')}
 									</p>
 								</div>
 							</motion.article>
 
-							{/* Second portrait -- different angle */}
+							{/* Workspace card */}
 							<motion.article
-								initial={{ opacity: 0, y: 24 }}
+								initial={{ opacity: 0, y: 32 }}
 								whileInView={{ opacity: 1, y: 0 }}
 								viewport={{ once: true }}
-								transition={{ delay: 0.1 }}
-								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
+								transition={{ delay: 0.12, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
-								<div className='relative aspect-[3/4]'>
+								<div className='relative aspect-[3/4] overflow-hidden'>
 									<Image
 										src={IMG.comfort}
-										alt={t('team.natalie.name')}
+										alt={t('team.workspace.title')}
 										fill
-										className='object-cover'
-										sizes='360px'
+										className='object-cover group-hover:scale-105 transition-transform duration-700'
+										sizes='380px'
 									/>
-									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/20 to-transparent' />
-									<div className='absolute bottom-0 left-0 right-0 p-6'>
+									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/30 to-transparent' />
+									<div className='absolute bottom-0 left-0 right-0 p-7'>
 										<h3 className='font-serif text-xl text-icyWhite'>
 											{t('team.workspace.title')}
 										</h3>
 									</div>
 								</div>
-								<div className='p-6'>
-									<p className='text-icyWhite/70 text-sm leading-relaxed'>
+								<div className='p-7'>
+									<p className='text-icyWhite/65 text-sm leading-relaxed'>
 										{t('team.workspace.desc')}
 									</p>
 								</div>
@@ -746,7 +888,7 @@ export default function DepilationPage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(sliderRef, 'left')}
-							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-gold-soft transition-colors'
+							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-all duration-300 backdrop-blur-sm'
 							aria-label='Previous'
 						>
 							<ChevronLeft className='w-5 h-5' />
@@ -754,7 +896,7 @@ export default function DepilationPage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(sliderRef, 'right')}
-							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-gold-soft transition-colors'
+							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-all duration-300 backdrop-blur-sm'
 							aria-label='Next'
 						>
 							<ChevronRight className='w-5 h-5' />
@@ -763,46 +905,55 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			{/* ── 10. HYGIENE & SAFETY ── */}
+			{/* ── 9. HYGIENE & SAFETY — bento grid ── */}
 			<section
 				id='hygiene'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
+				className='relative py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8 overflow-hidden'
 				aria-labelledby='hygiene-heading'
 			>
-				<div className='max-w-6xl mx-auto'>
-					<motion.h2
-						id='hygiene-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
-					>
-						{t('hygiene.title')}
-					</motion.h2>
-					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='text-icyWhite/60 text-center mb-12'
-					>
-						{t('hygiene.subtitle')}
-					</motion.p>
+				<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/50 via-nearBlack/80 to-nearBlack/50' />
 
-					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-6'>
+				<div className='relative max-w-6xl mx-auto'>
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-60px' }}
+						className='text-center mb-14'
+					>
+						<motion.h2
+							variants={fadeUp}
+							id='hygiene-heading'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+						>
+							{t('hygiene.title')}
+						</motion.h2>
+						<motion.p variants={fadeUp} className='text-icyWhite/50 text-lg'>
+							{t('hygiene.subtitle')}
+						</motion.p>
+					</motion.div>
+
+					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-5'>
 						{HYGIENE_ITEMS.map(({ key, icon: Icon }, i) => (
 							<motion.div
 								key={key}
-								initial={{ opacity: 0, y: 24 }}
+								initial={{ opacity: 0, y: 28 }}
 								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: i * 0.08 }}
-								className='p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/25 transition-all duration-300'
+								viewport={{ once: true, margin: '-40px' }}
+								transition={{
+									delay: i * 0.08,
+									duration: 0.6,
+									ease: [0.22, 1, 0.36, 1],
+								}}
+								className='relative p-7 rounded-3xl glass-card group hover:shadow-card-hover transition-all duration-500'
 							>
-								<Icon className='w-8 h-8 text-gold-soft/90 mb-4' aria-hidden />
-								<h3 className='text-icyWhite font-medium text-sm mb-2'>
+								<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-5 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-all duration-500'>
+									<Icon className='w-6 h-6 text-gold-soft/80' aria-hidden />
+								</div>
+								<h3 className='text-icyWhite font-semibold text-sm mb-2'>
 									{t(`hygiene.${key}.title`)}
 								</h3>
-								<p className='text-icyWhite/55 text-xs leading-relaxed'>
+								<p className='text-icyWhite/45 text-xs leading-relaxed'>
 									{t(`hygiene.${key}.desc`)}
 								</p>
 							</motion.div>
@@ -811,47 +962,51 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			{/* ── 11. TESTIMONIALS ── */}
+			{/* ── 10. TESTIMONIALS — elegant scroll ── */}
 			<section
 				id='testimonials'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8'
+				className='py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8'
 				aria-labelledby='testimonials-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2
-						id='testimonials-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-60px' }}
+						className='text-center mb-14'
 					>
-						{t('testimonials.title')}
-					</motion.h2>
-					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='text-icyWhite/60 text-center mb-12'
-					>
-						{t('testimonials.subtitle')}
-					</motion.p>
+						<motion.h2
+							variants={fadeUp}
+							id='testimonials-heading'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+						>
+							{t('testimonials.title')}
+						</motion.h2>
+						<motion.p variants={fadeUp} className='text-icyWhite/50 text-lg'>
+							{t('testimonials.subtitle')}
+						</motion.p>
+					</motion.div>
 
 					<div className='relative'>
 						<div
 							ref={testimonialRef}
-							className='flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6'
-							style={{ scrollbarWidth: 'none' }}
+							className='flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 						>
 							{TESTIMONIALS.map((key, i) => (
 								<motion.blockquote
 									key={key}
-									initial={{ opacity: 0, y: 24 }}
+									initial={{ opacity: 0, y: 28 }}
 									whileInView={{ opacity: 1, y: 0 }}
 									viewport={{ once: true }}
-									transition={{ delay: i * 0.06 }}
-									className='shrink-0 w-[300px] sm:w-[340px] snap-center p-6 rounded-2xl border border-white/10 bg-white/[0.02]'
+									transition={{
+										delay: i * 0.06,
+										duration: 0.6,
+										ease: [0.22, 1, 0.36, 1],
+									}}
+									className='shrink-0 w-[300px] sm:w-[360px] snap-center p-7 rounded-3xl glass-card'
 								>
-									<div className='flex gap-1 mb-4'>
+									<div className='flex gap-1 mb-5'>
 										{Array.from({ length: 5 }).map((_, si) => (
 											<Star
 												key={si}
@@ -859,14 +1014,14 @@ export default function DepilationPage() {
 											/>
 										))}
 									</div>
-									<p className='text-icyWhite/80 text-sm leading-relaxed mb-4 italic'>
+									<p className='text-icyWhite/75 text-sm leading-relaxed mb-5 italic'>
 										&ldquo;{t(`testimonials.${key}.text`)}&rdquo;
 									</p>
-									<footer className='flex items-center justify-between'>
-										<span className='text-icyWhite/60 text-xs font-medium'>
+									<footer className='flex items-center justify-between pt-4 border-t border-white/[0.06]'>
+										<span className='text-icyWhite/60 text-xs font-semibold'>
 											{t(`testimonials.${key}.author`)}
 										</span>
-										<span className='text-gold-soft/50 text-xs'>
+										<span className='text-gold-soft/40 text-xs'>
 											{t(`testimonials.${key}.service`)}
 										</span>
 									</footer>
@@ -877,7 +1032,7 @@ export default function DepilationPage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(testimonialRef, 'left')}
-							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-gold-soft transition-colors'
+							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-all duration-300 backdrop-blur-sm'
 							aria-label='Previous'
 						>
 							<ChevronLeft className='w-5 h-5' />
@@ -885,7 +1040,7 @@ export default function DepilationPage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(testimonialRef, 'right')}
-							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-gold-soft transition-colors'
+							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-all duration-300 backdrop-blur-sm'
 							aria-label='Next'
 						>
 							<ChevronRight className='w-5 h-5' />
@@ -894,87 +1049,101 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			{/* ── 12. FAQ ── */}
+			{/* ── 11. FAQ ── */}
 			<section
 				id='faq'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
+				className='relative py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8 overflow-hidden'
 				aria-labelledby='faq-heading'
 			>
+				<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/50 via-nearBlack/80 to-nearBlack/50' />
 				<script
 					type='application/ld+json'
 					dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
 				/>
-				<div className='max-w-3xl mx-auto'>
-					<motion.h2
-						id='faq-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+				<div className='relative max-w-3xl mx-auto'>
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-60px' }}
+						className='text-center mb-14'
 					>
-						{t('faq.title')}
-					</motion.h2>
-					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='text-icyWhite/60 text-center mb-12'
-					>
-						{t('faq.subtitle')}
-					</motion.p>
+						<motion.h2
+							variants={fadeUp}
+							id='faq-heading'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+						>
+							{t('faq.title')}
+						</motion.h2>
+						<motion.p variants={fadeUp} className='text-icyWhite/50 text-lg'>
+							{t('faq.subtitle')}
+						</motion.p>
+					</motion.div>
 
-					<Accordion type='single' collapsible className='space-y-2'>
-						{FAQ_ITEMS.map(key => (
-							<AccordionItem
+					<Accordion type='single' collapsible className='space-y-3'>
+						{FAQ_ITEMS.map((key, i) => (
+							<motion.div
 								key={key}
-								value={key}
-								className='rounded-xl border border-white/10 bg-white/[0.02] px-6 overflow-hidden'
+								initial={{ opacity: 0, y: 16 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{ delay: i * 0.04, duration: 0.5 }}
 							>
-								<AccordionTrigger className='text-icyWhite text-left text-sm font-medium py-5 [&>svg]:text-gold-soft'>
-									{t(`faq.${key}.q`)}
-								</AccordionTrigger>
-								<AccordionContent className='text-icyWhite/65 text-sm leading-relaxed'>
-									{t(`faq.${key}.a`)}
-								</AccordionContent>
-							</AccordionItem>
+								<AccordionItem
+									value={key}
+									className='rounded-2xl border border-white/[0.06] bg-white/[0.02] px-6 overflow-hidden backdrop-blur-sm hover:border-white/[0.1] transition-colors duration-300'
+								>
+									<AccordionTrigger className='text-icyWhite text-left text-sm font-medium py-5 [&>svg]:text-gold-soft'>
+										{t(`faq.${key}.q`)}
+									</AccordionTrigger>
+									<AccordionContent className='text-icyWhite/60 text-sm leading-relaxed'>
+										{t(`faq.${key}.a`)}
+									</AccordionContent>
+								</AccordionItem>
+							</motion.div>
 						))}
 					</Accordion>
 				</div>
 			</section>
 
-			{/* ── 13. CONTACT ── */}
+			{/* ── 12. CONTACT ── */}
 			<section
 				id='contact'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8 bg-nearBlack/40'
+				className='py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8'
 				aria-labelledby='contact-heading'
 			>
 				<div className='max-w-5xl mx-auto'>
 					<motion.header
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						className='text-center mb-12'
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-60px' }}
+						className='text-center mb-14'
 					>
-						<h2
+						<motion.h2
+							variants={fadeUp}
 							id='contact-heading'
-							className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-3'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-3'
 						>
 							{t('contact.title')}
-						</h2>
-						<p className='text-icyWhite/55 text-sm sm:text-base max-w-md mx-auto'>
+						</motion.h2>
+						<motion.p
+							variants={fadeUp}
+							className='text-icyWhite/50 text-sm sm:text-base max-w-md mx-auto'
+						>
 							{t('contact.subtitle')}
-						</p>
+						</motion.p>
 					</motion.header>
 
-					<div className='grid lg:grid-cols-[1fr_340px] gap-8 lg:gap-12 items-start'>
-						{/* Map + address block */}
+					<div className='grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12 items-start'>
 						<motion.div
-							initial={{ opacity: 0, y: 16 }}
+							initial={{ opacity: 0, y: 20 }}
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
+							transition={{ duration: 0.6 }}
 							className='space-y-0'
 						>
-							<div className='rounded-2xl overflow-hidden ring-1 ring-white/10'>
+							<div className='rounded-3xl overflow-hidden ring-1 ring-white/[0.06]'>
 								<iframe
 									src={SITE_CONFIG.googleMapsEmbed}
 									className='w-full aspect-[4/3] sm:aspect-[16/10] border-0'
@@ -984,14 +1153,14 @@ export default function DepilationPage() {
 									title={t('contact.mapTitle')}
 								/>
 							</div>
-							<div className='mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl bg-white/[0.03] ring-1 ring-white/10'>
+							<div className='mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 rounded-2xl glass-card'>
 								<div className='flex items-start gap-3 min-w-0'>
 									<MapPin className='w-5 h-5 text-gold-soft shrink-0 mt-0.5' />
 									<div>
 										<p className='text-icyWhite font-medium text-sm'>
 											{SITE_CONFIG.addressSubtitle}
 										</p>
-										<p className='text-icyWhite/60 text-sm mt-0.5'>
+										<p className='text-icyWhite/50 text-sm mt-0.5'>
 											{SITE_CONFIG.address}
 										</p>
 									</div>
@@ -1000,7 +1169,7 @@ export default function DepilationPage() {
 									href={SITE_CONFIG.googleMaps}
 									target='_blank'
 									rel='noopener noreferrer'
-									className='inline-flex items-center justify-center gap-2 shrink-0 px-4 py-2.5 rounded-lg bg-gold-soft/15 text-gold-soft text-sm font-medium hover:bg-gold-soft/25 transition-colors'
+									className='inline-flex items-center justify-center gap-2 shrink-0 px-5 py-2.5 rounded-xl bg-gold-soft/10 text-gold-soft text-sm font-medium hover:bg-gold-soft/20 transition-colors duration-300'
 								>
 									<Navigation className='w-4 h-4' />
 									{tCommon('getDirections')}
@@ -1008,26 +1177,25 @@ export default function DepilationPage() {
 							</div>
 						</motion.div>
 
-						{/* Contact panel — single card */}
 						<motion.div
-							initial={{ opacity: 0, y: 16 }}
+							initial={{ opacity: 0, y: 20 }}
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
-							transition={{ delay: 0.05 }}
+							transition={{ delay: 0.1, duration: 0.6 }}
 							className='lg:sticky lg:top-24'
 						>
-							<div className='rounded-2xl bg-white/[0.04] ring-1 ring-white/10 p-6'>
-								<p className='flex items-center gap-2 text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
-									<Clock className='w-4 h-4 text-gold-soft/70' />
+							<div className='rounded-3xl glass-card p-7'>
+								<p className='flex items-center gap-2 text-icyWhite/40 text-xs uppercase tracking-[0.15em] mb-5'>
+									<Clock className='w-4 h-4 text-gold-soft/60' />
 									{t('contact.hours')}
 								</p>
 
 								<div className='space-y-2 mb-6'>
 									<a
 										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
-										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
+										className='flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-white/[0.04] transition-colors duration-300 group'
 									>
-										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-gold-soft/10 text-gold-soft group-hover:bg-gold-soft/20 transition-colors'>
+										<span className='flex w-10 h-10 items-center justify-center rounded-xl bg-gold-soft/10 text-gold-soft group-hover:bg-gold-soft/20 transition-colors'>
 											<Phone className='w-4 h-4' />
 										</span>
 										<span className='text-icyWhite text-sm font-medium group-hover:text-gold-soft transition-colors'>
@@ -1038,9 +1206,9 @@ export default function DepilationPage() {
 										href={SITE_CONFIG.whatsapp}
 										target='_blank'
 										rel='noopener noreferrer'
-										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
+										className='flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-white/[0.04] transition-colors duration-300 group'
 									>
-										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-[#25D366]/15 text-[#25D366] group-hover:bg-[#25D366]/25 transition-colors'>
+										<span className='flex w-10 h-10 items-center justify-center rounded-xl bg-[#25D366]/10 text-[#25D366] group-hover:bg-[#25D366]/20 transition-colors'>
 											<MessageCircle className='w-4 h-4' />
 										</span>
 										<span className='text-icyWhite text-sm font-medium group-hover:text-[#25D366] transition-colors'>
@@ -1049,9 +1217,9 @@ export default function DepilationPage() {
 									</a>
 									<a
 										href={`mailto:${SITE_CONFIG.email}`}
-										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
+										className='flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-white/[0.04] transition-colors duration-300 group'
 									>
-										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-gold-soft/10 text-gold-soft group-hover:bg-gold-soft/20 transition-colors'>
+										<span className='flex w-10 h-10 items-center justify-center rounded-xl bg-gold-soft/10 text-gold-soft group-hover:bg-gold-soft/20 transition-colors'>
 											<Mail className='w-4 h-4' />
 										</span>
 										<span className='text-icyWhite text-sm font-medium truncate group-hover:text-gold-soft transition-colors'>
@@ -1060,12 +1228,12 @@ export default function DepilationPage() {
 									</a>
 								</div>
 
-								<div className='flex items-center gap-2 mb-6'>
+								<div className='flex items-center gap-2.5 mb-6'>
 									<a
 										href={SITE_CONFIG.instagram}
 										target='_blank'
 										rel='noopener noreferrer'
-										className='flex w-10 h-10 items-center justify-center rounded-lg bg-white/[0.06] text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors'
+										className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-[#E4405F] hover:bg-[#E4405F]/15 transition-colors duration-300'
 										aria-label='Instagram'
 									>
 										<Instagram className='w-5 h-5' />
@@ -1074,20 +1242,20 @@ export default function DepilationPage() {
 										href={SITE_CONFIG.facebook}
 										target='_blank'
 										rel='noopener noreferrer'
-										className='flex w-10 h-10 items-center justify-center rounded-lg bg-white/[0.06] text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors'
+										className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-[#1877F2] hover:bg-[#1877F2]/15 transition-colors duration-300'
 										aria-label='Facebook'
 									>
 										<Facebook className='w-5 h-5' />
 									</a>
 								</div>
 
-								<div className='h-px bg-white/10 my-5' />
+								<div className='h-px bg-white/[0.06] my-5' />
 
 								<Dialog>
 									<DialogTrigger asChild>
 										<button
 											type='button'
-											className='w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wide hover:bg-gold-soft/90 focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all'
+											className='w-full flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wide hover:bg-gold-soft/90 focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all duration-300'
 										>
 											<Send className='w-4 h-4' />
 											{t('contact.formTitle')}
@@ -1104,7 +1272,7 @@ export default function DepilationPage() {
 											<motion.div
 												initial={{ opacity: 0, scale: 0.95 }}
 												animate={{ opacity: 1, scale: 1 }}
-												className='p-8 rounded-xl border border-gold-soft/20 bg-gold-soft/[0.04] text-center'
+												className='p-8 rounded-2xl border border-gold-soft/20 bg-gold-soft/[0.04] text-center'
 											>
 												<BadgeCheck className='w-12 h-12 text-gold-soft mx-auto mb-4' />
 												<p className='text-icyWhite/80 text-sm'>
@@ -1182,7 +1350,7 @@ export default function DepilationPage() {
 												</div>
 												<button
 													type='submit'
-													className='w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300'
+													className='w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-all duration-300'
 												>
 													<Send className='w-4 h-4' />
 													{t('contact.submit')}
@@ -1197,54 +1365,71 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			{/* ── 14. FINAL BOOKING CTA ── */}
+			{/* ── 13. FINAL BOOKING CTA — dramatic ── */}
 			<section
 				id='booking'
-				className='py-16 sm:py-24 lg:py-32 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
+				className='relative py-24 sm:py-32 lg:py-44 px-5 sm:px-6 lg:px-8 overflow-hidden'
 				aria-labelledby='booking-heading'
 			>
-				<div className='max-w-3xl mx-auto text-center'>
-					<motion.h2
-						id='booking-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
+				<div className='absolute inset-0 bg-gradient-to-b from-nearBlack via-nearBlack/95 to-nearBlack' />
+				<div className='absolute inset-0 overflow-hidden pointer-events-none'>
+					<div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-gold-soft/[0.04] blur-[120px]' />
+				</div>
+
+				<div className='relative max-w-3xl mx-auto text-center'>
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
 						viewport={{ once: true }}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-6'
 					>
-						{t('reserveTitle')}
-					</motion.h2>
-					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='text-icyWhite/70 mb-10 leading-relaxed'
-					>
-						{t('reserveDesc')}
-					</motion.p>
-					<div className='flex flex-wrap justify-center gap-4'>
-						<Link
-							href={`/${locale}/depilation/booking`}
-							className='inline-flex items-center gap-2 px-10 py-4 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-soft font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300'
+						<motion.span
+							initial={{ width: 0 }}
+							whileInView={{ width: 48 }}
+							viewport={{ once: true }}
+							transition={{ duration: 0.6 }}
+							className='block h-px bg-gold-soft/40 mx-auto mb-10'
+						/>
+						<motion.h2
+							variants={fadeUp}
+							id='booking-heading'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-6'
 						>
-							{t('bookNow')}
-							<ChevronRight className='w-4 h-4' />
-						</Link>
-						<a
-							href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
-							className='inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-white/20 text-icyWhite/80 font-medium hover:border-gold-soft/40 hover:text-gold-soft transition-colors'
+							{t('reserveTitle')}
+						</motion.h2>
+						<motion.p
+							variants={fadeUp}
+							className='text-icyWhite/60 mb-12 leading-relaxed text-lg max-w-xl mx-auto'
 						>
-							<Phone className='w-4 h-4' />
-							{t('callNow')}
-						</a>
-					</div>
+							{t('reserveDesc')}
+						</motion.p>
+						<motion.div
+							variants={fadeUp}
+							className='flex flex-wrap justify-center gap-4'
+						>
+							<Link
+								href={`/${locale}/depilation/booking`}
+								className='group inline-flex items-center gap-2 px-10 py-4.5 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-semibold tracking-wider uppercase hover:bg-gold-soft/25 hover:border-gold-soft/60 hover:shadow-glow transition-all duration-500'
+							>
+								{t('bookNow')}
+								<ChevronRight className='w-4 h-4 group-hover:translate-x-0.5 transition-transform' />
+							</Link>
+							<a
+								href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
+								className='inline-flex items-center gap-2 px-8 py-4.5 rounded-2xl border border-white/10 text-icyWhite/60 font-medium hover:border-gold-soft/30 hover:text-gold-soft/80 transition-all duration-500'
+							>
+								<Phone className='w-4 h-4' />
+								{t('callNow')}
+							</a>
+						</motion.div>
+					</motion.div>
 				</div>
 			</section>
 
-			{/* ── 15. FOOTER ── */}
-			<footer className='border-t border-white/5 py-12 px-6 lg:px-8'>
+			{/* ── 14. FOOTER ── */}
+			<footer className='border-t border-white/[0.04] py-14 px-6 lg:px-8'>
 				<div className='max-w-6xl mx-auto'>
-					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10'>
-						{/* Brand */}
+					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12'>
 						<div>
 							<Link
 								href={`/${locale}`}
@@ -1258,17 +1443,16 @@ export default function DepilationPage() {
 									className='h-14 w-auto'
 								/>
 							</Link>
-							<p className='text-icyWhite/40 text-xs mt-3 leading-relaxed'>
+							<p className='text-icyWhite/35 text-xs mt-4 leading-relaxed'>
 								{t('footer.tagline')}
 							</p>
 						</div>
 
-						{/* Navigation */}
 						<div>
-							<h4 className='text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
+							<h4 className='text-icyWhite/40 text-xs uppercase tracking-[0.15em] mb-4'>
 								{t('footer.navTitle')}
 							</h4>
-							<ul className='space-y-2'>
+							<ul className='space-y-2.5'>
 								{[
 									{ href: '#services', label: t('serviceMenu.title') },
 									{ href: '#team', label: t('team.title') },
@@ -1278,7 +1462,7 @@ export default function DepilationPage() {
 									<li key={link.href}>
 										<a
 											href={link.href}
-											className='text-icyWhite/60 hover:text-gold-soft text-sm transition-colors'
+											className='text-icyWhite/50 hover:text-gold-soft text-sm transition-colors duration-300'
 										>
 											{link.label}
 										</a>
@@ -1287,16 +1471,15 @@ export default function DepilationPage() {
 							</ul>
 						</div>
 
-						{/* Contact */}
 						<div>
-							<h4 className='text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
+							<h4 className='text-icyWhite/40 text-xs uppercase tracking-[0.15em] mb-4'>
 								{t('contact.title')}
 							</h4>
-							<ul className='space-y-2 text-sm'>
+							<ul className='space-y-2.5 text-sm'>
 								<li>
 									<a
 										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
-										className='text-icyWhite/60 hover:text-gold-soft transition-colors'
+										className='text-icyWhite/50 hover:text-gold-soft transition-colors duration-300'
 									>
 										{SITE_CONFIG.phone}
 									</a>
@@ -1304,26 +1487,25 @@ export default function DepilationPage() {
 								<li>
 									<a
 										href={`mailto:${SITE_CONFIG.email}`}
-										className='text-icyWhite/60 hover:text-gold-soft transition-colors'
+										className='text-icyWhite/50 hover:text-gold-soft transition-colors duration-300'
 									>
 										{SITE_CONFIG.email}
 									</a>
 								</li>
-								<li className='text-icyWhite/40'>{SITE_CONFIG.address}</li>
+								<li className='text-icyWhite/30'>{SITE_CONFIG.address}</li>
 							</ul>
 						</div>
 
-						{/* Social */}
 						<div>
-							<h4 className='text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
+							<h4 className='text-icyWhite/40 text-xs uppercase tracking-[0.15em] mb-4'>
 								{t('footer.socialTitle')}
 							</h4>
-							<div className='flex items-center gap-4'>
+							<div className='flex items-center gap-3'>
 								<a
 									href={SITE_CONFIG.instagram}
 									target='_blank'
 									rel='noopener noreferrer'
-									className='text-icyWhite/50 hover:text-[#E4405F] transition-colors'
+									className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-icyWhite/40 hover:text-[#E4405F] hover:bg-[#E4405F]/10 transition-all duration-300'
 									aria-label='Instagram'
 								>
 									<Instagram className='w-5 h-5' />
@@ -1332,7 +1514,7 @@ export default function DepilationPage() {
 									href={SITE_CONFIG.facebook}
 									target='_blank'
 									rel='noopener noreferrer'
-									className='text-icyWhite/50 hover:text-[#1877F2] transition-colors'
+									className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-icyWhite/40 hover:text-[#1877F2] hover:bg-[#1877F2]/10 transition-all duration-300'
 									aria-label='Facebook'
 								>
 									<Facebook className='w-5 h-5' />
@@ -1341,7 +1523,7 @@ export default function DepilationPage() {
 									href={SITE_CONFIG.whatsapp}
 									target='_blank'
 									rel='noopener noreferrer'
-									className='text-icyWhite/50 hover:text-[#25D366] transition-colors'
+									className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-icyWhite/40 hover:text-[#25D366] hover:bg-[#25D366]/10 transition-all duration-300'
 									aria-label='WhatsApp'
 								>
 									<MessageCircle className='w-5 h-5' />
@@ -1350,20 +1532,20 @@ export default function DepilationPage() {
 						</div>
 					</div>
 
-					<div className='border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4'>
-						<p className='text-icyWhite/30 text-xs'>
+					<div className='border-t border-white/[0.04] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4'>
+						<p className='text-icyWhite/25 text-xs'>
 							&copy; {new Date().getFullYear()} V Studio. {t('footer.rights')}
 						</p>
 						<div className='flex items-center gap-6'>
 							<a
 								href='#'
-								className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'
+								className='text-icyWhite/25 hover:text-icyWhite/40 text-xs transition-colors duration-300'
 							>
 								{t('footer.privacy')}
 							</a>
 							<a
 								href='#'
-								className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'
+								className='text-icyWhite/25 hover:text-icyWhite/40 text-xs transition-colors duration-300'
 							>
 								{t('footer.cookies')}
 							</a>
