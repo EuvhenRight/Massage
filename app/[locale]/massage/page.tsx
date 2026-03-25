@@ -38,7 +38,6 @@ import {
 	ShieldCheck,
 	Sparkles,
 	Star,
-	ThermometerSun,
 	Users,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -323,16 +322,36 @@ export default function MassagePage() {
 							>
 								{t('aboutTitle')}
 							</motion.h2>
-							<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/80 leading-relaxed mb-4'>
+							<motion.p
+								initial={{ opacity: 0 }}
+								whileInView={{ opacity: 1 }}
+								viewport={{ once: true }}
+								className='text-icyWhite/80 leading-relaxed mb-4'
+							>
 								{t('aboutIntro')}
 							</motion.p>
-							<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/70 leading-relaxed mb-4'>
+							<motion.p
+								initial={{ opacity: 0 }}
+								whileInView={{ opacity: 1 }}
+								viewport={{ once: true }}
+								className='text-icyWhite/70 leading-relaxed mb-4'
+							>
 								{t('aboutJourney')}
 							</motion.p>
-							<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/70 leading-relaxed mb-4'>
+							<motion.p
+								initial={{ opacity: 0 }}
+								whileInView={{ opacity: 1 }}
+								viewport={{ once: true }}
+								className='text-icyWhite/70 leading-relaxed mb-4'
+							>
 								{t('aboutExpertise')}
 							</motion.p>
-							<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/70 leading-relaxed'>
+							<motion.p
+								initial={{ opacity: 0 }}
+								whileInView={{ opacity: 1 }}
+								viewport={{ once: true }}
+								className='text-icyWhite/70 leading-relaxed'
+							>
 								{t('aboutMedical')} {t('aboutContinuous')}
 							</motion.p>
 						</div>
@@ -347,10 +366,21 @@ export default function MassagePage() {
 				aria-labelledby='philosophy-heading'
 			>
 				<div className='max-w-4xl mx-auto text-center'>
-					<motion.h2 id='philosophy-heading' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl md:text-4xl text-icyWhite mb-8'>
+					<motion.h2
+						id='philosophy-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl md:text-4xl text-icyWhite mb-8'
+					>
 						{t('philosophyTitle')}
 					</motion.h2>
-					<motion.blockquote initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='font-serif text-2xl md:text-3xl lg:text-4xl text-purple-glow/95 leading-relaxed'>
+					<motion.blockquote
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='font-serif text-2xl md:text-3xl lg:text-4xl text-purple-glow/95 leading-relaxed'
+					>
 						&ldquo;{t('philosophyQuote')}&rdquo;
 					</motion.blockquote>
 				</div>
@@ -363,10 +393,21 @@ export default function MassagePage() {
 				aria-labelledby='how-we-help-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2 id='how-we-help-heading' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'>
+					<motion.h2
+						id='how-we-help-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					>
 						{t('howIHelpTitle')}
 					</motion.h2>
-					<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/60 text-center mb-12'>
+					<motion.p
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='text-icyWhite/60 text-center mb-12'
+					>
 						{t('howIHelpIntro')}
 					</motion.p>
 					<div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4'>
@@ -379,7 +420,10 @@ export default function MassagePage() {
 								transition={{ delay: i * 0.06 }}
 								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-purple-soft/30 hover:bg-white/[0.04] transition-all duration-300'
 							>
-								<Icon className='w-8 h-8 text-purple-glow/90 mb-3' aria-hidden />
+								<Icon
+									className='w-8 h-8 text-purple-glow/90 mb-3'
+									aria-hidden
+								/>
 								<p className='text-icyWhite font-medium text-sm'>{t(key)}</p>
 							</motion.div>
 						))}
@@ -410,14 +454,32 @@ export default function MassagePage() {
 							/>
 						</motion.div>
 						<div className='order-1 lg:order-2'>
-							<motion.h2 id='achievements-heading' initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-8 flex items-center gap-3'>
-								<Award className='w-10 h-10 text-purple-soft shrink-0' aria-hidden />
+							<motion.h2
+								id='achievements-heading'
+								initial={{ opacity: 0, y: 16 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-8 flex items-center gap-3'
+							>
+								<Award
+									className='w-10 h-10 text-purple-soft shrink-0'
+									aria-hidden
+								/>
 								{t('achievementsTitle')}
 							</motion.h2>
 							<ul className='space-y-3'>
 								{ACHIEVEMENTS.map((key, i) => (
-									<motion.li key={key} initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className='flex items-start gap-3 text-icyWhite/80'>
-										<span className='text-purple-soft shrink-0 mt-0.5'>&#10022;</span>
+									<motion.li
+										key={key}
+										initial={{ opacity: 0, x: 16 }}
+										whileInView={{ opacity: 1, x: 0 }}
+										viewport={{ once: true }}
+										transition={{ delay: i * 0.05 }}
+										className='flex items-start gap-3 text-icyWhite/80'
+									>
+										<span className='text-purple-soft shrink-0 mt-0.5'>
+											&#10022;
+										</span>
 										{t(key)}
 									</motion.li>
 								))}
@@ -434,10 +496,21 @@ export default function MassagePage() {
 				aria-labelledby='services-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2 id='services-heading' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'>
+					<motion.h2
+						id='services-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					>
 						{t('serviceMenu.title')}
 					</motion.h2>
-					<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'>
+					<motion.p
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'
+					>
 						{t('serviceMenu.subtitle')}
 					</motion.p>
 
@@ -460,11 +533,18 @@ export default function MassagePage() {
 									{items.map(item => {
 										const title = t(`serviceMenu.items.${item.key}.name`)
 										return (
-											<li key={item.key} className='px-6 py-4 hover:bg-white/[0.02] transition-colors'>
+											<li
+												key={item.key}
+												className='px-6 py-4 hover:bg-white/[0.02] transition-colors'
+											>
 												<div className='flex items-start justify-between gap-3'>
 													<div className='min-w-0'>
-														<p className='text-icyWhite font-medium text-sm'>{title}</p>
-														<p className='text-icyWhite/50 text-xs mt-1'>{t(`serviceMenu.items.${item.key}.desc`)}</p>
+														<p className='text-icyWhite font-medium text-sm'>
+															{title}
+														</p>
+														<p className='text-icyWhite/50 text-xs mt-1'>
+															{t(`serviceMenu.items.${item.key}.desc`)}
+														</p>
 													</div>
 													<div className='shrink-0 text-right'>
 														<p className='text-purple-glow font-medium text-sm'>
@@ -500,10 +580,21 @@ export default function MassagePage() {
 				aria-labelledby='process-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2 id='process-heading' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'>
+					<motion.h2
+						id='process-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					>
 						{t('process.title')}
 					</motion.h2>
-					<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'>
+					<motion.p
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'
+					>
 						{t('process.subtitle')}
 					</motion.p>
 
@@ -530,7 +621,12 @@ export default function MassagePage() {
 						))}
 					</div>
 
-					<motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='mt-12 max-w-3xl mx-auto p-6 rounded-2xl border border-purple-soft/15 bg-purple-soft/[0.03]'>
+					<motion.div
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='mt-12 max-w-3xl mx-auto p-6 rounded-2xl border border-purple-soft/15 bg-purple-soft/[0.03]'
+					>
 						<p className='text-icyWhite/70 text-sm leading-relaxed text-center'>
 							{t('process.expectation')}
 						</p>
@@ -545,10 +641,21 @@ export default function MassagePage() {
 				aria-labelledby='team-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2 id='team-heading' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'>
+					<motion.h2
+						id='team-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					>
 						{t('team.title')}
 					</motion.h2>
-					<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/60 text-center mb-12'>
+					<motion.p
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='text-icyWhite/60 text-center mb-12'
+					>
 						{t('team.subtitle')}
 					</motion.p>
 
@@ -622,10 +729,20 @@ export default function MassagePage() {
 							</motion.article>
 						</div>
 
-						<button type='button' onClick={() => scrollSlider(sliderRef, 'left')} className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors' aria-label='Previous'>
+						<button
+							type='button'
+							onClick={() => scrollSlider(sliderRef, 'left')}
+							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors'
+							aria-label='Previous'
+						>
 							<ChevronLeft className='w-5 h-5' />
 						</button>
-						<button type='button' onClick={() => scrollSlider(sliderRef, 'right')} className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors' aria-label='Next'>
+						<button
+							type='button'
+							onClick={() => scrollSlider(sliderRef, 'right')}
+							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors'
+							aria-label='Next'
+						>
 							<ChevronRight className='w-5 h-5' />
 						</button>
 					</div>
@@ -639,10 +756,21 @@ export default function MassagePage() {
 				aria-labelledby='hygiene-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2 id='hygiene-heading' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'>
+					<motion.h2
+						id='hygiene-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					>
 						{t('hygiene.title')}
 					</motion.h2>
-					<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/60 text-center mb-12'>
+					<motion.p
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='text-icyWhite/60 text-center mb-12'
+					>
 						{t('hygiene.subtitle')}
 					</motion.p>
 
@@ -656,7 +784,10 @@ export default function MassagePage() {
 								transition={{ delay: i * 0.08 }}
 								className='p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-purple-soft/25 transition-all duration-300'
 							>
-								<Icon className='w-8 h-8 text-purple-glow/90 mb-4' aria-hidden />
+								<Icon
+									className='w-8 h-8 text-purple-glow/90 mb-4'
+									aria-hidden
+								/>
 								<h3 className='text-icyWhite font-medium text-sm mb-2'>
 									{t(`hygiene.${key}.title`)}
 								</h3>
@@ -676,10 +807,21 @@ export default function MassagePage() {
 				aria-labelledby='testimonials-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2 id='testimonials-heading' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'>
+					<motion.h2
+						id='testimonials-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					>
 						{t('testimonials.title')}
 					</motion.h2>
-					<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/60 text-center mb-12'>
+					<motion.p
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='text-icyWhite/60 text-center mb-12'
+					>
 						{t('testimonials.subtitle')}
 					</motion.p>
 
@@ -700,24 +842,41 @@ export default function MassagePage() {
 								>
 									<div className='flex gap-1 mb-4'>
 										{Array.from({ length: 5 }).map((_, si) => (
-											<Star key={si} className='w-4 h-4 text-purple-soft fill-purple-soft' />
+											<Star
+												key={si}
+												className='w-4 h-4 text-purple-soft fill-purple-soft'
+											/>
 										))}
 									</div>
 									<p className='text-icyWhite/80 text-sm leading-relaxed mb-4 italic'>
 										&ldquo;{t(`testimonials.${key}.text`)}&rdquo;
 									</p>
 									<footer className='flex items-center justify-between'>
-										<span className='text-icyWhite/60 text-xs font-medium'>{t(`testimonials.${key}.author`)}</span>
-										<span className='text-purple-soft/50 text-xs'>{t(`testimonials.${key}.service`)}</span>
+										<span className='text-icyWhite/60 text-xs font-medium'>
+											{t(`testimonials.${key}.author`)}
+										</span>
+										<span className='text-purple-soft/50 text-xs'>
+											{t(`testimonials.${key}.service`)}
+										</span>
 									</footer>
 								</motion.blockquote>
 							))}
 						</div>
 
-						<button type='button' onClick={() => scrollSlider(testimonialRef, 'left')} className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors' aria-label='Previous'>
+						<button
+							type='button'
+							onClick={() => scrollSlider(testimonialRef, 'left')}
+							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors'
+							aria-label='Previous'
+						>
 							<ChevronLeft className='w-5 h-5' />
 						</button>
-						<button type='button' onClick={() => scrollSlider(testimonialRef, 'right')} className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors' aria-label='Next'>
+						<button
+							type='button'
+							onClick={() => scrollSlider(testimonialRef, 'right')}
+							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors'
+							aria-label='Next'
+						>
 							<ChevronRight className='w-5 h-5' />
 						</button>
 					</div>
@@ -730,18 +889,36 @@ export default function MassagePage() {
 				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
 				aria-labelledby='faq-heading'
 			>
-				<script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+				<script
+					type='application/ld+json'
+					dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+				/>
 				<div className='max-w-3xl mx-auto'>
-					<motion.h2 id='faq-heading' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'>
+					<motion.h2
+						id='faq-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					>
 						{t('faq.title')}
 					</motion.h2>
-					<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/60 text-center mb-12'>
+					<motion.p
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='text-icyWhite/60 text-center mb-12'
+					>
 						{t('faq.subtitle')}
 					</motion.p>
 
 					<Accordion type='single' collapsible className='space-y-2'>
 						{FAQ_ITEMS.map(key => (
-							<AccordionItem key={key} value={key} className='rounded-xl border border-white/10 bg-white/[0.02] px-6 overflow-hidden'>
+							<AccordionItem
+								key={key}
+								value={key}
+								className='rounded-xl border border-white/10 bg-white/[0.02] px-6 overflow-hidden'
+							>
 								<AccordionTrigger className='text-icyWhite text-left text-sm font-medium py-5 [&>svg]:text-purple-soft'>
 									{t(`faq.${key}.q`)}
 								</AccordionTrigger>
@@ -761,8 +938,16 @@ export default function MassagePage() {
 				aria-labelledby='contact-heading'
 			>
 				<div className='max-w-5xl mx-auto'>
-					<motion.header initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='text-center mb-12'>
-						<h2 id='contact-heading' className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-3'>
+					<motion.header
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='text-center mb-12'
+					>
+						<h2
+							id='contact-heading'
+							className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-3'
+						>
 							{t('contact.title')}
 						</h2>
 						<p className='text-icyWhite/55 text-sm sm:text-base max-w-md mx-auto'>
@@ -771,7 +956,12 @@ export default function MassagePage() {
 					</motion.header>
 
 					<div className='grid lg:grid-cols-[1fr_340px] gap-8 lg:gap-12 items-start'>
-						<motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='space-y-0'>
+						<motion.div
+							initial={{ opacity: 0, y: 16 }}
+							whileInView={{ opacity: 1, y: 0 }}
+							viewport={{ once: true }}
+							className='space-y-0'
+						>
 							<div className='rounded-2xl overflow-hidden ring-1 ring-white/10'>
 								<iframe
 									src={SITE_CONFIG.googleMapsEmbed}
@@ -786,8 +976,12 @@ export default function MassagePage() {
 								<div className='flex items-start gap-3 min-w-0'>
 									<MapPin className='w-5 h-5 text-purple-soft shrink-0 mt-0.5' />
 									<div>
-										<p className='text-icyWhite font-medium text-sm'>{SITE_CONFIG.addressSubtitle}</p>
-										<p className='text-icyWhite/60 text-sm mt-0.5'>{SITE_CONFIG.address}</p>
+										<p className='text-icyWhite font-medium text-sm'>
+											{SITE_CONFIG.addressSubtitle}
+										</p>
+										<p className='text-icyWhite/60 text-sm mt-0.5'>
+											{SITE_CONFIG.address}
+										</p>
 									</div>
 								</div>
 								<a
@@ -802,7 +996,13 @@ export default function MassagePage() {
 							</div>
 						</motion.div>
 
-						<motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.05 }} className='lg:sticky lg:top-24'>
+						<motion.div
+							initial={{ opacity: 0, y: 16 }}
+							whileInView={{ opacity: 1, y: 0 }}
+							viewport={{ once: true }}
+							transition={{ delay: 0.05 }}
+							className='lg:sticky lg:top-24'
+						>
 							<div className='rounded-2xl bg-white/[0.04] ring-1 ring-white/10 p-6'>
 								<p className='flex items-center gap-2 text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
 									<Clock className='w-4 h-4 text-purple-soft/70' />
@@ -810,31 +1010,60 @@ export default function MassagePage() {
 								</p>
 
 								<div className='space-y-2 mb-6'>
-									<a href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`} className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'>
+									<a
+										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
+										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
+									>
 										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-purple-soft/10 text-purple-glow group-hover:bg-purple-soft/20 transition-colors'>
 											<Phone className='w-4 h-4' />
 										</span>
-										<span className='text-icyWhite text-sm font-medium group-hover:text-purple-glow transition-colors'>{SITE_CONFIG.phone}</span>
+										<span className='text-icyWhite text-sm font-medium group-hover:text-purple-glow transition-colors'>
+											{SITE_CONFIG.phone}
+										</span>
 									</a>
-									<a href={SITE_CONFIG.whatsapp} target='_blank' rel='noopener noreferrer' className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'>
+									<a
+										href={SITE_CONFIG.whatsapp}
+										target='_blank'
+										rel='noopener noreferrer'
+										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
+									>
 										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-[#25D366]/15 text-[#25D366] group-hover:bg-[#25D366]/25 transition-colors'>
 											<MessageCircle className='w-4 h-4' />
 										</span>
-										<span className='text-icyWhite text-sm font-medium group-hover:text-[#25D366] transition-colors'>WhatsApp</span>
+										<span className='text-icyWhite text-sm font-medium group-hover:text-[#25D366] transition-colors'>
+											WhatsApp
+										</span>
 									</a>
-									<a href={`mailto:${SITE_CONFIG.email}`} className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'>
+									<a
+										href={`mailto:${SITE_CONFIG.email}`}
+										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
+									>
 										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-purple-soft/10 text-purple-glow group-hover:bg-purple-soft/20 transition-colors'>
 											<Mail className='w-4 h-4' />
 										</span>
-										<span className='text-icyWhite text-sm font-medium truncate group-hover:text-purple-glow transition-colors'>{SITE_CONFIG.email}</span>
+										<span className='text-icyWhite text-sm font-medium truncate group-hover:text-purple-glow transition-colors'>
+											{SITE_CONFIG.email}
+										</span>
 									</a>
 								</div>
 
 								<div className='flex items-center gap-2 mb-6'>
-									<a href={SITE_CONFIG.instagram} target='_blank' rel='noopener noreferrer' className='flex w-10 h-10 items-center justify-center rounded-lg bg-white/[0.06] text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors' aria-label='Instagram'>
+									<a
+										href={SITE_CONFIG.instagram}
+										target='_blank'
+										rel='noopener noreferrer'
+										className='flex w-10 h-10 items-center justify-center rounded-lg bg-white/[0.06] text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors'
+										aria-label='Instagram'
+									>
 										<Instagram className='w-5 h-5' />
 									</a>
-									<a href={SITE_CONFIG.facebook} target='_blank' rel='noopener noreferrer' className='flex w-10 h-10 items-center justify-center rounded-lg bg-white/[0.06] text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors' aria-label='Facebook'>
+									<a
+										href={SITE_CONFIG.facebook}
+										target='_blank'
+										rel='noopener noreferrer'
+										className='flex w-10 h-10 items-center justify-center rounded-lg bg-white/[0.06] text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors'
+										aria-label='Facebook'
+									>
 										<Facebook className='w-5 h-5' />
 									</a>
 								</div>
@@ -843,7 +1072,10 @@ export default function MassagePage() {
 
 								<Dialog>
 									<DialogTrigger asChild>
-										<button type='button' className='w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-purple-soft text-white font-semibold text-sm tracking-wide hover:bg-purple-soft/90 focus:outline-none focus:ring-2 focus:ring-purple-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all'>
+										<button
+											type='button'
+											className='w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-purple-soft text-white font-semibold text-sm tracking-wide hover:bg-purple-soft/90 focus:outline-none focus:ring-2 focus:ring-purple-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all'
+										>
 											<Send className='w-4 h-4' />
 											{t('contact.formTitle')}
 										</button>
@@ -851,34 +1083,94 @@ export default function MassagePage() {
 									<DialogContent>
 										<DialogHeader>
 											<DialogTitle>{t('contact.formTitle')}</DialogTitle>
-											<DialogDescription>{t('contact.subtitle')}</DialogDescription>
+											<DialogDescription>
+												{t('contact.subtitle')}
+											</DialogDescription>
 										</DialogHeader>
 										{contactSent ? (
-											<motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className='p-8 rounded-xl border border-purple-soft/20 bg-purple-soft/[0.04] text-center'>
+											<motion.div
+												initial={{ opacity: 0, scale: 0.95 }}
+												animate={{ opacity: 1, scale: 1 }}
+												className='p-8 rounded-xl border border-purple-soft/20 bg-purple-soft/[0.04] text-center'
+											>
 												<BadgeCheck className='w-12 h-12 text-purple-soft mx-auto mb-4' />
-												<p className='text-icyWhite/80 text-sm'>{t('contact.success')}</p>
+												<p className='text-icyWhite/80 text-sm'>
+													{t('contact.success')}
+												</p>
 											</motion.div>
 										) : (
-											<form onSubmit={e => { e.preventDefault(); setContactSent(true) }} className='space-y-4'>
+											<form
+												onSubmit={e => {
+													e.preventDefault()
+													setContactSent(true)
+												}}
+												className='space-y-4'
+											>
 												<div>
-													<label htmlFor='dlg-name-m' className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'>{t('contact.nameLabel')}</label>
-													<input id='dlg-name-m' type='text' required className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors' placeholder={t('contact.namePlaceholder')} />
+													<label
+														htmlFor='dlg-name-m'
+														className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+													>
+														{t('contact.nameLabel')}
+													</label>
+													<input
+														id='dlg-name-m'
+														type='text'
+														required
+														className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors'
+														placeholder={t('contact.namePlaceholder')}
+													/>
 												</div>
 												<div className='grid sm:grid-cols-2 gap-3'>
 													<div>
-														<label htmlFor='dlg-email-m' className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'>{t('contact.emailLabel')}</label>
-														<input id='dlg-email-m' type='email' required className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors' placeholder={t('contact.emailPlaceholder')} />
+														<label
+															htmlFor='dlg-email-m'
+															className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+														>
+															{t('contact.emailLabel')}
+														</label>
+														<input
+															id='dlg-email-m'
+															type='email'
+															required
+															className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors'
+															placeholder={t('contact.emailPlaceholder')}
+														/>
 													</div>
 													<div>
-														<label htmlFor='dlg-phone-m' className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'>{t('contact.phoneLabel')}</label>
-														<input id='dlg-phone-m' type='tel' className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors' placeholder={t('contact.phonePlaceholder')} />
+														<label
+															htmlFor='dlg-phone-m'
+															className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+														>
+															{t('contact.phoneLabel')}
+														</label>
+														<input
+															id='dlg-phone-m'
+															type='tel'
+															className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors'
+															placeholder={t('contact.phonePlaceholder')}
+														/>
 													</div>
 												</div>
 												<div>
-													<label htmlFor='dlg-msg-m' className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'>{t('contact.messageLabel')}</label>
-													<textarea id='dlg-msg-m' rows={4} required className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors resize-none' placeholder={t('contact.messagePlaceholder')} />
+													<label
+														htmlFor='dlg-msg-m'
+														className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+													>
+														{t('contact.messageLabel')}
+													</label>
+													<textarea
+														id='dlg-msg-m'
+														rows={4}
+														required
+														className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors resize-none'
+														placeholder={t('contact.messagePlaceholder')}
+													/>
 												</div>
-												<button type='submit' className='w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-purple-soft/20 border border-purple-soft/50 text-purple-glow font-medium text-sm tracking-wider uppercase hover:bg-purple-soft/30 hover:shadow-glow-purple transition-all duration-300'>
+												<button
+													type='submit'
+													className='w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-purple-soft/20 border border-purple-soft/50 text-purple-glow font-medium text-sm tracking-wider uppercase hover:bg-purple-soft/30 hover:shadow-glow-purple transition-all duration-300'
+												>
 													<Send className='w-4 h-4' />
 													{t('contact.submit')}
 												</button>
@@ -899,10 +1191,21 @@ export default function MassagePage() {
 				aria-labelledby='booking-heading'
 			>
 				<div className='max-w-3xl mx-auto text-center'>
-					<motion.h2 id='booking-heading' initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-6'>
+					<motion.h2
+						id='booking-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-6'
+					>
 						{t('reserveTitle')}
 					</motion.h2>
-					<motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className='text-icyWhite/70 mb-10 leading-relaxed'>
+					<motion.p
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='text-icyWhite/70 mb-10 leading-relaxed'
+					>
 						{t('reserveDesc')}
 					</motion.p>
 					<div className='flex flex-wrap justify-center gap-4'>
@@ -929,15 +1232,26 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10'>
 						<div>
-							<Link href={`/${locale}`} className='block hover:opacity-80 transition-opacity'>
-								<Image src='/images/Gemini_yellow2.png' alt='V2studio' width={140} height={70} className='h-14 w-auto' />
+							<Link
+								href={`/${locale}`}
+								className='block hover:opacity-80 transition-opacity'
+							>
+								<Image
+									src='/images/Gemini_yellow2.png'
+									alt='V2studio'
+									width={140}
+									height={70}
+									className='h-14 w-auto'
+								/>
 							</Link>
 							<p className='text-icyWhite/40 text-xs mt-3 leading-relaxed'>
 								{t('footer.tagline')}
 							</p>
 						</div>
 						<div>
-							<h4 className='text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>{t('footer.navTitle')}</h4>
+							<h4 className='text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
+								{t('footer.navTitle')}
+							</h4>
 							<ul className='space-y-2'>
 								{[
 									{ href: '#services', label: t('serviceMenu.title') },
@@ -946,25 +1260,72 @@ export default function MassagePage() {
 									{ href: '#contact', label: t('contact.title') },
 								].map(link => (
 									<li key={link.href}>
-										<a href={link.href} className='text-icyWhite/60 hover:text-purple-glow text-sm transition-colors'>{link.label}</a>
+										<a
+											href={link.href}
+											className='text-icyWhite/60 hover:text-purple-glow text-sm transition-colors'
+										>
+											{link.label}
+										</a>
 									</li>
 								))}
 							</ul>
 						</div>
 						<div>
-							<h4 className='text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>{t('contact.title')}</h4>
+							<h4 className='text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
+								{t('contact.title')}
+							</h4>
 							<ul className='space-y-2 text-sm'>
-								<li><a href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`} className='text-icyWhite/60 hover:text-purple-glow transition-colors'>{SITE_CONFIG.phone}</a></li>
-								<li><a href={`mailto:${SITE_CONFIG.email}`} className='text-icyWhite/60 hover:text-purple-glow transition-colors'>{SITE_CONFIG.email}</a></li>
+								<li>
+									<a
+										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
+										className='text-icyWhite/60 hover:text-purple-glow transition-colors'
+									>
+										{SITE_CONFIG.phone}
+									</a>
+								</li>
+								<li>
+									<a
+										href={`mailto:${SITE_CONFIG.email}`}
+										className='text-icyWhite/60 hover:text-purple-glow transition-colors'
+									>
+										{SITE_CONFIG.email}
+									</a>
+								</li>
 								<li className='text-icyWhite/40'>{SITE_CONFIG.address}</li>
 							</ul>
 						</div>
 						<div>
-							<h4 className='text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>{t('footer.socialTitle')}</h4>
+							<h4 className='text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
+								{t('footer.socialTitle')}
+							</h4>
 							<div className='flex items-center gap-4'>
-								<a href={SITE_CONFIG.instagram} target='_blank' rel='noopener noreferrer' className='text-icyWhite/50 hover:text-[#E4405F] transition-colors' aria-label='Instagram'><Instagram className='w-5 h-5' /></a>
-								<a href={SITE_CONFIG.facebook} target='_blank' rel='noopener noreferrer' className='text-icyWhite/50 hover:text-[#1877F2] transition-colors' aria-label='Facebook'><Facebook className='w-5 h-5' /></a>
-								<a href={SITE_CONFIG.whatsapp} target='_blank' rel='noopener noreferrer' className='text-icyWhite/50 hover:text-[#25D366] transition-colors' aria-label='WhatsApp'><MessageCircle className='w-5 h-5' /></a>
+								<a
+									href={SITE_CONFIG.instagram}
+									target='_blank'
+									rel='noopener noreferrer'
+									className='text-icyWhite/50 hover:text-[#E4405F] transition-colors'
+									aria-label='Instagram'
+								>
+									<Instagram className='w-5 h-5' />
+								</a>
+								<a
+									href={SITE_CONFIG.facebook}
+									target='_blank'
+									rel='noopener noreferrer'
+									className='text-icyWhite/50 hover:text-[#1877F2] transition-colors'
+									aria-label='Facebook'
+								>
+									<Facebook className='w-5 h-5' />
+								</a>
+								<a
+									href={SITE_CONFIG.whatsapp}
+									target='_blank'
+									rel='noopener noreferrer'
+									className='text-icyWhite/50 hover:text-[#25D366] transition-colors'
+									aria-label='WhatsApp'
+								>
+									<MessageCircle className='w-5 h-5' />
+								</a>
 							</div>
 						</div>
 					</div>
@@ -974,8 +1335,18 @@ export default function MassagePage() {
 							&copy; {new Date().getFullYear()} V Studio. {t('footer.rights')}
 						</p>
 						<div className='flex items-center gap-6'>
-							<a href='#' className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'>{t('footer.privacy')}</a>
-							<a href='#' className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'>{t('footer.cookies')}</a>
+							<a
+								href='#'
+								className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'
+							>
+								{t('footer.privacy')}
+							</a>
+							<a
+								href='#'
+								className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'
+							>
+								{t('footer.cookies')}
+							</a>
 						</div>
 					</div>
 				</div>

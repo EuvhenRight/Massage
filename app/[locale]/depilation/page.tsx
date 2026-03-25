@@ -166,7 +166,11 @@ const stagger = {
 }
 const fadeUp = {
 	hidden: { opacity: 0, y: 28 },
-	show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+	show: {
+		opacity: 1,
+		y: 0,
+		transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+	},
 }
 const fadeIn = {
 	hidden: { opacity: 0 },
@@ -174,7 +178,11 @@ const fadeIn = {
 }
 const scaleUp = {
 	hidden: { opacity: 0, scale: 0.92 },
-	show: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+	show: {
+		opacity: 1,
+		scale: 1,
+		transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+	},
 }
 
 export default function DepilationPage() {
@@ -195,8 +203,10 @@ export default function DepilationPage() {
 	const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
 
 	const [heroScrolled, setHeroScrolled] = useState(false)
+	const [showFloatingCTA, setShowFloatingCTA] = useState(false)
 	useMotionValueEvent(scrollYProgress, 'change', v => {
 		setHeroScrolled(v > 0.1)
+		setShowFloatingCTA(v > 0.85)
 	})
 
 	const scrollSlider = (
@@ -231,11 +241,15 @@ export default function DepilationPage() {
 		<>
 			<Navbar />
 
-			{/* Mobile floating Book Now */}
+			{/* Mobile floating Book Now — appears after scrolling past hero */}
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ delay: 1.2 }}
+				animate={
+					showFloatingCTA
+						? { opacity: 1, y: 0 }
+						: { opacity: 0, y: 20, pointerEvents: 'none' as const }
+				}
+				transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
 				className='md:hidden fixed bottom-6 left-6 right-6 z-40'
 			>
 				<Link
@@ -251,7 +265,7 @@ export default function DepilationPage() {
 			<section
 				ref={heroRef}
 				id='hero'
-				className='relative h-screen flex flex-col overflow-hidden noise-overlay'
+				className='relative h-[100dvh] flex flex-col overflow-hidden noise-overlay'
 				aria-labelledby='depilation-hero'
 			>
 				{/* Parallax background */}
@@ -278,7 +292,7 @@ export default function DepilationPage() {
 					initial={{ opacity: 0, y: -12 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.6, delay: 0.2 }}
-					className='relative z-10 w-full text-center text-gold-soft/60 text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
+					className='relative z-10 w-full shrink-0 text-center text-gold-soft/60 text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
 				>
 					{t('heroBadge')}
 				</motion.p>
@@ -286,7 +300,7 @@ export default function DepilationPage() {
 				{/* Main hero content */}
 				<motion.div
 					style={{ opacity: heroOpacity }}
-					className='relative z-10 flex-1 flex flex-col items-center justify-center px-6 min-h-0'
+					className='relative z-10 flex-1 min-h-0 flex flex-col items-center justify-center px-6 overflow-hidden'
 				>
 					<motion.div
 						initial={{ opacity: 0, y: 30 }}
@@ -294,13 +308,13 @@ export default function DepilationPage() {
 						transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
 						className='text-center'
 					>
-						<div className='flex justify-center mb-0'>
+						<div className='flex justify-center mb-40 sm:mb-0'>
 							<Image
 								src='/images/Gemini_yellow2.png'
 								alt='V2studio'
 								width={180}
 								height={200}
-								className='h-20 sm:h-24 md:h-32 lg:h-36 w-auto drop-shadow-[0_0_40px_rgba(232,184,0,0.2)]'
+								className='h-28 sm:h-28 md:h-32 lg:h-36 w-auto drop-shadow-[0_0_40px_rgba(232,184,0,0.2)]'
 								priority
 							/>
 						</div>
@@ -343,7 +357,7 @@ export default function DepilationPage() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: heroScrolled ? 0 : 1 }}
 						transition={{ duration: 0.4 }}
-						className='absolute bottom-24 sm:bottom-16 left-1/2 -translate-x-1/2'
+						className='absolute bottom-6 sm:bottom-16 left-1/2 -translate-x-1/2'
 					>
 						<motion.div
 							animate={{ y: [0, 8, 0] }}
@@ -354,12 +368,12 @@ export default function DepilationPage() {
 					</motion.div>
 				</motion.div>
 
-				{/* Trust bar — infinite marquee */}
+				{/* Trust bar — infinite marquee, anchored to bottom */}
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ delay: 1.2, duration: 0.6 }}
-					className='relative z-10 py-4 border-t border-white/[0.06] bg-nearBlack/70 backdrop-blur-md overflow-hidden'
+					className='relative z-10 mt-auto shrink-0 py-4 border-t border-white/[0.06] bg-nearBlack/70 backdrop-blur-md overflow-hidden'
 					aria-label={t('trustBarLabel')}
 				>
 					<div className='marquee-track'>
@@ -368,7 +382,10 @@ export default function DepilationPage() {
 								key={i}
 								className='flex items-center gap-3 sm:gap-4 px-4 sm:px-6 shrink-0'
 							>
-								<span className='w-1 h-1 rounded-full bg-gold-soft/50' aria-hidden />
+								<span
+									className='w-1 h-1 rounded-full bg-gold-soft/50'
+									aria-hidden
+								/>
 								<span className='text-gold-soft/70 text-[11px] sm:text-xs tracking-[0.2em] uppercase whitespace-nowrap font-medium'>
 									{text}
 								</span>
@@ -859,7 +876,11 @@ export default function DepilationPage() {
 								initial={{ opacity: 0, y: 32 }}
 								whileInView={{ opacity: 1, y: 0 }}
 								viewport={{ once: true }}
-								transition={{ delay: 0.12, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+								transition={{
+									delay: 0.12,
+									duration: 0.7,
+									ease: [0.22, 1, 0.36, 1],
+								}}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4] overflow-hidden'>

@@ -1,633 +1,858 @@
 {
-  "common": {
-    "mainNav": "Hlavná navigácia",
-    "calendar": "Kalendár",
-    "available": "dostupné",
-    "unavailable": "nedostupné",
-    "services": "Služby",
-    "book": "Rezervovať",
-    "enter": "Vstúpiť",
-    "admin": "Admin",
-    "massage": "Masáž",
-    "depilation": "Depilácia",
-    "membership": "Členstvo",
-    "aurora": "Aurora",
-    "auroraHome": "Aurora Salon - Domov",
-    "openMenu": "Otvoriť menu",
-    "closeMenu": "Zavrieť menu",
-    "getDirections": "Získať navigáciu",
-    "date": "Dátum",
-    "time": "Čas",
-    "loading": "Načítava sa...",
-    "about": "O nás",
-    "team": "Tím",
-    "faq": "FAQ",
-    "contact": "Kontakt"
-  },
-  "home": {
-    "chooseExperience": "Vyberte svoju skúsenosť",
-    "enterMassage": "Vstúpiť do Masáže",
-    "enterDepilation": "Vstúpiť do Depilácie"
-  },
-  "booking": {
-    "fullName": "Meno a priezvisko *",
-    "email": "E-mail *",
-    "phone": "Telefón *",
-    "confirmBooking": "Potvrdiť rezerváciu",
-    "bookingInProgress": "Rezervujem…",
-    "selectService": "Vyberte službu",
-    "selectDate": "Vyberte dátum",
-    "selectTime": "Vyberte čas",
-    "availableTime": "Dostupný čas",
-    "chooseTime": "Vyberte čas",
-    "loadingTimes": "Načítavam časy…",
-    "availableTimesFor": "Dostupné časy pre",
-    "loadingAvailability": "Načítavam dostupnosť…",
-    "back": "Späť",
-    "cancel": "Zrušiť",
-    "next": "Ďalej",
-    "placeholderFullName": "Ján Novák",
-    "placeholderEmail": "jan@example.com",
-    "placeholderPhone": "+421 234 567 890",
-    "noSlotsMessage": "V tento deň nie sú k dispozícii žiadne voľné termíny. Vyberte iný dátum.",
-    "pickServiceDate": "Vyberte službu a dátum",
-    "pickTime": "Vyberte čas",
-    "yourDetails": "Vaše údaje",
-    "pickService": "Vyberte službu",
-    "bookingSummary": "Zhrnutie rezervácie",
-    "reviewSelection": "Skontrolujte svoju voľbu",
-    "choicesAppearHere": "Vaše voľby sa zobrazia tu",
-    "chooseService": "Vyberte službu →",
-    "chooseServiceLabel": "Vyberte službu",
-    "selectDate": "Vyberte dátum →",
-    "selectTime": "Vyberte čas →",
-    "contact": "Kontakt",
-    "contactUs": "Kontaktujte nás",
-    "serviceDateTime": "Služba, dátum a čas",
-    "bookingProgress": "Priebeh rezervácie",
-    "appointmentFallback": "Rezervácia",
-    "step1Label": "Vyberte službu",
-    "step2Label": "Dátum a čas",
-    "step3Label": "Vaše údaje",
-    "step1Title": "Vyberte službu",
-    "step2Title": "Dátum a čas",
-    "step3Title": "Vaše údaje",
-    "step1Desc": "Vyberte si ošetrenie.",
-    "step2Desc": "Vyberte dátum a čas, ktorý vám vyhovuje.",
-    "step3Desc": "Použijeme ich na potvrdenie vašej rezervácie.",
-    "confirmBooking": "Potvrdiť rezerváciu",
-    "cancel": "Zrušiť",
-    "bookingConfirmed": "Rezervácia potvrdená.",
-    "emailNotSent": "Rezervácia potvrdená, ale {error}",
-    "backToWebsite": "Späť na web",
-    "slotUnavailable": "Tento termín už nie je k dispozícii. Vyberte iný.",
-    "bookingFailed": "Rezervácia zlyhala. Skúste to znova.",
-    "searchServicePlaceholder": "Hľadať službu",
-    "clearSearch": "Vymazať hľadanie",
-    "categoryLabel": "Kategória",
-    "showMore": "Zobraziť viac",
-    "showLess": "Zobraziť menej",
-    "noSearchResults": "Žiadne služby nezodpovedajú vášmu hľadaniu.",
-    "noServicesInCategory": "V tejto kategórii nie sú žiadne služby.",
-    "bookingInfo": "Potvrdenie vám pošleme na e-mail. Prosíme, príďte 5 minút pred termínom."
-  },
-  "validation": {
-    "fullNameMin": "Meno musí mať aspoň 3 znaky",
-    "fullNameMax": "Meno môže mať najviac 100 znakov",
-    "invalidEmail": "Neplatná e-mailová adresa",
-    "invalidPhone": "Neplatné telefónne číslo (použite medzinárodný formát, napr. +421 234 567 890)"
-  },
-  "massage": {
-    "mostPopular": "Najobľúbenejšie",
-    "select": "Vybrať",
-    "selectMembership": "Vybrať členstvo {tier}",
-    "hero": "Relaxácia. Obnova. Hlboké uzdravenie.",
-    "heroBadge": "V Studio — Prémiová Masáž, Bratislava",
-    "heroBookButton": "Rezervovať Sedenie",
-    "heroPricesButton": "Zobraziť Ceny",
-    "destinations": "Destinácie",
-    "destinationsDesc": "Každá cesta je jedinečná. Vyberte si tú svoju.",
-    "membershipDesc": "Povyšte svoj rituál. Odomknite viac.",
-    "reserveTime": "Rezervujte si čas",
-    "bookNow": "Rezervovať teraz",
-    "trustBarLabel": "Referencie",
-    "trust": {
-      "trustYears": "10+ Rokov Skúseností",
-      "trustCertified": "Certifikovaní Terapeuti",
-      "trustMedical": "Medicínsky Prístup",
-      "trustTechniques": "8 Masážnych Techník",
-      "trustClients": "2000+ Spokojných Klientov"
-    },
-    "aboutTitle": "O Našom Štúdiu",
-    "aboutIntro": "Vitajte vo V Studio Massage — vašom útočisku relaxácie v srdci Bratislavy. Kombinujeme tradičné masážne techniky s modernými terapeutickými prístupmi.",
-    "aboutJourney": "Náš tím certifikovaných terapeutov prináša roky skúseností v športovej, terapeutickej a relaxačnej masáži. Každé sedenie je prispôsobené vašim individuálnym potrebám.",
-    "aboutExpertise": "Špecializujeme sa na hlboké tkanivové, švédske, thajské a masáže horúcimi kameňmi. Každý terapeut je vyškolený a certifikovaný vo viacerých modalitách.",
-    "aboutMedical": "So zameraním na terapeutické výsledky naše sedenia riešia chronickú bolesť, úľavu od stresu a rehabilitáciu s klinickou precíznosťou.",
-    "aboutContinuous": "Náš tím sa pravidelne zúčastňuje pokročilých školení a medzinárodných wellness konferencií, aby vám priniesol najnovšie techniky.",
-    "philosophyTitle": "Filozofia",
-    "philosophyQuote": "Masáž nie je luxus — je to cesta k rovnováhe, zdraviu a vnútornej harmónii.",
-    "howIHelpTitle": "Čo Ponúkame",
-    "howIHelpIntro": "V našom štúdiu získate",
-    "valueRelaxation": "Hlbokú relaxáciu a úľavu od stresu",
-    "valueProfessional": "Certifikovaných profesionálnych terapeutov",
-    "valueIndividual": "Individuálne liečebné plány",
-    "valueAmbiance": "Prémiovú spa atmosféru",
-    "valueProducts": "Organické oleje a prémiové produkty",
-    "achievementsTitle": "Profesionálne Uznanie",
-    "achievement1": "Certifikácia Medzinárodnou Spa Asociáciou",
-    "achievement2": "Výcvik v thajských, švédskych a hlbokých tkanivových modalitách",
-    "achievement3": "Uvedení v Bratislavskom Top Wellness Sprievodcovi",
-    "achievement4": "Partnerstvá so športovými tímami a rehabilitačnými centrami",
-    "achievement5": "Viac ako 2 000 spokojných klientov po celej Európe",
-    "serviceMenu": {
-      "title": "Cenník Masáží",
-      "subtitle": "Všetky techniky. Prispôsobené pre vás. Transparentné ceny.",
-      "from": "od",
-      "min": "min",
-      "book": "Rezervovať",
-      "zone": {
-        "relaxation": "Relaxačné",
-        "therapeutic": "Terapeutické",
-        "specialty": "Špeciálne"
-      },
-      "items": {
-        "swedishClassic": { "name": "Švédska — Klasická", "desc": "Celotelová relaxačná masáž s dlhými plynulými ťahmi." },
-        "swedishDeep": { "name": "Švédska — Hlboký Tlak", "desc": "Hlbší tlak pre chronické napätie a regeneráciu svalov." },
-        "hotStone": { "name": "Masáž Horúcimi Kameňmi", "desc": "Horúce bazaltové kamene rozpúšťajú stres a svalové napätie." },
-        "aromatherapy": { "name": "Aromaterapeutická Masáž", "desc": "Éterické oleje kombinované s jemnými ťahmi pre totálnu relaxáciu." },
-        "deepTissue": { "name": "Hlboké Tkanivo — Celé Telo", "desc": "Cieli na hlboké svalové vrstvy. Ideálne pre chronickú bolesť." },
-        "sportsMassage": { "name": "Športová Masáž", "desc": "Regenerácia pred a po výkone. Prevencia zranení a flexibilita." },
-        "backNeck": { "name": "Chrbát a Krk", "desc": "Sústredená práca na napätie hornej časti tela a kancelársku bolesť." },
-        "thaiTraditional": { "name": "Thajská Tradičná", "desc": "Starodávne strečingy a akupresúra na podlahovej podložke." },
-        "lymphatic": { "name": "Lymfatická Drenáž", "desc": "Jemné rytmické ťahy na stimuláciu lymfatického toku." },
-        "headScalp": { "name": "Masáž Hlavy a Pokožky", "desc": "Zmierňuje bolesti hlavy, námahu očí a mentálnu únavu." },
-        "footReflexology": { "name": "Reflexológia Nôh", "desc": "Tlakové body na nohách prepojené s orgánmi. Hlboká relaxácia." },
-        "couplesRetreat": { "name": "Párový Oddych", "desc": "Masáž vedľa seba pre dvoch. Ultimátna spoločná relaxácia." }
-      }
-    },
-    "process": {
-      "title": "Ako Prebieha Vaša Návšteva",
-      "subtitle": "Od príchodu po totálnu relaxáciu — jednoducho, pohodlne a profesionálne.",
-      "consultation": { "title": "Privítanie", "desc": "Prediskutujeme vaše ciele, oblasti napätia a spoločne vyberieme ideálnu techniku." },
-      "preparation": { "title": "Príprava", "desc": "Miestnosť je pripravená s vašou preferovanou teplotou, hudbou a arómou." },
-      "procedure": { "title": "Sedenie", "desc": "Váš terapeut pracuje s presnosťou a prispôsobuje tlak a techniku vášmu komfortu." },
-      "aftercare": { "title": "Následná Starostlivosť", "desc": "Bylinkový čaj a personalizované odporúčania pre pokračujúci wellness doma." },
-      "expectation": "Väčšina klientov pociťuje okamžitú úľavu a hlbokú relaxáciu. Pri chronických problémoch odporúčame kurz 4–6 sedení. Poskytujeme personalizované rady pre udržanie výsledkov."
-    },
-    "team": {
-      "title": "Naši Terapeuti",
-      "subtitle": "Každé sedenie vykonáva certifikovaný profesionál.",
-      "therapist1": {
-        "name": "Anna Kovalová",
-        "role": "Hlavná Masážna Terapeutka",
-        "specialty": "Švédska · Hlboké Tkanivo · Horúce Kamene",
-        "bio": "10 rokov skúseností. Certifikácia v terapeutickej a športovej masáži. Špecializácia na manažment chronickej bolesti."
-      },
-      "workspace": {
-        "title": "Náš Priestor",
-        "desc": "Pokojné, súkromné prostredie navrhnuté pre úplnú relaxáciu. Ambient osvetlenie, upokojujúca hudba, prémiové organické produkty."
-      }
-    },
-    "hygiene": {
-      "title": "Štandardy a Kvalita",
-      "subtitle": "Váš komfort a bezpečnosť sú naša najvyššia priorita.",
-      "freshLinens": { "title": "Čerstvé Plachty", "desc": "Čisté, prémiové plachty pre každé sedenie. Prané pri vysokej teplote s hypoalergénnym prostriedkom." },
-      "sanitization": { "title": "Sanitácia Miestnosti", "desc": "Každá ošetrovňa je plne dezinfikovaná medzi sedeniami." },
-      "organicProducts": { "title": "Organické Produkty", "desc": "Používame iba certifikované organické masážne oleje a krémy. Bez parabénov." },
-      "certified": { "title": "Certifikovaní Terapeuti", "desc": "Všetci terapeuti majú medzinárodné certifikácie a pravidelne sa vzdelávajú." }
-    },
-    "testimonials": {
-      "title": "Čo Hovoria Klienti",
-      "subtitle": "Skutočné skúsenosti od skutočných ľudí.",
-      "review1": { "text": "Najlepšia masáž, akú som kedy zažil. Anna našla každý uzol a prepracovala ho s neuveriteľnou zručnosťou.", "author": "Dávid R.", "service": "Hlboké Tkanivo" },
-      "review2": { "text": "Masáž horúcimi kameňmi bola čistý raj. Miestnosť, hudba, technika — všetko bolo dokonalé.", "author": "Jana M.", "service": "Horúce Kamene" },
-      "review3": { "text": "Roky som trpel chronickou bolesťou chrbta. Po 4 sedeniach tu je zlepšenie pozoruhodné.", "author": "Martin K.", "service": "Terapeutická" },
-      "review4": { "text": "S partnerom sme si urobili párový oddych na výročie. Nezabudnuteľný zážitok!", "author": "Sofia a Tomáš", "service": "Párový" },
-      "review5": { "text": "Thajská masáž bola autentická a úžasná. Rozdiel oproti iným miestam som pocítil okamžite.", "author": "Peter L.", "service": "Thajská" },
-      "review6": { "text": "Online rezervácia bola jednoduchá, štúdio je krásne a masáž prekonala očakávania.", "author": "Monika S.", "service": "Švédska" }
-    },
-    "faq": {
-      "title": "Často Kladené Otázky",
-      "subtitle": "Všetko, čo potrebujete vedieť pred prvou návštevou.",
-      "duration": { "q": "Ako dlho trvá sedenie?", "a": "Sedenia trvajú 30 až 90 minút podľa techniky. Odporúčame 60 minút pre celotelové ošetrenie a 90 minút pre hlboké tkanivo." },
-      "prepare": { "q": "Ako sa mám pripraviť?", "a": "Príďte 10 minút skôr. Vyhnite sa ťažkým jedlám 2 hodiny pred. Na thajskú masáž poskytneme voľný odev." },
-      "pressure": { "q": "Môžem si vybrať úroveň tlaku?", "a": "Samozrejme. Váš terapeut sa počas sedenia pýta a prispôsobuje tlak vašim preferenciám." },
-      "frequency": { "q": "Ako často by som mal chodiť na masáž?", "a": "Pre údržbu raz alebo dvakrát mesačne. Pre chronickú bolesť odporúčame spočiatku týždenné sedenia." },
-      "medical": { "q": "Je masáž bezpečná pri zdravotných problémoch?", "a": "Pred prvým sedením vždy robíme krátku zdravotnú konzultáciu. Niektoré stavy môžu vyžadovať súhlas lekára." },
-      "aftercare": { "q": "Čo robiť po masáži?", "a": "Pite veľa vody, vyhnite sa intenzívnemu cvičeniu 24 hodín. Mierne bolesť po hlbokom tkanive je normálna." },
-      "booking": { "q": "Ako si rezervujem a môžem zrušiť?", "a": "Rezervujte online cez túto stránku. Dostanete okamžité potvrdenie. Zmenu nahláste minimálne 24 hodín vopred." },
-      "couples": { "q": "Ako funguje párová masáž?", "a": "Vy a váš partner ste v jednej miestnosti na susedných stoloch, každý s vlastným terapeutom." }
-    },
-    "contact": {
-      "title": "Kontaktujte Nás",
-      "subtitle": "Máte otázky? Uprednostňujete telefonát? Sme tu pre vás.",
-      "mapTitle": "Poloha V Studio",
-      "hours": "Po–Pi: 9:00–20:00 · So: 10:00–18:00",
-      "formTitle": "Poslať Správu",
-      "nameLabel": "Vaše meno",
-      "namePlaceholder": "Jana Nováková",
-      "emailLabel": "E-mail",
-      "emailPlaceholder": "jana@example.com",
-      "phoneLabel": "Telefón (nepovinné)",
-      "phonePlaceholder": "+421 ...",
-      "messageLabel": "Vaša správa",
-      "messagePlaceholder": "Povedzte nám o vašich potrebách alebo sa na čokoľvek opýtajte...",
-      "submit": "Odoslať Správu",
-      "success": "Ďakujeme! Ozveme sa do 24 hodín."
-    },
-    "reserveTitle": "Vaša Relaxácia Začína Dnes",
-    "reserveDesc": "Tešíme sa na vašu návštevu. Rezervujte si sedenie a objavte liečivú silu profesionálnej masáže.",
-    "callNow": "Zavolajte Teraz",
-    "footer": {
-      "tagline": "Prémiové masážne štúdio v Bratislave. Expertní terapeuti, organické produkty, totálna relaxácia.",
-      "navTitle": "Navigácia",
-      "socialTitle": "Sledujte Nás",
-      "rights": "Všetky práva vyhradené.",
-      "privacy": "Ochrana Súkromia",
-      "cookies": "Zásady Cookies"
-    }
-  },
-  "depilation": {
-    "hero": "Depilácia nie je o odstraňovaní chĺpkov — je o starostlivosti o pokožku a sebadôvere",
-    "heroSubtitle": "Premium depilácia s 14-ročnou skúsenosťou",
-    "exploreMassage": "← Preskúmať Masáž",
-    "bookDepilation": "Rezervujte si depiláciu.",
-    "bookDepilationButton": "Rezervovať depiláciu",
-    "viewPricesAndBook": "Pozrite cenník a rezervujte si termín.",
-    "pricePageButton": "Cenník a rezervácia",
-    "aboutTitle": "O mne",
-    "aboutIntro": "Som Natalie Volik — majster depilácie prémiovej triedy.",
-    "aboutJourney": "Moja profesionálna cesta začala v Kyjeve, kde som úspešne pracovala a budovala vysoký štandard kvality a servisu. Dnes pokračujem vo svojej praxi v Bratislave a zachovávam rovnakú úroveň profesionality, presnosti a starostlivosti o klientov.",
-    "aboutExpertise": "Nie som len praktizujúca špecialistka — som expertka v oblasti depilácie.",
-    "aboutMedical": "Neustále si zvyšujem kvalifikáciu, absolvujem školenia, zúčastňujem sa fór a profesionálnych stretnutí. To mi umožňuje využívať moderné techniky, najlepšie materiály a ponúkať klientom skutočne prémiový výsledok.",
-    "aboutContinuous": "Budem úprimne rada, keď vás uvidím v našom štúdiu. Som si istá, že budete spokojní nielen s výsledkom, ale aj s atmosférou, starostlivosťou a tým pocitom ľahkosti, s ktorým odídete po procedúrach.",
-    "philosophyTitle": "Filozofia mojej práce",
-    "philosophyQuote": "Moje medicínske vzdelanie mi umožňuje hlboko chápať fyziológiu pokožky a pracovať maximálne šetrne a bezpečne.",
-    "howIHelpTitle": "Ako môžem pomôcť",
-    "howIHelpIntro": "V našom štúdiu získate",
-    "valueHygiene": "Bezchybnú hygienu a sterilitu",
-    "valueDelicacy": "Jemnosť a pohodlie",
-    "valueIndividual": "Individuálny prístup",
-    "valueService": "Vysokú úroveň servisu",
-    "valueAtmosphere": "Pokojnú, dôvernú atmosféru",
-    "achievementsTitle": "Profesionálne uznanie",
-    "achievement1": "Víťazka Majstrovstiev Ukrajiny v depilácii v kategórii «Profesionál»",
-    "achievement2": "Technológ-lektorka značiek: Terra, Enova, Biolaif",
-    "achievement3": "Sudkyňa medzinárodných majstrovstiev v depilácii",
-    "achievement4": "Rečníčka na profesionálnych konferenciách a maratónoch o depilácii",
-    "achievement5": "Účastníčka medzinárodných výstav kozmetického priemyslu",
-    "servicesTitle": "Služby",
-    "servicesDesc": "Pracujem so ženami aj mužmi a zabezpečujem taktnosť a profesionalitu v každom detaile.",
-    "serviceSugaring": "Sugaring",
-    "serviceSugaringDesc": "Prírodná pasta odstraňuje chlpy jemne v smere rastu. Ideálne pre citlivú pokožku.",
-    "serviceWax": "Vosková depilácia",
-    "serviceWaxDesc": "Klasický teplý alebo horúci vosk pre trvalejší efekt. Vhodné pre všetky typy pokožky.",
-    "serviceBio": "Bio depilácia",
-    "serviceBioDesc": "Prémiové prírodné formule. Maximálna starostlivosť o vašu pokožku.",
-    "reserveTitle": "Rezervujte si čas",
-    "reserveDesc": "Budem úprimne rada, keď vás uvidím v našom štúdiu. Som si istá, že budete spokojní nielen s výsledkom, ale aj s atmosférou, starostlivosťou a tým pocitom ľahkosti, s ktorým odídete po procedúrach.",
-    "bookNow": "Rezervovať",
-    "heroBadge": "V Studio — Prémiová Depilácia, Bratislava",
-    "heroBookButton": "Rezervovať Termín",
-    "heroPricesButton": "Zobraziť Ceny",
-    "trustBarLabel": "Referencie",
-    "trust": {
-      "trustYears": "14 rokov majstrovstva",
-      "trustChampion": "č.1 — Šampiónka Ukrajiny",
-      "trustMedical": "Medicínska expertíza",
-      "trustTechniques": "5 autorských techník",
-      "trustClients": "1 000+ spokojných klientov"
-    },
-    "callNow": "Zavolajte Teraz",
-    "serviceMenu": {
-      "title": "Cenník Služieb",
-      "subtitle": "Všetky techniky. Všetky zóny. Transparentné ceny. Optimálnu metódu vyberiem individuálne pre vašu pokožku.",
-      "from": "od",
-      "min": "min",
-      "book": "Rezervovať",
-      "zone": {
-        "face": "Tvár",
-        "body": "Telo",
-        "intimate": "Intímna Zóna"
-      },
-      "items": {
-        "sugaringUpperLip": { "name": "Sugaring — Horná Pera", "desc": "Jemná cukrová pasta, bez začervenania. Hotové za pár minút." },
-        "sugaringFullFace": { "name": "Sugaring — Celá Tvár", "desc": "Čelo, líca, brada, horná pera — kompletné ošetrenie." },
-        "waxUpperLip": { "name": "Vosk — Horná Pera", "desc": "Klasický teplý vosk pre rýchle a presné odstránenie." },
-        "waxEyebrow": { "name": "Vosk — Tvarovanie Obočia", "desc": "Čisté, definované obočie. Technika s minimálnou bolesťou." },
-        "electroFace": { "name": "Elektroepilácia — Tvár", "desc": "Trvalé odstránenie jemných a zarastajúcich chlpov. Presná práca." },
-        "sugaringUnderarms": { "name": "Sugaring — Podpazušie", "desc": "Hladké, bez podráždenia. Prírodná pasta, minimálny diskomfort." },
-        "sugaringFullArms": { "name": "Sugaring — Celé Ruky", "desc": "Kompletné ošetrenie rúk od zápästia po rameno." },
-        "sugaringFullLegs": { "name": "Sugaring — Celé Nohy", "desc": "Hodvábne nohy od členka po bedrá. Vydrží 3–4 týždne." },
-        "waxFullLegs": { "name": "Vosk — Celé Nohy", "desc": "Klasický teplý vosk pre dlhotrvajúcu hladkosť." },
-        "bioFullBody": { "name": "Bio Depilácia — Celé Telo", "desc": "Prémiová formula Biolaif. Maximálna starostlivosť o pokožku." },
-        "laserFullLegs": { "name": "Laser — Celé Nohy", "desc": "Dlhodobá redukcia chlpov. Profesionálny diódový laser." },
-        "sugaringClassicBikini": { "name": "Sugaring — Klasické Bikiní", "desc": "Linka bikiní — jemne a presne. Minimálne podráždenie." },
-        "sugaringDeepBikini": { "name": "Sugaring — Hĺbkové Bikiní", "desc": "Kompletná intímna zóna. Maximálny komfort, absolútne súkromie." },
-        "waxClassicBikini": { "name": "Vosk — Klasické Bikiní", "desc": "Rýchle ošetrenie línie bikiní teplým voskom." },
-        "waxDeepBikini": { "name": "Vosk — Hĺbkové Bikiní", "desc": "Kompletná intímna depilácia. Diskrétne, profesionálne, bezbolestné." }
-      }
-    },
-    "process": {
-      "title": "Ako Prebieha Vaša Návšteva",
-      "subtitle": "Od prvého kroku po trvalú hladkosť — jednoducho, pohodlne a profesionálne.",
-      "consultation": { "title": "Konzultácia", "desc": "Prediskutujeme vaše ciele, typ pokožky a spoločne vyberieme ideálnu techniku." },
-      "preparation": { "title": "Príprava", "desc": "Pokožku jemne očistíme a pripravíme. Sterilné jednorazové nástroje otvárame pred vami." },
-      "procedure": { "title": "Procedúra", "desc": "Technika sa vykonáva s presnosťou a starostlivosťou. Pracujem vaším tempom komfortu." },
-      "aftercare": { "title": "Následná Starostlivosť", "desc": "Dostanete osobné odporúčania pre najlepší a najdlhšie trvajúci výsledok." },
-      "expectation": "Väčšina klientov opisuje pocit ako krátke, znesiteľné teplo. Prvé sedenia môžu byť citlivejšie — každá ďalšia návšteva je ľahšia. Výsledky zvyčajne trvajú 3–5 týždňov."
-    },
-    "team": {
-      "title": "Vaša Špecialistka",
-      "subtitle": "Každý zákrok vykonáva osobne certifikovaná profesionálka.",
-      "natalie": {
-        "name": "Natálie Volik",
-        "role": "Zakladateľka a Hlavná Špecialistka na Depiláciu",
-        "specialty": "Sugaring · Vosk · Bio · Laser · Elektroepilácia",
-        "bio": "14 rokov skúseností. Medicínske vzdelanie. Šampiónka Ukrajiny v depilácii. Certifikovaná technologička Terra, Enova, Biolaif."
-      },
-      "workspace": {
-        "title": "Naše Štúdio",
-        "desc": "Pokojný, súkromný priestor navrhnutý pre váš komfort. Každý detail je starostlivo premyslený."
-      }
-    },
-    "hygiene": {
-      "title": "Bezpečnosť a Hygiena",
-      "subtitle": "Vaše zdravie je neodiskutovateľné. Každý detail je kontrolovaný.",
-      "singleUse": { "title": "Jednorazové Nástroje", "desc": "Všetky aplikátory a kontaktné materiály otvárame pred vami zo zapečatených obalov." },
-      "sanitization": { "title": "Sanitácia Medicínskej Kvality", "desc": "Povrchy a zariadenia dezinfikujeme nemocničnými antiseptikami medzi každým klientom." },
-      "sterilization": { "title": "Autokláv Sterilizácia", "desc": "Všetky opakovane použiteľné nástroje prechádzajú sterilizáciou autoklávu pri 134°C." },
-      "certified": { "title": "Certifikované Materiály", "desc": "Pracujeme výhradne s certifikovanými profesionálnymi značkami: Terra, Enova, Biolaif." }
-    },
-    "testimonials": {
-      "title": "Čo Hovoria Klientky",
-      "subtitle": "Skutočné skúsenosti od skutočných ľudí.",
-      "review1": { "text": "Bála som sa bikiní depilácie. Natálie ma úplne upokojila — nulová trapnosť, minimálna bolesť, perfektný výsledok.", "author": "Mária K.", "service": "Sugaring" },
-      "review2": { "text": "Najhygienickejší salón, aký som navštívila. Všetko otvorené predo mnou, všetko vysvetlené.", "author": "Elena S.", "service": "Všeobecné" },
-      "review3": { "text": "Prešla som z iného salónu po jednej návšteve tu. Rozdiel v kvalite a jemnosti je obrovský.", "author": "Katarína P.", "service": "Vosk" },
-      "review4": { "text": "Ako muž som váhal. Ale profesionalizmus a diskrétnosť sú tu absolútne.", "author": "Andrej M.", "service": "Sugaring" },
-      "review5": { "text": "Výsledky elektroepilácie sú neuveriteľné. Malé sedenia, veľký rozdiel.", "author": "Oksana D.", "service": "Elektroepilácia" },
-      "review6": { "text": "Rezervovala som online a okamžite som dostala potvrdenie. Celý proces je profesionálny.", "author": "Lucia T.", "service": "Všeobecné" }
-    },
-    "faq": {
-      "title": "Často Kladené Otázky",
-      "subtitle": "Všetko, čo potrebujete vedieť pred prvou návštevou.",
-      "painful": { "q": "Je depilácia bolestivá?", "a": "Väčšina klientov to opisuje ako krátke, znesiteľné teplo. Používam techniky minimalizujúce diskomfort a pocit sa s každým sedením znižuje." },
-      "prepare": { "q": "Ako sa mám pripraviť?", "a": "Chlpy by mali mať 3–5 mm. Vyhnite sa opaľovaniu a peelingom 24 hodín pred zákrokom. Žiadne krémy v deň procedúry." },
-      "results": { "q": "Ako dlho trvajú výsledky?", "a": "Výsledky trvajú 3–5 týždňov podľa techniky a zóny. Pri pravidelných sedeniach chlpy rastú tenšie a pomalšie." },
-      "technique": { "q": "Ktorá technika je pre mňa najlepšia?", "a": "Závisí od typu pokožky, štruktúry chlpov a citlivosti. Na prvej návšteve posúdim vaše potreby a odporučím najefektívnejšiu metódu." },
-      "men": { "q": "Pracujete aj s mužmi?", "a": "Určite. Pracujem so ženami aj mužmi s plnou taktnosťou, diskrétnosťou a profesionalitou." },
-      "aftercare": { "q": "Akú následnú starostlivosť odporúčate?", "a": "Vyhnite sa horúcim kúpeľom, saune, priamemu slnku a tesným odevom 24–48 hodín. Po každom sedení dostanete odporúčania." },
-      "booking": { "q": "Ako si rezervujem a môžem zrušiť?", "a": "Rezervujte online cez túto stránku. Dostanete okamžité potvrdenie e-mailom. Zmenu termínu nahláste minimálne 24 hodín vopred." },
-      "sensitive": { "q": "Je to bezpečné pre citlivú pokožku?", "a": "Áno. Moje medicínske vzdelanie mi umožňuje bezpečne pracovať so všetkými typmi pokožky. Všetky materiály sú dermatologicky testované." }
-    },
-    "contact": {
-      "title": "Kontaktujte Nás",
-      "subtitle": "Máte otázky? Uprednostňujete telefonát? Som tu pre vás.",
-      "mapTitle": "Poloha V Studio",
-      "hours": "Po–Pi: 9:00–19:00 · So: 10:00–16:00",
-      "formTitle": "Poslať Správu",
-      "nameLabel": "Vaše meno",
-      "namePlaceholder": "Jana Nováková",
-      "emailLabel": "E-mail",
-      "emailPlaceholder": "jana@example.com",
-      "phoneLabel": "Telefón (nepovinné)",
-      "phonePlaceholder": "+421 ...",
-      "messageLabel": "Vaša správa",
-      "messagePlaceholder": "Povedzte mi o vašich potrebách alebo sa na čokoľvek opýtajte...",
-      "submit": "Odoslať Správu",
-      "success": "Ďakujem! Ozvem sa do 24 hodín."
-    },
-    "footer": {
-      "tagline": "Prémiové depilačné štúdio v Bratislave. 14 rokov skúseností, medicínska precíznosť, absolútna starostlivosť.",
-      "navTitle": "Navigácia",
-      "socialTitle": "Sledujte Nás",
-      "rights": "Všetky práva vyhradené.",
-      "privacy": "Ochrana Súkromia",
-      "cookies": "Zásady Cookies"
-    },
-    "myServices": {
-      "title": "Moje služby",
-      "subtitle": "Profesionálne techniky depilácie. Metódu vyberám individuálne podľa typu pokožky a citlivosti.",
-      "from": "od",
-      "sugaring": "Sugaring",
-      "sugaringDesc": "Prírodná cukrová pasta odstraňuje chlpy jemne v smere rastu. Ideálne pre citlivú pokožku. Terra, Enova.",
-      "wax": "Vosková depilácia",
-      "waxDesc": "Klasický teplý alebo horúci vosk pre trvalejší efekt. Vhodné pre všetky typy pokožky.",
-      "bio": "Bio depilácia",
-      "bioDesc": "Prémiové prírodné formule Biolaif. Maximálna starostlivosť o vašu pokožku.",
-      "laser": "Laserová epilácia",
-      "laserDesc": "Dlhodobá redukcia chlpov laserom. Tvár, telo, bikiní, nohy.",
-      "electro": "Elektroepilácia",
-      "electroDesc": "Trvalé odstránenie chlpov na tvári. Presná práca s jemnými a zarastajúcimi chlpmi.",
-      "zoneFace": "Tvár",
-      "zoneBody": "Ruky a telo",
-      "zoneBikini": "Bikiní",
-      "zoneLegs": "Nohy"
-    }
-  },
-  "price": {
-    "title": "Cenník",
-    "subtitle": "Nájdite si službu podľa sekcie a zóny tela. Všetky ceny a trvania sú uvedené.",
-    "sex": "Rezervácia pre",
-    "woman": "Žena",
-    "man": "Muž",
-    "min": "min",
-    "bookThis": "Rezervovať",
-    "noPricesYet": "Cenník sa pripravuje. Kontaktujte nás alebo rezervujte všeobecný termín."
-  },
-  "admin": {
-    "signIn": "Prihlásiť sa",
-    "admin": "Admin",
-    "chooseBookingSystem": "Vyberte systém rezervácií",
-    "backToCabinet": "Späť do kabinetu",
-    "signOut": "Odhlásiť sa",
-    "signOutAria": "Odhlásiť sa",
-    "backToAurora": "← Späť na Aurora",
-    "calendar": "Kalendár",
-    "agenda": "Agenda",
-    "agendaSubtitle": "Kompletný rozvrh nadchádzajúcich rezervácií.",
-    "analytics": "Analytika",
-    "analyticsSubtitle": "Všetci zákazníci a rezervácie. Vyhľadajte podľa mena alebo telefónu.",
-    "searchByNameOrPhone": "Hľadať podľa mena alebo telefónu…",
-    "exportPdf": "Exportovať PDF",
-    "noSearchResults": "Žiadne výsledky.",
-    "noCustomersYet": "Zatiaľ žiadni zákazníci.",
-    "emailHeader": "E-mail",
-    "phoneHeader": "Telefón",
-    "noUpcomingAppointments": "Žiadne nadchádzajúce rezervácie.",
-    "settings": "Nastavenia",
-    "servicesCalendarAppointments": "Služby, kalendár, rezervácie",
-    "manageWorkingHours": "Spravujte pracovné hodiny a služby",
-    "openMenuAria": "Otvoriť admin menu",
-    "closeMenuAria": "Zavrieť admin menu",
-    "publicBooking": "Verejná rezervácia",
-    "appointments": "Rezervácie",
-    "appointmentsSubtitle": "Presuňte na zmenu. Použite zobrazenie Týždeň na presun na iný deň alebo čas. Minulé časy sú vypnuté. Tlačidlom Pridať rezerváciu vytvoríte.",
-    "prepBufferInfoTitle": "Po každej rezervácii sa vyhradí {minutes} minút na prípravu. Tento čas nie je možné rezervovať. Nastavte v Nastaveniach.",
-    "prepBufferNote": "Medzi rezerváciami sa automaticky udržiava {minutes} minút prípravy, aby sa klienti neprekrývali.",
-    "servicesLabel": "Služby:",
-    "noServicesYet": "Zatiaľ žiadne služby.",
-    "settingsSubtitle": "Spravujte pracovné hodiny a služby pre {place}.",
-    "manageServicesNote": "Spravujte služby, ktoré môžu zákazníci rezervovať. Každá služba má názov, farbu a trvanie.",
-    "manageWorkingHoursNote": "Nastavte, kedy môžu zákazníci rezervovať. Uzatvorené dni sa nezobrazia vo verejnom kalendári.",
-    "addAppointment": "Pridať rezerváciu",
-    "workingHours": "Pracovné hodiny",
-    "titleLabel": "Názov",
-    "titleSk": "Názov (SK)",
-    "titleEn": "Názov (EN)",
-    "titleRu": "Názov (RU)",
-    "titleUk": "Názov (UK)",
-    "descriptionSk": "Popis (SK)",
-    "descriptionEn": "Popis (EN)",
-    "descriptionRu": "Popis (RU)",
-    "descriptionUk": "Popis (UK)",
-    "colorLabel": "Farba",
-    "durationLabel": "Trvanie (minúty)",
-    "titlePlaceholder": "napr. Švédska masáž",
-    "titleRequired": "Názov je povinný",
-    "durationInvalid": "Trvanie musí byť 15–240 minút",
-    "saveServiceFailed": "Nepodarilo sa uložiť službu",
-    "cancel": "Zrušiť",
-    "update": "Upraviť",
-    "add": "Pridať",
-    "saving": "Ukladám…",
-    "serviceAdded": "Služba pridaná.",
-    "serviceUpdated": "Služba aktualizovaná.",
-    "serviceDeleted": "Služba odstránená.",
-    "deleteServiceFailed": "Nepodarilo sa odstrániť službu.",
-    "edit": "Upraviť",
-    "delete": "Odstrániť",
-    "clear": "Vymazať",
-    "addService": "Pridať službu",
-    "editService": "Upraviť službu",
-    "deleteServiceConfirm": "Odstrániť službu?",
-    "deleteServiceNote": "Odstrániť {name}? Existujúce rezervácie si ponechajú názov služby, ale nebude sa zobrazovať v nových rezerváciách.",
-    "addButton": "Pridať",
-    "editAppointment": "Upraviť rezerváciu",
-    "pastAppointmentNote": "Táto rezervácia je v minulosti. Len zobrazenie – zmeny nie sú povolené.",
-    "nameOptional": "Meno (voliteľné)",
-    "emailOptional": "E-mail (voliteľné)",
-    "phoneOptional": "Telefón (voliteľné)",
-    "chooseTime": "Vyberte čas",
-    "chooseService": "Vyberte službu",
-    "selectServicePlaceholder": "— Vyberte službu",
-    "close": "Zavrieť",
-    "save": "Uložiť",
-    "cannotCreatePast": "Nie je možné vytvoriť rezerváciu v minulosti.",
-    "appointmentUpdated": "Rezervácia aktualizovaná.",
-    "customer": "Zákazník",
-    "appointmentAdded": "Rezervácia pridaná.",
-    "appointmentAddedNotified": "Rezervácia pridaná. Zákazník bol informovaný e-mailom.",
-    "appointmentAddedNoEmail": "Rezervácia pridaná. E-mail sa nepodarilo odoslať.",
-    "appointmentAddedEmailFailed": "Rezervácia pridaná, ale e-mail zlyhal: {error}",
-    "couldNotSend": "Nepodarilo sa odoslať",
-    "slotBooked": "Tento termín je už obsadený.",
-    "saveFailed": "Nepodarilo sa uložiť. Skúste to znova.",
-    "copyDetails": "Detail rezervácie skopírovaný",
-    "copyFailed": "Kopírovanie zlyhalo",
-    "copyAria": "Skopírovať detail rezervácie",
-    "editAria": "Upraviť rezerváciu",
-    "cancelAria": "Zrušiť rezerváciu",
-    "cannotMovePast": "Nie je možné presunúť rezerváciu do minulosti.",
-    "movedNotified": "Rezervácia presunutá. Zákazník bol informovaný e-mailom.",
-    "notFound": "Rezervácia už neexistuje.",
-    "moveFailed": "Nepodarilo sa presunúť rezerváciu. {msg}",
-    "cancelledNotified": "Rezervácia zrušená. Zákazník bol informovaný e-mailom.",
-    "cancelFailed": "Nepodarilo sa zrušiť rezerváciu.",
-    "sun": "Ne",
-    "mon": "Po",
-    "tue": "Ut",
-    "wed": "St",
-    "thu": "Št",
-    "fri": "Pi",
-    "sat": "So",
-    "sunday": "Nedeľa",
-    "monday": "Pondelok",
-    "tuesday": "Utorok",
-    "wednesday": "Streda",
-    "thursday": "Štvrtok",
-    "friday": "Piatok",
-    "saturday": "Sobota",
-    "open": "Otvorené",
-    "closed": "Zatvorené",
-    "dayToggleTitle": "{day} – {status} (kliknite na prepnutie)",
-    "loadScheduleFailed": "Nepodarilo sa načítať rozvrh",
-    "copiedToMonth": "Predvolený rozvrh skopírovaný do {month}.",
-    "availabilitySaved": "Dostupnosť uložená.",
-    "saveFailed": "Nepodarilo sa uložiť.",
-    "prepTimeUpdated": "Čas prípravy aktualizovaný.",
-    "prepBufferTitle": "Minúty vyhradené po každej rezervácii na prípravu. Tento čas nie je možné rezervovať.",
-    "prepBufferAria": "Info o čase prípravy",
-    "saveAvailability": "Uložiť dostupnosť",
-    "defaultScope": "Predvolené (týždenne, vždy)",
-    "specificMonth": "Konkrétny mesiac…",
-    "prevMonth": "Predchádzajúci mesiac",
-    "nextMonth": "Nasledujúci mesiac",
-    "selectDate": "Vyberte dátum",
-    "month1": "Január",
-    "month2": "Február",
-    "month3": "Marec",
-    "month4": "Apríl",
-    "month5": "Máj",
-    "month6": "Jún",
-    "month7": "Júl",
-    "month8": "August",
-    "month9": "September",
-    "month10": "Október",
-    "month11": "November",
-    "month12": "December",
-    "from": "Od",
-    "to": "Do",
-    "copyFromDefault": "Skopírovať z predvoleného",
-    "manageScheduleFor": "Spravovať rozvrh pre",
-    "toggleDaysFor": "Prepínať dni pre",
-    "closedShort": "Zatvorené",
-    "viewDay": "Deň",
-    "viewWeek": "Týždeň",
-    "previousDay": "← Predchádzajúci deň",
-    "today": "Dnes",
-    "nextDay": "Ďalší deň →",
-    "previousWeek": "← Predchádzajúci týždeň",
-    "nextWeek": "Ďalší týždeň →",
-    "loadingSchedule": "Načítavam rozvrh…",
-    "couldNotLoadSchedule": "Nepodarilo sa načítať rozvrh.",
-    "loadScheduleFailed": "Nepodarilo sa načítať rozvrh",
-    "prepTimeBetween": "Čas prípravy medzi rezerváciami:",
-    "dayToggleInfo": "Kliknite na ľubovoľný deň pre zapnutie alebo vypnutie. Zlatá = otvorené, sivá = zatvorené.",
-    "dayToggleLegendOpen": "Otvorené",
-    "dayToggleLegendClosed": "Zatvorené",
-    "dayToggleTip": "Zmeny platia len pre tento mesiac. Nezabudnite uložiť.",
-    "closeDayWithAppointmentsConfirm": "Tento deň má {count, plural, one {# rezerváciu} few {# rezervácie} other {# rezervácií}}. Uzatvorením sa skryje z verejnej rezervácie, ale existujúce rezervácie zostanú. Pokračovať?",
-    "priceCatalog": "Cenník",
-    "priceCatalogSubtitle": "Správa služieb, sekcií, zón a cien pre stránku Cenník. Názvy v 4 jazykoch (SK, EN, RU, UK).",
-    "priceCatalogSaved": "Cenník uložený.",
-    "loadExample": "Načítať príklad",
-    "structure": "Štruktúra",
-    "editPanel": "Upraviť",
-    "selectNodeToEdit": "Vyberte uzol vľavo pre úpravu."
-  },
-  "adminSignin": {
-    "signIn": "Prihlásiť sa",
-    "email": "E-mail",
-    "password": "Heslo",
-    "orDivider": "alebo",
-    "backToAurora": "← Späť na Aurora",
-    "title": "Prihlásenie do administrácie",
-    "subtitle": "Prihláste sa e-mailom a heslom pre prístup do administrácie.",
-    "accessDenied": "Prístup odmietnutý. Prihlásiť sa môžu len oprávnení administrátori.",
-    "invalidCredentials": "Neplatný e-mail alebo heslo.",
-    "signInFailed": "Prihlásenie zlyhalo. Skúste to znova.",
-    "signingIn": "Prihlásujem…",
-    "continueWithGoogle": "Pokračovať cez Google"
-  },
-  "metadata": {
-    "title": "Aurora | Luxusný salón masáží a depilácie",
-    "description": "Tmavý, kinematografický a útulný. Zažite ultra-luxusnú masáž a depiláciu v intímnej oáze."
-  },
-  "email": {
-    "confirmed": "Potvrdené",
-    "hi": "Ahoj",
-    "luxurySalon": "Luxusný salón"
-  }
+	"common": {
+		"mainNav": "Hlavná navigácia",
+		"calendar": "Kalendár",
+		"available": "dostupné",
+		"unavailable": "nedostupné",
+		"services": "Služby",
+		"book": "Rezervovať",
+		"enter": "Vstúpiť",
+		"admin": "Admin",
+		"massage": "Masáž",
+		"depilation": "Depilácia",
+		"membership": "Členstvo",
+		"aurora": "Aurora",
+		"auroraHome": "Aurora Salon - Domov",
+		"openMenu": "Otvoriť menu",
+		"closeMenu": "Zavrieť menu",
+		"getDirections": "Získať navigáciu",
+		"date": "Dátum",
+		"time": "Čas",
+		"loading": "Načítava sa...",
+		"about": "O nás",
+		"team": "Tím",
+		"faq": "FAQ",
+		"contact": "Kontakt"
+	},
+	"home": {
+		"chooseExperience": "Vyberte svoju skúsenosť",
+		"enterMassage": "Vstúpiť do Masáže",
+		"enterDepilation": "Vstúpiť do Depilácie"
+	},
+	"booking": {
+		"fullName": "Meno a priezvisko *",
+		"email": "E-mail *",
+		"phone": "Telefón *",
+		"confirmBooking": "Potvrdiť rezerváciu",
+		"bookingInProgress": "Rezervujem…",
+		"selectService": "Vyberte službu",
+		"selectDate": "Vyberte dátum",
+		"selectTime": "Vyberte čas",
+		"availableTime": "Dostupný čas",
+		"chooseTime": "Vyberte čas",
+		"loadingTimes": "Načítavam časy…",
+		"availableTimesFor": "Dostupné časy pre",
+		"loadingAvailability": "Načítavam dostupnosť…",
+		"back": "Späť",
+		"cancel": "Zrušiť",
+		"next": "Ďalej",
+		"placeholderFullName": "Ján Novák",
+		"placeholderEmail": "jan@example.com",
+		"placeholderPhone": "+421 234 567 890",
+		"noSlotsMessage": "V tento deň nie sú k dispozícii žiadne voľné termíny. Vyberte iný dátum.",
+		"pickServiceDate": "Vyberte službu a dátum",
+		"pickTime": "Vyberte čas",
+		"yourDetails": "Vaše údaje",
+		"pickService": "Vyberte službu",
+		"bookingSummary": "Zhrnutie rezervácie",
+		"reviewSelection": "Skontrolujte svoju voľbu",
+		"choicesAppearHere": "Vaše voľby sa zobrazia tu",
+		"chooseService": "Vyberte službu →",
+		"chooseServiceLabel": "Vyberte službu",
+		"selectDate": "Vyberte dátum →",
+		"selectTime": "Vyberte čas →",
+		"contact": "Kontakt",
+		"contactUs": "Kontaktujte nás",
+		"serviceDateTime": "Služba, dátum a čas",
+		"bookingProgress": "Priebeh rezervácie",
+		"appointmentFallback": "Rezervácia",
+		"step1Label": "Vyberte službu",
+		"step2Label": "Dátum a čas",
+		"step3Label": "Vaše údaje",
+		"step1Title": "Vyberte službu",
+		"step2Title": "Dátum a čas",
+		"step3Title": "Vaše údaje",
+		"step1Desc": "Vyberte si ošetrenie.",
+		"step2Desc": "Vyberte dátum a čas, ktorý vám vyhovuje.",
+		"step3Desc": "Použijeme ich na potvrdenie vašej rezervácie.",
+		"confirmBooking": "Potvrdiť rezerváciu",
+		"cancel": "Zrušiť",
+		"bookingConfirmed": "Rezervácia potvrdená.",
+		"emailNotSent": "Rezervácia potvrdená, ale {error}",
+		"backToWebsite": "Späť na web",
+		"slotUnavailable": "Tento termín už nie je k dispozícii. Vyberte iný.",
+		"bookingFailed": "Rezervácia zlyhala. Skúste to znova.",
+		"searchServicePlaceholder": "Hľadať službu",
+		"clearSearch": "Vymazať hľadanie",
+		"categoryLabel": "Kategória",
+		"showMore": "Zobraziť viac",
+		"showLess": "Zobraziť menej",
+		"noSearchResults": "Žiadne služby nezodpovedajú vášmu hľadaniu.",
+		"noServicesInCategory": "V tejto kategórii nie sú žiadne služby.",
+		"bookingInfo": "Potvrdenie vám pošleme na e-mail. Prosíme, príďte 5 minút pred termínom."
+	},
+	"validation": {
+		"fullNameMin": "Meno musí mať aspoň 3 znaky",
+		"fullNameMax": "Meno môže mať najviac 100 znakov",
+		"invalidEmail": "Neplatná e-mailová adresa",
+		"invalidPhone": "Neplatné telefónne číslo (použite medzinárodný formát, napr. +421 234 567 890)"
+	},
+	"massage": {
+		"mostPopular": "Najobľúbenejšie",
+		"select": "Vybrať",
+		"selectMembership": "Vybrať členstvo {tier}",
+		"hero": "Relaxácia. Obnova. Hlboké uzdravenie.",
+		"heroBadge": "V2Studio — Prémiová Masáž, Bratislava",
+		"heroBookButton": "Rezervovať Sedenie",
+		"heroPricesButton": "Zobraziť Ceny",
+		"destinations": "Destinácie",
+		"destinationsDesc": "Každá cesta je jedinečná. Vyberte si tú svoju.",
+		"membershipDesc": "Povyšte svoj rituál. Odomknite viac.",
+		"reserveTime": "Rezervujte si čas",
+		"bookNow": "Rezervovať teraz",
+		"trustBarLabel": "Referencie",
+		"trust": {
+			"trustYears": "10+ Rokov Skúseností",
+			"trustCertified": "Certifikovaní Terapeuti",
+			"trustMedical": "Medicínsky Prístup",
+			"trustTechniques": "8 Masážnych Techník",
+			"trustClients": "2000+ Spokojných Klientov"
+		},
+		"aboutTitle": "O Našom Štúdiu",
+		"aboutIntro": "Vitajte vo V Studio Massage — vašom útočisku relaxácie v srdci Bratislavy. Kombinujeme tradičné masážne techniky s modernými terapeutickými prístupmi.",
+		"aboutJourney": "Náš tím certifikovaných terapeutov prináša roky skúseností v športovej, terapeutickej a relaxačnej masáži. Každé sedenie je prispôsobené vašim individuálnym potrebám.",
+		"aboutExpertise": "Špecializujeme sa na hlboké tkanivové, švédske, thajské a masáže horúcimi kameňmi. Každý terapeut je vyškolený a certifikovaný vo viacerých modalitách.",
+		"aboutMedical": "So zameraním na terapeutické výsledky naše sedenia riešia chronickú bolesť, úľavu od stresu a rehabilitáciu s klinickou precíznosťou.",
+		"aboutContinuous": "Náš tím sa pravidelne zúčastňuje pokročilých školení a medzinárodných wellness konferencií, aby vám priniesol najnovšie techniky.",
+		"philosophyTitle": "Filozofia",
+		"philosophyQuote": "Masáž nie je luxus — je to cesta k rovnováhe, zdraviu a vnútornej harmónii.",
+		"howIHelpTitle": "Čo Ponúkame",
+		"howIHelpIntro": "V našom štúdiu získate",
+		"valueRelaxation": "Hlbokú relaxáciu a úľavu od stresu",
+		"valueProfessional": "Certifikovaných profesionálnych terapeutov",
+		"valueIndividual": "Individuálne liečebné plány",
+		"valueAmbiance": "Prémiovú spa atmosféru",
+		"valueProducts": "Organické oleje a prémiové produkty",
+		"achievementsTitle": "Profesionálne Uznanie",
+		"achievement1": "Certifikácia Medzinárodnou Spa Asociáciou",
+		"achievement2": "Výcvik v thajských, švédskych a hlbokých tkanivových modalitách",
+		"achievement3": "Uvedení v Bratislavskom Top Wellness Sprievodcovi",
+		"achievement4": "Partnerstvá so športovými tímami a rehabilitačnými centrami",
+		"achievement5": "Viac ako 2 000 spokojných klientov po celej Európe",
+		"serviceMenu": {
+			"title": "Cenník Masáží",
+			"subtitle": "Všetky techniky. Prispôsobené pre vás. Transparentné ceny.",
+			"from": "od",
+			"min": "min",
+			"book": "Rezervovať",
+			"zone": {
+				"relaxation": "Relaxačné",
+				"therapeutic": "Terapeutické",
+				"specialty": "Špeciálne"
+			},
+			"items": {
+				"swedishClassic": {
+					"name": "Švédska — Klasická",
+					"desc": "Celotelová relaxačná masáž s dlhými plynulými ťahmi."
+				},
+				"swedishDeep": {
+					"name": "Švédska — Hlboký Tlak",
+					"desc": "Hlbší tlak pre chronické napätie a regeneráciu svalov."
+				},
+				"hotStone": {
+					"name": "Masáž Horúcimi Kameňmi",
+					"desc": "Horúce bazaltové kamene rozpúšťajú stres a svalové napätie."
+				},
+				"aromatherapy": {
+					"name": "Aromaterapeutická Masáž",
+					"desc": "Éterické oleje kombinované s jemnými ťahmi pre totálnu relaxáciu."
+				},
+				"deepTissue": {
+					"name": "Hlboké Tkanivo — Celé Telo",
+					"desc": "Cieli na hlboké svalové vrstvy. Ideálne pre chronickú bolesť."
+				},
+				"sportsMassage": {
+					"name": "Športová Masáž",
+					"desc": "Regenerácia pred a po výkone. Prevencia zranení a flexibilita."
+				},
+				"backNeck": {
+					"name": "Chrbát a Krk",
+					"desc": "Sústredená práca na napätie hornej časti tela a kancelársku bolesť."
+				},
+				"thaiTraditional": {
+					"name": "Thajská Tradičná",
+					"desc": "Starodávne strečingy a akupresúra na podlahovej podložke."
+				},
+				"lymphatic": {
+					"name": "Lymfatická Drenáž",
+					"desc": "Jemné rytmické ťahy na stimuláciu lymfatického toku."
+				},
+				"headScalp": {
+					"name": "Masáž Hlavy a Pokožky",
+					"desc": "Zmierňuje bolesti hlavy, námahu očí a mentálnu únavu."
+				},
+				"footReflexology": {
+					"name": "Reflexológia Nôh",
+					"desc": "Tlakové body na nohách prepojené s orgánmi. Hlboká relaxácia."
+				},
+				"couplesRetreat": {
+					"name": "Párový Oddych",
+					"desc": "Masáž vedľa seba pre dvoch. Ultimátna spoločná relaxácia."
+				}
+			}
+		},
+		"process": {
+			"title": "Ako Prebieha Vaša Návšteva",
+			"subtitle": "Od príchodu po totálnu relaxáciu — jednoducho, pohodlne a profesionálne.",
+			"consultation": {
+				"title": "Privítanie",
+				"desc": "Prediskutujeme vaše ciele, oblasti napätia a spoločne vyberieme ideálnu techniku."
+			},
+			"preparation": {
+				"title": "Príprava",
+				"desc": "Miestnosť je pripravená s vašou preferovanou teplotou, hudbou a arómou."
+			},
+			"procedure": {
+				"title": "Sedenie",
+				"desc": "Váš terapeut pracuje s presnosťou a prispôsobuje tlak a techniku vášmu komfortu."
+			},
+			"aftercare": {
+				"title": "Následná Starostlivosť",
+				"desc": "Bylinkový čaj a personalizované odporúčania pre pokračujúci wellness doma."
+			},
+			"expectation": "Väčšina klientov pociťuje okamžitú úľavu a hlbokú relaxáciu. Pri chronických problémoch odporúčame kurz 4–6 sedení. Poskytujeme personalizované rady pre udržanie výsledkov."
+		},
+		"team": {
+			"title": "Naši Terapeuti",
+			"subtitle": "Každé sedenie vykonáva certifikovaný profesionál.",
+			"therapist1": {
+				"name": "Anna Kovalová",
+				"role": "Hlavná Masážna Terapeutka",
+				"specialty": "Švédska · Hlboké Tkanivo · Horúce Kamene",
+				"bio": "10 rokov skúseností. Certifikácia v terapeutickej a športovej masáži. Špecializácia na manažment chronickej bolesti."
+			},
+			"workspace": {
+				"title": "Náš Priestor",
+				"desc": "Pokojné, súkromné prostredie navrhnuté pre úplnú relaxáciu. Ambient osvetlenie, upokojujúca hudba, prémiové organické produkty."
+			}
+		},
+		"hygiene": {
+			"title": "Štandardy a Kvalita",
+			"subtitle": "Váš komfort a bezpečnosť sú naša najvyššia priorita.",
+			"freshLinens": {
+				"title": "Čerstvé Plachty",
+				"desc": "Čisté, prémiové plachty pre každé sedenie. Prané pri vysokej teplote s hypoalergénnym prostriedkom."
+			},
+			"sanitization": {
+				"title": "Sanitácia Miestnosti",
+				"desc": "Každá ošetrovňa je plne dezinfikovaná medzi sedeniami."
+			},
+			"organicProducts": {
+				"title": "Organické Produkty",
+				"desc": "Používame iba certifikované organické masážne oleje a krémy. Bez parabénov."
+			},
+			"certified": {
+				"title": "Certifikovaní Terapeuti",
+				"desc": "Všetci terapeuti majú medzinárodné certifikácie a pravidelne sa vzdelávajú."
+			}
+		},
+		"testimonials": {
+			"title": "Čo Hovoria Klienti",
+			"subtitle": "Skutočné skúsenosti od skutočných ľudí.",
+			"review1": {
+				"text": "Najlepšia masáž, akú som kedy zažil. Anna našla každý uzol a prepracovala ho s neuveriteľnou zručnosťou.",
+				"author": "Dávid R.",
+				"service": "Hlboké Tkanivo"
+			},
+			"review2": {
+				"text": "Masáž horúcimi kameňmi bola čistý raj. Miestnosť, hudba, technika — všetko bolo dokonalé.",
+				"author": "Jana M.",
+				"service": "Horúce Kamene"
+			},
+			"review3": {
+				"text": "Roky som trpel chronickou bolesťou chrbta. Po 4 sedeniach tu je zlepšenie pozoruhodné.",
+				"author": "Martin K.",
+				"service": "Terapeutická"
+			},
+			"review4": {
+				"text": "S partnerom sme si urobili párový oddych na výročie. Nezabudnuteľný zážitok!",
+				"author": "Sofia a Tomáš",
+				"service": "Párový"
+			},
+			"review5": {
+				"text": "Thajská masáž bola autentická a úžasná. Rozdiel oproti iným miestam som pocítil okamžite.",
+				"author": "Peter L.",
+				"service": "Thajská"
+			},
+			"review6": {
+				"text": "Online rezervácia bola jednoduchá, štúdio je krásne a masáž prekonala očakávania.",
+				"author": "Monika S.",
+				"service": "Švédska"
+			}
+		},
+		"faq": {
+			"title": "Často Kladené Otázky",
+			"subtitle": "Všetko, čo potrebujete vedieť pred prvou návštevou.",
+			"duration": {
+				"q": "Ako dlho trvá sedenie?",
+				"a": "Sedenia trvajú 30 až 90 minút podľa techniky. Odporúčame 60 minút pre celotelové ošetrenie a 90 minút pre hlboké tkanivo."
+			},
+			"prepare": {
+				"q": "Ako sa mám pripraviť?",
+				"a": "Príďte 10 minút skôr. Vyhnite sa ťažkým jedlám 2 hodiny pred. Na thajskú masáž poskytneme voľný odev."
+			},
+			"pressure": {
+				"q": "Môžem si vybrať úroveň tlaku?",
+				"a": "Samozrejme. Váš terapeut sa počas sedenia pýta a prispôsobuje tlak vašim preferenciám."
+			},
+			"frequency": {
+				"q": "Ako často by som mal chodiť na masáž?",
+				"a": "Pre údržbu raz alebo dvakrát mesačne. Pre chronickú bolesť odporúčame spočiatku týždenné sedenia."
+			},
+			"medical": {
+				"q": "Je masáž bezpečná pri zdravotných problémoch?",
+				"a": "Pred prvým sedením vždy robíme krátku zdravotnú konzultáciu. Niektoré stavy môžu vyžadovať súhlas lekára."
+			},
+			"aftercare": {
+				"q": "Čo robiť po masáži?",
+				"a": "Pite veľa vody, vyhnite sa intenzívnemu cvičeniu 24 hodín. Mierne bolesť po hlbokom tkanive je normálna."
+			},
+			"booking": {
+				"q": "Ako si rezervujem a môžem zrušiť?",
+				"a": "Rezervujte online cez túto stránku. Dostanete okamžité potvrdenie. Zmenu nahláste minimálne 24 hodín vopred."
+			},
+			"couples": {
+				"q": "Ako funguje párová masáž?",
+				"a": "Vy a váš partner ste v jednej miestnosti na susedných stoloch, každý s vlastným terapeutom."
+			}
+		},
+		"contact": {
+			"title": "Kontaktujte Nás",
+			"subtitle": "Máte otázky? Uprednostňujete telefonát? Sme tu pre vás.",
+			"mapTitle": "Poloha V Studio",
+			"hours": "Po–Pi: 9:00–20:00 · So: 10:00–18:00",
+			"formTitle": "Poslať Správu",
+			"nameLabel": "Vaše meno",
+			"namePlaceholder": "Jana Nováková",
+			"emailLabel": "E-mail",
+			"emailPlaceholder": "jana@example.com",
+			"phoneLabel": "Telefón (nepovinné)",
+			"phonePlaceholder": "+421 ...",
+			"messageLabel": "Vaša správa",
+			"messagePlaceholder": "Povedzte nám o vašich potrebách alebo sa na čokoľvek opýtajte...",
+			"submit": "Odoslať Správu",
+			"success": "Ďakujeme! Ozveme sa do 24 hodín."
+		},
+		"reserveTitle": "Vaša Relaxácia Začína Dnes",
+		"reserveDesc": "Tešíme sa na vašu návštevu. Rezervujte si sedenie a objavte liečivú silu profesionálnej masáže.",
+		"callNow": "Zavolajte Teraz",
+		"footer": {
+			"tagline": "Prémiové masážne štúdio v Bratislave. Expertní terapeuti, organické produkty, totálna relaxácia.",
+			"navTitle": "Navigácia",
+			"socialTitle": "Sledujte Nás",
+			"rights": "Všetky práva vyhradené.",
+			"privacy": "Ochrana Súkromia",
+			"cookies": "Zásady Cookies"
+		}
+	},
+	"depilation": {
+		"hero": "Depilácia nie je o odstraňovaní chĺpkov — je o starostlivosti o pokožku a sebadôvere",
+		"heroSubtitle": "Premium depilácia s 14-ročnou skúsenosťou",
+		"exploreMassage": "← Preskúmať Masáž",
+		"bookDepilation": "Rezervujte si depiláciu.",
+		"bookDepilationButton": "Rezervovať depiláciu",
+		"viewPricesAndBook": "Pozrite cenník a rezervujte si termín.",
+		"pricePageButton": "Cenník a rezervácia",
+		"aboutTitle": "O mne",
+		"aboutIntro": "Som Natalie Volik — majster depilácie prémiovej triedy.",
+		"aboutJourney": "Moja profesionálna cesta začala v Kyjeve, kde som úspešne pracovala a budovala vysoký štandard kvality a servisu. Dnes pokračujem vo svojej praxi v Bratislave a zachovávam rovnakú úroveň profesionality, presnosti a starostlivosti o klientov.",
+		"aboutExpertise": "Nie som len praktizujúca špecialistka — som expertka v oblasti depilácie.",
+		"aboutMedical": "Neustále si zvyšujem kvalifikáciu, absolvujem školenia, zúčastňujem sa fór a profesionálnych stretnutí. To mi umožňuje využívať moderné techniky, najlepšie materiály a ponúkať klientom skutočne prémiový výsledok.",
+		"aboutContinuous": "Budem úprimne rada, keď vás uvidím v našom štúdiu. Som si istá, že budete spokojní nielen s výsledkom, ale aj s atmosférou, starostlivosťou a tým pocitom ľahkosti, s ktorým odídete po procedúrach.",
+		"philosophyTitle": "Filozofia mojej práce",
+		"philosophyQuote": "Moje medicínske vzdelanie mi umožňuje hlboko chápať fyziológiu pokožky a pracovať maximálne šetrne a bezpečne.",
+		"howIHelpTitle": "Ako môžem pomôcť",
+		"howIHelpIntro": "V našom štúdiu získate",
+		"valueHygiene": "Bezchybnú hygienu a sterilitu",
+		"valueDelicacy": "Jemnosť a pohodlie",
+		"valueIndividual": "Individuálny prístup",
+		"valueService": "Vysokú úroveň servisu",
+		"valueAtmosphere": "Pokojnú, dôvernú atmosféru",
+		"achievementsTitle": "Profesionálne uznanie",
+		"achievement1": "Víťazka Majstrovstiev Ukrajiny v depilácii v kategórii «Profesionál»",
+		"achievement2": "Technológ-lektorka značiek: Terra, Enova, Biolaif",
+		"achievement3": "Sudkyňa medzinárodných majstrovstiev v depilácii",
+		"achievement4": "Rečníčka na profesionálnych konferenciách a maratónoch o depilácii",
+		"achievement5": "Účastníčka medzinárodných výstav kozmetického priemyslu",
+		"servicesTitle": "Služby",
+		"servicesDesc": "Pracujem so ženami aj mužmi a zabezpečujem taktnosť a profesionalitu v každom detaile.",
+		"serviceSugaring": "Sugaring",
+		"serviceSugaringDesc": "Prírodná pasta odstraňuje chlpy jemne v smere rastu. Ideálne pre citlivú pokožku.",
+		"serviceWax": "Vosková depilácia",
+		"serviceWaxDesc": "Klasický teplý alebo horúci vosk pre trvalejší efekt. Vhodné pre všetky typy pokožky.",
+		"serviceBio": "Bio depilácia",
+		"serviceBioDesc": "Prémiové prírodné formule. Maximálna starostlivosť o vašu pokožku.",
+		"reserveTitle": "Rezervujte si čas",
+		"reserveDesc": "Budem úprimne rada, keď vás uvidím v našom štúdiu. Som si istá, že budete spokojní nielen s výsledkom, ale aj s atmosférou, starostlivosťou a tým pocitom ľahkosti, s ktorým odídete po procedúrach.",
+		"bookNow": "Rezervovať",
+		"heroBadge": "V2Studio — Prémiová Depilácia, Bratislava",
+		"heroBookButton": "Rezervovať Termín",
+		"heroPricesButton": "Zobraziť Ceny",
+		"trustBarLabel": "Referencie",
+		"trust": {
+			"trustYears": "14 rokov majstrovstva",
+			"trustChampion": "č.1 — Šampiónka Ukrajiny",
+			"trustMedical": "Medicínska expertíza",
+			"trustTechniques": "5 autorských techník",
+			"trustClients": "1 000+ spokojných klientov"
+		},
+		"callNow": "Zavolajte Teraz",
+		"serviceMenu": {
+			"title": "Cenník Služieb",
+			"subtitle": "Všetky techniky. Všetky zóny. Transparentné ceny. Optimálnu metódu vyberiem individuálne pre vašu pokožku.",
+			"from": "od",
+			"min": "min",
+			"book": "Rezervovať",
+			"zone": {
+				"face": "Tvár",
+				"body": "Telo",
+				"intimate": "Intímna Zóna"
+			},
+			"items": {
+				"sugaringUpperLip": {
+					"name": "Sugaring — Horná Pera",
+					"desc": "Jemná cukrová pasta, bez začervenania. Hotové za pár minút."
+				},
+				"sugaringFullFace": {
+					"name": "Sugaring — Celá Tvár",
+					"desc": "Čelo, líca, brada, horná pera — kompletné ošetrenie."
+				},
+				"waxUpperLip": {
+					"name": "Vosk — Horná Pera",
+					"desc": "Klasický teplý vosk pre rýchle a presné odstránenie."
+				},
+				"waxEyebrow": {
+					"name": "Vosk — Tvarovanie Obočia",
+					"desc": "Čisté, definované obočie. Technika s minimálnou bolesťou."
+				},
+				"electroFace": {
+					"name": "Elektroepilácia — Tvár",
+					"desc": "Trvalé odstránenie jemných a zarastajúcich chlpov. Presná práca."
+				},
+				"sugaringUnderarms": {
+					"name": "Sugaring — Podpazušie",
+					"desc": "Hladké, bez podráždenia. Prírodná pasta, minimálny diskomfort."
+				},
+				"sugaringFullArms": {
+					"name": "Sugaring — Celé Ruky",
+					"desc": "Kompletné ošetrenie rúk od zápästia po rameno."
+				},
+				"sugaringFullLegs": {
+					"name": "Sugaring — Celé Nohy",
+					"desc": "Hodvábne nohy od členka po bedrá. Vydrží 3–4 týždne."
+				},
+				"waxFullLegs": {
+					"name": "Vosk — Celé Nohy",
+					"desc": "Klasický teplý vosk pre dlhotrvajúcu hladkosť."
+				},
+				"bioFullBody": {
+					"name": "Bio Depilácia — Celé Telo",
+					"desc": "Prémiová formula Biolaif. Maximálna starostlivosť o pokožku."
+				},
+				"laserFullLegs": {
+					"name": "Laser — Celé Nohy",
+					"desc": "Dlhodobá redukcia chlpov. Profesionálny diódový laser."
+				},
+				"sugaringClassicBikini": {
+					"name": "Sugaring — Klasické Bikiní",
+					"desc": "Linka bikiní — jemne a presne. Minimálne podráždenie."
+				},
+				"sugaringDeepBikini": {
+					"name": "Sugaring — Hĺbkové Bikiní",
+					"desc": "Kompletná intímna zóna. Maximálny komfort, absolútne súkromie."
+				},
+				"waxClassicBikini": {
+					"name": "Vosk — Klasické Bikiní",
+					"desc": "Rýchle ošetrenie línie bikiní teplým voskom."
+				},
+				"waxDeepBikini": {
+					"name": "Vosk — Hĺbkové Bikiní",
+					"desc": "Kompletná intímna depilácia. Diskrétne, profesionálne, bezbolestné."
+				}
+			}
+		},
+		"process": {
+			"title": "Ako Prebieha Vaša Návšteva",
+			"subtitle": "Od prvého kroku po trvalú hladkosť — jednoducho, pohodlne a profesionálne.",
+			"consultation": {
+				"title": "Konzultácia",
+				"desc": "Prediskutujeme vaše ciele, typ pokožky a spoločne vyberieme ideálnu techniku."
+			},
+			"preparation": {
+				"title": "Príprava",
+				"desc": "Pokožku jemne očistíme a pripravíme. Sterilné jednorazové nástroje otvárame pred vami."
+			},
+			"procedure": {
+				"title": "Procedúra",
+				"desc": "Technika sa vykonáva s presnosťou a starostlivosťou. Pracujem vaším tempom komfortu."
+			},
+			"aftercare": {
+				"title": "Následná Starostlivosť",
+				"desc": "Dostanete osobné odporúčania pre najlepší a najdlhšie trvajúci výsledok."
+			},
+			"expectation": "Väčšina klientov opisuje pocit ako krátke, znesiteľné teplo. Prvé sedenia môžu byť citlivejšie — každá ďalšia návšteva je ľahšia. Výsledky zvyčajne trvajú 3–5 týždňov."
+		},
+		"team": {
+			"title": "Vaša Špecialistka",
+			"subtitle": "Každý zákrok vykonáva osobne certifikovaná profesionálka.",
+			"natalie": {
+				"name": "Natálie Volik",
+				"role": "Zakladateľka a Hlavná Špecialistka na Depiláciu",
+				"specialty": "Sugaring · Vosk · Bio · Laser · Elektroepilácia",
+				"bio": "14 rokov skúseností. Medicínske vzdelanie. Šampiónka Ukrajiny v depilácii. Certifikovaná technologička Terra, Enova, Biolaif."
+			},
+			"workspace": {
+				"title": "Naše Štúdio",
+				"desc": "Pokojný, súkromný priestor navrhnutý pre váš komfort. Každý detail je starostlivo premyslený."
+			}
+		},
+		"hygiene": {
+			"title": "Bezpečnosť a Hygiena",
+			"subtitle": "Vaše zdravie je neodiskutovateľné. Každý detail je kontrolovaný.",
+			"singleUse": {
+				"title": "Jednorazové Nástroje",
+				"desc": "Všetky aplikátory a kontaktné materiály otvárame pred vami zo zapečatených obalov."
+			},
+			"sanitization": {
+				"title": "Sanitácia Medicínskej Kvality",
+				"desc": "Povrchy a zariadenia dezinfikujeme nemocničnými antiseptikami medzi každým klientom."
+			},
+			"sterilization": {
+				"title": "Autokláv Sterilizácia",
+				"desc": "Všetky opakovane použiteľné nástroje prechádzajú sterilizáciou autoklávu pri 134°C."
+			},
+			"certified": {
+				"title": "Certifikované Materiály",
+				"desc": "Pracujeme výhradne s certifikovanými profesionálnymi značkami: Terra, Enova, Biolaif."
+			}
+		},
+		"testimonials": {
+			"title": "Čo Hovoria Klientky",
+			"subtitle": "Skutočné skúsenosti od skutočných ľudí.",
+			"review1": {
+				"text": "Bála som sa bikiní depilácie. Natálie ma úplne upokojila — nulová trapnosť, minimálna bolesť, perfektný výsledok.",
+				"author": "Mária K.",
+				"service": "Sugaring"
+			},
+			"review2": {
+				"text": "Najhygienickejší salón, aký som navštívila. Všetko otvorené predo mnou, všetko vysvetlené.",
+				"author": "Elena S.",
+				"service": "Všeobecné"
+			},
+			"review3": {
+				"text": "Prešla som z iného salónu po jednej návšteve tu. Rozdiel v kvalite a jemnosti je obrovský.",
+				"author": "Katarína P.",
+				"service": "Vosk"
+			},
+			"review4": {
+				"text": "Ako muž som váhal. Ale profesionalizmus a diskrétnosť sú tu absolútne.",
+				"author": "Andrej M.",
+				"service": "Sugaring"
+			},
+			"review5": {
+				"text": "Výsledky elektroepilácie sú neuveriteľné. Malé sedenia, veľký rozdiel.",
+				"author": "Oksana D.",
+				"service": "Elektroepilácia"
+			},
+			"review6": {
+				"text": "Rezervovala som online a okamžite som dostala potvrdenie. Celý proces je profesionálny.",
+				"author": "Lucia T.",
+				"service": "Všeobecné"
+			}
+		},
+		"faq": {
+			"title": "Často Kladené Otázky",
+			"subtitle": "Všetko, čo potrebujete vedieť pred prvou návštevou.",
+			"painful": {
+				"q": "Je depilácia bolestivá?",
+				"a": "Väčšina klientov to opisuje ako krátke, znesiteľné teplo. Používam techniky minimalizujúce diskomfort a pocit sa s každým sedením znižuje."
+			},
+			"prepare": {
+				"q": "Ako sa mám pripraviť?",
+				"a": "Chlpy by mali mať 3–5 mm. Vyhnite sa opaľovaniu a peelingom 24 hodín pred zákrokom. Žiadne krémy v deň procedúry."
+			},
+			"results": {
+				"q": "Ako dlho trvajú výsledky?",
+				"a": "Výsledky trvajú 3–5 týždňov podľa techniky a zóny. Pri pravidelných sedeniach chlpy rastú tenšie a pomalšie."
+			},
+			"technique": {
+				"q": "Ktorá technika je pre mňa najlepšia?",
+				"a": "Závisí od typu pokožky, štruktúry chlpov a citlivosti. Na prvej návšteve posúdim vaše potreby a odporučím najefektívnejšiu metódu."
+			},
+			"men": {
+				"q": "Pracujete aj s mužmi?",
+				"a": "Určite. Pracujem so ženami aj mužmi s plnou taktnosťou, diskrétnosťou a profesionalitou."
+			},
+			"aftercare": {
+				"q": "Akú následnú starostlivosť odporúčate?",
+				"a": "Vyhnite sa horúcim kúpeľom, saune, priamemu slnku a tesným odevom 24–48 hodín. Po každom sedení dostanete odporúčania."
+			},
+			"booking": {
+				"q": "Ako si rezervujem a môžem zrušiť?",
+				"a": "Rezervujte online cez túto stránku. Dostanete okamžité potvrdenie e-mailom. Zmenu termínu nahláste minimálne 24 hodín vopred."
+			},
+			"sensitive": {
+				"q": "Je to bezpečné pre citlivú pokožku?",
+				"a": "Áno. Moje medicínske vzdelanie mi umožňuje bezpečne pracovať so všetkými typmi pokožky. Všetky materiály sú dermatologicky testované."
+			}
+		},
+		"contact": {
+			"title": "Kontaktujte Nás",
+			"subtitle": "Máte otázky? Uprednostňujete telefonát? Som tu pre vás.",
+			"mapTitle": "Poloha V Studio",
+			"hours": "Po–Pi: 9:00–19:00 · So: 10:00–16:00",
+			"formTitle": "Poslať Správu",
+			"nameLabel": "Vaše meno",
+			"namePlaceholder": "Jana Nováková",
+			"emailLabel": "E-mail",
+			"emailPlaceholder": "jana@example.com",
+			"phoneLabel": "Telefón (nepovinné)",
+			"phonePlaceholder": "+421 ...",
+			"messageLabel": "Vaša správa",
+			"messagePlaceholder": "Povedzte mi o vašich potrebách alebo sa na čokoľvek opýtajte...",
+			"submit": "Odoslať Správu",
+			"success": "Ďakujem! Ozvem sa do 24 hodín."
+		},
+		"footer": {
+			"tagline": "Prémiové depilačné štúdio v Bratislave. 14 rokov skúseností, medicínska precíznosť, absolútna starostlivosť.",
+			"navTitle": "Navigácia",
+			"socialTitle": "Sledujte Nás",
+			"rights": "Všetky práva vyhradené.",
+			"privacy": "Ochrana Súkromia",
+			"cookies": "Zásady Cookies"
+		},
+		"myServices": {
+			"title": "Moje služby",
+			"subtitle": "Profesionálne techniky depilácie. Metódu vyberám individuálne podľa typu pokožky a citlivosti.",
+			"from": "od",
+			"sugaring": "Sugaring",
+			"sugaringDesc": "Prírodná cukrová pasta odstraňuje chlpy jemne v smere rastu. Ideálne pre citlivú pokožku. Terra, Enova.",
+			"wax": "Vosková depilácia",
+			"waxDesc": "Klasický teplý alebo horúci vosk pre trvalejší efekt. Vhodné pre všetky typy pokožky.",
+			"bio": "Bio depilácia",
+			"bioDesc": "Prémiové prírodné formule Biolaif. Maximálna starostlivosť o vašu pokožku.",
+			"laser": "Laserová epilácia",
+			"laserDesc": "Dlhodobá redukcia chlpov laserom. Tvár, telo, bikiní, nohy.",
+			"electro": "Elektroepilácia",
+			"electroDesc": "Trvalé odstránenie chlpov na tvári. Presná práca s jemnými a zarastajúcimi chlpmi.",
+			"zoneFace": "Tvár",
+			"zoneBody": "Ruky a telo",
+			"zoneBikini": "Bikiní",
+			"zoneLegs": "Nohy"
+		}
+	},
+	"price": {
+		"title": "Cenník",
+		"subtitle": "Nájdite si službu podľa sekcie a zóny tela. Všetky ceny a trvania sú uvedené.",
+		"sex": "Rezervácia pre",
+		"woman": "Žena",
+		"man": "Muž",
+		"min": "min",
+		"bookThis": "Rezervovať",
+		"noPricesYet": "Cenník sa pripravuje. Kontaktujte nás alebo rezervujte všeobecný termín."
+	},
+	"admin": {
+		"signIn": "Prihlásiť sa",
+		"admin": "Admin",
+		"chooseBookingSystem": "Vyberte systém rezervácií",
+		"backToCabinet": "Späť do kabinetu",
+		"signOut": "Odhlásiť sa",
+		"signOutAria": "Odhlásiť sa",
+		"backToAurora": "← Späť na Aurora",
+		"calendar": "Kalendár",
+		"agenda": "Agenda",
+		"agendaSubtitle": "Kompletný rozvrh nadchádzajúcich rezervácií.",
+		"analytics": "Analytika",
+		"analyticsSubtitle": "Všetci zákazníci a rezervácie. Vyhľadajte podľa mena alebo telefónu.",
+		"searchByNameOrPhone": "Hľadať podľa mena alebo telefónu…",
+		"exportPdf": "Exportovať PDF",
+		"noSearchResults": "Žiadne výsledky.",
+		"noCustomersYet": "Zatiaľ žiadni zákazníci.",
+		"emailHeader": "E-mail",
+		"phoneHeader": "Telefón",
+		"noUpcomingAppointments": "Žiadne nadchádzajúce rezervácie.",
+		"settings": "Nastavenia",
+		"servicesCalendarAppointments": "Služby, kalendár, rezervácie",
+		"manageWorkingHours": "Spravujte pracovné hodiny a služby",
+		"openMenuAria": "Otvoriť admin menu",
+		"closeMenuAria": "Zavrieť admin menu",
+		"publicBooking": "Verejná rezervácia",
+		"appointments": "Rezervácie",
+		"appointmentsSubtitle": "Presuňte na zmenu. Použite zobrazenie Týždeň na presun na iný deň alebo čas. Minulé časy sú vypnuté. Tlačidlom Pridať rezerváciu vytvoríte.",
+		"prepBufferInfoTitle": "Po každej rezervácii sa vyhradí {minutes} minút na prípravu. Tento čas nie je možné rezervovať. Nastavte v Nastaveniach.",
+		"prepBufferNote": "Medzi rezerváciami sa automaticky udržiava {minutes} minút prípravy, aby sa klienti neprekrývali.",
+		"servicesLabel": "Služby:",
+		"noServicesYet": "Zatiaľ žiadne služby.",
+		"settingsSubtitle": "Spravujte pracovné hodiny a služby pre {place}.",
+		"manageServicesNote": "Spravujte služby, ktoré môžu zákazníci rezervovať. Každá služba má názov, farbu a trvanie.",
+		"manageWorkingHoursNote": "Nastavte, kedy môžu zákazníci rezervovať. Uzatvorené dni sa nezobrazia vo verejnom kalendári.",
+		"addAppointment": "Pridať rezerváciu",
+		"workingHours": "Pracovné hodiny",
+		"titleLabel": "Názov",
+		"titleSk": "Názov (SK)",
+		"titleEn": "Názov (EN)",
+		"titleRu": "Názov (RU)",
+		"titleUk": "Názov (UK)",
+		"descriptionSk": "Popis (SK)",
+		"descriptionEn": "Popis (EN)",
+		"descriptionRu": "Popis (RU)",
+		"descriptionUk": "Popis (UK)",
+		"colorLabel": "Farba",
+		"durationLabel": "Trvanie (minúty)",
+		"titlePlaceholder": "napr. Švédska masáž",
+		"titleRequired": "Názov je povinný",
+		"durationInvalid": "Trvanie musí byť 15–240 minút",
+		"saveServiceFailed": "Nepodarilo sa uložiť službu",
+		"cancel": "Zrušiť",
+		"update": "Upraviť",
+		"add": "Pridať",
+		"saving": "Ukladám…",
+		"serviceAdded": "Služba pridaná.",
+		"serviceUpdated": "Služba aktualizovaná.",
+		"serviceDeleted": "Služba odstránená.",
+		"deleteServiceFailed": "Nepodarilo sa odstrániť službu.",
+		"edit": "Upraviť",
+		"delete": "Odstrániť",
+		"clear": "Vymazať",
+		"addService": "Pridať službu",
+		"editService": "Upraviť službu",
+		"deleteServiceConfirm": "Odstrániť službu?",
+		"deleteServiceNote": "Odstrániť {name}? Existujúce rezervácie si ponechajú názov služby, ale nebude sa zobrazovať v nových rezerváciách.",
+		"addButton": "Pridať",
+		"editAppointment": "Upraviť rezerváciu",
+		"pastAppointmentNote": "Táto rezervácia je v minulosti. Len zobrazenie – zmeny nie sú povolené.",
+		"nameOptional": "Meno (voliteľné)",
+		"emailOptional": "E-mail (voliteľné)",
+		"phoneOptional": "Telefón (voliteľné)",
+		"chooseTime": "Vyberte čas",
+		"chooseService": "Vyberte službu",
+		"selectServicePlaceholder": "— Vyberte službu",
+		"close": "Zavrieť",
+		"save": "Uložiť",
+		"cannotCreatePast": "Nie je možné vytvoriť rezerváciu v minulosti.",
+		"appointmentUpdated": "Rezervácia aktualizovaná.",
+		"customer": "Zákazník",
+		"appointmentAdded": "Rezervácia pridaná.",
+		"appointmentAddedNotified": "Rezervácia pridaná. Zákazník bol informovaný e-mailom.",
+		"appointmentAddedNoEmail": "Rezervácia pridaná. E-mail sa nepodarilo odoslať.",
+		"appointmentAddedEmailFailed": "Rezervácia pridaná, ale e-mail zlyhal: {error}",
+		"couldNotSend": "Nepodarilo sa odoslať",
+		"slotBooked": "Tento termín je už obsadený.",
+		"saveFailed": "Nepodarilo sa uložiť. Skúste to znova.",
+		"copyDetails": "Detail rezervácie skopírovaný",
+		"copyFailed": "Kopírovanie zlyhalo",
+		"copyAria": "Skopírovať detail rezervácie",
+		"editAria": "Upraviť rezerváciu",
+		"cancelAria": "Zrušiť rezerváciu",
+		"cannotMovePast": "Nie je možné presunúť rezerváciu do minulosti.",
+		"movedNotified": "Rezervácia presunutá. Zákazník bol informovaný e-mailom.",
+		"notFound": "Rezervácia už neexistuje.",
+		"moveFailed": "Nepodarilo sa presunúť rezerváciu. {msg}",
+		"cancelledNotified": "Rezervácia zrušená. Zákazník bol informovaný e-mailom.",
+		"cancelFailed": "Nepodarilo sa zrušiť rezerváciu.",
+		"sun": "Ne",
+		"mon": "Po",
+		"tue": "Ut",
+		"wed": "St",
+		"thu": "Št",
+		"fri": "Pi",
+		"sat": "So",
+		"sunday": "Nedeľa",
+		"monday": "Pondelok",
+		"tuesday": "Utorok",
+		"wednesday": "Streda",
+		"thursday": "Štvrtok",
+		"friday": "Piatok",
+		"saturday": "Sobota",
+		"open": "Otvorené",
+		"closed": "Zatvorené",
+		"dayToggleTitle": "{day} – {status} (kliknite na prepnutie)",
+		"loadScheduleFailed": "Nepodarilo sa načítať rozvrh",
+		"copiedToMonth": "Predvolený rozvrh skopírovaný do {month}.",
+		"availabilitySaved": "Dostupnosť uložená.",
+		"saveFailed": "Nepodarilo sa uložiť.",
+		"prepTimeUpdated": "Čas prípravy aktualizovaný.",
+		"prepBufferTitle": "Minúty vyhradené po každej rezervácii na prípravu. Tento čas nie je možné rezervovať.",
+		"prepBufferAria": "Info o čase prípravy",
+		"saveAvailability": "Uložiť dostupnosť",
+		"defaultScope": "Predvolené (týždenne, vždy)",
+		"specificMonth": "Konkrétny mesiac…",
+		"prevMonth": "Predchádzajúci mesiac",
+		"nextMonth": "Nasledujúci mesiac",
+		"selectDate": "Vyberte dátum",
+		"month1": "Január",
+		"month2": "Február",
+		"month3": "Marec",
+		"month4": "Apríl",
+		"month5": "Máj",
+		"month6": "Jún",
+		"month7": "Júl",
+		"month8": "August",
+		"month9": "September",
+		"month10": "Október",
+		"month11": "November",
+		"month12": "December",
+		"from": "Od",
+		"to": "Do",
+		"copyFromDefault": "Skopírovať z predvoleného",
+		"manageScheduleFor": "Spravovať rozvrh pre",
+		"toggleDaysFor": "Prepínať dni pre",
+		"closedShort": "Zatvorené",
+		"viewDay": "Deň",
+		"viewWeek": "Týždeň",
+		"previousDay": "← Predchádzajúci deň",
+		"today": "Dnes",
+		"nextDay": "Ďalší deň →",
+		"previousWeek": "← Predchádzajúci týždeň",
+		"nextWeek": "Ďalší týždeň →",
+		"loadingSchedule": "Načítavam rozvrh…",
+		"couldNotLoadSchedule": "Nepodarilo sa načítať rozvrh.",
+		"loadScheduleFailed": "Nepodarilo sa načítať rozvrh",
+		"prepTimeBetween": "Čas prípravy medzi rezerváciami:",
+		"dayToggleInfo": "Kliknite na ľubovoľný deň pre zapnutie alebo vypnutie. Zlatá = otvorené, sivá = zatvorené.",
+		"dayToggleLegendOpen": "Otvorené",
+		"dayToggleLegendClosed": "Zatvorené",
+		"dayToggleTip": "Zmeny platia len pre tento mesiac. Nezabudnite uložiť.",
+		"closeDayWithAppointmentsConfirm": "Tento deň má {count, plural, one {# rezerváciu} few {# rezervácie} other {# rezervácií}}. Uzatvorením sa skryje z verejnej rezervácie, ale existujúce rezervácie zostanú. Pokračovať?",
+		"priceCatalog": "Cenník",
+		"priceCatalogSubtitle": "Správa služieb, sekcií, zón a cien pre stránku Cenník. Názvy v 4 jazykoch (SK, EN, RU, UK).",
+		"priceCatalogSaved": "Cenník uložený.",
+		"loadExample": "Načítať príklad",
+		"structure": "Štruktúra",
+		"editPanel": "Upraviť",
+		"selectNodeToEdit": "Vyberte uzol vľavo pre úpravu."
+	},
+	"adminSignin": {
+		"signIn": "Prihlásiť sa",
+		"email": "E-mail",
+		"password": "Heslo",
+		"orDivider": "alebo",
+		"backToAurora": "← Späť na Aurora",
+		"title": "Prihlásenie do administrácie",
+		"subtitle": "Prihláste sa e-mailom a heslom pre prístup do administrácie.",
+		"accessDenied": "Prístup odmietnutý. Prihlásiť sa môžu len oprávnení administrátori.",
+		"invalidCredentials": "Neplatný e-mail alebo heslo.",
+		"signInFailed": "Prihlásenie zlyhalo. Skúste to znova.",
+		"signingIn": "Prihlásujem…",
+		"continueWithGoogle": "Pokračovať cez Google"
+	},
+	"metadata": {
+		"title": "Aurora | Luxusný salón masáží a depilácie",
+		"description": "Tmavý, kinematografický a útulný. Zažite ultra-luxusnú masáž a depiláciu v intímnej oáze."
+	},
+	"email": {
+		"confirmed": "Potvrdené",
+		"hi": "Ahoj",
+		"luxurySalon": "Luxusný salón"
+	}
 }

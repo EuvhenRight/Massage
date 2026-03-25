@@ -1,13 +1,13 @@
 'use client'
 
+import { getPlaceAccentUi } from '@/lib/place-accent-ui'
+import type { Place } from '@/lib/places'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
-import { getPlaceAccentUi } from '@/lib/place-accent-ui'
-import type { Place } from '@/lib/places'
 import LanguageSwitcher from './LanguageSwitcher'
 
 type NavLink = { path: string; key: string }
@@ -81,7 +81,9 @@ export default function Navbar() {
 		} else {
 			document.body.style.overflow = ''
 		}
-		return () => { document.body.style.overflow = '' }
+		return () => {
+			document.body.style.overflow = ''
+		}
 	}, [open])
 
 	return (
@@ -100,7 +102,7 @@ export default function Navbar() {
 				>
 					<Link
 						href={`/${locale}`}
-						className='shrink-0 hover:opacity-90 transition-opacity duration-300 relative z-[60]'
+						className='shrink-0 hover:opacity-90 transition-opacity duration-300 relative z-[60] mt-2'
 						aria-label={t('auroraHome')}
 					>
 						<Image
@@ -127,25 +129,24 @@ export default function Navbar() {
 						>
 							<div className='w-5 h-4 flex flex-col justify-between'>
 								<motion.span
-									animate={open
-										? { rotate: 45, y: 6, width: '100%' }
-										: { rotate: 0, y: 0, width: '100%' }
+									animate={
+										open
+											? { rotate: 45, y: 6, width: '100%' }
+											: { rotate: 0, y: 0, width: '100%' }
 									}
 									transition={{ duration: 0.3, ease: 'easeInOut' }}
 									className='block h-[1.5px] bg-icyWhite rounded-full origin-left'
 								/>
 								<motion.span
-									animate={open
-										? { opacity: 0, x: 10 }
-										: { opacity: 1, x: 0 }
-									}
+									animate={open ? { opacity: 0, x: 10 } : { opacity: 1, x: 0 }}
 									transition={{ duration: 0.2 }}
 									className='block h-[1.5px] w-3/4 bg-icyWhite/70 rounded-full'
 								/>
 								<motion.span
-									animate={open
-										? { rotate: -45, y: -6, width: '100%' }
-										: { rotate: 0, y: 0, width: '100%' }
+									animate={
+										open
+											? { rotate: -45, y: -6, width: '100%' }
+											: { rotate: 0, y: 0, width: '100%' }
 									}
 									transition={{ duration: 0.3, ease: 'easeInOut' }}
 									className='block h-[1.5px] bg-icyWhite rounded-full origin-left'
@@ -186,18 +187,25 @@ export default function Navbar() {
 											onClick={() => setOpen(false)}
 											className='group flex items-center gap-4 py-4 border-b border-white/5'
 										>
-											<span className={`${ui.menuNumber} text-sm font-mono tabular-nums`}>
+											<span
+												className={`${ui.menuNumber} text-sm font-mono tabular-nums`}
+											>
 												{String(i + 1).padStart(2, '0')}
 											</span>
-											<span className={ui.menuTitle}>
-												{link.label}
-											</span>
-											<motion.span
-												className={ui.menuArrow}
-												aria-hidden
-											>
-												<svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-													<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} d='M9 5l7 7-7 7' />
+											<span className={ui.menuTitle}>{link.label}</span>
+											<motion.span className={ui.menuArrow} aria-hidden>
+												<svg
+													className='w-6 h-6'
+													fill='none'
+													stroke='currentColor'
+													viewBox='0 0 24 24'
+												>
+													<path
+														strokeLinecap='round'
+														strokeLinejoin='round'
+														strokeWidth={1.5}
+														d='M9 5l7 7-7 7'
+													/>
 												</svg>
 											</motion.span>
 										</Link>
@@ -213,8 +221,18 @@ export default function Navbar() {
 									className={ui.navMenuCta}
 								>
 									{t('book')}
-									<svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-										<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+									<svg
+										className='w-4 h-4'
+										fill='none'
+										stroke='currentColor'
+										viewBox='0 0 24 24'
+									>
+										<path
+											strokeLinecap='round'
+											strokeLinejoin='round'
+											strokeWidth={2}
+											d='M9 5l7 7-7 7'
+										/>
 									</svg>
 								</Link>
 							</motion.div>
