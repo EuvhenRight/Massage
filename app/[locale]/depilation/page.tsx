@@ -308,7 +308,7 @@ export default function DepilationPage() {
 						transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
 						className='text-center'
 					>
-						<div className='flex justify-center mb-28 sm:mb-0'>
+						<div className='flex justify-center mb-14 sm:mb-0'>
 							<Image
 								src='/images/Gemini_yellow2.png'
 								alt='V2studio'
