@@ -1,24 +1,51 @@
 import {
   getTitleForLocale,
+  getScheduleTbdMessageForLocale,
+  getScheduleTbdAdminNoteForLocale,
   type PriceCatalogStructure,
   type PriceService,
   type PriceSection,
   type PriceZone,
   type ZonePriceItem,
   type PriceLocale,
+  normalizeItemBookingDayCount,
 } from "@/types/price-catalog";
 
-/** Flatten price catalog into a list of { title, durationMinutes } for booking. */
+export type FlatPriceCatalogService = {
+  title: string;
+  durationMinutes: number;
+  bookingGranularity: "time" | "day" | "tbd";
+  bookingDayCount: number;
+  scheduleTbdMessage?: string;
+  scheduleTbdAdminNote?: string;
+};
+
+/** Flatten price catalog into a list for booking (time slot vs full working day). */
 export function flattenPriceCatalogToServices(
   catalog: PriceCatalogStructure,
   locale: PriceLocale
-): { title: string; durationMinutes: number }[] {
-  const result: { title: string; durationMinutes: number }[] = [];
+): FlatPriceCatalogService[] {
+  const result: FlatPriceCatalogService[] = [];
 
   function addItem(item: ZonePriceItem, path: string) {
     const itemTitle = getTitleForLocale(item, locale);
     const fullTitle = path ? `${path} › ${itemTitle}` : itemTitle;
-    result.push({ title: fullTitle, durationMinutes: item.durationMinutes });
+    const isDay = item.bookingGranularity === "day";
+    const isTbd = item.bookingGranularity === "tbd";
+    result.push({
+      title: fullTitle,
+      durationMinutes: item.durationMinutes,
+      bookingGranularity: isDay ? "day" : isTbd ? "tbd" : "time",
+      bookingDayCount: isDay
+        ? normalizeItemBookingDayCount(item.bookingDayCount)
+        : 1,
+      scheduleTbdMessage: isTbd
+        ? getScheduleTbdMessageForLocale(item, locale)
+        : undefined,
+      scheduleTbdAdminNote: isTbd
+        ? getScheduleTbdAdminNoteForLocale(item, locale)
+        : undefined,
+    });
   }
 
   function processService(svc: PriceService) {
@@ -62,7 +89,7 @@ export function isPriceCatalogEmpty(
 
 /** Map marketing short titles (e.g. "Swedish — Classic") to full catalog path titles. */
 export function matchPresetToCatalogTitle(
-  flat: { title: string; durationMinutes: number }[],
+  flat: FlatPriceCatalogService[],
   preset: string | null | undefined
 ): string | undefined {
   if (!preset?.trim()) return undefined;

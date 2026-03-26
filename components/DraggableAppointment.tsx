@@ -25,6 +25,8 @@ interface DraggableAppointmentProps {
   onCancel?: () => void;
   services?: ServiceData[];
   isPast?: boolean;
+  /** List row under the calendar (e.g. unscheduled / TBD). */
+  layout?: "calendar" | "list";
 }
 
 export default function DraggableAppointment({
@@ -34,6 +36,7 @@ export default function DraggableAppointment({
   onCancel,
   services = [],
   isPast = false,
+  layout = "calendar",
 }: DraggableAppointmentProps) {
   const locale = useLocale();
   const t = useTranslations("admin");
@@ -71,6 +74,9 @@ export default function DraggableAppointment({
   const slotHeight = 30; // 30px per 30-min slot (2 per hour row)
   const blockHeight = slotCount * slotHeight - 2; // -2 for border
 
+  const isList = layout === "list";
+  const isTbd = appointment.scheduleTbd === true;
+
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     const dateStr = startDate.toLocaleDateString(locale, {
@@ -79,13 +85,18 @@ export default function DraggableAppointment({
       day: "numeric",
       year: "numeric",
     });
-    const timeStr = `${formatTime(startDate)} – ${formatTime(endDate)}`;
+    const timeStr = isTbd
+      ? t("listTbdNoTimeYet")
+      : `${formatTime(startDate)} – ${formatTime(endDate)}`;
     const text = [
       appointment.service,
       appointment.fullName || "—",
       appointment.email || "—",
       appointment.phone || "—",
-      `${dateStr} at ${timeStr}`,
+      isTbd ? timeStr : `${dateStr} at ${timeStr}`,
+      ...(appointment.scheduleTbdAdminHint?.trim()
+        ? [t("listTbdAdminHintPrefix") + " " + appointment.scheduleTbdAdminHint.trim()]
+        : []),
     ].join("\n");
     navigator.clipboard.writeText(text).then(
       () => toast.success(t("copyDetails")),
@@ -93,10 +104,15 @@ export default function DraggableAppointment({
     );
   };
 
-  const style: React.CSSProperties = {
-    minHeight: blockHeight,
-    ...(transform ? { transform: CSS.Translate.toString(transform) } : {}),
-  };
+  const style: React.CSSProperties = isList
+    ? {
+        minHeight: 52,
+        ...(transform ? { transform: CSS.Translate.toString(transform) } : {}),
+      }
+    : {
+        minHeight: blockHeight,
+        ...(transform ? { transform: CSS.Translate.toString(transform) } : {}),
+      };
 
   return (
     <div
@@ -106,19 +122,37 @@ export default function DraggableAppointment({
       style={style}
       {...(!disabled ? { ...listeners, ...attributes } : {})}
       className={`
-        absolute left-1 right-1 rounded-lg border px-2 py-1 text-xs font-medium
-        truncate overflow-hidden group select-none
+        ${isList ? "relative w-full" : "absolute left-1 right-1"}
+        rounded-lg border px-2 py-1.5 text-xs font-medium
+        ${isList ? "" : "truncate overflow-hidden"}
+        group select-none
         ${isPast ? PAST_COLOR : getServiceColor(appointment.service, services)}
         ${isDragging ? "opacity-0 pointer-events-none" : ""}
         ${disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing touch-none"}
       `}
     >
-      <div className="pr-16 flex flex-col justify-center h-full min-h-[22px]">
-        <div className="font-semibold truncate">{appointment.service}</div>
-        <div className="text-[10px] opacity-90 truncate">{appointment.fullName}</div>
+      <div className={`${isList ? "pr-14" : "pr-16"} flex flex-col justify-center h-full min-h-[22px]`}>
+        <div className={`font-semibold ${isList ? "line-clamp-2" : "truncate"}`}>{appointment.service}</div>
+        <div className={`text-[10px] opacity-90 ${isList ? "line-clamp-1" : "truncate"}`}>{appointment.fullName}</div>
         <div className="text-[10px] opacity-75">
-          {formatTime(startDate)} – {formatTime(endDate)}
+          {isTbd ? (
+            <>
+              <span>{t("listTbdNoTimeYet")}</span>
+              {durationMinutes > 0 && (
+                <span className="text-icyWhite/55"> · {durationMinutes} min</span>
+              )}
+            </>
+          ) : (
+            <>
+              {formatTime(startDate)} – {formatTime(endDate)}
+            </>
+          )}
         </div>
+        {isTbd && appointment.scheduleTbdAdminHint?.trim() && (
+          <div className="text-[10px] opacity-70 mt-0.5 line-clamp-2 whitespace-pre-wrap">
+            {appointment.scheduleTbdAdminHint.trim()}
+          </div>
+        )}
       </div>
       <div
         className="absolute top-1 right-1 flex gap-0.5 z-10"

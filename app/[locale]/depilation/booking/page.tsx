@@ -5,7 +5,10 @@ import BookingFlow from '@/components/booking-flow'
 import BookingPageSkeleton from '@/components/booking-flow/BookingPageSkeleton'
 import { flattenPriceCatalogToServices } from '@/lib/price-catalog-utils'
 import type { ServiceData } from '@/lib/services'
-import type { PriceCatalogStructure } from '@/types/price-catalog'
+import {
+	normalizeItemBookingDayCount,
+	type PriceCatalogStructure,
+} from '@/types/price-catalog'
 import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -68,6 +71,10 @@ export default function DepilationBookingPage() {
 				id: undefined,
 				title: s.title,
 				durationMinutes: s.durationMinutes,
+				bookingGranularity: s.bookingGranularity,
+				bookingDayCount: s.bookingDayCount,
+				scheduleTbdMessage: s.scheduleTbdMessage,
+				scheduleTbdAdminNote: s.scheduleTbdAdminNote,
 				titleSk: s.title,
 				titleEn: s.title,
 				titleRu: s.title,
@@ -79,6 +86,18 @@ export default function DepilationBookingPage() {
 			id: s.id,
 			title: s.title,
 			durationMinutes: s.durationMinutes,
+			bookingGranularity:
+				s.bookingGranularity === 'day'
+					? ('day' as const)
+					: s.bookingGranularity === 'tbd'
+						? ('tbd' as const)
+						: ('time' as const),
+			bookingDayCount:
+				s.bookingGranularity === 'day'
+					? normalizeItemBookingDayCount(s.bookingDayCount)
+					: 1,
+			scheduleTbdMessage: s.scheduleTbdMessage,
+			scheduleTbdAdminNote: s.scheduleTbdAdminNote,
 			titleSk: s.titleSk,
 			titleEn: s.titleEn,
 			titleRu: s.titleRu,
@@ -96,6 +115,8 @@ export default function DepilationBookingPage() {
 						id: undefined,
 						title: presetService,
 						durationMinutes: duration,
+						bookingGranularity: 'time' as const,
+						bookingDayCount: 1,
 						titleSk: presetService,
 						titleEn: presetService,
 						titleRu: presetService,
@@ -116,7 +137,14 @@ export default function DepilationBookingPage() {
 	const list =
 		serviceOptions.length > 0
 			? serviceOptions
-			: [{ title: t('appointmentFallback'), durationMinutes: 60 }]
+			: [
+					{
+						title: t('appointmentFallback'),
+						durationMinutes: 60,
+						bookingGranularity: 'time' as const,
+						bookingDayCount: 1,
+					},
+				]
 
 	return (
 		<BookingPageLayout maxWidth='7xl'>

@@ -94,10 +94,10 @@ export default function AdminPage() {
 
 						<Link
 							href={`/${locale}/admin/depilation/calendar`}
-							className='flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-purple-soft/30 transition-all group'
+							className='flex items-center gap-4 p-5 rounded-3xl glass-card hover:bg-white/[0.05] hover:border-gold-soft/25 transition-all group'
 						>
-							<div className='flex h-12 w-12 items-center justify-center rounded-xl bg-purple-soft/20 border border-purple-soft/40 group-hover:bg-purple-soft/30'>
-								<Sparkles className='h-6 w-6 text-purple-glow' />
+							<div className='flex h-12 w-12 items-center justify-center rounded-xl bg-gold-soft/15 border border-gold-soft/40 group-hover:bg-gold-soft/25'>
+								<Sparkles className='h-6 w-6 text-gold-glow' />
 							</div>
 							<div className='flex-1 text-left'>
 								<h2 className='font-medium text-icyWhite'>

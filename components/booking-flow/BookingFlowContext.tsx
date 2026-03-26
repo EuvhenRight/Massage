@@ -15,8 +15,11 @@ import {
   clearBookingDraft,
   parseDraftToState,
 } from "@/lib/booking-draft-storage";
+import { normalizeItemBookingDayCount } from "@/types/price-catalog";
 
 export type BookingStep = 1 | 2 | 3 | 4;
+
+export type BookingGranularity = "time" | "day" | "tbd";
 
 export interface BookingFlowState {
   step: BookingStep;
@@ -24,6 +27,13 @@ export interface BookingFlowState {
   date: Date | null;
   time: string | null; // HH:mm
   durationMinutes: number;
+  bookingGranularity: BookingGranularity;
+  /** Consecutive full working days when bookingGranularity is "day" */
+  bookingDayCount: number;
+  /** Shown on step 2 when bookingGranularity is "tbd" */
+  scheduleTbdCustomerMessage: string;
+  /** Sent to Firestore for admin when bookingGranularity is "tbd" */
+  scheduleTbdAdminHint: string;
   fullName: string;
   email: string;
   phone: string;
@@ -35,14 +45,31 @@ const initialState: BookingFlowState = {
   date: null,
   time: null,
   durationMinutes: 60,
+  bookingGranularity: "time",
+  bookingDayCount: 1,
+  scheduleTbdCustomerMessage: "",
+  scheduleTbdAdminHint: "",
   fullName: "",
   email: "",
   phone: "",
 };
 
+function granularityFromService(
+  svc:
+    | {
+        bookingGranularity?: BookingGranularity;
+      }
+    | undefined
+): BookingGranularity {
+  if (svc?.bookingGranularity === "day") return "day";
+  if (svc?.bookingGranularity === "tbd") return "tbd";
+  return "time";
+}
+
 interface BookingFlowContextValue extends BookingFlowState {
   setService: (v: string) => void;
-  setDate: (v: Date | null) => void;
+  /** Second arg: when set, stores that time; when omitted, clears time (normal date change). */
+  setDate: (v: Date | null, presetTime?: string | null) => void;
   setTime: (v: string | null) => void;
   setStep: (s: BookingStep) => void;
   setCustomerInfo: (info: { fullName: string; email: string; phone: string }) => void;
@@ -69,6 +96,10 @@ interface BookingFlowProviderProps {
     id?: string;
     title: string;
     durationMinutes?: number;
+    bookingGranularity?: BookingGranularity;
+    bookingDayCount?: number;
+    scheduleTbdMessage?: string;
+    scheduleTbdAdminNote?: string;
     titleSk?: string;
     titleEn?: string;
     titleRu?: string;
@@ -92,6 +123,17 @@ export function BookingFlowProvider({
         ...initialState,
         service: (defaultService || firstService?.title) ?? "",
         durationMinutes: firstService?.durationMinutes ?? defaultDuration,
+        bookingGranularity: granularityFromService(firstService),
+        bookingDayCount: normalizeItemBookingDayCount(
+          firstService?.bookingDayCount
+        ),
+        scheduleTbdCustomerMessage: granularityFromService(firstService) === "tbd"
+          ? (firstService?.scheduleTbdMessage ?? "")
+          : "",
+        scheduleTbdAdminHint:
+          granularityFromService(firstService) === "tbd"
+            ? (firstService?.scheduleTbdAdminNote ?? "")
+            : "",
       };
     }
     const draft = loadBookingDraft(place);
@@ -103,6 +145,10 @@ export function BookingFlowProvider({
         date: parsed.date,
         time: parsed.time,
         durationMinutes: parsed.durationMinutes,
+        bookingGranularity: parsed.bookingGranularity,
+        bookingDayCount: parsed.bookingDayCount,
+        scheduleTbdCustomerMessage: parsed.scheduleTbdCustomerMessage,
+        scheduleTbdAdminHint: parsed.scheduleTbdAdminHint,
         fullName: parsed.fullName,
         email: parsed.email,
         phone: parsed.phone,
@@ -112,6 +158,18 @@ export function BookingFlowProvider({
       ...initialState,
       service: "",
       durationMinutes: firstService?.durationMinutes ?? defaultDuration,
+      bookingGranularity: granularityFromService(firstService),
+      bookingDayCount: normalizeItemBookingDayCount(
+        firstService?.bookingDayCount
+      ),
+      scheduleTbdCustomerMessage:
+        granularityFromService(firstService) === "tbd"
+          ? (firstService?.scheduleTbdMessage ?? "")
+          : "",
+      scheduleTbdAdminHint:
+        granularityFromService(firstService) === "tbd"
+          ? (firstService?.scheduleTbdAdminNote ?? "")
+          : "",
     };
   });
 
@@ -127,6 +185,10 @@ export function BookingFlowProvider({
       date: state.date,
       time: state.time,
       durationMinutes: state.durationMinutes,
+      bookingGranularity: state.bookingGranularity,
+      bookingDayCount: state.bookingDayCount,
+      scheduleTbdCustomerMessage: state.scheduleTbdCustomerMessage,
+      scheduleTbdAdminHint: state.scheduleTbdAdminHint,
       fullName: state.fullName,
       email: state.email,
       phone: state.phone,
@@ -138,6 +200,10 @@ export function BookingFlowProvider({
     state.date,
     state.time,
     state.durationMinutes,
+    state.bookingGranularity,
+    state.bookingDayCount,
+    state.scheduleTbdCustomerMessage,
+    state.scheduleTbdAdminHint,
     state.fullName,
     state.email,
     state.phone,
@@ -151,12 +217,32 @@ export function BookingFlowProvider({
     setState((s) => {
       const svc = services.find((x) => x.title === service);
       const duration = svc?.durationMinutes ?? defaultDuration;
-      return { ...s, service, durationMinutes: duration };
+      const bookingGranularity = granularityFromService(svc);
+      const bookingDayCount = normalizeItemBookingDayCount(
+        svc?.bookingDayCount
+      );
+      return {
+        ...s,
+        service,
+        durationMinutes: duration,
+        bookingGranularity,
+        bookingDayCount: bookingGranularity === "day" ? bookingDayCount : 1,
+        date: bookingGranularity === "tbd" ? null : s.date,
+        time: bookingGranularity === "tbd" ? null : s.time,
+        scheduleTbdCustomerMessage:
+          bookingGranularity === "tbd" ? (svc?.scheduleTbdMessage ?? "") : "",
+        scheduleTbdAdminHint:
+          bookingGranularity === "tbd" ? (svc?.scheduleTbdAdminNote ?? "") : "",
+      };
     });
   }, [services, defaultDuration]);
 
-  const setDate = useCallback((date: Date | null) => {
-    setState((s) => ({ ...s, date, time: null }));
+  const setDate = useCallback((date: Date | null, presetTime?: string | null) => {
+    setState((s) => ({
+      ...s,
+      date,
+      time: presetTime !== undefined ? presetTime : null,
+    }));
   }, []);
 
   const setTime = useCallback((time: string | null) => {
@@ -194,6 +280,19 @@ export function BookingFlowProvider({
       ...initialState,
       service: "",
       durationMinutes: first?.durationMinutes ?? defaultDuration,
+      bookingGranularity: granularityFromService(first),
+      bookingDayCount:
+        first?.bookingGranularity === "day"
+          ? normalizeItemBookingDayCount(first?.bookingDayCount)
+          : 1,
+      scheduleTbdCustomerMessage:
+        granularityFromService(first) === "tbd"
+          ? (first?.scheduleTbdMessage ?? "")
+          : "",
+      scheduleTbdAdminHint:
+        granularityFromService(first) === "tbd"
+          ? (first?.scheduleTbdAdminNote ?? "")
+          : "",
     });
   }, [defaultDuration, services]);
 

@@ -8,6 +8,7 @@ Defined in **`firestore.indexes.json`** (deploy with `firebase deploy --only fir
 |---|-------------|-----------------------------------|-------------|---------|
 | 1 | `services`  | `place` (ASC), `title` (ASC)      | Collection  | Services filtered by place, sorted by title |
 | 2 | `appointments` | `place` (ASC), `startTime` (ASC) | Collection  | Appointments by place and time (range or order) |
+| 3 | `appointments` | `place` (ASC), `scheduleTbd` (ASC) | Collection  | Unscheduled (TBD) bookings by place |
 
 ### JSON source
 
@@ -28,6 +29,14 @@ Defined in **`firestore.indexes.json`** (deploy with `firebase deploy --only fir
       "fields": [
         { "fieldPath": "place", "order": "ASCENDING" },
         { "fieldPath": "startTime", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "place", "order": "ASCENDING" },
+        { "fieldPath": "scheduleTbd", "order": "ASCENDING" }
       ]
     }
   ]
@@ -53,6 +62,8 @@ All of these use the **same composite index**: `place` (ASC) + `startTime` (ASC)
 | **app/api/appointments/route.ts** (with date) | `where("startTime", ">=", ...)`, `where("startTime", "<=", ...)`, optional `where("place", "==", place)`, `orderBy("startTime", "asc")` | appointments: place + startTime ASC (when place is used) |
 | **app/api/appointments/route.ts** (no date) | optional `where("place", "==", place)`, `orderBy("startTime", "asc")` | appointments: place + startTime ASC |
 | **app/api/availability/route.ts** | optional `where("place", "==", place)`, `where("startTime", ">=", ...)`, `where("startTime", "<=", ...)` | appointments: place + startTime ASC (when place is used) |
+| **BookingCalendarGrid.tsx** | `where("place", "==", place)`, `where("scheduleTbd", "==", true)` | appointments: place + scheduleTbd ASC |
+| **AdminPlacePage.tsx** (TBD agenda) | Same | appointments: place + scheduleTbd ASC |
 
 ### Collection: `services`
 
@@ -83,6 +94,7 @@ If an error says “The query requires an index” and includes a link:
 To add the same indexes manually in [Firestore → Indexes](https://console.firebase.google.com/project/_/firestore/indexes):
 
 - **appointments**: Collection `appointments`, fields `place` (Ascending), `startTime` (Ascending), scope Collection.
+- **appointments (TBD)**: Same collection, fields `place` (Ascending), `scheduleTbd` (Ascending), scope Collection.
 - **services**: Collection `services`, fields `place` (Ascending), `title` (Ascending), scope Collection.
 
 ---
@@ -92,6 +104,7 @@ To add the same indexes manually in [Firestore → Indexes](https://console.fire
 | Collection     | Composite index | Used by |
 |----------------|-----------------|--------|
 | `appointments` | `place` ASC, `startTime` ASC | Admin (agenda + analytics), calendar grid, booking steps, API routes |
+| `appointments` | `place` ASC, `scheduleTbd` ASC | Admin TBD list, calendar “awaiting date” panel |
 | `services`    | `place` ASC, `title` ASC     | Admin place page, services inline, lib/services |
 
 One composite index per collection covers all current queries that need composite indexes.

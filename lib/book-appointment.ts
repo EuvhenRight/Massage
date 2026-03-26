@@ -5,12 +5,19 @@ import {
   updateDoc,
   serverTimestamp,
   Timestamp,
+  addDoc,
+  collection,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Place } from "./places";
 import { getDateKey } from "./booking";
-import { getPrepBufferMinutes } from "./availability-firestore";
+import {
+  getPrepBufferMinutes,
+  getWorkingHoursForDate,
+} from "./availability-firestore";
 import { getSchedule } from "./schedule-firestore";
+import type { ScheduleData } from "./schedule-firestore";
 
 export interface AppointmentData {
   id: string;
@@ -27,6 +34,10 @@ export interface AppointmentData {
   phone: string;
   place?: Place;
   createdAt?: Timestamp;
+  /** True until admin assigns a real slot on the calendar */
+  scheduleTbd?: boolean;
+  /** Copied from catalog at booking time (admin hint) */
+  scheduleTbdAdminHint?: string;
 }
 
 export interface BookingInput {
@@ -42,6 +53,28 @@ export interface BookingInput {
   serviceEn?: string;
   serviceRu?: string;
   serviceUk?: string;
+  /**
+   * When >= 2, books this many consecutive full working days from `date` (ignores `durationMinutes`).
+   * Omit or 1: single range using `startTime` + `durationMinutes` as today.
+   */
+  multiDayFullDayCount?: number;
+}
+
+/** Placeholder start for TBD bookings — not shown on the week grid; admin assigns a real slot later. */
+const TBD_PLACEHOLDER_START = new Date(2099, 0, 1, 9, 0, 0, 0);
+
+export interface ScheduleTbdBookingInput {
+  service: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  durationMinutes: number;
+  serviceId?: string;
+  serviceSk?: string;
+  serviceEn?: string;
+  serviceRu?: string;
+  serviceUk?: string;
+  scheduleTbdAdminHint?: string;
 }
 
 /** Admin can create with all fields optional */
@@ -78,7 +111,139 @@ function overlaps(
   return existingStart < newEnd && existingEnd > newStart;
 }
 
+function timeToMinutes(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return (h ?? 0) * 60 + (m ?? 0);
+}
+
+function fullDayWindowForDate(
+  dateCalendar: Date,
+  schedule: ScheduleData | null
+): { start: Date; end: Date } | null {
+  const wh = getWorkingHoursForDate(schedule, dateCalendar);
+  if (!wh) return null;
+  const openM = timeToMinutes(wh.open);
+  const closeM = timeToMinutes(wh.close);
+  if (closeM <= openM) return null;
+  const start = new Date(dateCalendar);
+  start.setHours(Math.floor(openM / 60), openM % 60, 0, 0);
+  const end = new Date(dateCalendar);
+  end.setHours(Math.floor(closeM / 60), closeM % 60, 0, 0);
+  return { start, end };
+}
+
+async function bookConsecutiveFullWorkingDays(
+  input: BookingInput,
+  place: Place,
+  n: number
+): Promise<AppointmentData> {
+  const schedule = await getSchedule(place);
+  const prepBuffer = getPrepBufferMinutes(schedule);
+  const parts = input.date.split("-").map(Number);
+  const y = parts[0];
+  const mo = parts[1];
+  const d = parts[2];
+  if (!y || !mo || !d) throw new Error("INVALID_DATE");
+
+  const windows: { dayKey: string; start: Date; end: Date }[] = [];
+  for (let i = 0; i < n; i++) {
+    const cal = new Date(y, mo - 1, d + i);
+    const w = fullDayWindowForDate(cal, schedule);
+    if (!w) throw new Error("DAY_CLOSED");
+    const dateStr = getDateKey(cal);
+    windows.push({ dayKey: `${place}_${dateStr}`, ...w });
+  }
+
+  const newStart = windows[0].start;
+  const newEnd = windows[windows.length - 1].end;
+
+  return runTransaction(db, async (transaction) => {
+    const dayRefs = windows.map((w) => doc(db, "days", w.dayKey));
+    const snaps = await Promise.all(dayRefs.map((ref) => transaction.get(ref)));
+
+    for (let i = 0; i < windows.length; i++) {
+      const { start, end } = windows[i];
+      const daySnap = snaps[i];
+      const slots: { id: string; start: Timestamp; end: Timestamp }[] =
+        (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
+      for (const slot of slots) {
+        const existingStart = slot.start.toDate();
+        const existingEnd = slot.end.toDate();
+        const existingEndWithBuffer = new Date(
+          existingEnd.getTime() + prepBuffer * 60 * 1000
+        );
+        if (overlaps(existingStart, existingEndWithBuffer, start, end)) {
+          throw new Error("OVERLAP");
+        }
+      }
+    }
+
+    const id = `apt-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const appointmentRef = doc(db, "appointments", id);
+
+    const baseData: Record<string, unknown> = {
+      startTime: Timestamp.fromDate(newStart),
+      endTime: Timestamp.fromDate(newEnd),
+      service: input.service,
+      fullName: input.fullName,
+      email: input.email,
+      phone: input.phone,
+      place,
+      createdAt: serverTimestamp(),
+    };
+
+    if (input.serviceId) baseData.serviceId = input.serviceId;
+    if (input.serviceSk) baseData.serviceSk = input.serviceSk;
+    if (input.serviceEn) baseData.serviceEn = input.serviceEn;
+    if (input.serviceRu) baseData.serviceRu = input.serviceRu;
+    if (input.serviceUk) baseData.serviceUk = input.serviceUk;
+
+    transaction.set(appointmentRef, baseData);
+
+    for (let i = 0; i < windows.length; i++) {
+      const w = windows[i];
+      const daySnap = snaps[i];
+      const slots: { id: string; start: Timestamp; end: Timestamp }[] =
+        (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
+      transaction.set(
+        dayRefs[i],
+        {
+          slots: [
+            ...slots,
+            {
+              id,
+              start: Timestamp.fromDate(w.start),
+              end: Timestamp.fromDate(w.end),
+            },
+          ],
+        },
+        { merge: true }
+      );
+    }
+
+    return {
+      id,
+      startTime: Timestamp.fromDate(newStart),
+      endTime: Timestamp.fromDate(newEnd),
+      service: input.service,
+      serviceId: input.serviceId,
+      serviceSk: input.serviceSk,
+      serviceEn: input.serviceEn,
+      serviceRu: input.serviceRu,
+      serviceUk: input.serviceUk,
+      fullName: input.fullName,
+      email: input.email,
+      phone: input.phone,
+    } as AppointmentData;
+  });
+}
+
 export async function bookAppointment(input: BookingInput, place: Place = "massage"): Promise<AppointmentData> {
+  const multi = input.multiDayFullDayCount;
+  if (typeof multi === "number" && multi >= 2) {
+    return bookConsecutiveFullWorkingDays(input, place, multi);
+  }
+
   const dateStr = input.date;
   const [startH, startM] = input.startTime.split(":").map(Number);
   const newStart = new Date(`${dateStr}T${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}:00`);
@@ -150,6 +315,60 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
   });
 }
 
+/**
+ * Customer chose “date arranged with you” — no calendar slot yet.
+ * Does not write to `days`; appears in admin “unscheduled” list until moved to the grid.
+ */
+export async function bookScheduleTbdAppointment(
+  input: ScheduleTbdBookingInput,
+  place: Place = "massage"
+): Promise<AppointmentData> {
+  const dur = Math.max(15, Math.min(240, input.durationMinutes || 60));
+  const newStart = new Date(TBD_PLACEHOLDER_START);
+  const newEnd = new Date(newStart.getTime() + dur * 60 * 1000);
+
+  const baseData: Record<string, unknown> = {
+    startTime: Timestamp.fromDate(newStart),
+    endTime: Timestamp.fromDate(newEnd),
+    service: input.service,
+    fullName: input.fullName,
+    email: input.email,
+    phone: input.phone,
+    place,
+    scheduleTbd: true,
+    createdAt: serverTimestamp(),
+  };
+
+  if (input.scheduleTbdAdminHint?.trim()) {
+    baseData.scheduleTbdAdminHint = input.scheduleTbdAdminHint.trim();
+  }
+  if (input.serviceId) baseData.serviceId = input.serviceId;
+  if (input.serviceSk) baseData.serviceSk = input.serviceSk;
+  if (input.serviceEn) baseData.serviceEn = input.serviceEn;
+  if (input.serviceRu) baseData.serviceRu = input.serviceRu;
+  if (input.serviceUk) baseData.serviceUk = input.serviceUk;
+
+  const ref = await addDoc(collection(db, "appointments"), baseData);
+
+  return {
+    id: ref.id,
+    startTime: Timestamp.fromDate(newStart),
+    endTime: Timestamp.fromDate(newEnd),
+    service: input.service,
+    serviceId: input.serviceId,
+    serviceSk: input.serviceSk,
+    serviceEn: input.serviceEn,
+    serviceRu: input.serviceRu,
+    serviceUk: input.serviceUk,
+    fullName: input.fullName,
+    email: input.email,
+    phone: input.phone,
+    place,
+    scheduleTbd: true,
+    scheduleTbdAdminHint: input.scheduleTbdAdminHint?.trim(),
+  } as AppointmentData;
+}
+
 export async function updateAppointmentTime(
   appointmentId: string,
   newStart: Date,
@@ -174,6 +393,7 @@ export async function updateAppointmentTime(
     }
 
     const data = appointmentSnap.data();
+    const wasTbd = data.scheduleTbd === true;
     const newDayKey = `${place}_${newDateStr}`;
     const oldStart = (data.startTime as Timestamp).toDate();
     const oldEnd = (data.endTime as Timestamp).toDate();
@@ -186,7 +406,7 @@ export async function updateAppointmentTime(
     // Firestore transactions require all reads before any writes.
     const [daySnap, oldDaySnap] = await Promise.all([
       transaction.get(dayRef),
-      oldDayKey !== newDayKey ? transaction.get(oldDayRef) : Promise.resolve(null),
+      !wasTbd && oldDayKey !== newDayKey ? transaction.get(oldDayRef) : Promise.resolve(null),
     ]);
     const slots: { id: string; start: Timestamp; end: Timestamp }[] =
       (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
@@ -206,6 +426,7 @@ export async function updateAppointmentTime(
     transaction.update(appointmentRef, {
       startTime: Timestamp.fromDate(newStart),
       endTime: Timestamp.fromDate(newEnd),
+      ...(wasTbd ? { scheduleTbd: false } : {}),
     });
 
     const newSlots = slots.filter((s) => s.id !== appointmentId);
@@ -216,7 +437,7 @@ export async function updateAppointmentTime(
     });
     transaction.set(dayRef, { slots: newSlots }, { merge: true });
 
-    if (oldDayKey !== newDayKey && oldDaySnap) {
+    if (!wasTbd && oldDayKey !== newDayKey && oldDaySnap) {
       const oldSlots: { id: string }[] =
         (oldDaySnap.exists() ? (oldDaySnap.data()?.slots as typeof oldSlots) : null) ?? [];
       const filtered = oldSlots.filter((s: { id: string }) => s.id !== appointmentId);
@@ -246,6 +467,8 @@ export async function getAppointment(appointmentId: string): Promise<Appointment
     phone: (d.phone as string) ?? "",
     place: (d.place as Place) ?? "massage",
     createdAt: d.createdAt as Timestamp | undefined,
+    scheduleTbd: d.scheduleTbd === true,
+    scheduleTbdAdminHint: d.scheduleTbdAdminHint as string | undefined,
   } as AppointmentData;
 }
 
@@ -314,21 +537,38 @@ export async function deleteAppointment(appointmentId: string): Promise<void> {
   }
 
   const data = snap.data();
-  const place = data.place as Place | undefined;
-  const start = (data.startTime as Timestamp).toDate();
-  const dateStr = getDateKey(start);
-  const dayKey = place ? `${place}_${dateStr}` : dateStr;
+  if (data.scheduleTbd === true) {
+    await deleteDoc(appointmentRef);
+    return;
+  }
 
-  const dayRef = doc(db, "days", dayKey);
+  const place = (data.place as Place | undefined) ?? "massage";
+  const start = (data.startTime as Timestamp).toDate();
+  const end = (data.endTime as Timestamp).toDate();
+
+  const dateKeys = new Set<string>();
+  const cur = new Date(start);
+  cur.setHours(0, 0, 0, 0);
+  const endDay = new Date(end);
+  endDay.setHours(0, 0, 0, 0);
+  while (cur.getTime() <= endDay.getTime()) {
+    dateKeys.add(getDateKey(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  const dayRefs = Array.from(dateKeys).map((ds) => doc(db, "days", `${place}_${ds}`));
 
   await runTransaction(db, async (transaction) => {
-    // All reads must happen before any writes
-    const daySnap = await transaction.get(dayRef);
-    const slots: { id: string; start: Timestamp; end: Timestamp }[] =
-      (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
-    const filtered = slots.filter((s) => s.id !== appointmentId);
+    const snaps = await Promise.all(dayRefs.map((ref) => transaction.get(ref)));
 
     transaction.delete(appointmentRef);
-    transaction.set(dayRef, { slots: filtered }, { merge: true });
+
+    for (let i = 0; i < dayRefs.length; i++) {
+      const daySnap = snaps[i];
+      const slots: { id: string; start: Timestamp; end: Timestamp }[] =
+        (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
+      const filtered = slots.filter((s) => s.id !== appointmentId);
+      transaction.set(dayRefs[i], { slots: filtered }, { merge: true });
+    }
   });
 }

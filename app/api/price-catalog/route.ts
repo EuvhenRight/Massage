@@ -3,8 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 import { auth } from "@/auth";
 import { getPriceCatalog, setPriceCatalog } from "@/lib/price-catalog-firestore";
+import { normalizePriceCatalog } from "@/lib/price-catalog-normalize";
 import { getMassagePriceCatalogExample } from "@/lib/price-catalog-seed";
 import { isPriceCatalogEmpty } from "@/lib/price-catalog-utils";
+import { syncPriceCatalogToServices } from "@/lib/sync-price-catalog-to-services";
 import type { Place } from "@/lib/places";
 import type { PriceCatalogStructure } from "@/types/price-catalog";
 
@@ -21,10 +23,14 @@ export async function GET(request: NextRequest) {
     }
     const catalog = await getPriceCatalog(place);
     if (place === "massage" && isPriceCatalogEmpty(catalog)) {
-      return NextResponse.json(getMassagePriceCatalogExample());
+      return NextResponse.json(
+        normalizePriceCatalog(getMassagePriceCatalogExample())
+      );
     }
     return NextResponse.json(
-      catalog ?? { man: { services: [] }, woman: { services: [] } }
+      normalizePriceCatalog(
+        catalog ?? { man: { services: [] }, woman: { services: [] } }
+      )
     );
   } catch (e) {
     return NextResponse.json(
@@ -54,7 +60,7 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       );
     }
-    const structure: PriceCatalogStructure = {
+    const raw: PriceCatalogStructure = {
       man: {
         services: Array.isArray(body.man.services) ? body.man.services : [],
       },
@@ -62,7 +68,9 @@ export async function PUT(request: NextRequest) {
         services: Array.isArray(body.woman.services) ? body.woman.services : [],
       },
     };
+    const structure = normalizePriceCatalog(raw);
     await setPriceCatalog(place, structure);
+    await syncPriceCatalogToServices(place, structure);
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json(

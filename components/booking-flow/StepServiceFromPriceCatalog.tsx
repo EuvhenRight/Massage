@@ -2,6 +2,7 @@
 
 import { TruncateText } from '@/components/ui/truncate-text'
 import {
+	getDayBookingSlot,
 	getPrepBufferMinutes,
 	parseOccupiedSlots,
 	type OccupiedSlot,
@@ -17,6 +18,7 @@ import {
 	type PriceLocale,
 	type SexKey,
 	type ZonePriceItem,
+	normalizeItemBookingDayCount,
 } from '@/types/price-catalog'
 import {
 	collection,
@@ -28,7 +30,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion'
 import { Undo2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBookingFlow } from './BookingFlowContext'
 import PublicDatePicker from './PublicDatePicker'
 import TimeSlotPicker from './TimeSlotPicker'
@@ -37,7 +39,12 @@ interface StepServiceFromPriceCatalogProps {
 	place: Place
 	accent: BookingAccent
 	catalog: PriceCatalogStructure | null
-	services: { title: string; durationMinutes?: number }[]
+	services: {
+		title: string
+		durationMinutes?: number
+		bookingGranularity?: 'time' | 'day' | 'tbd'
+		bookingDayCount?: number
+	}[]
 	searchQuery: string
 	setSearchQuery: (q: string) => void
 }
@@ -168,6 +175,9 @@ export default function StepServiceFromPriceCatalog({
 		setTime,
 		time,
 		durationMinutes,
+		bookingGranularity,
+		bookingDayCount,
+		scheduleTbdCustomerMessage,
 	} = useBookingFlow()
 
 	const [month, setMonth] = useState(() => {
@@ -179,6 +189,24 @@ export default function StepServiceFromPriceCatalog({
 		ReturnType<typeof getSchedule>
 	> | null>(null)
 	const [loading, setLoading] = useState(true)
+
+	const handleSelectDate = useCallback(
+		(d: Date) => {
+			if (bookingGranularity === 'day' && schedule) {
+				const slot = getDayBookingSlot(d, schedule)
+				setDate(d, slot?.startTime ?? null)
+			} else {
+				setDate(d)
+			}
+		},
+		[bookingGranularity, schedule, setDate],
+	)
+
+	useEffect(() => {
+		if (step !== 2 || bookingGranularity !== 'day' || !date || !schedule) return
+		const slot = getDayBookingSlot(date, schedule)
+		if (slot?.startTime) setTime(slot.startTime)
+	}, [step, bookingGranularity, date, schedule, setTime])
 
 	const [selectedSex, setSelectedSex] = useState<SexKey | null>(null)
 	const [activeServiceId, setActiveServiceId] = useState<string | null>(null)
@@ -200,6 +228,11 @@ export default function StepServiceFromPriceCatalog({
 	}, [place])
 
 	useEffect(() => {
+		if (step === 2 && bookingGranularity === 'tbd') {
+			setOccupiedSlots([])
+			setLoading(false)
+			return
+		}
 		let cancelled = false
 		async function fetchAppointments() {
 			setLoading(true)
@@ -235,7 +268,7 @@ export default function StepServiceFromPriceCatalog({
 		return () => {
 			cancelled = true
 		}
-	}, [year, monthNum, place, schedule])
+	}, [year, monthNum, place, schedule, step, bookingGranularity])
 
 	const servicesForSex = useMemo(() => {
 		if (!catalog || !selectedSex) return []
@@ -653,8 +686,27 @@ export default function StepServiceFromPriceCatalog({
 																								</div>
 																								<div className='flex items-center gap-2 mt-0.5'>
 																									<span className='text-icyWhite/55 text-xs'>
-																										{item.durationMinutes}{' '}
-																										{tPrice('min')}
+																										{item.bookingGranularity ===
+																										'day'
+																											? normalizeItemBookingDayCount(
+																													item.bookingDayCount,
+																												) > 1
+																												? t(
+																														'fullDaysBookingCount',
+																														{
+																															count:
+																																normalizeItemBookingDayCount(
+																																	item.bookingDayCount,
+																																),
+																														},
+																													)
+																												: t('fullDayBooking')
+																											: item.bookingGranularity ===
+																												  'tbd'
+																												? t(
+																														'scheduleTbdBookingBadge',
+																													)
+																												: `${item.durationMinutes} ${tPrice('min')}`}
 																									</span>
 																									{desc && (
 																										<button
@@ -709,7 +761,27 @@ export default function StepServiceFromPriceCatalog({
 			)}
 
 			{/* Calendar + time — step 2, fits in height, scrolls if needed */}
-			{step === 2 && service && (
+			{step === 2 && service && bookingGranularity === 'tbd' && (
+				<motion.div
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ duration: 0.2 }}
+					className='flex flex-col flex-1 min-h-0'
+				>
+					<p className='text-sm font-medium text-icyWhite mb-2'>
+						{t('scheduleTbdCustomerHeading')}
+					</p>
+					<div
+						className={`rounded-xl border px-4 py-3 text-sm text-icyWhite/85 whitespace-pre-wrap ${accent.inputBorder} bg-white/[0.03]`}
+					>
+						{scheduleTbdCustomerMessage.trim()
+							? scheduleTbdCustomerMessage
+							: t('scheduleTbdEmptyMessage')}
+					</div>
+				</motion.div>
+			)}
+
+			{step === 2 && service && bookingGranularity !== 'tbd' && (
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
@@ -720,9 +792,13 @@ export default function StepServiceFromPriceCatalog({
 						<PublicDatePicker
 							accent={accent}
 							selectedDate={date}
-							onSelectDate={setDate}
+							onSelectDate={handleSelectDate}
 							occupiedSlots={occupiedSlots}
 							durationMinutes={durationMinutes}
+							bookingGranularity={bookingGranularity}
+							multiDayCount={
+								bookingGranularity === 'day' ? bookingDayCount : 1
+							}
 							month={month}
 							onMonthChange={d =>
 								setMonth(new Date(d.getFullYear(), d.getMonth(), 1))
@@ -730,7 +806,7 @@ export default function StepServiceFromPriceCatalog({
 							schedule={schedule}
 						/>
 					</div>
-					{date && (
+					{date && bookingGranularity !== 'day' && (
 						<div className='flex-shrink-0 pt-4'>
 							<TimeSlotPicker
 								accent={accent}
@@ -743,10 +819,20 @@ export default function StepServiceFromPriceCatalog({
 							/>
 						</div>
 					)}
+					{date && bookingGranularity === 'day' && time && (
+						<p className='flex-shrink-0 pt-4 text-sm text-icyWhite/70'>
+							{bookingDayCount >= 2
+								? t('fullMultiDayBookingSummary', {
+										time,
+										count: bookingDayCount,
+									})
+								: t('fullDayBookingWithTime', { time })}
+						</p>
+					)}
 				</motion.div>
 			)}
 
-			{loading && (
+			{loading && bookingGranularity !== 'tbd' && (
 				<p className='text-xs text-icyWhite/50'>{t('loadingAvailability')}</p>
 			)}
 		</motion.div>

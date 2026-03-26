@@ -4,6 +4,7 @@ import BookingPageLayout from '@/components/BookingPageLayout'
 import BookingFlow from '@/components/booking-flow'
 import BookingPageSkeleton from '@/components/booking-flow/BookingPageSkeleton'
 import type { ServiceData } from '@/lib/services'
+import { normalizeItemBookingDayCount } from '@/types/price-catalog'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 
@@ -25,6 +26,18 @@ export default function BookingPage() {
 	const serviceOptions = services.map(s => ({
 		title: s.title,
 		durationMinutes: s.durationMinutes,
+		bookingGranularity:
+			s.bookingGranularity === 'day'
+				? ('day' as const)
+				: s.bookingGranularity === 'tbd'
+					? ('tbd' as const)
+					: ('time' as const),
+		bookingDayCount:
+			s.bookingGranularity === 'day'
+				? normalizeItemBookingDayCount(s.bookingDayCount)
+				: 1,
+		scheduleTbdMessage: s.scheduleTbdMessage,
+		scheduleTbdAdminNote: s.scheduleTbdAdminNote,
 	}))
 
 	return (
@@ -36,7 +49,14 @@ export default function BookingPage() {
 					services={
 						serviceOptions.length > 0
 							? serviceOptions
-							: [{ title: t('appointmentFallback'), durationMinutes: 60 }]
+							: [
+									{
+										title: t('appointmentFallback'),
+										durationMinutes: 60,
+										bookingGranularity: 'time' as const,
+										bookingDayCount: 1,
+									},
+								]
 					}
 					defaultDuration={60}
 					place='massage'

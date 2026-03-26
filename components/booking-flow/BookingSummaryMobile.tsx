@@ -26,7 +26,14 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 	const locale = useLocale()
 	const t = useTranslations('booking')
 	const tCommon = useTranslations('common')
-	const { service, date, time, durationMinutes } = useBookingFlow()
+	const {
+		service,
+		date,
+		time,
+		durationMinutes,
+		bookingGranularity,
+		bookingDayCount,
+	} = useBookingFlow()
 
 	if (!service && !date && !time) return null
 
@@ -53,10 +60,20 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 							>
 								{service}
 							</TruncateText>
-							{durationMinutes > 0 && (
-								<span className="text-icyWhite/50 text-xs shrink-0 tabular-nums">
-									({durationMinutes} min)
+							{bookingGranularity === 'day' ? (
+								<span className="text-icyWhite/50 text-xs shrink-0">
+									(
+									{bookingDayCount >= 2
+										? t('fullDaysBookingCount', { count: bookingDayCount })
+										: t('fullDayBooking')}
+									)
 								</span>
+							) : (
+								durationMinutes > 0 && (
+									<span className="text-icyWhite/50 text-xs shrink-0 tabular-nums">
+										({durationMinutes} min)
+									</span>
+								)
 							)}
 						</dd>
 					</div>
@@ -77,7 +94,14 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 				{time && (
 					<div className="flex items-center justify-between gap-3">
 						<dt className="text-icyWhite/50 shrink-0 min-w-[3rem]">{tCommon('time')}</dt>
-						<dd className="text-icyWhite font-medium">{formatTime(time)}</dd>
+						<dd className="text-icyWhite font-medium text-right">
+							{formatTime(time)}
+							{bookingGranularity === 'day' && (
+								<span className="block text-xs text-icyWhite/55 font-normal mt-0.5">
+									{t('fullDayBooking')}
+								</span>
+							)}
+						</dd>
 					</div>
 				)}
 			</dl>

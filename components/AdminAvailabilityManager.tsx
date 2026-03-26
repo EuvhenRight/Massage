@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import { Info, Lock } from "lucide-react";
+import { getPlaceAccentUi } from "@/lib/place-accent-ui";
 import type { Place } from "@/lib/places";
 import { getSchedule, saveSchedule, type ScheduleData, type DaySchedule } from "@/lib/schedule-firestore";
 import { getDateKey as getDateKeyUtil } from "@/lib/booking";
@@ -59,6 +60,7 @@ function MonthCalendar({
   onToggle,
   weekHeaders,
   getDayToggleTitle,
+  openDayClassName,
 }: {
   year: number;
   month: number;
@@ -66,6 +68,7 @@ function MonthCalendar({
   onToggle: (date: Date) => void;
   weekHeaders: string[];
   getDayToggleTitle: (day: number, status: string) => string;
+  openDayClassName: string;
 }) {
   const first = new Date(year, month - 1, 1);
   const last = new Date(year, month, 0);
@@ -98,7 +101,7 @@ function MonthCalendar({
               className={clsx(
                 "w-9 h-9 rounded-lg text-sm font-medium transition-colors",
                 isOpen
-                  ? "bg-purple-soft/20 text-purple-glow border border-purple-soft/40 hover:bg-purple-soft/30"
+                  ? openDayClassName
                   : "bg-white/5 text-icyWhite/40 border border-white/10 hover:bg-white/10 hover:text-icyWhite/60"
               )}
             >
@@ -134,6 +137,7 @@ export default function AdminAvailabilityManager({
 }: AdminAvailabilityManagerProps) {
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
+  const ui = useMemo(() => getPlaceAccentUi(place), [place]);
   const [internalSchedule, setInternalSchedule] = useState<ScheduleData | null>(null);
 
   const monthNames = MONTH_KEYS.map((k) => t(k));
@@ -216,7 +220,7 @@ export default function AdminAvailabilityManager({
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-white/10 bg-nearBlack/80 p-6">
+      <div className={clsx(ui.adminNestedPanel, "p-6")}>
         <p className="text-icyWhite/60">{tCommon("loading")}</p>
       </div>
     );
@@ -224,14 +228,14 @@ export default function AdminAvailabilityManager({
 
   if (!schedule) {
     return (
-      <div className="rounded-xl border border-white/10 bg-nearBlack/80 p-6">
+      <div className={clsx(ui.adminNestedPanel, "p-6")}>
         <p className="text-icyWhite/60">{t("couldNotLoadSchedule")}</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-nearBlack/80 overflow-hidden">
+    <div className={ui.adminNestedPanel}>
       {/* Prep time bar */}
       <div className="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-white/10 bg-white/[0.02]">
         <Lock className="h-4 w-4 text-icyWhite/40 shrink-0" />
@@ -264,7 +268,10 @@ export default function AdminAvailabilityManager({
         </Select>
         <span
           title={t("prepBufferTitle")}
-          className="inline-flex cursor-help rounded-full p-0.5 text-icyWhite/50 hover:text-purple-soft/80 transition-colors"
+          className={clsx(
+            "inline-flex cursor-help rounded-full p-0.5 text-icyWhite/50 transition-colors",
+            ui.availabilityInfoHover
+          )}
           aria-label={t("prepBufferAria")}
         >
           <Info className="h-3.5 w-3.5" />
@@ -299,6 +306,7 @@ export default function AdminAvailabilityManager({
             >
               <label className="flex items-center gap-2 min-w-[120px] cursor-pointer">
                 <Checkbox
+                  className={ui.adminCheckbox}
                   checked={isOpen}
                   onCheckedChange={(checked) => {
                     if (checked) {
@@ -359,16 +367,24 @@ export default function AdminAvailabilityManager({
           {(
             <div className="lg:w-[300px] lg:shrink-0 lg:border-l lg:border-white/10 lg:pl-8">
               <h3 className="font-medium text-icyWhite mb-3">{t("toggleDaysFor")} {formatMonthLabel(scope, monthNames)}</h3>
-              <div className="mb-4 rounded-xl border border-purple-soft/20 bg-purple-soft/5 px-4 py-3">
+              <div className={ui.availabilityCallout}>
                 <div className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-soft/20 text-purple-soft">
+                  <span
+                    className={clsx(
+                      "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+                      ui.availabilityCalloutIcon
+                    )}
+                  >
                     <Info className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 space-y-2">
                     <p className="text-sm text-icyWhite/90">{t("dayToggleInfo")}</p>
                     <div className="flex flex-wrap items-center gap-3 text-xs">
                       <span className="flex items-center gap-1.5">
-                        <span className="h-3 w-3 rounded border border-purple-soft/40 bg-purple-soft/20" aria-hidden />
+                        <span
+                          className={clsx("h-3 w-3 rounded border", ui.availabilityLegendOpen)}
+                          aria-hidden
+                        />
                         <span className="text-icyWhite/80">{t("dayToggleLegendOpen")}</span>
                       </span>
                       <span className="flex items-center gap-1.5">
@@ -386,6 +402,7 @@ export default function AdminAvailabilityManager({
                 schedule={schedule}
                 onToggle={toggleDate}
                 weekHeaders={weekHeaders}
+                openDayClassName={ui.availabilityDayOpen}
                 getDayToggleTitle={(day, statusKey) => t("dayToggleTitle", { day, status: statusKey === "open" ? t("open") : t("closedShort") })}
               />
             </div>
@@ -396,7 +413,7 @@ export default function AdminAvailabilityManager({
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-purple-soft/20 text-purple-soft hover:bg-purple-soft/30"
+            className={ui.availabilitySaveBtn}
           >
             {saving ? t("saving") : t("saveAvailability")}
           </Button>

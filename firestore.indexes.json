@@ -15,6 +15,14 @@
         { "fieldPath": "place", "order": "ASCENDING" },
         { "fieldPath": "startTime", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "place", "order": "ASCENDING" },
+        { "fieldPath": "scheduleTbd", "order": "ASCENDING" }
+      ]
     }
   ]
 }

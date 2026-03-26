@@ -43,6 +43,11 @@
 		"loadingTimes": "Loading times…",
 		"availableTimesFor": "Available times for",
 		"loadingAvailability": "Loading availability…",
+		"fullDayBooking": "Full working day",
+		"fullDaysBookingCount": "{count} consecutive full days",
+		"fullDayBookingWithTime": "Full salon day from {time} until closing.",
+		"fullMultiDayBookingSummary": "{count} consecutive full salon days, starting at {time} on the first day.",
+		"emailTimeMultiDay": "{time} · {count} consecutive full days",
 		"back": "Back",
 		"cancel": "Cancel",
 		"next": "Next",
@@ -68,6 +73,7 @@
 		"appointmentFallback": "Appointment",
 		"step1Label": "Choose service",
 		"step2Label": "Date and time",
+		"step2LabelTbd": "Arrange date",
 		"step3Label": "Your details",
 		"step1Title": "Choose service",
 		"step2Title": "Date and time",
@@ -87,7 +93,14 @@
 		"showLess": "Show less",
 		"noSearchResults": "No services match your search.",
 		"noServicesInCategory": "No services in this category.",
-		"bookingInfo": "We'll send a confirmation to your email. Please arrive 5 minutes before your appointment."
+		"bookingInfo": "We'll send a confirmation to your email. Please arrive 5 minutes before your appointment.",
+		"scheduleTbdBookingBadge": "Date arranged with you",
+		"scheduleTbdCustomerHeading": "Scheduling",
+		"scheduleTbdEmptyMessage": "We will contact you to agree a date and time that suits you.",
+		"emailScheduleTbdDateLine": "To be agreed with you",
+		"emailScheduleTbdTimeLine": "We will confirm by message or phone",
+		"sidebarScheduleTbdDate": "Not fixed yet — we’ll agree together",
+		"sidebarScheduleTbdTime": "After we contact you"
 	},
 	"validation": {
 		"fullNameMin": "Full name must be at least 3 characters",
@@ -523,34 +536,130 @@
 			"title": "What Clients Say",
 			"subtitle": "Real experiences from real people.",
 			"review1": {
-				"text": "I was terrified of bikini depilation. Natalie made me feel completely at ease — zero awkwardness, minimal pain, perfect result. I've been coming back for 2 years.",
-				"author": "Maria K.",
-				"service": "Sugaring"
+				"text": "I had laser epilation with master Natasha and I'm very happy. The session was as comfortable as possible and almost painless. I'd been to another specialist before — it hurt much more, so I can compare. Natasha is very careful and attentive. I'll definitely come again! Thank you.",
+				"author": "Alena Kotova",
+				"meta": "2 weeks ago · New",
+				"service": "Laser"
 			},
 			"review2": {
-				"text": "The most hygienic salon I've ever visited. Everything opened in front of me, everything explained. I felt safe from the first minute.",
-				"author": "Elena S.",
-				"service": "General"
+				"text": "I had my cartilage pierced and I'm thrilled ❤️ A very attentive, calm, and careful specialist. She explained everything in detail beforehand, answered all my questions, and helped me choose jewellery. The process was quick and almost painless; sterility was top level. I especially want to mention her light hand and caring approach 🙌 Healing is going great, with no issues, thanks to clear aftercare advice. If you've been thinking about a cartilage piercing but feel nervous — book with confidence. You're in safe hands! 🥰",
+				"author": "Kristina Sanduliak",
+				"meta": "1 month ago",
+				"service": "Piercing"
 			},
 			"review3": {
-				"text": "I switched from another salon after one visit here. The difference in quality and gentleness is night and day. Natalie truly knows skin.",
-				"author": "Katarina P.",
-				"service": "Wax"
+				"text": "Huge thanks to Natali for professionalism and tact! 🌸 From the first minutes you feel at ease; the atmosphere is welcoming, everything is gentle and calm. My waxing flew by unnoticed: Natali is a true pro — confident and caring. My skin felt perfect, no discomfort, just lightness and a great mood! Rare to meet such an attentive specialist. This is my place now — 100% recommend! ❤️",
+				"author": "Artem",
+				"meta": "1 month ago",
+				"service": "Waxing"
 			},
 			"review4": {
-				"text": "As a man, I was hesitant. But the professionalism and discretion here are absolute. Highly recommend for everyone.",
-				"author": "Andrej M.",
-				"service": "Sugaring"
+				"text": "I had my cartilage pierced with Natali Volik — everything was neat and calm. She's very attentive, explained everything in detail and answered my questions. It was quick and almost painless, everything clean and professional. I'm delighted with the result.",
+				"author": "Viktoriia Lomeiko",
+				"meta": "1 month ago",
+				"service": "Piercing"
 			},
 			"review5": {
-				"text": "My electroepilation results are incredible. Small sessions, big difference. Finally dealing with those stubborn facial hairs.",
-				"author": "Oksana D.",
-				"service": "Electroepilation"
+				"text": "Huge thanks to Natasha. A wonderful specialist — delicate and attentive to detail. I got not only the treatment but also care advice, and I had a lovely time at the salon. I recommend her to everyone.",
+				"author": "Svitlana Sapehina",
+				"meta": "3 weeks ago · New",
+				"service": "Depilation"
 			},
 			"review6": {
-				"text": "I booked online and received a confirmation instantly. The process from booking to aftercare is seamless and professional.",
-				"author": "Lucia T.",
-				"service": "General"
+				"text": "I highly recommend master Natali! My bikini is always perfect thanks to her — neat, clean, and above all quick! Friendly atmosphere and great chats; I genuinely look forward to every beauty appointment ❤️‍🔥",
+				"author": "Alena Fitsoni",
+				"meta": "2 weeks ago · New",
+				"service": "Bikini"
+			},
+			"review7": {
+				"text": "I chose Epilroom_Bratislava three years ago and I only go there. Great place, professional masters, quality products, and always a cosy atmosphere 💛 solid five stars.",
+				"author": "Mariia Kononova",
+				"meta": "2 weeks ago · New",
+				"service": "Studio"
+			},
+			"review8": {
+				"text": "You're simply amazing! The whole treatment was so quick and comfortable I didn't notice the time. Your skilled hands and light conversation made it as painless as possible. My skin is perfectly smooth and soft now! The result exceeded my expectations — I'm so glad I can forget the razor for weeks. A true professional — I recommend you to everyone and I'll definitely be back!",
+				"author": "Lol Juj",
+				"meta": "4 months ago",
+				"service": "Depilation"
+			},
+			"review9": {
+				"text": "I'm very happy with Natalia! She does depilation professionally, quickly, and to a high standard — and she's polite, tactful, and lovely.",
+				"author": "Yelena Volosozhar",
+				"meta": "4 months ago",
+				"service": "Depilation"
+			},
+			"review10": {
+				"text": "Natali is simply a MEGA master and person 💯 In Ukraine I went to the same master for over 5 years; finding \"your\" master abroad is hard, but I was incredibly lucky to find Natali here — from the first visit I knew she was my MEGA master. Thank you for quality, humanity, and the cosy vibe 😘",
+				"author": "Of fridom",
+				"meta": "4 months ago",
+				"service": "Depilation"
+			},
+			"review11": {
+				"text": "Such a pleasant salon atmosphere — you're always greeted with a smile, your mood lifts, and the work is 100%! I love how sterile everything is, how clearly they explain and show everything, and the sweet treats 😉 10/10 🙏",
+				"author": "Alena Barantseva",
+				"meta": "6 months ago",
+				"service": "Studio"
+			},
+			"review12": {
+				"text": "I had cartilage piercing with master Natalia — loved it. She's very communicative, helped choose the best spot, and I'll definitely come again ✨💗",
+				"author": "Valeriia Khmilenko",
+				"meta": "1 month ago",
+				"service": "Piercing"
+			},
+			"review13": {
+				"text": "I've been for depilation several times and I always love it — great quality and a nice atmosphere. I'll keep coming back ❤️",
+				"author": "Alena Postolnik",
+				"meta": "1 month ago",
+				"service": "Depilation"
+			},
+			"review14": {
+				"text": "With Natalia everything is always professional — she really listens and works quickly. Lovely atmosphere too!",
+				"author": "Lida Privezentseva",
+				"meta": "4 months ago",
+				"service": "Depilation"
+			},
+			"review15": {
+				"text": "The best laser epilation specialist in the world. After the first visit about 40% of hair was gone. Most importantly — Natalia's incredible energy. For us women, feeling comfortable during these treatments matters so much… With Natalia it's like an old friend — so comfortable. Fast, painless. We even had a good laugh. I only go to her now.",
+				"author": "Tetiana Kosarieva (Kosarieva.cosmetolog)",
+				"meta": "1 year ago",
+				"service": "Laser"
+			},
+			"review16": {
+				"text": "Hello. Natalia, thank you for your work — I loved how you do it: quality, clean, painless, and comfortable. You're a master of your craft. Thank you ☺️",
+				"author": "Viktoria Ganzienko",
+				"meta": "6 months ago",
+				"service": "Depilation"
+			},
+			"review17": {
+				"text": "The master is great! We chatted through the whole session.",
+				"author": "Ann",
+				"meta": "1 month ago",
+				"service": "Depilation"
+			},
+			"review18": {
+				"text": "Beautiful work! Very happy with the result — recommend!",
+				"author": "July Bel",
+				"meta": "1 year ago",
+				"service": "Depilation"
+			},
+			"review19": {
+				"text": "I'd like to leave a great review for master Natalia. I came to her for piercing — you can choose needle or gun. On the spot she suggests jewellery options and advises what works best. She stays in touch, checks how you're doing, and answers questions. She provides aftercare product and instructions. I had no issues with my piercings.",
+				"author": "Yeva Yachmenova",
+				"meta": "1 week ago · New",
+				"service": "Piercing"
+			},
+			"review20": {
+				"text": "Excellent master!) Recommend to everyone.",
+				"author": "Angelina",
+				"meta": "2 weeks ago · New",
+				"service": "Depilation"
+			},
+			"review21": {
+				"text": "Everything was wonderful — pleasant atmosphere, cleanliness, and comfort. The team is lovely and attentive; I felt relaxed. I also loved the little touches: sometimes cute gifts like gingerbread, fun collaborations, and a choice of products such as deodorants from trusted pros. Only positive impressions — I'll definitely return. Highly recommend!",
+				"author": "Polina",
+				"meta": "2 weeks ago · New",
+				"service": "Studio"
 			}
 		},
 		"faq": {
@@ -704,6 +813,13 @@
 		"descriptionUk": "Description (UK)",
 		"colorLabel": "Color",
 		"durationLabel": "Duration (minutes)",
+		"itemBookingModeLabel": "How customers book this line",
+		"itemBookingModeTime": "Time slot — pick date and time",
+		"itemBookingModeDays": "Full day(s) — pick start date only (no time slot)",
+		"itemBookingModeTbd": "Arrange with client — no calendar; message on booking; you assign later",
+		"itemScheduleTbdCustomerTitle": "Message for the customer (booking step), per language",
+		"itemScheduleTbdAdminTitle": "Admin note (calendar / assignment), per language",
+		"itemBookingDayCountLabel": "Consecutive days",
 		"titlePlaceholder": "e.g. Swedish Massage",
 		"titleRequired": "Title is required",
 		"durationInvalid": "Duration must be 15–240 minutes",
@@ -751,6 +867,14 @@
 		"cancelAria": "Cancel appointment",
 		"cannotMovePast": "Cannot move appointment to the past.",
 		"movedNotified": "Appointment moved. Customer notified by email.",
+		"tbdAssignedNotified": "Date assigned. Customer notified by email.",
+		"unscheduledTbdTitle": "Awaiting date (from booking)",
+		"unscheduledTbdHint": "Drag a row onto the calendar to set date and time. The client receives a normal confirmation email.",
+		"listTbdNoTimeYet": "No date yet",
+		"listTbdAdminHintPrefix": "Note:",
+		"agendaUnscheduledTitle": "Awaiting date",
+		"agendaTbdNoDate": "Unscheduled",
+		"appointmentTbdNotice": "This booking has no fixed slot yet. Set date and time below, or move it from the “Awaiting date” list on the calendar.",
 		"notFound": "Appointment no longer exists.",
 		"moveFailed": "Failed to move appointment. {msg}",
 		"cancelledNotified": "Appointment cancelled. Customer notified by email.",
@@ -824,7 +948,14 @@
 		"loadExample": "Load example",
 		"structure": "Structure",
 		"editPanel": "Edit",
-		"selectNodeToEdit": "Select a node from the left to edit."
+		"selectNodeToEdit": "Select a node from the left to edit.",
+		"priceCatalogCalendarSyncHint": "When you save, bookable lines become booking services and appear in the admin calendar. Each new section (or top-level zone) gets its own color automatically.",
+		"sectionColorInCalendar": "This color is used in the admin calendar for every item in this section.",
+		"rootZoneColorInCalendar": "This color is used in the admin calendar for items in this zone.",
+		"zoneUsesSectionCalendarColor": "Calendar color comes from the parent section.",
+		"directItemsColorInCalendar": "This color is used in the admin calendar for these line items.",
+		"servicesManagedInPriceCatalog": "Define bookable services in the Price catalog: add services, sections, zones and price lines, then Save. Calendar colors follow each section (or each top-level zone). You no longer maintain a separate service list here.",
+		"openPriceCatalogForServices": "Open Price catalog →"
 	},
 	"adminSignin": {
 		"signIn": "Sign in",

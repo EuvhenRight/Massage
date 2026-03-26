@@ -85,5 +85,60 @@ export function getPlaceAccentUi(place: Place) {
 		priceCatalogPillMuted: m
 			? "bg-purple-soft/15 text-purple-soft"
 			: "bg-gold-soft/15 text-gold-soft",
+		/** Working-hours calendar: “open” day cells */
+		availabilityDayOpen: m
+			? "bg-purple-soft/20 text-purple-glow border border-purple-soft/40 hover:bg-purple-soft/30"
+			: "bg-gold-soft/20 text-gold-glow border border-gold-soft/40 hover:bg-gold-soft/30",
+		availabilityInfoHover: m
+			? "hover:text-purple-soft/80"
+			: "hover:text-gold-soft/80",
+		availabilityCallout: m
+			? "mb-4 rounded-xl border border-purple-soft/20 bg-purple-soft/5 px-4 py-3"
+			: "mb-4 rounded-xl border border-gold-soft/20 bg-gold-soft/[0.06] px-4 py-3",
+		availabilityCalloutIcon: m
+			? "bg-purple-soft/20 text-purple-soft"
+			: "bg-gold-soft/25 text-gold-soft",
+		availabilityLegendOpen: m
+			? "border-purple-soft/40 bg-purple-soft/20"
+			: "border-gold-soft/40 bg-gold-soft/20",
+		availabilitySaveBtn: m
+			? "bg-purple-soft/20 text-purple-soft hover:bg-purple-soft/30"
+			: "bg-gold-soft/20 text-gold-soft hover:bg-gold-soft/30",
+		/** Add/edit appointment modal shell */
+		adminModalShell: m
+			? "rounded-2xl border border-white/10 bg-nearBlack shadow-xl"
+			: "rounded-3xl border border-gold-soft/15 bg-nearBlack/95 shadow-xl shadow-gold-soft/10 backdrop-blur-md",
+		adminDatePickerToday: m
+			? "ring-2 ring-purple-soft/70 bg-purple-soft/15 text-purple-glow"
+			: "ring-2 ring-gold-soft/70 bg-gold-soft/15 text-gold-glow",
+		adminDatePickerSelected: m
+			? "bg-sky-500/80 text-white ring-1 ring-sky-400/60"
+			: "bg-gold-soft text-nearBlack ring-1 ring-gold-glow/60 font-semibold",
+		adminDatePickerFooter: m
+			? "text-sky-400/90 hover:text-sky-300"
+			: "text-gold-soft hover:text-gold-glow",
+		/** Depilation admin: full-page content shell (massage keeps compact rail) */
+		adminMainContent: m
+			? "px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto w-full"
+			: "relative z-10 px-4 sm:px-8 lg:px-12 py-8 sm:py-10 w-full min-h-[calc(100dvh-4rem)]",
+		adminPanel: m
+			? "rounded-2xl border border-white/10 overflow-hidden shadow-xl"
+			: "rounded-3xl glass-card overflow-hidden shadow-xl",
+		adminPanelInset: m
+			? "rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+			: "rounded-2xl glass-card px-4 py-3",
+		adminHeaderBar: m ? "border-b border-white/10" : "border-b border-gold-soft/15",
+		/** Inside adminPanel: avoid double border on depilation (glass parent) */
+		adminNestedPanel: m
+			? "rounded-xl border border-white/10 bg-nearBlack/80 overflow-hidden"
+			: "overflow-hidden bg-nearBlack/20",
+		/** Admin weekday toggles — Checkbox overrides (base ui/checkbox is purple) */
+		adminCheckbox: m
+			? ""
+			: "text-gold-soft focus-visible:ring-gold-soft/50 data-[state=checked]:bg-gold-soft/25 data-[state=checked]:border-gold-soft/50",
+		/** Calendar cell while dragging over a valid drop target */
+		calendarDropTarget: m
+			? "bg-purple-soft/20 ring-1 ring-purple-soft/50"
+			: "bg-gold-soft/20 ring-1 ring-gold-soft/50",
 	}
 }

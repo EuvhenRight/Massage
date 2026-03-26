@@ -11,8 +11,11 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Place } from "./places";
+import { normalizeItemBookingDayCount } from "@/types/price-catalog";
 
 export type Locale = "sk" | "en" | "ru" | "uk";
+
+export type ServiceBookingGranularity = "time" | "day" | "tbd";
 
 export interface ServiceData {
   id: string;
@@ -24,6 +27,14 @@ export interface ServiceData {
   color: string;
   durationMinutes: number;
   place?: Place;
+  /** From price catalog: whole working day vs time slots */
+  bookingGranularity?: ServiceBookingGranularity;
+  /** Consecutive full days when bookingGranularity is "day" */
+  bookingDayCount?: number;
+  /** Resolved customer message when bookingGranularity is "tbd" */
+  scheduleTbdMessage?: string;
+  /** Resolved admin hint when bookingGranularity is "tbd" */
+  scheduleTbdAdminNote?: string;
 }
 
 export interface ServiceInput {
@@ -42,6 +53,18 @@ function resolveTitle(data: Record<string, unknown>, locale: Locale): string {
   return (data[key] as string) ?? (data.title as string) ?? "";
 }
 
+function resolveScheduleTbdField(
+  data: Record<string, unknown>,
+  locale: Locale,
+  prefix: "scheduleTbdMessage" | "scheduleTbdAdminNote"
+): string {
+  const key = `${prefix}${locale.charAt(0).toUpperCase()}${locale.slice(1)}` as string;
+  const v = (data[key] as string)?.trim();
+  if (v) return v;
+  const sk = (data[`${prefix}Sk`] as string)?.trim();
+  return sk ?? "";
+}
+
 const SERVICES_COLLECTION = "services";
 
 export async function getServices(place?: Place, locale: Locale = "sk"): Promise<ServiceData[]> {
@@ -58,7 +81,7 @@ export async function getServices(place?: Place, locale: Locale = "sk"): Promise
     const title = resolveTitle(data, locale);
     return {
       id: d.id,
-        title: (title || (data.title as string)) ?? "",
+      title: (title || (data.title as string)) ?? "",
       titleSk: data.titleSk as string | undefined,
       titleEn: data.titleEn as string | undefined,
       titleRu: data.titleRu as string | undefined,
@@ -66,6 +89,26 @@ export async function getServices(place?: Place, locale: Locale = "sk"): Promise
       color: (data.color as string) ?? "bg-gray-500/30 border-gray-500/60",
       durationMinutes: (data.durationMinutes as number) ?? 60,
       place: (data.place as Place) ?? "massage",
+      bookingGranularity:
+        data.bookingGranularity === "day"
+          ? "day"
+          : data.bookingGranularity === "tbd"
+            ? "tbd"
+            : data.bookingGranularity === "time"
+              ? "time"
+              : undefined,
+      bookingDayCount:
+        data.bookingGranularity === "day"
+          ? normalizeItemBookingDayCount(data.bookingDayCount)
+          : undefined,
+      scheduleTbdMessage:
+        data.bookingGranularity === "tbd"
+          ? resolveScheduleTbdField(data, locale, "scheduleTbdMessage")
+          : undefined,
+      scheduleTbdAdminNote:
+        data.bookingGranularity === "tbd"
+          ? resolveScheduleTbdField(data, locale, "scheduleTbdAdminNote")
+          : undefined,
     };
   });
 }

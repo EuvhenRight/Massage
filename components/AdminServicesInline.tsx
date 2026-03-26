@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { getPlaceAccentUi } from "@/lib/place-accent-ui";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -206,6 +207,11 @@ export default function AdminServicesInline({
   const [modalOpen, setModalOpen] = useState<"add" | "edit" | null>(null);
   const [editService, setEditService] = useState<ServiceData | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<ServiceData | null>(null);
+  const [portalReady, setPortalReady] = useState(false);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   useEffect(() => {
     const q = query(
@@ -260,128 +266,177 @@ export default function AdminServicesInline({
     }
   }, [t]);
 
-  return (
-    <div className="rounded-xl border border-white/10 bg-nearBlack/80 overflow-hidden">
-      <div className="p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {services.length === 0 && (
-            <span className="text-sm text-icyWhite/50 mr-2">{t("noServicesYet")}</span>
+  const addEditModal =
+    portalReady &&
+    (modalOpen === "add" || modalOpen === "edit") &&
+    createPortal(
+      <>
+        <div
+          className="fixed inset-0 z-[200] bg-nearBlack/80 backdrop-blur-sm"
+          onClick={() => {
+            setModalOpen(null);
+            setEditService(null);
+          }}
+          aria-hidden
+        />
+        <div
+          className={clsx(
+            "fixed left-1/2 top-1/2 z-[201] w-[calc(100%-1.5rem)] max-w-md max-h-[min(90dvh,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto p-6",
+            ui.adminModalShell
           )}
-          {services.length > 0 && (
-            <span className="text-xs text-icyWhite/60 mr-2">{t("servicesLabel")}</span>
-          )}
-          {services.map((s) => (
-            <div
-              key={s.id}
-              className={clsx(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border group",
-                s.color
-              )}
-            >
-              <span className="text-sm">{s.title}</span>
-              <span className="text-xs text-icyWhite/70">({s.durationMinutes}m)</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditService(s);
-                  setModalOpen("edit");
-                }}
-                className="p-0.5 rounded hover:bg-black/20 transition-opacity"
-                aria-label={t("edit")}
-              >
-                <Pencil className="w-3 h-3" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setDeleteConfirm(s)}
-                className="p-0.5 rounded hover:bg-black/20 text-red-400 transition-opacity"
-                aria-label={t("delete")}
-              >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => {
-              setEditService(null);
-              setModalOpen("add");
-            }}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border border-dashed border-white/20 text-icyWhite/60 hover:text-icyWhite transition-colors text-sm ${ui.addServiceBorder}`}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-service-modal-title"
+        >
+          <h3
+            id="admin-service-modal-title"
+            className="font-serif text-xl text-icyWhite mb-4"
           >
-            <Plus className="w-3.5 h-3.5" />
-            {t("addButton")}
-          </button>
-        </div>
-      </div>
-
-      {/* Add/Edit modal */}
-      {(modalOpen === "add" || modalOpen === "edit") && (
-        <>
-          <div
-            className="fixed inset-0 z-50 bg-nearBlack/80 backdrop-blur-sm"
-            onClick={() => {
+            {modalOpen === "add" ? t("addService") : t("editService")}
+          </h3>
+          <ServiceForm
+            place={place}
+            service={modalOpen === "edit" ? editService : null}
+            onSave={modalOpen === "add" ? handleSaveAdd : handleSaveEdit}
+            onCancel={() => {
               setModalOpen(null);
               setEditService(null);
             }}
-            aria-hidden
           />
-          <div
-            className="fixed left-1/2 top-1/2 z-[51] w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-nearBlack p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="font-serif text-xl text-icyWhite mb-4">
-              {modalOpen === "add" ? t("addService") : t("editService")}
-            </h3>
-            <ServiceForm
-              place={place}
-              service={modalOpen === "edit" ? editService : null}
-              onSave={modalOpen === "add" ? handleSaveAdd : handleSaveEdit}
-              onCancel={() => {
-                setModalOpen(null);
-                setEditService(null);
-              }}
-            />
-          </div>
-        </>
-      )}
+        </div>
+      </>,
+      document.body
+    );
 
-      {/* Delete confirmation */}
-      {deleteConfirm && (
-        <>
-          <div
-            className="fixed inset-0 z-50 bg-nearBlack/80 backdrop-blur-sm"
-            onClick={() => setDeleteConfirm(null)}
-            aria-hidden
-          />
-          <div
-            className="fixed left-1/2 top-1/2 z-[61] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-nearBlack p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+  const deleteModal =
+    portalReady &&
+    deleteConfirm &&
+    createPortal(
+      <>
+        <div
+          className="fixed inset-0 z-[200] bg-nearBlack/80 backdrop-blur-sm"
+          onClick={() => setDeleteConfirm(null)}
+          aria-hidden
+        />
+        <div
+          className={clsx(
+            "fixed left-1/2 top-1/2 z-[201] w-[calc(100%-1.5rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 p-6",
+            ui.adminModalShell
+          )}
+          onClick={(e) => e.stopPropagation()}
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="admin-delete-service-title"
+        >
+          <h3
+            id="admin-delete-service-title"
+            className="font-serif text-lg text-icyWhite mb-2"
           >
-            <h3 className="font-serif text-lg text-icyWhite mb-2">{t("deleteServiceConfirm")}</h3>
-            <p className="text-sm text-icyWhite/70 mb-4">
-              {t("deleteServiceNote", { name: deleteConfirm.title })}
+            {t("deleteServiceConfirm")}
+          </h3>
+          <p className="text-sm text-icyWhite/70 mb-4">
+            {t("deleteServiceNote", { name: deleteConfirm.title })}
+          </p>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 border-white/10 text-icyWhite hover:bg-white/10"
+              onClick={() => setDeleteConfirm(null)}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              type="button"
+              className="flex-1 bg-red-500/20 text-red-400 hover:bg-red-500/30"
+              onClick={() => handleDelete(deleteConfirm)}
+            >
+              {t("delete")}
+            </Button>
+          </div>
+        </div>
+      </>,
+      document.body
+    );
+
+  return (
+    <div className={ui.adminNestedPanel}>
+      <div className="p-4 sm:p-5">
+        {services.length === 0 ? (
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+            <p className="text-sm text-icyWhite/55 leading-relaxed sm:max-w-md">
+              {t("noServicesYet")}
             </p>
-            <div className="flex gap-3">
-              <Button
+            <button
+              type="button"
+              onClick={() => {
+                setEditService(null);
+                setModalOpen("add");
+              }}
+              className={clsx(
+                "inline-flex w-full sm:w-auto shrink-0 items-center justify-center gap-2 rounded-xl border border-dashed border-white/25 px-4 py-3 text-sm font-medium text-icyWhite/85 transition-colors sm:py-2.5",
+                "hover:text-icyWhite hover:bg-white/[0.06]",
+                ui.addServiceBorder
+              )}
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              {t("addButton")}
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <span className="text-xs text-icyWhite/60">{t("servicesLabel")}</span>
+            <div className="flex flex-wrap items-center gap-2">
+              {services.map((s) => (
+                <div
+                  key={s.id}
+                  className={clsx(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border group",
+                    s.color
+                  )}
+                >
+                  <span className="text-sm">{s.title}</span>
+                  <span className="text-xs text-icyWhite/70">({s.durationMinutes}m)</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditService(s);
+                      setModalOpen("edit");
+                    }}
+                    className="p-0.5 rounded hover:bg-black/20 transition-opacity"
+                    aria-label={t("edit")}
+                  >
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirm(s)}
+                    className="p-0.5 rounded hover:bg-black/20 text-red-400 transition-opacity"
+                    aria-label={t("delete")}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              <button
                 type="button"
-                variant="outline"
-                className="flex-1 border-white/10 text-icyWhite hover:bg-white/10"
-                onClick={() => setDeleteConfirm(null)}
+                onClick={() => {
+                  setEditService(null);
+                  setModalOpen("add");
+                }}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border border-dashed border-white/20 text-icyWhite/60 hover:text-icyWhite transition-colors text-sm ${ui.addServiceBorder}`}
               >
-                {t("cancel")}
-              </Button>
-              <Button
-                type="button"
-                className="flex-1 bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                onClick={() => handleDelete(deleteConfirm)}
-              >
-                {t("delete")}
-              </Button>
+                <Plus className="w-3.5 h-3.5" />
+                {t("addButton")}
+              </button>
             </div>
           </div>
-        </>
-      )}
+        )}
+      </div>
+
+      {addEditModal}
+      {deleteModal}
     </div>
   );
 }

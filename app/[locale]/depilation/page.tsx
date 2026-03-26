@@ -147,6 +147,21 @@ const TESTIMONIALS = [
 	'review4',
 	'review5',
 	'review6',
+	'review7',
+	'review8',
+	'review9',
+	'review10',
+	'review11',
+	'review12',
+	'review13',
+	'review14',
+	'review15',
+	'review16',
+	'review17',
+	'review18',
+	'review19',
+	'review20',
+	'review21',
 ] as const
 
 const FAQ_ITEMS = [
@@ -252,7 +267,10 @@ export default function DepilationPage() {
 	/** One segment = full trust list; 4 identical segments → loop at -25% translate = seamless */
 	const TRUST_MARQUEE_COPIES = 4
 	const trustSegment = TRUST_ITEMS.map(key => t(`trust.${key}`))
-	const duplicatedTrust = Array.from({ length: TRUST_MARQUEE_COPIES }, () => trustSegment).flat()
+	const duplicatedTrust = Array.from(
+		{ length: TRUST_MARQUEE_COPIES },
+		() => trustSegment,
+	).flat()
 
 	return (
 		<>
@@ -1015,9 +1033,9 @@ export default function DepilationPage() {
 										duration: 0.6,
 										ease: [0.22, 1, 0.36, 1],
 									}}
-									className='shrink-0 w-[300px] sm:w-[360px] snap-center p-7 rounded-3xl glass-card'
+									className='group shrink-0 w-[300px] sm:w-[380px] snap-center overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent p-6 sm:p-7 transition-all duration-300 hover:border-gold-soft/25 hover:shadow-[0_0_28px_-8px_rgba(232,184,0,0.15)]'
 								>
-									<div className='flex gap-1 mb-5'>
+									<div className='flex gap-1 mb-4'>
 										{Array.from({ length: 5 }).map((_, si) => (
 											<Star
 												key={si}
@@ -1025,16 +1043,23 @@ export default function DepilationPage() {
 											/>
 										))}
 									</div>
-									<p className='text-icyWhite/75 text-sm leading-relaxed mb-5 italic'>
+									<p className='text-icyWhite/78 text-sm leading-relaxed mb-5 italic whitespace-pre-wrap'>
 										&ldquo;{t(`testimonials.${key}.text`)}&rdquo;
 									</p>
-									<footer className='flex items-center justify-between pt-4 border-t border-white/[0.06]'>
-										<span className='text-icyWhite/60 text-xs font-semibold'>
-											{t(`testimonials.${key}.author`)}
-										</span>
-										<span className='text-gold-soft/40 text-xs'>
-											{t(`testimonials.${key}.service`)}
-										</span>
+									<footer className='pt-4 border-t border-white/[0.06] space-y-2'>
+										<div className='flex items-start justify-between gap-3'>
+											<div className='min-w-0'>
+												<span className='text-icyWhite/85 text-xs font-semibold block'>
+													{t(`testimonials.${key}.author`)}
+												</span>
+												<span className='text-icyWhite/40 text-[10px] leading-snug block mt-0.5'>
+													{t(`testimonials.${key}.meta`)}
+												</span>
+											</div>
+											<span className='text-gold-soft/50 text-[10px] shrink-0 text-right max-w-[40%]'>
+												{t(`testimonials.${key}.service`)}
+											</span>
+										</div>
 									</footer>
 								</motion.blockquote>
 							))}

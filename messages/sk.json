@@ -43,6 +43,11 @@
 		"loadingTimes": "Načítavam časy…",
 		"availableTimesFor": "Dostupné časy pre",
 		"loadingAvailability": "Načítavam dostupnosť…",
+		"fullDayBooking": "Celý pracovný deň",
+		"fullDaysBookingCount": "{count} po sebe nasledujúcich celých dní",
+		"fullDayBookingWithTime": "Celý salónny deň od {time} do zatvorenia.",
+		"fullMultiDayBookingSummary": "{count} po sebe nasledujúce celé salónne dni, prvý deň od {time}.",
+		"emailTimeMultiDay": "{time} · {count} po sebe nasledujúce celé dni",
 		"back": "Späť",
 		"cancel": "Zrušiť",
 		"next": "Ďalej",
@@ -68,6 +73,7 @@
 		"appointmentFallback": "Rezervácia",
 		"step1Label": "Vyberte službu",
 		"step2Label": "Dátum a čas",
+		"step2LabelTbd": "Dohodnúť termín",
 		"step3Label": "Vaše údaje",
 		"step1Title": "Vyberte službu",
 		"step2Title": "Dátum a čas",
@@ -89,7 +95,14 @@
 		"showLess": "Zobraziť menej",
 		"noSearchResults": "Žiadne služby nezodpovedajú vášmu hľadaniu.",
 		"noServicesInCategory": "V tejto kategórii nie sú žiadne služby.",
-		"bookingInfo": "Potvrdenie vám pošleme na e-mail. Prosíme, príďte 5 minút pred termínom."
+		"bookingInfo": "Potvrdenie vám pošleme na e-mail. Prosíme, príďte 5 minút pred termínom.",
+		"scheduleTbdBookingBadge": "Termín dohodneme s vami",
+		"scheduleTbdCustomerHeading": "Objednanie termínu",
+		"scheduleTbdEmptyMessage": "Ozveme sa vám a dohodneme vhodný dátum a čas.",
+		"emailScheduleTbdDateLine": "Dohodneme s vami",
+		"emailScheduleTbdTimeLine": "Potvrdíme správou alebo telefonicky",
+		"sidebarScheduleTbdDate": "Ešte nie je fixný — dohodneme spolu",
+		"sidebarScheduleTbdTime": "Po kontakte s vami"
 	},
 	"validation": {
 		"fullNameMin": "Meno musí mať aspoň 3 znaky",
@@ -537,34 +550,130 @@
 			"title": "Čo Hovoria Klientky",
 			"subtitle": "Skutočné skúsenosti od skutočných ľudí.",
 			"review1": {
-				"text": "Bála som sa bikiní depilácie. Natálie ma úplne upokojila — nulová trapnosť, minimálna bolesť, perfektný výsledok.",
-				"author": "Mária K.",
-				"service": "Sugaring"
+				"text": "Mala som laserovú epiláciu u majsterky Naťa a som veľmi spokojná. Zákrok bol maximálne pohodlný a takmer bezbolestný. Predtým som chodila k inej majsterke — bolo to oveľa bolestivejšie, takže mám s čím porovnávať. Naťa je veľmi šetrná a pozorná. Určite prídem znova! Ďakujem.",
+				"author": "Aljona Kotova",
+				"meta": "pred 2 týždňami · Nové",
+				"service": "Laser"
 			},
 			"review2": {
-				"text": "Najhygienickejší salón, aký som navštívila. Všetko otvorené predo mnou, všetko vysvetlené.",
-				"author": "Elena S.",
-				"service": "Všeobecné"
+				"text": "Dala som si prepichnúť chrupavku a som nadšená ❤️ Veľmi pozorná, pokojná a šetrná odborníčka. Pred zákrokom všetko podrobne vysvetlila, zodpovedala otázky a pomohla vybrať šperk. Samotný proces bol rýchly a takmer bezbolestný, sterilita na vysokej úrovni. Chcem zdôrazniť ľahkú ruku a starostlivosť 🙌 Hojenie ide výborne, bez komplikácií, vďaka jasným radám. Ak uvažujete o prepichnutí chrupavky, objednajte sa bez obáv. Ste v dobrých rukách! 🥰",
+				"author": "Kristina Sanduliak",
+				"meta": "pred mesiacom",
+				"service": "Piercing"
 			},
 			"review3": {
-				"text": "Prešla som z iného salónu po jednej návšteve tu. Rozdiel v kvalite a jemnosti je obrovský.",
-				"author": "Katarína P.",
+				"text": "Chcem poďakovať Natali za profesionalitu a delikátnosť! 🌸 Od prvých minút je človek v pohode, atmosféra príjemná, všetko šetrné a pokojné. Depilácia voskom ubehla ako nič: Natali je majsterka vo svojom remesle — sebavedomá a starostlivá. Pokožka v perfektnom stave, žiadny diskomfort, len ľahkosť a skvelá nálada! Zriedka stretnete takú pozornú odborníčku. Teraz chodím len sem — odporúčam na 100 %! ❤️",
+				"author": "Artem",
+				"meta": "pred mesiacom",
 				"service": "Vosk"
 			},
 			"review4": {
-				"text": "Ako muž som váhal. Ale profesionalizmus a diskrétnosť sú tu absolútne.",
-				"author": "Andrej M.",
-				"service": "Sugaring"
+				"text": "U Natali Volik som si dala urobiť piercing chrupavky – všetko prebehlo hladko a pokojne. Je veľmi pozorná, všetko mi podrobne vysvetlila a odpovedala na otázky. Urobili to rýchlo a takmer bezbolestne, všetko bolo čisté a profesionálne. S výsledkom som spokojná.",
+				"author": "Viktória Lomejková",
+				"meta": "pred mesiacom",
+				"service": "Piercing"
 			},
 			"review5": {
-				"text": "Výsledky elektroepilácie sú neuveriteľné. Malé sedenia, veľký rozdiel.",
-				"author": "Oksana D.",
-				"service": "Elektroepilácia"
+				"text": "Obrovská vďaka Naťa. Skvelá odborníčka, delikátna a pozorná na detaily. Okrem zákroku som dostala aj radu k starostlivosti a v salóne som sa cítila výborne. Odporúčam všetkým.",
+				"author": "Svetlana Sapegina",
+				"meta": "pred 3 týždňami · Nové",
+				"service": "Depilácia"
 			},
 			"review6": {
-				"text": "Rezervovala som online a okamžite som dostala potvrdenie. Celý proces je profesionálny.",
-				"author": "Lucia T.",
-				"service": "Všeobecné"
+				"text": "Veľmi odporúčam majsterku Natali! Bikinová línia je vďaka nej vždy perfektná — šetrne, čisto a hlavne rýchlo! Priateľská atmosféra a príjemné rozhovory; teším sa na každú návštevu ❤️‍🔥",
+				"author": "Alena Fitsoňová",
+				"meta": "pred 2 týždňami · Nové",
+				"service": "Bikiny"
+			},
+			"review7": {
+				"text": "Pred troma rokmi som si vybrala Epilroom_Bratislava a chodím len tam. Skvelé miesto, profesionálne majsterky, kvalitné materiály a vždy útulná atmosféra 💛 jednoznačne 5 hviezd.",
+				"author": "Mariia Kononova",
+				"meta": "pred 2 týždňami · Nové",
+				"service": "Štúdio"
+			},
+			"review8": {
+				"text": "Ste jednoducho super! Celý zákrok bol taký rýchly a pohodlný, že som si ani nevšimla čas. Šikovné pohyby a ľahký rozhovor to spravili takmer bezbolestnými. Moja pokožka je teraz dokonale hladká a jemná! Výsledok prekonal očakávania — teším sa, že na niekoľko týždňov zabudnem na britvu. Ste skutočná profesionálka — odporúčam všetkým a určite sa vrátim!",
+				"author": "Lol Juj",
+				"meta": "pred 4 mesiacmi",
+				"service": "Depilácia"
+			},
+			"review9": {
+				"text": "Som veľmi spokojná s Nataliou! Robí depiláciu profesionálne, rýchlo a kvalitne — a navyše je maximálne slušná, taktná a milá.",
+				"author": "Jelena Volosožar",
+				"meta": "pred 4 mesiacmi",
+				"service": "Depilácia"
+			},
+			"review10": {
+				"text": "Natali je proste MEGA majsterka a človek 💯 Na Ukrajine som chodila viac ako 5 rokov k jednej majsterke a nájsť „svoju“ v zahraničí je ťažké — ale šťastie mi prinieslo práve sem. Už pri prvej návšteve som vedela, že je to moja MEGA majsterka. Ďakujem za kvalitu, ľudskosť a útulno 😘",
+				"author": "Of fridom",
+				"meta": "pred 4 mesiacmi",
+				"service": "Depilácia"
+			},
+			"review11": {
+				"text": "Veľmi príjemná atmosféra v salóne — vždy vás privítajú s úsmevom, zlepšia náladu a prácu urobia na 100 %. Páči sa mi sterilita, všetko podrobne vysvetlia a ešte ponúknu sladkosti ;) 10/10 🙏",
+				"author": "Alena Baranceva",
+				"meta": "2 recenzie · pred 6 mesiacmi",
+				"service": "Štúdio"
+			},
+			"review12": {
+				"text": "Dala som si piercing chrupavky u majsterky Natalii — všetko sa mi páčilo, veľmi komunikatívna, pomohla vybrať miesto prepichnutia. Určite sa ešte obrátim ✨💗",
+				"author": "Valerija Chmilenko",
+				"meta": "pred mesiacom",
+				"service": "Piercing"
+			},
+			"review13": {
+				"text": "Bola som už viackrát na depilácii a vždy som veľmi spokojná — kvalita služieb a príjemná atmosféra, budem sa vracať znova a znova ❤️",
+				"author": "Aljona Postolnik",
+				"meta": "pred mesiacom",
+				"service": "Depilácia"
+			},
+			"review14": {
+				"text": "U Natalie je vždy všetko profesionálne, dobre počuje, pracuje rýchlo. A atmosféra je príjemná!",
+				"author": "Lida Privezentseva",
+				"meta": "pred 4 mesiacmi",
+				"service": "Depilácia"
+			},
+			"review15": {
+				"text": "Najlepšia majsterka laserovej epilácie na svete. Po prvej návšteve ubudlo asi 40 % chĺpkov. Najdôležitejšia je však energia Natalie. Pri takýchto zákrokoch je komfort kľúčový… S Nataliou je to ako s dávnou kamarátkou. Rýchlo, bez bolesti. Ešte sme sa aj zasmiali. Teraz chodím len k nej.",
+				"author": "Taťjana Kosarieva (Kosarieva.cosmetolog)",
+				"meta": "pred rokom",
+				"service": "Laser"
+			},
+			"review16": {
+				"text": "Dobrý deň. Natalia, ďakujem za prácu — veľmi sa mi páči, ako to robíte: kvalitne, čisto, bezbolestne a pohodlne. Ste majsterka svojho remesla. Ďakujem ☺️",
+				"author": "Viktória Hanzienko",
+				"meta": "pred 6 mesiacmi",
+				"service": "Depilácia"
+			},
+			"review17": {
+				"text": "Majsterka super! Prekecali sme celú procedúru.",
+				"author": "Ann",
+				"meta": "pred mesiacom",
+				"service": "Depilácia"
+			},
+			"review18": {
+				"text": "Krásna práca majsterky! Veľmi spokojná s výsledkom, odporúčam!",
+				"author": "July Bel",
+				"meta": "pred rokom",
+				"service": "Depilácia"
+			},
+			"review19": {
+				"text": "Chcela by som zanechať pozitívnu recenziu majsterke Natalii. Šla som k nej na piercing — dá sa ihla alebo pištoľ. Na mieste ponúkne šperky a poradí, ktorý je vhodný. Je dostupná, pýta sa na pohodu a odpovie na otázky. Dáva prípravok na hojenie a odporúčania. S piercingmi som nemala problémy.",
+				"author": "Yeva Jachmenova",
+				"meta": "pred týždňom · Nové",
+				"service": "Piercing"
+			},
+			"review20": {
+				"text": "Výborná majsterka!) Všetkým odporúčam.",
+				"author": "Angelina",
+				"meta": "pred 2 týždňami · Nové",
+				"service": "Depilácia"
+			},
+			"review21": {
+				"text": "Všetko bolo skvelé — príjemná atmosféra, čistota a komfort. Personál milý a pozorný, cítila som sa uvoľnene. Potešili ma maličkosti: niekedy milé darčeky, napríklad medovníčky, zaujímavé kolaborácie a výber produktov ako deodoranty od overených značiek. Len pozitívne dojmy — určite prídem znova. Odporúčam!",
+				"author": "Polina",
+				"meta": "pred 2 týždňami · Nové",
+				"service": "Štúdio"
 			}
 		},
 		"faq": {
@@ -706,6 +815,13 @@
 		"descriptionUk": "Popis (UK)",
 		"colorLabel": "Farba",
 		"durationLabel": "Trvanie (minúty)",
+		"itemBookingModeLabel": "Ako zákazník rezervuje túto položku",
+		"itemBookingModeTime": "Časový termín — dátum a čas",
+		"itemBookingModeDays": "Celé dni — len dátum začiatku (bez výberu času)",
+		"itemBookingModeTbd": "Dohodnúť so zákazníkom — bez kalendára; správa pri rezervácii; vy priradíte neskôr",
+		"itemScheduleTbdCustomerTitle": "Správa pre zákazníka (krok rezervácie), podľa jazyka",
+		"itemScheduleTbdAdminTitle": "Poznámka pre vás (kalendár / priradenie), podľa jazyka",
+		"itemBookingDayCountLabel": "Počet po sebe idúcich dní",
 		"titlePlaceholder": "napr. Švédska masáž",
 		"titleRequired": "Názov je povinný",
 		"durationInvalid": "Trvanie musí byť 15–240 minút",
@@ -753,6 +869,14 @@
 		"cancelAria": "Zrušiť rezerváciu",
 		"cannotMovePast": "Nie je možné presunúť rezerváciu do minulosti.",
 		"movedNotified": "Rezervácia presunutá. Zákazník bol informovaný e-mailom.",
+		"tbdAssignedNotified": "Termín priradený. Zákazník bol informovaný e-mailom.",
+		"unscheduledTbdTitle": "Čaká na termín (z rezervácie)",
+		"unscheduledTbdHint": "Presuňte riadok na kalendár a nastavte dátum a čas. Zákazník dostane štandardný potvrdzovací e-mail.",
+		"listTbdNoTimeYet": "Zatiaľ bez termínu",
+		"listTbdAdminHintPrefix": "Poznámka:",
+		"agendaUnscheduledTitle": "Čaká na termín",
+		"agendaTbdNoDate": "Nenaplánované",
+		"appointmentTbdNotice": "Táto rezervácia ešte nemá pevný termín. Nastavte dátum a čas nižšie alebo presuňte ju zo zoznamu „Čaká na termín“ v kalendári.",
 		"notFound": "Rezervácia už neexistuje.",
 		"moveFailed": "Nepodarilo sa presunúť rezerváciu. {msg}",
 		"cancelledNotified": "Rezervácia zrušená. Zákazník bol informovaný e-mailom.",
@@ -827,7 +951,14 @@
 		"loadExample": "Načítať príklad",
 		"structure": "Štruktúra",
 		"editPanel": "Upraviť",
-		"selectNodeToEdit": "Vyberte uzol vľavo pre úpravu."
+		"selectNodeToEdit": "Vyberte uzol vľavo pre úpravu.",
+		"priceCatalogCalendarSyncHint": "Po uložení sa riadky s cenou stanú rezervačnými službami a zobrazia sa v kalendári. Každá nová sekcia (alebo zóna priamo pod službou) dostane vlastnú farbu.",
+		"sectionColorInCalendar": "Táto farba sa v kalendári použije pre všetky položky v tejto sekcii.",
+		"rootZoneColorInCalendar": "Táto farba sa v kalendári použije pre položky v tejto zóne.",
+		"zoneUsesSectionCalendarColor": "Farba v kalendári pochádza z nadradenej sekcie.",
+		"directItemsColorInCalendar": "Táto farba sa v kalendári použije pre tieto riadky.",
+		"servicesManagedInPriceCatalog": "Rezervačné služby nastavíte v cenníku: služby, sekcie, zóny a ceny, potom Uložiť. Farby v kalendári sledujú každú sekciu (alebo každú zónu na najvyššej úrovni). Samostatný zoznam služieb tu už nie je.",
+		"openPriceCatalogForServices": "Otvoriť cenník →"
 	},
 	"adminSignin": {
 		"signIn": "Prihlásiť sa",

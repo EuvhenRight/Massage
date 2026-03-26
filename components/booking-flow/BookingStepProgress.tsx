@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { useMemo } from 'react'
 import type { BookingStep } from './BookingFlowContext'
+import { useBookingFlow } from './BookingFlowContext'
 
 interface BookingStepProgressProps {
 	currentStep: BookingStep
@@ -18,9 +19,14 @@ export default function BookingStepProgress({
 }: BookingStepProgressProps) {
 	const accent = useMemo(() => getBookingAccent(place), [place])
 	const t = useTranslations('booking')
+	const { bookingGranularity } = useBookingFlow()
 	const STEPS: { step: BookingStep; labelKey: string }[] = [
 		{ step: 1, labelKey: 'step1Label' },
-		{ step: 2, labelKey: 'step2Label' },
+		{
+			step: 2,
+			labelKey:
+				bookingGranularity === 'tbd' ? 'step2LabelTbd' : 'step2Label',
+		},
 		{ step: 3, labelKey: 'step3Label' },
 	]
 	const progressPercent = (currentStep / 3) * 100

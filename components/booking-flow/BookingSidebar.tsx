@@ -18,7 +18,19 @@ export default function BookingSidebar() {
 	const locale = useLocale()
 	const t = useTranslations('booking')
 	const tCommon = useTranslations('common')
-	const { service, date, time, durationMinutes, fullName, email, phone, step } = useBookingFlow()
+	const {
+		service,
+		date,
+		time,
+		durationMinutes,
+		bookingGranularity,
+		bookingDayCount,
+		scheduleTbdCustomerMessage,
+		fullName,
+		email,
+		phone,
+		step,
+	} = useBookingFlow()
 
 	return (
 		<div className="flex flex-col h-full p-5">
@@ -35,8 +47,20 @@ export default function BookingSidebar() {
 							<TruncateText className="text-sm text-icyWhite font-medium" tooltipThreshold={25}>
 								{service}
 							</TruncateText>
-							{durationMinutes > 0 && (
-								<span className="text-xs text-icyWhite/50 shrink-0">{durationMinutes} min</span>
+							{bookingGranularity === 'day' ? (
+								<span className="text-xs text-icyWhite/50 shrink-0">
+									{bookingDayCount >= 2
+										? t('fullDaysBookingCount', { count: bookingDayCount })
+										: t('fullDayBooking')}
+								</span>
+							) : bookingGranularity === 'tbd' ? (
+								<span className="text-xs text-icyWhite/50 shrink-0">
+									{t('scheduleTbdBookingBadge')}
+								</span>
+							) : (
+								durationMinutes > 0 && (
+									<span className="text-xs text-icyWhite/50 shrink-0">{durationMinutes} min</span>
+								)
 							)}
 						</div>
 					) : (
@@ -47,7 +71,9 @@ export default function BookingSidebar() {
 				{/* Date */}
 				<div className="space-y-1.5">
 					<span className={sectionLabelClass}>{tCommon('date')}</span>
-					{date ? (
+					{bookingGranularity === 'tbd' ? (
+						<p className="text-sm text-icyWhite/75">{t('sidebarScheduleTbdDate')}</p>
+					) : date ? (
 						<p className="text-sm text-icyWhite">
 							{date.toLocaleDateString(locale, {
 								weekday: 'short',
@@ -64,12 +90,30 @@ export default function BookingSidebar() {
 				{/* Time */}
 				<div className="space-y-1.5">
 					<span className={sectionLabelClass}>{tCommon('time')}</span>
-					{time ? (
-						<p className="text-sm text-icyWhite">{formatTime(time)}</p>
+					{bookingGranularity === 'tbd' ? (
+						<p className="text-sm text-icyWhite/75">{t('sidebarScheduleTbdTime')}</p>
+					) : time ? (
+						<p className="text-sm text-icyWhite">
+							{formatTime(time)}
+							{bookingGranularity === 'day' && (
+								<span className="block text-xs text-icyWhite/55 mt-0.5">
+									{t('fullDayBooking')}
+								</span>
+							)}
+						</p>
 					) : (
 						<p className="text-sm text-icyWhite/40">—</p>
 					)}
 				</div>
+
+				{bookingGranularity === 'tbd' && scheduleTbdCustomerMessage.trim() && (
+					<div className="space-y-1.5 pt-1">
+						<span className={sectionLabelClass}>{t('scheduleTbdCustomerHeading')}</span>
+						<p className="text-xs text-icyWhite/70 whitespace-pre-wrap line-clamp-6">
+							{scheduleTbdCustomerMessage}
+						</p>
+					</div>
+				)}
 
 				{/* Your Details — customer's name, email, phone */}
 				{((step === 3 || step === 4) && (fullName || email || phone)) && (

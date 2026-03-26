@@ -13,6 +13,7 @@ function formatTimeSlot(slot: string): string {
   return `${h - 12}:${String(m).padStart(2, "0")} pm`;
 }
 import { toast } from "sonner";
+import { clsx } from "clsx";
 import { bookAppointmentAdmin, updateAppointment, type AppointmentData, type AdminBookingInput } from "@/lib/book-appointment";
 import { getDateKey } from "@/lib/booking";
 import type { ServiceData } from "@/lib/services";
@@ -225,7 +226,10 @@ export default function AdminAppointmentModal({
     <>
       <div className="fixed inset-0 z-50 bg-nearBlack/80 backdrop-blur-sm" onClick={onClose} aria-hidden />
       <div
-        className="fixed left-1/2 top-1/2 z-[51] w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-nearBlack p-6 shadow-xl"
+        className={clsx(
+          "fixed left-1/2 top-1/2 z-[51] w-full max-w-md -translate-x-1/2 -translate-y-1/2 p-6",
+          ui.adminModalShell
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-serif text-xl text-icyWhite mb-6">
@@ -236,6 +240,16 @@ export default function AdminAppointmentModal({
             {t("pastAppointmentNote")}
           </div>
         )}
+        {isEdit && appointment?.scheduleTbd && (
+          <div className="mb-4 rounded-lg border border-sky-500/40 bg-sky-500/10 px-4 py-3 text-sm text-sky-100/95 space-y-2">
+            <p>{t("appointmentTbdNotice")}</p>
+            {appointment.scheduleTbdAdminHint?.trim() && (
+              <p className="text-xs text-icyWhite/70 whitespace-pre-wrap">
+                {appointment.scheduleTbdAdminHint.trim()}
+              </p>
+            )}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <fieldset disabled={!!isPastAppointment} className="space-y-4 [&:disabled]:opacity-75">
@@ -243,6 +257,7 @@ export default function AdminAppointmentModal({
             <div className="space-y-1.5">
               <Label className="text-icyWhite/80">{tCommon("date")}</Label>
               <AdminDatePicker
+                place={place}
                 value={dateStr}
                 onChange={setDateStr}
                 minDate={!isEdit ? (() => {

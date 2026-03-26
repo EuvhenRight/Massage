@@ -1,11 +1,16 @@
 'use client'
 
-import { bookAppointment } from '@/lib/book-appointment'
+import {
+	bookAppointment,
+	bookScheduleTbdAppointment,
+} from '@/lib/book-appointment'
+import { getDayBookingSlot } from '@/lib/availability-firestore'
 import { getDateKey } from '@/lib/booking'
 import { getBookingAccent } from '@/lib/booking-accent'
 import type { BookingFormData } from '@/lib/booking-schema'
 import { formatDateForEmail, formatTimeForEmail } from '@/lib/format-date'
 import type { Place } from '@/lib/places'
+import { getSchedule } from '@/lib/schedule-firestore'
 import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Search as SearchIcon } from 'lucide-react'
@@ -13,11 +18,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import {
-	BookingFlowProvider,
-	useBookingFlow,
-	type BookingFlowState,
-} from './BookingFlowContext'
+import { BookingFlowProvider, useBookingFlow } from './BookingFlowContext'
 import BookingSidebar from './BookingSidebar'
 import BookingStepProgress from './BookingStepProgress'
 import StepCustomerInfo, {
@@ -31,6 +32,10 @@ export interface BookingFlowProps {
 		id?: string
 		title: string
 		durationMinutes?: number
+		bookingGranularity?: 'time' | 'day' | 'tbd'
+		bookingDayCount?: number
+		scheduleTbdMessage?: string
+		scheduleTbdAdminNote?: string
 		titleSk?: string
 		titleEn?: string
 		titleRu?: string
@@ -62,6 +67,10 @@ function BookingFlowInner({
 		date,
 		time,
 		durationMinutes,
+		bookingGranularity,
+		bookingDayCount,
+		scheduleTbdCustomerMessage,
+		scheduleTbdAdminHint,
 		fullName,
 		email,
 		phone,
@@ -76,7 +85,9 @@ function BookingFlowInner({
 	const stepCustomerRef = useRef<StepCustomerInfoHandle | null>(null)
 
 	const canNextStep12 =
-		(step === 1 && !!service) || (step === 2 && !!date && !!time)
+		(step === 1 && !!service) ||
+		(step === 2 &&
+			(bookingGranularity === 'tbd' || (!!date && !!time)))
 	const canNextStep3 = step === 3 && formValid
 	const isMobileReview = step === 4
 	const canConfirm =
@@ -89,7 +100,96 @@ function BookingFlowInner({
 
 	const handleConfirm = useCallback(
 		async (formData?: BookingFormData) => {
-			if (!date || !time) return
+			if (bookingGranularity !== 'tbd' && !date) return
+			let submitTime = time
+			let submitDuration = durationMinutes
+			let multiDayFullDayCount: number | undefined
+			if (bookingGranularity === 'tbd') {
+				const dataTbd: BookingFormData = formData ?? {
+					service: service || '',
+					fullName: fullName || '',
+					email: email || '',
+					phone: phone || '',
+				}
+				setIsSubmitting(true)
+				try {
+					const finalService =
+						(service || dataTbd.service || services[0]?.title) ?? ''
+					const selected =
+						services.find(s => s.title === finalService) ?? services[0]
+					await bookScheduleTbdAppointment(
+						{
+							service: finalService,
+							fullName: dataTbd.fullName,
+							email: dataTbd.email,
+							phone: dataTbd.phone,
+							durationMinutes: selected?.durationMinutes ?? durationMinutes,
+							serviceId: selected?.id,
+							serviceSk: selected?.titleSk ?? finalService,
+							serviceEn: selected?.titleEn ?? finalService,
+							serviceRu: selected?.titleRu ?? finalService,
+							serviceUk: selected?.titleUk ?? finalService,
+							scheduleTbdAdminHint: scheduleTbdAdminHint || undefined,
+						},
+						place,
+					)
+
+					const res = await fetch('/api/send-confirmation', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							to: dataTbd.email,
+							customerName: dataTbd.fullName,
+							date: t('emailScheduleTbdDateLine'),
+							time: t('emailScheduleTbdTimeLine'),
+							service: finalService,
+						}),
+					})
+
+					if (!res.ok) {
+						const errBody = await res.json().catch(() => ({}))
+						toast.error(
+							t('emailNotSent', {
+								error: errBody?.error ?? 'email could not be sent',
+							}),
+						)
+					} else {
+						clearDraft()
+						const itemName = finalService.includes(' › ')
+							? (finalService.split(' › ').pop() ?? finalService)
+							: finalService
+						setSuccessMessage(
+							JSON.stringify({
+								title: t('bookingConfirmed'),
+								service: itemName,
+							}),
+						)
+					}
+					onSuccess?.()
+				} catch {
+					toast.error(t('bookingFailed'))
+				} finally {
+					setIsSubmitting(false)
+				}
+				return
+			}
+
+			if (!date) return
+			if (bookingGranularity === 'day') {
+				const sched = await getSchedule(place)
+				const slot = getDayBookingSlot(date, sched)
+				if (!slot) {
+					toast.error(t('slotUnavailable'))
+					return
+				}
+				submitTime = slot.startTime
+				submitDuration = slot.durationMinutes
+				if (bookingDayCount >= 2) {
+					multiDayFullDayCount = bookingDayCount
+				}
+			} else if (!submitTime) {
+				return
+			}
 			const data: BookingFormData = formData ?? {
 				service: service || '',
 				fullName: fullName || '',
@@ -106,8 +206,8 @@ function BookingFlowInner({
 				await bookAppointment(
 					{
 						date: dateStr,
-						startTime: time,
-						durationMinutes,
+						startTime: submitTime,
+						durationMinutes: submitDuration,
 						service: finalService,
 						serviceId: selected?.id,
 						serviceSk: selected?.titleSk ?? finalService,
@@ -117,13 +217,25 @@ function BookingFlowInner({
 						fullName: data.fullName,
 						email: data.email,
 						phone: data.phone,
+						...(multiDayFullDayCount != null
+							? { multiDayFullDayCount }
+							: {}),
 					},
 					place,
 				)
 
 				const slotDate = new Date(date)
-				const [h, m] = time.split(':').map(Number)
+				const [h, m] = submitTime.split(':').map(Number)
 				slotDate.setHours(h, m, 0, 0)
+
+				const baseTime = formatTimeForEmail(slotDate)
+				const emailTime =
+					bookingGranularity === 'day' && bookingDayCount >= 2
+						? t('emailTimeMultiDay', {
+								time: baseTime,
+								count: bookingDayCount,
+							})
+						: baseTime
 
 				const res = await fetch('/api/send-confirmation', {
 					method: 'POST',
@@ -132,7 +244,7 @@ function BookingFlowInner({
 						to: data.email,
 						customerName: data.fullName,
 						date: formatDateForEmail(slotDate),
-						time: formatTimeForEmail(slotDate),
+						time: emailTime,
 						service: finalService,
 					}),
 				})
@@ -155,8 +267,9 @@ function BookingFlowInner({
 				}
 				onSuccess?.()
 			} catch (err) {
+				const code = err instanceof Error ? err.message : ''
 				const msg =
-					err instanceof Error && err.message === 'OVERLAP'
+					code === 'OVERLAP' || code === 'DAY_CLOSED'
 						? t('slotUnavailable')
 						: t('bookingFailed')
 				toast.error(msg)
@@ -168,8 +281,11 @@ function BookingFlowInner({
 			date,
 			time,
 			durationMinutes,
+			bookingGranularity,
+			bookingDayCount,
 			service,
 			services,
+			scheduleTbdAdminHint,
 			fullName,
 			email,
 			phone,
@@ -468,4 +584,4 @@ export default function BookingFlow(props: BookingFlowProps) {
 }
 
 export { BookingFlowProvider, useBookingFlow }
-export type { BookingFlowState }
+export type { BookingFlowState, BookingGranularity } from './BookingFlowContext'

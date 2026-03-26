@@ -1,6 +1,10 @@
+import { normalizeItemBookingDayCount } from '@/types/price-catalog'
+
 /** Booking draft storage key prefix */
 const STORAGE_PREFIX = 'booking-draft-'
 const TTL_MS = 60 * 60 * 1000 // 1 hour
+
+export type DraftBookingGranularity = "time" | "day" | "tbd";
 
 export interface BookingDraft {
   step: number
@@ -8,6 +12,12 @@ export interface BookingDraft {
   date: string | null
   time: string | null
   durationMinutes: number
+  /** Omit = time (legacy drafts) */
+  bookingGranularity?: DraftBookingGranularity;
+  /** Consecutive full days when granularity is day; omit = 1 */
+  bookingDayCount?: number;
+  scheduleTbdCustomerMessage?: string;
+  scheduleTbdAdminHint?: string;
   fullName: string
   email: string
   phone: string
@@ -41,6 +51,10 @@ export interface BookingDraftInput {
   date: Date | string | null
   time: string | null
   durationMinutes: number
+  bookingGranularity?: DraftBookingGranularity
+  bookingDayCount?: number
+  scheduleTbdCustomerMessage?: string
+  scheduleTbdAdminHint?: string
   fullName: string
   email: string
   phone: string
@@ -52,6 +66,10 @@ export function saveBookingDraft(place: string, state: BookingDraftInput): void 
     const draft: BookingDraft = {
       ...state,
       date: state.date ? new Date(state.date).toISOString() : null,
+      bookingGranularity: state.bookingGranularity,
+      bookingDayCount: state.bookingDayCount,
+      scheduleTbdCustomerMessage: state.scheduleTbdCustomerMessage,
+      scheduleTbdAdminHint: state.scheduleTbdAdminHint,
       savedAt: Date.now(),
     }
     localStorage.setItem(storageKey(place), JSON.stringify(draft))
@@ -66,6 +84,10 @@ export function parseDraftToState(draft: BookingDraft): {
   date: Date | null
   time: string | null
   durationMinutes: number
+  bookingGranularity: DraftBookingGranularity
+  bookingDayCount: number
+  scheduleTbdCustomerMessage: string
+  scheduleTbdAdminHint: string
   fullName: string
   email: string
   phone: string
@@ -76,6 +98,21 @@ export function parseDraftToState(draft: BookingDraft): {
     date: draft.date ? new Date(draft.date) : null,
     time: draft.time,
     durationMinutes: draft.durationMinutes,
+    bookingGranularity:
+      draft.bookingGranularity === "day"
+        ? "day"
+        : draft.bookingGranularity === "tbd"
+          ? "tbd"
+          : "time",
+    bookingDayCount: normalizeItemBookingDayCount(draft.bookingDayCount),
+    scheduleTbdCustomerMessage:
+      typeof draft.scheduleTbdCustomerMessage === "string"
+        ? draft.scheduleTbdCustomerMessage
+        : "",
+    scheduleTbdAdminHint:
+      typeof draft.scheduleTbdAdminHint === "string"
+        ? draft.scheduleTbdAdminHint
+        : "",
     fullName: draft.fullName,
     email: draft.email,
     phone: draft.phone,

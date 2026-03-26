@@ -3,7 +3,6 @@
 import AdminAppointmentModal from '@/components/AdminAppointmentModal'
 import AdminAvailabilityManager from '@/components/AdminAvailabilityManager'
 import AdminPriceCatalog from '@/components/AdminPriceCatalog'
-import AdminServicesInline from '@/components/AdminServicesInline'
 import BookingCalendarGrid from '@/components/BookingCalendarGrid'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { getPrepBufferMinutes } from '@/lib/availability-firestore'
@@ -58,11 +57,14 @@ function toAppointmentData(doc: {
 		startTime: (d.startTime as Timestamp) ?? new Date(),
 		endTime: (d.endTime as Timestamp) ?? new Date(),
 		service: (d.service as string) ?? '',
+		serviceId: d.serviceId as string | undefined,
 		fullName: (d.fullName as string) ?? '',
 		email: (d.email as string) ?? '',
 		phone: (d.phone as string) ?? '',
 		place: (d.place as Place) ?? 'massage',
 		createdAt: d.createdAt as Timestamp | undefined,
+		scheduleTbd: d.scheduleTbd === true,
+		scheduleTbdAdminHint: d.scheduleTbdAdminHint as string | undefined,
 	}
 }
 
@@ -125,12 +127,14 @@ export default function AdminPlacePage({
 	const [agendaAppointments, setAgendaAppointments] = useState<
 		AppointmentData[]
 	>([])
+	const [agendaTbd, setAgendaTbd] = useState<AppointmentData[]>([])
 	const [allAppointments, setAllAppointments] = useState<AppointmentData[]>([])
 	const [analyticsSearch, setAnalyticsSearch] = useState('')
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 	const prepBuffer = getPrepBufferMinutes(schedule)
 
 	const filteredAnalytics = allAppointments.filter(apt => {
+		if (apt.scheduleTbd) return false
 		if (!analyticsSearch.trim()) return true
 		const q = analyticsSearch.toLowerCase().trim()
 		const name = (apt.fullName ?? '').toLowerCase()
@@ -224,6 +228,24 @@ export default function AdminPlacePage({
 		)
 		const unsub = onSnapshot(q, snapshot => {
 			setAgendaAppointments(
+				snapshot.docs
+					.filter(doc => doc.data().scheduleTbd !== true)
+					.map(doc =>
+						toAppointmentData({ id: doc.id, data: () => doc.data() }),
+					),
+			)
+		})
+		return () => unsub()
+	}, [place])
+
+	useEffect(() => {
+		const q = query(
+			collection(db, 'appointments'),
+			where('place', '==', place),
+			where('scheduleTbd', '==', true),
+		)
+		const unsub = onSnapshot(q, snapshot => {
+			setAgendaTbd(
 				snapshot.docs.map(doc =>
 					toAppointmentData({ id: doc.id, data: () => doc.data() }),
 				),
@@ -261,8 +283,13 @@ export default function AdminPlacePage({
 	}, [])
 
 	return (
-		<main className='min-h-screen bg-nearBlack text-icyWhite'>
-			<header className='sticky top-0 z-40 border-b border-white/10 bg-nearBlack/95 backdrop-blur-md'>
+		<main className='min-h-screen bg-nearBlack text-icyWhite flex flex-col'>
+			<header
+				className={clsx(
+					'sticky top-0 z-40 bg-nearBlack/95 backdrop-blur-md',
+					ui.adminHeaderBar,
+				)}
+			>
 				<div className='flex items-center justify-between gap-3 px-4 h-16 min-h-16 sm:px-6 lg:px-8'>
 					<div className='flex min-w-0 shrink items-center gap-4'>
 						<Link
@@ -409,11 +436,26 @@ export default function AdminPlacePage({
 				)}
 			</header>
 
-			<div className='px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto'>
+			<div
+				className={clsx(
+					'relative flex-1',
+					place === 'depilation' && 'noise-overlay',
+				)}
+			>
+				{place === 'depilation' && (
+					<div
+						className='pointer-events-none absolute inset-0 overflow-hidden'
+						aria-hidden
+					>
+						<div className='absolute -top-1/4 -right-1/4 h-[min(600px,80vw)] w-[min(600px,80vw)] rounded-full bg-gold-soft/[0.04] blur-[120px]' />
+						<div className='absolute -bottom-1/4 -left-1/4 h-[min(480px,70vw)] w-[min(480px,70vw)] rounded-full bg-gold-soft/[0.03] blur-[100px]' />
+					</div>
+				)}
+				<div className={ui.adminMainContent}>
 				{section === 'calendar' && (
 					<div className='space-y-4 animate-in fade-in-0 duration-200'>
 						<div>
-							<h1 className='font-serif text-2xl text-icyWhite'>
+							<h1 className='font-serif text-2xl sm:text-3xl text-icyWhite'>
 								{t('appointments')}
 							</h1>
 							<p className='text-icyWhite/60 text-sm mt-0.5'>
@@ -431,35 +473,7 @@ export default function AdminPlacePage({
 							</p>
 						</div>
 
-						<div className='rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3'>
-							<span className='text-xs text-icyWhite/50 mr-2'>
-								{t('servicesLabel')}
-							</span>
-							{services.length === 0 ? (
-								<span className='text-sm text-icyWhite/40'>
-									{t('noServicesYet')}
-								</span>
-							) : (
-								<div className='flex flex-wrap gap-2 mt-1'>
-									{services.map(s => (
-										<span
-											key={s.id}
-											className={clsx(
-												'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm',
-												s.color,
-											)}
-										>
-											{s.title}
-											<span className='text-xs text-icyWhite/70'>
-												({s.durationMinutes}m)
-											</span>
-										</span>
-									))}
-								</div>
-							)}
-						</div>
-
-						<div className='rounded-2xl border border-white/10 overflow-hidden shadow-xl'>
+						<div className={ui.adminPanel}>
 							<BookingCalendarGrid
 								allowCancel
 								allowDrag
@@ -474,20 +488,70 @@ export default function AdminPlacePage({
 				{section === 'agenda' && (
 					<div className='space-y-6 animate-in fade-in-0 duration-200'>
 						<div>
-							<h1 className='font-serif text-2xl text-icyWhite'>
+							<h1 className='font-serif text-2xl sm:text-3xl text-icyWhite'>
 								{t('agenda')}
 							</h1>
 							<p className='text-icyWhite/60 text-sm mt-0.5'>
 								{t('agendaSubtitle')}
 							</p>
 						</div>
-						<div className='rounded-2xl border border-white/10 overflow-hidden shadow-xl'>
-							{agendaAppointments.length === 0 ? (
+						<div className={ui.adminPanel}>
+							{agendaAppointments.length === 0 && agendaTbd.length === 0 ? (
 								<div className='p-12 text-center text-icyWhite/50'>
 									{t('noUpcomingAppointments')}
 								</div>
 							) : (
 								<>
+									{agendaTbd.length > 0 && (
+										<>
+											<p className='px-4 pt-4 text-xs font-medium text-sky-200/90 uppercase tracking-wider'>
+												{t('agendaUnscheduledTitle')}
+											</p>
+											<div className='space-y-3 p-4 sm:hidden'>
+												{agendaTbd.map(apt => {
+													const end =
+														apt.endTime && 'toDate' in apt.endTime
+															? apt.endTime.toDate()
+															: new Date(apt.endTime as Date)
+													const start =
+														apt.startTime && 'toDate' in apt.startTime
+															? apt.startTime.toDate()
+															: new Date(apt.startTime as Date)
+													const duration = Math.round(
+														(end.getTime() - start.getTime()) / 60000,
+													)
+													return (
+														<div
+															key={apt.id}
+															className='rounded-xl border border-sky-500/30 bg-sky-500/5 px-3 py-3 text-sm text-icyWhite space-y-1.5'
+														>
+															<div className='flex items-center justify-between gap-2'>
+																<span className='font-medium text-sky-100/95'>
+																	{t('agendaTbdNoDate')}
+																</span>
+																<span className='text-xs text-icyWhite/60'>
+																	{duration}m
+																</span>
+															</div>
+															<div className='text-icyWhite'>{apt.service}</div>
+															<div className='text-xs text-icyWhite/70'>
+																{apt.fullName || '—'}
+															</div>
+															{apt.scheduleTbdAdminHint?.trim() && (
+																<div className='text-[11px] text-icyWhite/55 whitespace-pre-wrap'>
+																	{apt.scheduleTbdAdminHint.trim()}
+																</div>
+															)}
+															<div className='text-[11px] text-icyWhite/60 flex flex-col gap-0.5'>
+																<span>{apt.email || '—'}</span>
+																<span>{apt.phone || '—'}</span>
+															</div>
+														</div>
+													)
+												})}
+											</div>
+										</>
+									)}
 									<div className='space-y-3 p-4 sm:hidden'>
 										{agendaAppointments.map(apt => {
 											const start =
@@ -553,6 +617,52 @@ export default function AdminPlacePage({
 													</tr>
 												</thead>
 												<tbody>
+													{agendaTbd.map(apt => {
+														const start =
+															apt.startTime && 'toDate' in apt.startTime
+																? apt.startTime.toDate()
+																: new Date(apt.startTime as Date)
+														const end =
+															apt.endTime && 'toDate' in apt.endTime
+																? apt.endTime.toDate()
+																: new Date(apt.endTime as Date)
+														const duration = Math.round(
+															(end.getTime() - start.getTime()) / 60000,
+														)
+														return (
+															<tr
+																key={apt.id}
+																className='border-b border-sky-500/20 bg-sky-500/[0.04] hover:bg-sky-500/[0.07] transition-colors'
+															>
+																<td className='px-4 py-3 text-sm text-sky-100/90'>
+																	{t('agendaTbdNoDate')}
+																</td>
+																<td className='px-4 py-3 text-sm text-sky-100/80'>
+																	—
+																</td>
+																<td className='px-4 py-3 text-sm text-icyWhite'>
+																	<span>{apt.service}</span>
+																	<span className='text-icyWhite/50 text-xs ml-1'>
+																		({duration}m)
+																	</span>
+																	{apt.scheduleTbdAdminHint?.trim() && (
+																		<div className='text-[11px] text-icyWhite/50 mt-1 max-w-md whitespace-pre-wrap'>
+																			{apt.scheduleTbdAdminHint.trim()}
+																		</div>
+																	)}
+																</td>
+																<td className='px-4 py-3 text-sm text-icyWhite'>
+																	{apt.fullName || '—'}
+																</td>
+																<td className='px-4 py-3 text-sm text-icyWhite/80 hidden md:table-cell'>
+																	{apt.email || '—'}
+																</td>
+																<td className='px-4 py-3 text-sm text-icyWhite/80 hidden lg:table-cell'>
+																	{apt.phone || '—'}
+																</td>
+															</tr>
+														)
+													})}
 													{agendaAppointments.map(apt => {
 														const start =
 															apt.startTime && 'toDate' in apt.startTime
@@ -607,7 +717,7 @@ export default function AdminPlacePage({
 				{section === 'analytics' && (
 					<div className='space-y-6 animate-in fade-in-0 duration-200'>
 						<div>
-							<h1 className='font-serif text-2xl text-icyWhite'>
+							<h1 className='font-serif text-2xl sm:text-3xl text-icyWhite'>
 								{t('analytics')}
 							</h1>
 							<p className='text-icyWhite/60 text-sm mt-0.5'>
@@ -634,7 +744,7 @@ export default function AdminPlacePage({
 								{t('exportPdf')}
 							</button>
 						</div>
-						<div className='rounded-2xl border border-white/10 overflow-hidden shadow-xl'>
+						<div className={ui.adminPanel}>
 							{filteredAnalytics.length === 0 ? (
 								<div className='p-12 text-center text-icyWhite/50'>
 									{analyticsSearch.trim()
@@ -762,28 +872,36 @@ export default function AdminPlacePage({
 				{section === 'settings' && (
 					<div className='space-y-8 animate-in fade-in-0 duration-200'>
 						<div>
-							<h1 className='font-serif text-2xl text-icyWhite'>
+							<h1 className='font-serif text-2xl sm:text-3xl text-icyWhite'>
 								{t('settings')}
 							</h1>
 							<p className='text-icyWhite/60 text-sm mt-0.5'>
 								{t('settingsSubtitle', { place: placeLabel })}
 							</p>
 						</div>
-						<div className='space-y-6 max-w-5xl mx-auto'>
+						<div
+							className={clsx(
+								'space-y-6',
+								place === 'massage' && 'max-w-5xl mx-auto',
+								place === 'depilation' && 'max-w-6xl mx-auto w-full',
+							)}
+						>
 							<section>
 								<h2 className='font-medium text-icyWhite mb-2'>
 									{tCommon('services')}
 								</h2>
-								<p className='text-sm text-icyWhite/60 mb-3'>
-									{t('manageServicesNote')}
+								<p className='text-sm text-icyWhite/60 mb-4 max-w-2xl leading-relaxed'>
+									{t('servicesManagedInPriceCatalog')}
 								</p>
-								<div className='rounded-2xl border border-white/10 overflow-hidden shadow-xl'>
-									<AdminServicesInline
-										services={services}
-										onServicesChange={setServices}
-										place={place}
-									/>
-								</div>
+								<Link
+									href={`/${locale}/admin/${place}/price`}
+									className={clsx(
+										'inline-flex items-center gap-2 text-sm font-medium transition-colors',
+										ui.priceCatalogLinkSm,
+									)}
+								>
+									{t('openPriceCatalogForServices')}
+								</Link>
 							</section>
 							<section>
 								<h2 className='font-medium text-icyWhite mb-2'>
@@ -792,7 +910,7 @@ export default function AdminPlacePage({
 								<p className='text-sm text-icyWhite/60 mb-3'>
 									{t('manageWorkingHoursNote')}
 								</p>
-								<div className='rounded-2xl border border-white/10 overflow-hidden shadow-xl'>
+								<div className={ui.adminPanel}>
 									<AdminAvailabilityManager
 										place={place}
 										schedule={schedule}
@@ -808,10 +926,11 @@ export default function AdminPlacePage({
 				)}
 
 				{section === 'price' && (
-					<div className='animate-in fade-in-0 duration-200'>
+					<div className='animate-in fade-in-0 duration-200 w-full'>
 						<AdminPriceCatalog place={place} />
 					</div>
 				)}
+				</div>
 			</div>
 
 			{section === 'calendar' && (

@@ -1,6 +1,7 @@
 import type { PriceCatalogStructure } from "@/types/price-catalog";
 import { generatePriceItemId } from "@/types/price-catalog";
 import type { Place } from "@/lib/places";
+import { SECTION_CALENDAR_COLORS } from "@/lib/section-calendar-colors";
 
 export function getPriceCatalogExample(place: Place): PriceCatalogStructure {
   return place === "massage"
@@ -12,6 +13,7 @@ export function getPriceCatalogExample(place: Place): PriceCatalogStructure {
 export function getMassagePriceCatalogExample(): PriceCatalogStructure {
   const relaxationZone = {
     id: generatePriceItemId(),
+    calendarColor: SECTION_CALENDAR_COLORS[0]!,
     titleSk: "Relaxačné",
     titleEn: "Relaxation",
     titleRu: "Расслабляющие",
@@ -26,6 +28,7 @@ export function getMassagePriceCatalogExample(): PriceCatalogStructure {
 
   const therapeuticZone = {
     id: generatePriceItemId(),
+    calendarColor: SECTION_CALENDAR_COLORS[1]!,
     titleSk: "Terapeutické",
     titleEn: "Therapeutic",
     titleRu: "Терапевтические",
@@ -40,6 +43,7 @@ export function getMassagePriceCatalogExample(): PriceCatalogStructure {
 
   const specialtyZone = {
     id: generatePriceItemId(),
+    calendarColor: SECTION_CALENDAR_COLORS[2]!,
     titleSk: "Špeciálne",
     titleEn: "Specialty",
     titleRu: "Специальные",
@@ -144,6 +148,7 @@ export function getDepilationPriceCatalogExample(): PriceCatalogStructure {
 
   const laserSection = {
     id: generatePriceItemId(),
+    calendarColor: SECTION_CALENDAR_COLORS[0]!,
     titleSk: "Laserová epilácia",
     titleEn: "Laser epilation",
     titleRu: "Лазерная эпиляция",
@@ -153,6 +158,7 @@ export function getDepilationPriceCatalogExample(): PriceCatalogStructure {
 
   const electroSection = {
     id: generatePriceItemId(),
+    calendarColor: SECTION_CALENDAR_COLORS[1]!,
     titleSk: "Elektroepilácia",
     titleEn: "Electroepilation",
     titleRu: "Электроэпиляция",

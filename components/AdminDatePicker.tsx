@@ -3,6 +3,9 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { getDateKey } from "@/lib/booking";
+import { getPlaceAccentUi } from "@/lib/place-accent-ui";
+import type { Place } from "@/lib/places";
+import { clsx } from "clsx";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
@@ -41,11 +44,13 @@ interface AdminDatePickerProps {
   id?: string;
   /** When set, dates before this are not selectable (e.g. today for add mode) */
   minDate?: Date;
+  place?: Place;
 }
 
-export default function AdminDatePicker({ value, onChange, id, minDate }: AdminDatePickerProps) {
+export default function AdminDatePicker({ value, onChange, id, minDate, place = "massage" }: AdminDatePickerProps) {
   const locale = useLocale();
   const t = useTranslations("admin");
+  const ui = useMemo(() => getPlaceAccentUi(place), [place]);
   const MONTHS = MONTH_KEYS.map((k) => t(k));
   const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
   const weekHeaders = WEEKDAY_KEYS.map((k) => t(k));
@@ -219,15 +224,14 @@ export default function AdminDatePicker({ value, onChange, id, minDate }: AdminD
                   type="button"
                   onClick={() => handleSelect(date)}
                   disabled={!!isPast}
-                  className={`
-                    aspect-square min-h-[32px] rounded-lg text-sm font-medium transition-colors
-                    flex items-center justify-center
-                    ${selected
-                      ? "bg-sky-500/80 text-white ring-1 ring-sky-400/60"
-                      : "text-icyWhite hover:bg-white/10"}
-                    ${isToday && !selected ? "ring-2 ring-purple-soft/70 bg-purple-soft/15 text-purple-glow" : ""}
-                    ${isPast ? "opacity-40 cursor-not-allowed hover:bg-transparent" : ""}
-                  `}
+                  className={clsx(
+                    "aspect-square min-h-[32px] rounded-lg text-sm font-medium transition-colors flex items-center justify-center",
+                    selected
+                      ? ui.adminDatePickerSelected
+                      : "text-icyWhite hover:bg-white/10",
+                    isToday && !selected && ui.adminDatePickerToday,
+                    isPast && "opacity-40 cursor-not-allowed hover:bg-transparent"
+                  )}
                 >
                   {date.getDate()}
                 </button>
@@ -243,14 +247,14 @@ export default function AdminDatePicker({ value, onChange, id, minDate }: AdminD
                 onChange("");
                 setOpen(false);
               }}
-              className="text-sm text-sky-400/90 hover:text-sky-300"
+              className={clsx("text-sm", ui.adminDatePickerFooter)}
             >
               {t("clear")}
             </button>
             <button
               type="button"
               onClick={() => handleSelect(today)}
-              className="text-sm text-sky-400/90 hover:text-sky-300"
+              className={clsx("text-sm", ui.adminDatePickerFooter)}
             >
               {t("today")}
             </button>

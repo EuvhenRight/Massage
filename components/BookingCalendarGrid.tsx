@@ -117,11 +117,14 @@ function toAppointmentData(doc: {
 		startTime: (d.startTime as Timestamp) ?? new Date(),
 		endTime: (d.endTime as Timestamp) ?? new Date(),
 		service: (d.service as string) ?? '',
+		serviceId: d.serviceId as string | undefined,
 		fullName: (d.fullName as string) ?? '',
 		email: (d.email as string) ?? '',
 		phone: (d.phone as string) ?? '',
 		place: (d.place as Place) ?? 'massage',
 		createdAt: d.createdAt as Timestamp | undefined,
+		scheduleTbd: d.scheduleTbd === true,
+		scheduleTbdAdminHint: d.scheduleTbdAdminHint as string | undefined,
 	}
 }
 
@@ -185,6 +188,7 @@ export default function BookingCalendarGrid({
 		return d
 	})
 	const [appointments, setAppointments] = useState<AppointmentData[]>([])
+	const [tbdAppointments, setTbdAppointments] = useState<AppointmentData[]>([])
 	const [schedule, setSchedule] = useState<Awaited<
 		ReturnType<typeof getSchedule>
 	> | null>(null)
@@ -224,14 +228,29 @@ export default function BookingCalendarGrid({
 		)
 
 		const unsubscribe = onSnapshot(q, snapshot => {
-			const list = snapshot.docs.map(doc =>
-				toAppointmentData({ id: doc.id, data: () => doc.data() }),
-			)
+			const list = snapshot.docs
+				.map(doc => toAppointmentData({ id: doc.id, data: () => doc.data() }))
+				.filter(a => a.scheduleTbd !== true)
 			setAppointments(list)
 		})
 
 		return () => unsubscribe()
 	}, [weekStart, selectedDay, view, place])
+
+	useEffect(() => {
+		const q = query(
+			collection(db, 'appointments'),
+			where('place', '==', place),
+			where('scheduleTbd', '==', true),
+		)
+		const unsubscribe = onSnapshot(q, snapshot => {
+			const list = snapshot.docs.map(doc =>
+				toAppointmentData({ id: doc.id, data: () => doc.data() }),
+			)
+			setTbdAppointments(list)
+		})
+		return () => unsubscribe()
+	}, [place])
 
 	const prepBuffer = getPrepBufferMinutes(schedule)
 
@@ -245,6 +264,7 @@ export default function BookingCalendarGrid({
 			return snapped
 		}
 		for (const apt of appointments) {
+			if (apt.scheduleTbd) continue
 			const start =
 				apt.startTime && 'toDate' in apt.startTime
 					? apt.startTime.toDate()
@@ -301,7 +321,9 @@ export default function BookingCalendarGrid({
 			// Must be a valid cell ID (YYYYMMDD-HHmm) - ignore if dropped on non-cell
 			if (!/^\d{8}-\d{4}$/.test(cellId)) return
 
-			const appointment = appointments.find(a => a.id === appointmentId)
+			const appointment =
+				appointments.find(a => a.id === appointmentId) ??
+				tbdAppointments.find(a => a.id === appointmentId)
 			if (!appointment) return
 
 			const oldStart =
@@ -334,7 +356,7 @@ export default function BookingCalendarGrid({
 
 			setPendingMove({ appointment, newCellId: cellId })
 		},
-		[appointments, allowDrag, cellsOccupiedBy, t],
+		[appointments, tbdAppointments, allowDrag, cellsOccupiedBy, t],
 	)
 
 	const handleConfirmMove = useCallback(async () => {
@@ -356,25 +378,42 @@ export default function BookingCalendarGrid({
 			const durationMinutes = getAppointmentDuration(appointment)
 			await updateAppointmentTime(appointment.id, newStart, durationMinutes)
 
+			const wasTbd = appointment.scheduleTbd === true
 			try {
-				await fetch('/api/send-confirmation', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						type: 'rescheduled',
-						to: appointment.email,
-						customerName: appointment.fullName,
-						service: appointment.service,
-						oldDate: formatDateForEmail(oldStart),
-						oldTime: formatTimeForEmail(oldStart),
-						newDate: formatDateForEmail(newStart),
-						newTime: formatTimeForEmail(newStart),
-					}),
-				})
+				if (wasTbd) {
+					await fetch('/api/send-confirmation', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							to: appointment.email,
+							customerName: appointment.fullName,
+							date: formatDateForEmail(newStart),
+							time: formatTimeForEmail(newStart),
+							service: appointment.service,
+						}),
+					})
+				} else {
+					await fetch('/api/send-confirmation', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							type: 'rescheduled',
+							to: appointment.email,
+							customerName: appointment.fullName,
+							service: appointment.service,
+							oldDate: formatDateForEmail(oldStart),
+							oldTime: formatTimeForEmail(oldStart),
+							newDate: formatDateForEmail(newStart),
+							newTime: formatTimeForEmail(newStart),
+						}),
+					})
+				}
 			} catch {
 				/* email failure */
 			}
-			toast.success(t('movedNotified'))
+			toast.success(
+				wasTbd ? t('tbdAssignedNotified') : t('movedNotified'),
+			)
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err)
 			const message =
@@ -439,7 +478,8 @@ export default function BookingCalendarGrid({
 	const handleDismissCancel = useCallback(() => setPendingCancel(null), [])
 
 	const activeAppointment = activeId
-		? appointments.find(a => a.id === activeId)
+		? appointments.find(a => a.id === activeId) ??
+			tbdAppointments.find(a => a.id === activeId)
 		: null
 
 	return (
@@ -658,6 +698,7 @@ export default function BookingCalendarGrid({
 															!isCellPast(day, hour, minute)
 														}
 														isPast={isCellPast(day, hour, minute)}
+														dropOverClassName={ui.calendarDropTarget}
 														compact
 													>
 														<div
@@ -703,6 +744,39 @@ export default function BookingCalendarGrid({
 					</div>
 				</div>
 
+				{tbdAppointments.length > 0 && (
+					<div className='border-t border-white/10 p-4 bg-nearBlack/60'>
+						<h3 className='text-sm font-medium text-icyWhite mb-2'>
+							{t('unscheduledTbdTitle')}
+						</h3>
+						<p className='text-xs text-icyWhite/50 mb-3'>
+							{t('unscheduledTbdHint')}
+						</p>
+						<ul className='space-y-2 max-h-48 overflow-y-auto'>
+							{tbdAppointments.map(apt => (
+								<li key={apt.id}>
+									<DraggableAppointment
+										appointment={apt}
+										disabled={!allowDrag || !!activeId}
+										layout='list'
+										onEdit={
+											allowCancel
+												? () => onEditAppointment?.(apt)
+												: undefined
+										}
+										onCancel={
+											allowCancel
+												? () => handleCancelAppointment(apt)
+												: undefined
+										}
+										services={services}
+									/>
+								</li>
+							))}
+						</ul>
+					</div>
+				)}
+
 				<DragOverlay>
 					{activeAppointment ? (
 						<div className='opacity-90 pointer-events-none'>
@@ -712,6 +786,9 @@ export default function BookingCalendarGrid({
 								onEdit={undefined}
 								onCancel={undefined}
 								services={services}
+								layout={
+									activeAppointment.scheduleTbd ? 'list' : 'calendar'
+								}
 							/>
 						</div>
 					) : null}

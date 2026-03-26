@@ -148,3 +148,70 @@ export function isDateAvailable(
 ): boolean {
   return getAvailableTimeSlots(date, durationMinutes, occupied, schedule).length > 0;
 }
+
+/**
+ * Start time (HH:mm) and duration for a booking that spans the full working window on that date.
+ */
+export function getDayBookingSlot(
+  date: Date,
+  schedule: ScheduleData | null
+): { startTime: string; durationMinutes: number } | null {
+  const wh = getWorkingHoursForDate(schedule, date);
+  if (!wh) return null;
+  const openM = timeToMinutes(wh.open);
+  const closeM = timeToMinutes(wh.close);
+  if (closeM <= openM) return null;
+  return { startTime: wh.open, durationMinutes: closeM - openM };
+}
+
+/**
+ * True if the full working interval [open, close] is free (no overlap with occupied ranges on that calendar day).
+ */
+export function isWorkingDayWindowAvailable(
+  date: Date,
+  occupied: OccupiedSlot[],
+  schedule: ScheduleData | null
+): boolean {
+  const wh = getWorkingHoursForDate(schedule, date);
+  if (!wh) return false;
+  const openM = timeToMinutes(wh.open);
+  const closeM = timeToMinutes(wh.close);
+  if (closeM <= openM) return false;
+
+  const windowStart = new Date(date);
+  windowStart.setHours(Math.floor(openM / 60), openM % 60, 0, 0);
+  const windowEnd = new Date(date);
+  windowEnd.setHours(Math.floor(closeM / 60), closeM % 60, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const slotDate = new Date(date);
+  slotDate.setHours(0, 0, 0, 0);
+  if (slotDate.getTime() < today.getTime()) return false;
+  if (slotDate.getTime() === today.getTime() && windowEnd.getTime() <= Date.now()) return false;
+
+  const dateStr = getDateKey(date);
+  for (const { start, end } of occupied) {
+    if (getDateKey(start) !== dateStr) continue;
+    if (start < windowEnd && end > windowStart) return false;
+  }
+  return true;
+}
+
+/**
+ * True if each of `dayCount` consecutive calendar days starting at `startDate` has a free full working window.
+ */
+export function isMultiDayFullDaysStartAvailable(
+  startDate: Date,
+  dayCount: number,
+  occupied: OccupiedSlot[],
+  schedule: ScheduleData | null
+): boolean {
+  const n = Math.max(1, Math.floor(dayCount));
+  for (let i = 0; i < n; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    if (!isWorkingDayWindowAvailable(d, occupied, schedule)) return false;
+  }
+  return true;
+}
