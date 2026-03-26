@@ -2,6 +2,7 @@
 
 import { bookAppointment } from '@/lib/book-appointment'
 import { getDateKey } from '@/lib/booking'
+import { getBookingAccent } from '@/lib/booking-accent'
 import type { BookingFormData } from '@/lib/booking-schema'
 import { formatDateForEmail, formatTimeForEmail } from '@/lib/format-date'
 import type { Place } from '@/lib/places'
@@ -11,7 +12,6 @@ import { Search as SearchIcon } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { getBookingAccent } from '@/lib/booking-accent'
 import { toast } from 'sonner'
 import {
 	BookingFlowProvider,

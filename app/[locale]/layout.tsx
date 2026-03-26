@@ -28,12 +28,6 @@ export default async function LocaleLayout({
         {children}
         <Toaster theme="dark" position="bottom-center" />
       </Providers>
-      <a
-        href="/ru/admin"
-        className="fixed bottom-4 right-4 text-xs text-icyWhite/40 hover:text-icyWhite/70 transition-colors"
-      >
-        Admin
-      </a>
     </NextIntlClientProvider>
   );
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { useCookieConsent } from '@/components/CookieConsentContext'
 import GlowText from '@/components/GlowText'
 import Navbar from '@/components/Navbar'
 import {
@@ -137,6 +138,8 @@ const FAQ_ITEMS = [
 export default function MassagePage() {
 	const t = useTranslations('massage')
 	const tCommon = useTranslations('common')
+	const tCookie = useTranslations('cookieConsent')
+	const { openPreferences } = useCookieConsent()
 	const params = useParams()
 	const locale = (params?.locale as string) ?? 'sk'
 	const sliderRef = useRef<HTMLDivElement>(null)
@@ -828,8 +831,7 @@ export default function MassagePage() {
 					<div className='relative'>
 						<div
 							ref={testimonialRef}
-							className='flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6'
-							style={{ scrollbarWidth: 'none' }}
+							className='flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 						>
 							{TESTIMONIALS.map((key, i) => (
 								<motion.blockquote
@@ -1332,21 +1334,28 @@ export default function MassagePage() {
 
 					<div className='border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4'>
 						<p className='text-icyWhite/30 text-xs'>
-							&copy; {new Date().getFullYear()} V Studio. {t('footer.rights')}
+							&copy; {new Date().getFullYear()} V2Studio. {t('footer.rights')}
 						</p>
-						<div className='flex items-center gap-6'>
-							<a
-								href='#'
+						<div className='flex flex-wrap items-center justify-center sm:justify-end gap-x-6 gap-y-2'>
+							<Link
+								href={`/${locale}/privacy`}
 								className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'
 							>
 								{t('footer.privacy')}
-							</a>
-							<a
-								href='#'
+							</Link>
+							<Link
+								href={`/${locale}/cookies`}
 								className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'
 							>
 								{t('footer.cookies')}
-							</a>
+							</Link>
+							<button
+								type='button'
+								onClick={openPreferences}
+								className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'
+							>
+								{tCookie('manageSettings')}
+							</button>
 						</div>
 					</div>
 				</div>

@@ -120,14 +120,76 @@
 	position: relative;
 }
 
-/* Infinite horizontal marquee — trust bar */
-.marquee-track {
-	display: flex;
-	width: max-content;
-	animation: marquee 30s linear infinite;
+/*
+ * Depilation trust marquee — seamless infinite loop.
+ * Content is repeated 4× in React; one cycle = translateX(-25%) = exactly one segment width.
+ */
+@keyframes marquee-trust-seamless {
+	from {
+		transform: translate3d(0, 0, 0);
+	}
+	to {
+		transform: translate3d(-25%, 0, 0);
+	}
 }
-.marquee-track:hover {
+
+.marquee-track-trust {
+	display: flex;
+	flex-flow: row nowrap;
+	width: max-content;
+	flex-shrink: 0;
+	animation: marquee-trust-seamless 52s linear infinite;
+	will-change: transform;
+	backface-visibility: hidden;
+}
+
+.marquee-track-trust:hover {
 	animation-play-state: paused;
+}
+
+/* Slightly slower on small screens so copy stays readable */
+@media (min-width: 640px) {
+	.marquee-track-trust {
+		animation-duration: 46s;
+	}
+}
+
+@media (min-width: 1024px) {
+	.marquee-track-trust {
+		animation-duration: 40s;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.marquee-track-trust {
+		animation: none;
+		transform: translate3d(0, 0, 0);
+	}
+}
+
+/* Soft fade at left/right on phones/tablets — avoids hard clipping */
+.trust-marquee-viewport {
+	-webkit-mask-image: linear-gradient(
+		90deg,
+		transparent,
+		#000 5%,
+		#000 95%,
+		transparent
+	);
+	mask-image: linear-gradient(
+		90deg,
+		transparent,
+		#000 5%,
+		#000 95%,
+		transparent
+	);
+}
+
+@media (min-width: 1024px) {
+	.trust-marquee-viewport {
+		-webkit-mask-image: none;
+		mask-image: none;
+	}
 }
 
 /* Glass card for premium feel */
@@ -159,8 +221,12 @@
 		transparent 60%,
 		rgba(232, 184, 0, 0.2)
 	);
-	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-	mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+	-webkit-mask:
+		linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+	mask:
+		linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
 	-webkit-mask-composite: xor;
 	mask-composite: exclude;
 	pointer-events: none;

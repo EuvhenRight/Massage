@@ -52,8 +52,8 @@ export function getPlaceAccentUi(place: Place) {
 			: "inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-[0.2em] uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-all duration-300",
 		menuNumber: m ? "text-purple-soft/30" : "text-gold-soft/30",
 		menuTitle: m
-			? "font-serif text-3xl sm:text-4xl lg:text-5xl text-icyWhite/90 group-hover:text-purple-soft transition-colors duration-300 tracking-tight"
-			: "font-serif text-3xl sm:text-4xl lg:text-5xl text-icyWhite/90 group-hover:text-gold-soft transition-colors duration-300 tracking-tight",
+			? "font-serif text-3xl sm:text-4xl md:text-3xl lg:text-4xl text-icyWhite/90 group-hover:text-purple-soft transition-colors duration-300 tracking-tight"
+			: "font-serif text-3xl sm:text-4xl md:text-3xl lg:text-4xl text-icyWhite/90 group-hover:text-gold-soft transition-colors duration-300 tracking-tight",
 		menuArrow: m
 			? "ml-auto text-purple-soft/0 group-hover:text-purple-soft/60 transition-colors duration-300"
 			: "ml-auto text-gold-soft/0 group-hover:text-gold-soft/60 transition-colors duration-300",

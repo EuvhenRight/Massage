@@ -1,5 +1,6 @@
 'use client'
 
+import { useCookieConsent } from '@/components/CookieConsentContext'
 import GlowText from '@/components/GlowText'
 import Navbar from '@/components/Navbar'
 import {
@@ -25,14 +26,16 @@ import {
 } from 'framer-motion'
 import {
 	ArrowDown,
-	Award,
 	BadgeCheck,
 	Calendar,
 	ChevronLeft,
 	ChevronRight,
 	Clock,
 	Facebook,
-	Heart,
+	Feather,
+	FingerprintPattern,
+	Gem,
+	HeartHandshake,
 	Instagram,
 	Mail,
 	MapPin,
@@ -40,19 +43,16 @@ import {
 	Navigation,
 	Phone,
 	Send,
-	Shield,
 	ShieldCheck,
 	Sparkles,
 	Star,
 	ThermometerSun,
-	Trophy,
-	Users,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 
 const IMG = {
 	about:
@@ -70,25 +70,25 @@ const IMG = {
 }
 
 const VALUES = [
-	{ key: 'valueHygiene' as const, icon: Shield },
-	{ key: 'valueDelicacy' as const, icon: Heart },
-	{ key: 'valueIndividual' as const, icon: Users },
-	{ key: 'valueService' as const, icon: Sparkles },
-	{ key: 'valueAtmosphere' as const, icon: Calendar },
+	{ key: 'valueHygiene' as const, icon: ShieldCheck },
+	{ key: 'valueDelicacy' as const, icon: Feather },
+	{ key: 'valueIndividual' as const, icon: FingerprintPattern },
+	{ key: 'valueService' as const, icon: Gem },
+	{ key: 'valueAtmosphere' as const, icon: HeartHandshake },
 ]
 
-const ACHIEVEMENTS = [
-	{ key: 'achievement1' as const, icon: Trophy },
-	{ key: 'achievement2' as const, icon: Award },
-	{ key: 'achievement3' as const, icon: BadgeCheck },
-	{ key: 'achievement4' as const, icon: Sparkles },
-	{ key: 'achievement5' as const, icon: Star },
-]
+const ACHIEVEMENT_KEYS = [
+	'achievement1',
+	'achievement2',
+	'achievement3',
+	'achievement4',
+	'achievement5',
+] as const
 
 const TRUST_ITEMS = [
 	'trustYears',
-	'trustChampion',
 	'trustMedical',
+	'trustChampion',
 	'trustTechniques',
 	'trustClients',
 ] as const
@@ -188,6 +188,18 @@ const scaleUp = {
 export default function DepilationPage() {
 	const t = useTranslations('depilation')
 	const tCommon = useTranslations('common')
+	const tCookie = useTranslations('cookieConsent')
+	const { openPreferences } = useCookieConsent()
+	const richStudioBrand = useMemo(
+		() => ({
+			brand: (chunks: ReactNode) => (
+				<span className='inline font-semibold text-gold-glow tracking-[0.06em] drop-shadow-[0_0_12px_rgba(255,214,51,0.35)] normal-case'>
+					{chunks}
+				</span>
+			),
+		}),
+		[],
+	)
 	const params = useParams()
 	const locale = (params?.locale as string) ?? 'sk'
 	const sliderRef = useRef<HTMLDivElement>(null)
@@ -199,8 +211,11 @@ export default function DepilationPage() {
 		target: heroRef,
 		offset: ['start start', 'end start'],
 	})
+	const { scrollY } = useScroll()
 	const heroImgY = useTransform(scrollYProgress, [0, 1], ['0%', '25%'])
 	const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
+	/** Scroll down → marquee shifts right; back to top → shifts left */
+	const trustMarqueeX = useTransform(scrollY, [0, 900], [0, 140])
 
 	const [heroScrolled, setHeroScrolled] = useState(false)
 	const [showFloatingCTA, setShowFloatingCTA] = useState(false)
@@ -234,8 +249,10 @@ export default function DepilationPage() {
 		})),
 	}
 
-	const trustContent = TRUST_ITEMS.map(key => t(`trust.${key}`))
-	const duplicatedTrust = [...trustContent, ...trustContent]
+	/** One segment = full trust list; 4 identical segments → loop at -25% translate = seamless */
+	const TRUST_MARQUEE_COPIES = 4
+	const trustSegment = TRUST_ITEMS.map(key => t(`trust.${key}`))
+	const duplicatedTrust = Array.from({ length: TRUST_MARQUEE_COPIES }, () => trustSegment).flat()
 
 	return (
 		<>
@@ -294,7 +311,7 @@ export default function DepilationPage() {
 					transition={{ duration: 0.6, delay: 0.2 }}
 					className='relative z-10 w-full shrink-0 text-center text-gold-soft/60 text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
 				>
-					{t('heroBadge')}
+					{t.rich('heroBadge', richStudioBrand)}
 				</motion.p>
 
 				{/* Main hero content */}
@@ -308,7 +325,7 @@ export default function DepilationPage() {
 						transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
 						className='text-center'
 					>
-						<div className='flex justify-center mb-10 sm:mb-0'>
+						<div className='flex justify-center mb-10 sm:mb-20 md:mb-20 lg:mb-0'>
 							<Image
 								src='/images/Gemini_yellow2.png'
 								alt='V2studio'
@@ -327,7 +344,9 @@ export default function DepilationPage() {
 							transition={{ delay: 0.8, duration: 0.8 }}
 							className='-mt-1 text-gold-soft/80 text-xs sm:text-sm tracking-wider uppercase max-w-lg mx-auto leading-relaxed'
 						>
-							{t('hero')}
+							{t('heroLine1')}
+							<br />
+							{t('heroLine2')}
 						</motion.p>
 
 						<motion.div
@@ -357,7 +376,7 @@ export default function DepilationPage() {
 						initial={{ opacity: 0 }}
 						animate={{ opacity: heroScrolled ? 0 : 1 }}
 						transition={{ duration: 0.4 }}
-						className='absolute bottom-6 sm:bottom-16 left-1/2 -translate-x-1/2'
+						className='absolute bottom-6 sm:bottom-6 left-1/2 -translate-x-1/2'
 					>
 						<motion.div
 							animate={{ y: [0, 8, 0] }}
@@ -368,30 +387,35 @@ export default function DepilationPage() {
 					</motion.div>
 				</motion.div>
 
-				{/* Trust bar — infinite marquee, anchored to bottom */}
+				{/* Trust bar — seamless 4-segment loop + soft edges on mobile/tablet */}
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ delay: 1.2, duration: 0.6 }}
-					className='relative z-10 mt-auto shrink-0 py-4 border-t border-white/[0.06] bg-nearBlack/70 backdrop-blur-md overflow-hidden'
+					className='relative z-10 mt-auto shrink-0 py-3.5 sm:py-4 border-t border-white/[0.06] bg-nearBlack/70 backdrop-blur-md overflow-hidden trust-marquee-viewport'
 					aria-label={t('trustBarLabel')}
 				>
-					<div className='marquee-track'>
-						{duplicatedTrust.map((text, i) => (
-							<span
-								key={i}
-								className='flex items-center gap-3 sm:gap-4 px-4 sm:px-6 shrink-0'
-							>
+					<motion.div
+						style={{ x: trustMarqueeX }}
+						className='will-change-transform'
+					>
+						<div className='marquee-track-trust' aria-hidden>
+							{duplicatedTrust.map((text, i) => (
 								<span
-									className='w-1 h-1 rounded-full bg-gold-soft/50'
-									aria-hidden
-								/>
-								<span className='text-gold-soft/70 text-[11px] sm:text-xs tracking-[0.2em] uppercase whitespace-nowrap font-medium'>
-									{text}
+									key={`trust-marquee-${i}`}
+									className='flex items-center gap-2 sm:gap-3 md:gap-4 pl-3 pr-2.5 sm:pl-4 sm:pr-3 md:px-5 shrink-0'
+								>
+									<span
+										className='w-1 h-1 rounded-full bg-gold-soft/50 shrink-0'
+										aria-hidden
+									/>
+									<span className='text-gold-soft/70 text-[10px] sm:text-xs tracking-[0.12em] sm:tracking-[0.2em] uppercase whitespace-nowrap font-medium'>
+										{text}
+									</span>
 								</span>
-							</span>
-						))}
-					</div>
+							))}
+						</div>
+					</motion.div>
 				</motion.div>
 			</section>
 
@@ -405,21 +429,21 @@ export default function DepilationPage() {
 				<div className='absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-gold-soft/[0.02] blur-[150px] pointer-events-none' />
 
 				<div className='max-w-6xl mx-auto'>
-					<div className='grid lg:grid-cols-2 gap-12 lg:gap-20 items-center'>
+					<div className='grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-stretch'>
 						<motion.div
 							initial={{ opacity: 0, x: -40, scale: 0.96 }}
 							whileInView={{ opacity: 1, x: 0, scale: 1 }}
 							viewport={{ once: true, margin: '-80px' }}
 							transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-							className='relative'
+							className='relative order-1 md:h-full md:min-h-0'
 						>
-							<div className='relative aspect-[3/4] rounded-3xl overflow-hidden'>
+							<div className='relative w-full aspect-[3/4] rounded-3xl overflow-hidden md:aspect-auto md:h-full md:min-h-0'>
 								<Image
 									src={IMG.about}
 									alt='Natalie Volik'
 									fill
 									className='object-cover'
-									sizes='(max-width: 1024px) 100vw, 50vw'
+									sizes='(max-width: 768px) 100vw, 50vw'
 								/>
 								<div className='absolute inset-0 bg-gradient-to-t from-nearBlack/60 via-transparent to-transparent' />
 							</div>
@@ -432,43 +456,49 @@ export default function DepilationPage() {
 							initial='hidden'
 							whileInView='show'
 							viewport={{ once: true, margin: '-80px' }}
+							className='flex flex-col md:h-full md:min-h-0 order-2 lg:pl-2 max-w-[40rem] md:max-w-none gap-5 sm:gap-6'
 						>
-							<motion.h2
-								id='about-heading'
-								variants={fadeUp}
-								className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-8'
-							>
-								{t('aboutTitle')}
-							</motion.h2>
+							<motion.div variants={fadeUp} className='space-y-3'>
+								<h2
+									id='about-heading'
+									className='font-serif text-3xl sm:text-4xl md:text-[2.125rem] lg:text-[2.375rem] text-icyWhite tracking-tight leading-[1.15]'
+								>
+									{t('aboutTitle')}
+								</h2>
+								<div
+									className='h-px w-12 bg-gold-soft/45 rounded-full'
+									aria-hidden
+								/>
+							</motion.div>
 							<motion.p
 								variants={fadeUp}
-								className='text-gold-soft/90 text-lg sm:text-xl font-medium leading-relaxed mb-5'
+								className='text-base sm:text-[1.0625rem] text-gold-soft/88 font-medium leading-[1.65]'
 							>
-								{t('aboutIntro')}
+								{t.rich('aboutIntro', richStudioBrand)}
 							</motion.p>
 							<motion.p
 								variants={fadeUp}
-								className='text-icyWhite/70 leading-relaxed mb-4'
+								className='text-base sm:text-[1.0625rem] text-icyWhite/72 leading-[1.65]'
 							>
 								{t('aboutJourney')}
 							</motion.p>
 							<motion.div
 								variants={fadeUp}
-								className='my-6 p-4 rounded-2xl glass-card'
+								className='border-l-2 border-gold-soft/45 pl-4 sm:pl-5 py-0.5'
 							>
-								<p className='text-gold-soft/80 font-medium text-sm tracking-wide'>
+								<p className='text-base sm:text-[1.0625rem] text-icyWhite/78 leading-[1.65] font-medium'>
 									{t('aboutExpertise')}
 								</p>
 							</motion.div>
 							<motion.p
 								variants={fadeUp}
-								className='text-icyWhite/65 leading-relaxed mb-4'
+								className='text-base sm:text-[1.0625rem] text-icyWhite/72 leading-[1.65]'
 							>
 								{t('aboutMedical')}
 							</motion.p>
 							<motion.p
 								variants={fadeUp}
-								className='text-icyWhite/60 leading-relaxed italic'
+								className='text-base sm:text-[1.0625rem] text-icyWhite/62 leading-[1.65] italic pt-5 sm:pt-6 mt-1 border-t border-white/[0.08] md:mt-auto'
 							>
 								{t('aboutContinuous')}
 							</motion.p>
@@ -477,53 +507,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			{/* ── 3. PHILOSOPHY — immersive quote ── */}
-			<section
-				id='philosophy'
-				className='relative py-24 sm:py-32 lg:py-40 px-5 sm:px-6 lg:px-8 overflow-hidden'
-				aria-labelledby='philosophy-heading'
-			>
-				{/* Gradient backdrop */}
-				<div className='absolute inset-0 bg-gradient-to-b from-nearBlack via-nearBlack/95 to-nearBlack' />
-				<div className='absolute inset-0 overflow-hidden pointer-events-none'>
-					<div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full bg-gold-soft/[0.03] blur-[150px]' />
-				</div>
-
-				<div className='relative max-w-4xl mx-auto text-center'>
-					<motion.div
-						initial={{ opacity: 0, scale: 0.95 }}
-						whileInView={{ opacity: 1, scale: 1 }}
-						viewport={{ once: true }}
-						transition={{ duration: 0.8 }}
-					>
-						<motion.span
-							initial={{ width: 0 }}
-							whileInView={{ width: 64 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.6, delay: 0.2 }}
-							className='block h-px bg-gold-soft/40 mx-auto mb-10'
-						/>
-						<h2
-							id='philosophy-heading'
-							className='font-serif text-2xl md:text-3xl text-icyWhite/50 mb-8 tracking-wide'
-						>
-							{t('philosophyTitle')}
-						</h2>
-						<blockquote className='font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] text-gold-soft/90 leading-snug sm:leading-relaxed'>
-							&ldquo;{t('philosophyQuote')}&rdquo;
-						</blockquote>
-						<motion.span
-							initial={{ width: 0 }}
-							whileInView={{ width: 64 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.6, delay: 0.4 }}
-							className='block h-px bg-gold-soft/40 mx-auto mt-10'
-						/>
-					</motion.div>
-				</div>
-			</section>
-
-			{/* ── 4. WHAT YOU GET — value cards with glass effect ── */}
+			{/* ── 3. WHAT YOU GET — value cards with glass effect ── */}
 			<section
 				id='how-i-help'
 				className='py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8'
@@ -540,13 +524,10 @@ export default function DepilationPage() {
 						<motion.h2
 							variants={fadeUp}
 							id='how-i-help-heading'
-							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite max-w-4xl mx-auto leading-tight sm:leading-snug'
 						>
-							{t('howIHelpTitle')}
+							{t.rich('howIHelpTitle', richStudioBrand)}
 						</motion.h2>
-						<motion.p variants={fadeUp} className='text-icyWhite/50 text-lg'>
-							{t('howIHelpIntro')}
-						</motion.p>
 					</motion.div>
 					<motion.div
 						variants={stagger}
@@ -582,57 +563,72 @@ export default function DepilationPage() {
 				<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/50 via-nearBlack/80 to-nearBlack/50' />
 
 				<div className='relative max-w-6xl mx-auto'>
-					<div className='grid lg:grid-cols-2 gap-12 lg:gap-20 items-center'>
+					<div className='grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-stretch'>
 						<motion.div
 							initial={{ opacity: 0, x: -40 }}
 							whileInView={{ opacity: 1, x: 0 }}
 							viewport={{ once: true, margin: '-60px' }}
 							transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-							className='relative order-2 lg:order-1'
+							className='relative order-2 md:order-1 md:h-full md:min-h-0'
 						>
-							<div className='relative aspect-[4/3] rounded-3xl overflow-hidden'>
+							<div className='relative w-full aspect-[4/3] rounded-3xl overflow-hidden md:aspect-auto md:h-full md:min-h-0'>
 								<Image
 									src={IMG.certificate}
 									alt=''
 									fill
 									className='object-cover'
-									sizes='(max-width: 1024px) 100vw, 50vw'
+									sizes='(max-width: 768px) 100vw, 50vw'
 								/>
 								<div className='absolute inset-0 bg-gradient-to-tr from-nearBlack/50 to-transparent' />
 							</div>
 						</motion.div>
 
-						<motion.div
-							variants={stagger}
-							initial='hidden'
-							whileInView='show'
-							viewport={{ once: true, margin: '-60px' }}
-							className='order-1 lg:order-2'
-						>
+						<div className='order-1 md:order-2 flex flex-col md:h-full md:min-h-0 lg:pl-2'>
 							<motion.h2
 								variants={fadeUp}
+								initial='hidden'
+								whileInView='show'
+								viewport={{ once: true, margin: '-60px' }}
 								id='achievements-heading'
-								className='font-serif text-4xl sm:text-5xl text-icyWhite mb-10'
+								className='font-serif text-3xl sm:text-4xl md:text-[2.125rem] text-icyWhite tracking-tight mb-2'
 							>
 								{t('achievementsTitle')}
 							</motion.h2>
-							<div className='space-y-3'>
-								{ACHIEVEMENTS.map(({ key, icon: Icon }) => (
-									<motion.div
+							<motion.div
+								variants={fadeUp}
+								initial='hidden'
+								whileInView='show'
+								viewport={{ once: true, margin: '-60px' }}
+								className='h-px w-12 bg-gold-soft/45 rounded-full mb-8'
+								aria-hidden
+							/>
+							<motion.ul
+								variants={stagger}
+								initial='hidden'
+								whileInView='show'
+								viewport={{ once: true, margin: '-60px' }}
+								className='m-0 flex list-none flex-col gap-3 p-0 sm:gap-3.5'
+								role='list'
+							>
+								{ACHIEVEMENT_KEYS.map(key => (
+									<motion.li
 										key={key}
 										variants={fadeUp}
-										className='flex items-center gap-4 p-4 rounded-xl glass-card group hover:border-gold-soft/20 transition-all duration-400'
+										className='group relative flex items-start gap-3.5 overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent px-4 py-3.5 transition-all duration-300 hover:border-gold-soft/25 hover:shadow-[0_0_28px_-8px_rgba(232,184,0,0.15)] sm:gap-4 sm:px-5 sm:py-4'
 									>
-										<div className='w-10 h-10 rounded-lg bg-gold-soft/10 flex items-center justify-center shrink-0 group-hover:bg-gold-soft/20 transition-colors'>
-											<Icon className='w-5 h-5 text-gold-soft/80' aria-hidden />
-										</div>
-										<p className='text-icyWhite/80 text-sm font-medium'>
+										<span
+											className='mt-0.5 select-none font-serif text-base leading-none text-gold-glow drop-shadow-[0_0_14px_rgba(255,214,51,0.45)] sm:mt-1 sm:text-lg'
+											aria-hidden
+										>
+											✦
+										</span>
+										<p className='min-w-0 flex-1 text-sm font-medium leading-relaxed tracking-wide text-icyWhite/82 group-hover:text-icyWhite/90 sm:text-[0.9375rem]'>
 											{t(key)}
 										</p>
-									</motion.div>
+									</motion.li>
 								))}
-							</div>
-						</motion.div>
+							</motion.ul>
+						</div>
 					</div>
 				</div>
 			</section>
@@ -748,16 +744,10 @@ export default function DepilationPage() {
 						<motion.h2
 							variants={fadeUp}
 							id='process-heading'
-							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-10 sm:mb-12'
 						>
 							{t('process.title')}
 						</motion.h2>
-						<motion.p
-							variants={fadeUp}
-							className='text-icyWhite/50 max-w-2xl mx-auto text-lg'
-						>
-							{t('process.subtitle')}
-						</motion.p>
 					</motion.div>
 
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-6'>
@@ -1012,7 +1002,7 @@ export default function DepilationPage() {
 					<div className='relative'>
 						<div
 							ref={testimonialRef}
-							className='flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
+							className='flex gap-5 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 						>
 							{TESTIMONIALS.map((key, i) => (
 								<motion.blockquote
@@ -1422,7 +1412,7 @@ export default function DepilationPage() {
 							variants={fadeUp}
 							className='text-icyWhite/60 mb-12 leading-relaxed text-lg max-w-xl mx-auto'
 						>
-							{t('reserveDesc')}
+							{t.rich('reserveDesc', richStudioBrand)}
 						</motion.p>
 						<motion.div
 							variants={fadeUp}
@@ -1555,21 +1545,28 @@ export default function DepilationPage() {
 
 					<div className='border-t border-white/[0.04] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4'>
 						<p className='text-icyWhite/25 text-xs'>
-							&copy; {new Date().getFullYear()} V Studio. {t('footer.rights')}
+							&copy; {new Date().getFullYear()} V2Studio. {t('footer.rights')}
 						</p>
-						<div className='flex items-center gap-6'>
-							<a
-								href='#'
+						<div className='flex flex-wrap items-center justify-center sm:justify-end gap-x-6 gap-y-2'>
+							<Link
+								href={`/${locale}/privacy`}
 								className='text-icyWhite/25 hover:text-icyWhite/40 text-xs transition-colors duration-300'
 							>
 								{t('footer.privacy')}
-							</a>
-							<a
-								href='#'
+							</Link>
+							<Link
+								href={`/${locale}/cookies`}
 								className='text-icyWhite/25 hover:text-icyWhite/40 text-xs transition-colors duration-300'
 							>
 								{t('footer.cookies')}
-							</a>
+							</Link>
+							<button
+								type='button'
+								onClick={openPreferences}
+								className='text-icyWhite/25 hover:text-icyWhite/40 text-xs transition-colors duration-300'
+							>
+								{tCookie('manageSettings')}
+							</button>
 						</div>
 					</div>
 				</div>

@@ -91,7 +91,7 @@ export default function LanguageSwitcher({
   const isNavigating = pendingLocale !== null;
 
   return (
-    <div className={`flex flex-col items-center gap-1 [&_button]:bg-transparent [&_button]:shadow-none ${className}`}>
+    <div className={`[&_button]:bg-transparent [&_button]:shadow-none ${className}`}>
       <Select
         value={currentLocale}
         onValueChange={handleLocaleChange}
@@ -99,7 +99,7 @@ export default function LanguageSwitcher({
         aria-label="Select language"
       >
         <SelectTrigger
-          className={`relative h-9 w-9 min-w-9 shrink-0 rounded-full border-0 border-none bg-transparent p-0 shadow-none outline-none text-icyWhite hover:opacity-80 focus:ring-2 focus:ring-offset-2 focus:ring-offset-nearBlack [&>svg]:hidden ${ui.langFocus}`}
+          className={`relative flex h-auto w-auto min-w-0 cursor-pointer flex-col items-center gap-0.5 rounded-xl border-0 border-none bg-transparent px-2 py-1 shadow-none outline-none text-icyWhite hover:opacity-80 transition-all duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-offset-nearBlack [&>svg]:hidden ${ui.langFocus}`}
         >
           {isNavigating && (
             <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2" aria-hidden>
@@ -107,27 +107,27 @@ export default function LanguageSwitcher({
             </span>
           )}
           <SelectValue>
-            <span className={`flex h-full w-full items-center justify-center ${isNavigating ? "invisible" : ""}`} aria-hidden>
+            <span className={`flex flex-col items-center gap-0.5 ${isNavigating ? "invisible" : ""}`} aria-hidden>
               <FlagCircle locale={currentLocale} />
+              <span className="text-[10px] font-semibold uppercase leading-none text-icyWhite">
+                {LOCALE_LABELS[currentLocale]}
+              </span>
             </span>
           </SelectValue>
         </SelectTrigger>
-      <SelectContent className="min-w-[72px]">
-        {order.map((locale) => (
-          <SelectItem
-            key={locale}
-            value={locale}
-            className="cursor-pointer flex flex-col items-center gap-1 py-2"
-          >
-            <FlagCircle locale={locale} />
-            <span className="text-xs font-semibold uppercase">{LOCALE_LABELS[locale]}</span>
-          </SelectItem>
-        ))}
-      </SelectContent>
+        <SelectContent className="min-w-[72px]">
+          {order.map((locale) => (
+            <SelectItem
+              key={locale}
+              value={locale}
+              className="cursor-pointer flex flex-col items-center gap-1 py-2"
+            >
+              <FlagCircle locale={locale} />
+              <span className="text-xs font-semibold uppercase">{LOCALE_LABELS[locale]}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
       </Select>
-      <span className="text-[10px] font-semibold uppercase leading-none text-icyWhite pointer-events-none">
-        {LOCALE_LABELS[currentLocale]}
-      </span>
     </div>
   );
 }
