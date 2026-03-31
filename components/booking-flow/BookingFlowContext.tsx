@@ -15,7 +15,6 @@ import {
   clearBookingDraft,
   parseDraftToState,
 } from "@/lib/booking-draft-storage";
-import { normalizeItemBookingDayCount } from "@/types/price-catalog";
 
 export type BookingStep = 1 | 2 | 3 | 4;
 
@@ -28,7 +27,6 @@ export interface BookingFlowState {
   time: string | null; // HH:mm
   durationMinutes: number;
   bookingGranularity: BookingGranularity;
-  /** Consecutive full working days when bookingGranularity is "day" */
   bookingDayCount: number;
   /** Shown on step 2 when bookingGranularity is "tbd" */
   scheduleTbdCustomerMessage: string;
@@ -57,13 +55,22 @@ const initialState: BookingFlowState = {
 function granularityFromService(
   svc:
     | {
-        bookingGranularity?: BookingGranularity;
+        bookingGranularity?: string;
       }
     | undefined
 ): BookingGranularity {
   if (svc?.bookingGranularity === "day") return "day";
   if (svc?.bookingGranularity === "tbd") return "tbd";
   return "time";
+}
+
+function dayCountFromService(
+  svc: { bookingDayCount?: number; bookingGranularity?: string } | undefined
+): number {
+  if (svc?.bookingGranularity !== "day") return 1;
+  const n = Math.floor(Number(svc.bookingDayCount));
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(14, n);
 }
 
 interface BookingFlowContextValue extends BookingFlowState {
@@ -96,7 +103,7 @@ interface BookingFlowProviderProps {
     id?: string;
     title: string;
     durationMinutes?: number;
-    bookingGranularity?: BookingGranularity;
+    bookingGranularity?: string;
     bookingDayCount?: number;
     scheduleTbdMessage?: string;
     scheduleTbdAdminNote?: string;
@@ -124,9 +131,7 @@ export function BookingFlowProvider({
         service: (defaultService || firstService?.title) ?? "",
         durationMinutes: firstService?.durationMinutes ?? defaultDuration,
         bookingGranularity: granularityFromService(firstService),
-        bookingDayCount: normalizeItemBookingDayCount(
-          firstService?.bookingDayCount
-        ),
+        bookingDayCount: dayCountFromService(firstService),
         scheduleTbdCustomerMessage: granularityFromService(firstService) === "tbd"
           ? (firstService?.scheduleTbdMessage ?? "")
           : "",
@@ -146,7 +151,7 @@ export function BookingFlowProvider({
         time: parsed.time,
         durationMinutes: parsed.durationMinutes,
         bookingGranularity: parsed.bookingGranularity,
-        bookingDayCount: parsed.bookingDayCount,
+        bookingDayCount: parsed.bookingDayCount ?? 1,
         scheduleTbdCustomerMessage: parsed.scheduleTbdCustomerMessage,
         scheduleTbdAdminHint: parsed.scheduleTbdAdminHint,
         fullName: parsed.fullName,
@@ -159,9 +164,7 @@ export function BookingFlowProvider({
       service: "",
       durationMinutes: firstService?.durationMinutes ?? defaultDuration,
       bookingGranularity: granularityFromService(firstService),
-      bookingDayCount: normalizeItemBookingDayCount(
-        firstService?.bookingDayCount
-      ),
+      bookingDayCount: dayCountFromService(firstService),
       scheduleTbdCustomerMessage:
         granularityFromService(firstService) === "tbd"
           ? (firstService?.scheduleTbdMessage ?? "")
@@ -218,17 +221,14 @@ export function BookingFlowProvider({
       const svc = services.find((x) => x.title === service);
       const duration = svc?.durationMinutes ?? defaultDuration;
       const bookingGranularity = granularityFromService(svc);
-      const bookingDayCount = normalizeItemBookingDayCount(
-        svc?.bookingDayCount
-      );
       return {
         ...s,
         service,
         durationMinutes: duration,
         bookingGranularity,
-        bookingDayCount: bookingGranularity === "day" ? bookingDayCount : 1,
+        bookingDayCount: dayCountFromService(svc),
         date: bookingGranularity === "tbd" ? null : s.date,
-        time: bookingGranularity === "tbd" ? null : s.time,
+        time: bookingGranularity === "day" || bookingGranularity === "tbd" ? null : s.time,
         scheduleTbdCustomerMessage:
           bookingGranularity === "tbd" ? (svc?.scheduleTbdMessage ?? "") : "",
         scheduleTbdAdminHint:
@@ -281,10 +281,7 @@ export function BookingFlowProvider({
       service: "",
       durationMinutes: first?.durationMinutes ?? defaultDuration,
       bookingGranularity: granularityFromService(first),
-      bookingDayCount:
-        first?.bookingGranularity === "day"
-          ? normalizeItemBookingDayCount(first?.bookingDayCount)
-          : 1,
+      bookingDayCount: dayCountFromService(first),
       scheduleTbdCustomerMessage:
         granularityFromService(first) === "tbd"
           ? (first?.scheduleTbdMessage ?? "")

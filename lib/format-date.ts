@@ -5,6 +5,14 @@
 
 type SupportedLocale = "sk" | "en" | "ru" | "uk";
 
+/**
+ * All supported UI locales use 24-hour times in `formatTime` / `formatTimeFromHourMinute`
+ * (consistent and unambiguous across sk, en, ru, uk).
+ */
+export function use24HourClock(_locale: string): boolean {
+  return true;
+}
+
 export function formatDate(
   date: Date,
   options: Intl.DateTimeFormatOptions & { locale?: string } = {}
@@ -23,13 +31,34 @@ export function formatTime(
   date: Date,
   options: Intl.DateTimeFormatOptions & { locale?: string } = {}
 ): string {
-  const { locale = "sk", ...opts } = options;
+  const { locale = "sk", hour12: hour12Opt, ...intlOpts } = options;
+  const hour12 =
+    hour12Opt !== undefined ? hour12Opt : !use24HourClock(locale);
   return date.toLocaleTimeString(locale as string, {
     hour: "numeric",
     minute: "2-digit",
-    hour12: true,
-    ...opts,
+    hour12,
+    ...intlOpts,
   });
+}
+
+/** Time label from wall-clock hour/minute (e.g. grid axis, "HH:mm" slot strings). */
+export function formatTimeFromHourMinute(
+  hour: number,
+  minute: number,
+  locale: string
+): string {
+  const d = new Date(2000, 0, 1, hour, minute, 0, 0);
+  return formatTime(d, { locale });
+}
+
+/** Display a wall time from booking slot string `HH:mm` using the active locale. */
+export function formatTimeFromSlotString(time: string, locale: string): string {
+  const parts = time.trim().split(":");
+  const h = Number(parts[0]);
+  const m = Number(parts[1]);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return time;
+  return formatTimeFromHourMinute(h, m, locale);
 }
 
 export function formatDateShort(
@@ -67,11 +96,7 @@ export function formatDateForEmail(date: Date): string {
   });
 }
 
-/** Format time for email body (Slovak) */
+/** Format time for email body (default site locale, same rules as `formatTime`) */
 export function formatTimeForEmail(date: Date): string {
-  return date.toLocaleTimeString(EMAIL_LOCALE, {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  return formatTime(date, { locale: EMAIL_LOCALE });
 }

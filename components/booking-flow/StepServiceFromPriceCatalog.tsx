@@ -2,11 +2,14 @@
 
 import { TruncateText } from '@/components/ui/truncate-text'
 import {
-	getDayBookingSlot,
 	getPrepBufferMinutes,
 	parseOccupiedSlots,
 	type OccupiedSlot,
 } from '@/lib/availability-firestore'
+import {
+	appointmentIntervalsFromDocs,
+	queryAppointmentsOverlappingRange,
+} from '@/lib/appointments-overlap-query'
 import type { BookingAccent } from '@/lib/booking-accent'
 import { db } from '@/lib/firebase'
 import type { Place } from '@/lib/places'
@@ -18,15 +21,8 @@ import {
 	type PriceLocale,
 	type SexKey,
 	type ZonePriceItem,
-	normalizeItemBookingDayCount,
 } from '@/types/price-catalog'
-import {
-	collection,
-	getDocs,
-	query,
-	Timestamp,
-	where,
-} from 'firebase/firestore'
+import { getDocs } from 'firebase/firestore'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Undo2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -192,21 +188,10 @@ export default function StepServiceFromPriceCatalog({
 
 	const handleSelectDate = useCallback(
 		(d: Date) => {
-			if (bookingGranularity === 'day' && schedule) {
-				const slot = getDayBookingSlot(d, schedule)
-				setDate(d, slot?.startTime ?? null)
-			} else {
-				setDate(d)
-			}
+			setDate(d)
 		},
-		[bookingGranularity, schedule, setDate],
+		[setDate],
 	)
-
-	useEffect(() => {
-		if (step !== 2 || bookingGranularity !== 'day' || !date || !schedule) return
-		const slot = getDayBookingSlot(date, schedule)
-		if (slot?.startTime) setTime(slot.startTime)
-	}, [step, bookingGranularity, date, schedule, setTime])
 
 	const [selectedSex, setSelectedSex] = useState<SexKey | null>(null)
 	const [activeServiceId, setActiveServiceId] = useState<string | null>(null)
@@ -228,7 +213,7 @@ export default function StepServiceFromPriceCatalog({
 	}, [place])
 
 	useEffect(() => {
-		if (step === 2 && bookingGranularity === 'tbd') {
+		if (step === 2 && (bookingGranularity === 'tbd' || bookingGranularity === 'day')) {
 			setOccupiedSlots([])
 			setLoading(false)
 			return
@@ -237,24 +222,18 @@ export default function StepServiceFromPriceCatalog({
 		async function fetchAppointments() {
 			setLoading(true)
 			try {
-				const start = new Date(year, monthNum, 1)
-				const end = new Date(year, monthNum + 1, 0)
-				end.setHours(23, 59, 59, 999)
-				const q = query(
-					collection(db, 'appointments'),
-					where('place', '==', place),
-					where('startTime', '>=', start),
-					where('startTime', '<=', end),
+				const rangeStart = new Date(year, monthNum, 1)
+				const rangeEnd = new Date(year, monthNum + 1, 0)
+				rangeEnd.setHours(23, 59, 59, 999)
+				const q = queryAppointmentsOverlappingRange(
+					db,
+					place,
+					rangeStart,
+					rangeEnd,
 				)
 				const snapshot = await getDocs(q)
 				if (cancelled) return
-				const appointments = snapshot.docs.map(docSnap => {
-					const d = docSnap.data()
-					return {
-						startTime: d.startTime as Timestamp,
-						endTime: d.endTime as Timestamp,
-					}
-				})
+				const appointments = appointmentIntervalsFromDocs(snapshot.docs)
 				setOccupiedSlots(
 					parseOccupiedSlots(appointments, getPrepBufferMinutes(schedule)),
 				)
@@ -685,29 +664,13 @@ export default function StepServiceFromPriceCatalog({
 																									</span>
 																								</div>
 																								<div className='flex items-center gap-2 mt-0.5'>
-																									<span className='text-icyWhite/55 text-xs'>
-																										{item.bookingGranularity ===
-																										'day'
-																											? normalizeItemBookingDayCount(
-																													item.bookingDayCount,
-																												) > 1
-																												? t(
-																														'fullDaysBookingCount',
-																														{
-																															count:
-																																normalizeItemBookingDayCount(
-																																	item.bookingDayCount,
-																																),
-																														},
-																													)
-																												: t('fullDayBooking')
-																											: item.bookingGranularity ===
-																												  'tbd'
-																												? t(
-																														'scheduleTbdBookingBadge',
-																													)
-																												: `${item.durationMinutes} ${tPrice('min')}`}
-																									</span>
+																	<span className='text-icyWhite/55 text-xs'>
+																		{item.bookingGranularity === 'tbd'
+																		? t('scheduleTbdBookingBadge')
+																		: item.bookingGranularity === 'day'
+																			? t('allDayBadge', { count: item.bookingDayCount ?? 1 })
+																			: `${item.durationMinutes} ${tPrice('min')}`}
+																	</span>
 																									{desc && (
 																										<button
 																											type='button'
@@ -781,56 +744,47 @@ export default function StepServiceFromPriceCatalog({
 				</motion.div>
 			)}
 
-			{step === 2 && service && bookingGranularity !== 'tbd' && (
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ duration: 0.2 }}
-					className='flex flex-col flex-1 min-h-0'
-				>
-					<div className='flex-1 min-h-0 flex flex-col overflow-hidden'>
-						<PublicDatePicker
+		{step === 2 && service && bookingGranularity !== 'tbd' && (
+			<motion.div
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: 0.2 }}
+				className='flex flex-col flex-1 min-h-0'
+			>
+				{bookingGranularity === 'day' && (
+					<p className='text-sm text-icyWhite/70 mb-3'>
+						{t('allDayBookingHint', { count: bookingDayCount })}
+					</p>
+				)}
+				<div className='flex-1 min-h-0 flex flex-col overflow-hidden'>
+					<PublicDatePicker
+						accent={accent}
+						selectedDate={date}
+						onSelectDate={handleSelectDate}
+						occupiedSlots={occupiedSlots}
+						durationMinutes={durationMinutes}
+						month={month}
+						onMonthChange={d =>
+							setMonth(new Date(d.getFullYear(), d.getMonth(), 1))
+						}
+						schedule={schedule}
+					/>
+				</div>
+				{bookingGranularity !== 'day' && date && (
+					<div className='flex-shrink-0 pt-4'>
+						<TimeSlotPicker
 							accent={accent}
-							selectedDate={date}
-							onSelectDate={handleSelectDate}
+							date={date}
+							selectedTime={time}
+							onSelectTime={setTime}
 							occupiedSlots={occupiedSlots}
 							durationMinutes={durationMinutes}
-							bookingGranularity={bookingGranularity}
-							multiDayCount={
-								bookingGranularity === 'day' ? bookingDayCount : 1
-							}
-							month={month}
-							onMonthChange={d =>
-								setMonth(new Date(d.getFullYear(), d.getMonth(), 1))
-							}
 							schedule={schedule}
 						/>
 					</div>
-					{date && bookingGranularity !== 'day' && (
-						<div className='flex-shrink-0 pt-4'>
-							<TimeSlotPicker
-								accent={accent}
-								date={date}
-								selectedTime={time}
-								onSelectTime={setTime}
-								occupiedSlots={occupiedSlots}
-								durationMinutes={durationMinutes}
-								schedule={schedule}
-							/>
-						</div>
-					)}
-					{date && bookingGranularity === 'day' && time && (
-						<p className='flex-shrink-0 pt-4 text-sm text-icyWhite/70'>
-							{bookingDayCount >= 2
-								? t('fullMultiDayBookingSummary', {
-										time,
-										count: bookingDayCount,
-									})
-								: t('fullDayBookingWithTime', { time })}
-						</p>
-					)}
-				</motion.div>
-			)}
+				)}
+			</motion.div>
+		)}
 
 			{loading && bookingGranularity !== 'tbd' && (
 				<p className='text-xs text-icyWhite/50'>{t('loadingAvailability')}</p>

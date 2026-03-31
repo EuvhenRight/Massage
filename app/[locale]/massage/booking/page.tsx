@@ -8,10 +8,7 @@ import {
 	matchPresetToCatalogTitle,
 } from '@/lib/price-catalog-utils'
 import type { ServiceData } from '@/lib/services'
-import {
-	normalizeItemBookingDayCount,
-	type PriceCatalogStructure,
-} from '@/types/price-catalog'
+import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -101,10 +98,7 @@ export default function MassageBookingPage() {
 					: s.bookingGranularity === 'tbd'
 						? ('tbd' as const)
 						: ('time' as const),
-			bookingDayCount:
-				s.bookingGranularity === 'day'
-					? normalizeItemBookingDayCount(s.bookingDayCount)
-					: 1,
+			bookingDayCount: s.bookingDayCount,
 			scheduleTbdMessage: s.scheduleTbdMessage,
 			scheduleTbdAdminNote: s.scheduleTbdAdminNote,
 			titleSk: s.titleSk,
@@ -125,7 +119,6 @@ export default function MassageBookingPage() {
 						title: presetService,
 						durationMinutes: duration,
 						bookingGranularity: 'time' as const,
-						bookingDayCount: 1,
 						titleSk: presetService,
 						titleEn: presetService,
 						titleRu: presetService,
@@ -161,7 +154,6 @@ export default function MassageBookingPage() {
 						title: t('appointmentFallback'),
 						durationMinutes: 60,
 						bookingGranularity: 'time' as const,
-						bookingDayCount: 1,
 					},
 				]
 

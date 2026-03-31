@@ -1,23 +1,45 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { getPlaceAccentUi } from "@/lib/place-accent-ui";
-import { useTranslations } from "next-intl";
-import { formatDateForEmail, formatTimeForEmail } from "@/lib/format-date";
-
-function formatTimeSlot(slot: string): string {
-  const [h, m] = slot.split(":").map(Number);
-  if (h === 0) return `12:${String(m).padStart(2, "0")} am`;
-  if (h < 12) return `${h}:${String(m).padStart(2, "0")} am`;
-  if (h === 12) return `12:${String(m).padStart(2, "0")} pm`;
-  return `${h - 12}:${String(m).padStart(2, "0")} pm`;
-}
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { clsx } from "clsx";
-import { bookAppointmentAdmin, updateAppointment, type AppointmentData, type AdminBookingInput } from "@/lib/book-appointment";
+import {
+  collection,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import {
+  bookAppointmentAdmin,
+  updateAppointment,
+  type AppointmentData,
+  type AdminBookingInput,
+} from "@/lib/book-appointment";
 import { getDateKey } from "@/lib/booking";
+import {
+  getAvailableTimeSlots,
+  getPrepBufferMinutes,
+  parseOccupiedSlots,
+  type OccupiedSlot,
+} from "@/lib/availability-firestore";
+import {
+  appointmentIntervalsFromDocs,
+  queryAppointmentsOverlappingRange,
+} from "@/lib/appointments-overlap-query";
+import { db } from "@/lib/firebase";
+import { getSchedule } from "@/lib/schedule-firestore";
+import type { ScheduleData } from "@/lib/schedule-firestore";
+import { getPlaceAccentUi } from "@/lib/place-accent-ui";
+import {
+  formatDateForEmail,
+  formatTimeForEmail,
+  formatTimeFromHourMinute,
+} from "@/lib/format-date";
 import type { ServiceData } from "@/lib/services";
 import type { Place } from "@/lib/places";
+import { useLocale, useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -25,10 +47,44 @@ import AdminDatePicker from "@/components/AdminDatePicker";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+function formatTimeSlotLabel(slot: string, locale: string): string {
+  const [h, m] = slot.split(":").map(Number);
+  return formatTimeFromHourMinute(h, m, locale);
+}
+
+function sortDateKeys(values: string[]): string[] {
+  return [...values].sort(
+    (a, b) =>
+      new Date(`${a}T12:00:00`).getTime() - new Date(`${b}T12:00:00`).getTime()
+  );
+}
+
+function getInitialDayDates(appointment?: AppointmentData | null): string[] {
+  if (!appointment || appointment.adminBookingMode !== "day") return [];
+  if (appointment.adminFullDayDates?.length) {
+    return sortDateKeys(appointment.adminFullDayDates);
+  }
+  const start =
+    appointment.startTime && "toDate" in appointment.startTime
+      ? appointment.startTime.toDate()
+      : new Date(appointment.startTime as Date);
+  const count = Math.max(
+    1,
+    Math.min(14, Number(appointment.multiDayFullDayCount) || 1)
+  );
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    return getDateKey(d);
+  });
+}
 
 interface AdminAppointmentModalProps {
   isOpen: boolean;
@@ -48,53 +104,262 @@ export default function AdminAppointmentModal({
   onClose,
   onSuccess,
   mode,
-  defaultDate = new Date(),
+  defaultDate,
   defaultHour = 9,
   defaultMinute = 0,
   appointment,
   services = [],
   place = "massage",
 }: AdminAppointmentModalProps) {
+  const locale = useLocale();
   const ui = useMemo(() => getPlaceAccentUi(place), [place]);
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
   const isEdit = mode === "edit" && appointment;
-  const now = Date.now();
   const endDateForPast =
-    appointment && (appointment.endTime && "toDate" in appointment.endTime ? appointment.endTime.toDate() : new Date(appointment.endTime as Date));
+    appointment &&
+    (appointment.endTime && "toDate" in appointment.endTime
+      ? appointment.endTime.toDate()
+      : new Date(appointment.endTime as Date));
   const isPastAppointment = Boolean(
-    isEdit && appointment && endDateForPast && endDateForPast.getTime() < now
+    isEdit && endDateForPast && endDateForPast.getTime() < Date.now()
+  );
+  const resolvedDefaultDate = useMemo(
+    () => defaultDate ?? new Date(),
+    [defaultDate]
   );
 
   const startDate = appointment
-    ? (appointment.startTime && "toDate" in appointment.startTime
-        ? appointment.startTime.toDate()
-        : new Date(appointment.startTime as Date))
-    : new Date(defaultDate);
+    ? appointment.startTime && "toDate" in appointment.startTime
+      ? appointment.startTime.toDate()
+      : new Date(appointment.startTime as Date)
+    : new Date(resolvedDefaultDate);
   const endDate = appointment
-    ? (appointment.endTime && "toDate" in appointment.endTime
-        ? appointment.endTime.toDate()
-        : new Date(appointment.endTime as Date))
+    ? appointment.endTime && "toDate" in appointment.endTime
+      ? appointment.endTime.toDate()
+      : new Date(appointment.endTime as Date)
     : new Date(startDate);
   const durationMinutes = appointment
     ? Math.round((endDate.getTime() - startDate.getTime()) / 60000)
     : 60;
+  const matchedService = useMemo(() => {
+    if (!appointment) return undefined;
+    if (appointment.serviceId) {
+      const byId = services.find((s) => s.id === appointment.serviceId);
+      if (byId) return byId;
+    }
+    return services.find((s) => s.title === appointment.service);
+  }, [appointment, services]);
+
+  const serviceDayCount = useMemo(() => {
+    if (appointment?.adminBookingMode === "day") {
+      return (
+        appointment.adminFullDayDates?.length ??
+        appointment.multiDayFullDayCount ??
+        matchedService?.bookingDayCount ??
+        1
+      );
+    }
+    if (matchedService?.bookingGranularity === "day") {
+      return matchedService.bookingDayCount ?? 1;
+    }
+    return 0;
+  }, [appointment, matchedService]);
+
+  const isTbdDayService = Boolean(
+    appointment?.scheduleTbd && matchedService?.bookingGranularity === "day"
+  );
+
+  const initialBookingMode =
+    appointment?.adminBookingMode === "day" || isTbdDayService ? "day" : "time";
+  const initialDayDates = getInitialDayDates(appointment);
 
   const [dateStr, setDateStr] = useState(
-    isEdit ? getDateKey(startDate) : getDateKey(defaultDate)
+    isEdit ? getDateKey(startDate) : getDateKey(resolvedDefaultDate)
   );
-  const [hour, setHour] = useState(isEdit ? startDate.getHours() : defaultHour);
+  const [hour, setHour] = useState(
+    isEdit ? startDate.getHours() : defaultHour
+  );
   const [minute, setMinute] = useState(
-    isEdit ? Math.round(startDate.getMinutes() / 5) * 5 : Math.round(defaultMinute / 5) * 5
+    isEdit
+      ? Math.round(startDate.getMinutes() / 5) * 5
+      : Math.round(defaultMinute / 5) * 5
   );
+  const [bookingMode, setBookingMode] = useState<"time" | "day">(
+    initialBookingMode
+  );
+  const [dayDates, setDayDates] = useState<string[]>(initialDayDates);
+  const [occupiedDayKeys, setOccupiedDayKeys] = useState<string[]>([]);
   const [duration, setDuration] = useState(durationMinutes);
   const [service, setService] = useState(appointment?.service ?? "");
-
-  const selectedService = services.find((s) => s.title === service);
   const [fullName, setFullName] = useState(appointment?.fullName ?? "");
   const [email, setEmail] = useState(appointment?.email ?? "");
   const [phone, setPhone] = useState(appointment?.phone ?? "");
+  const [adminNote, setAdminNote] = useState(appointment?.adminNote ?? "");
   const [loading, setLoading] = useState(false);
+  const [placeSchedule, setPlaceSchedule] = useState<ScheduleData | null>(null);
+  const [timeOccupiedSlots, setTimeOccupiedSlots] = useState<OccupiedSlot[]>(
+    []
+  );
+  const [availabilityMonth, setAvailabilityMonth] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  });
+
+  const isDayMode = bookingMode === "day";
+  const isLockedDayEdit = Boolean(
+    isEdit && (appointment?.adminBookingMode === "day" || isTbdDayService)
+  );
+  const minSelectableDate = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const groupedServices = useMemo(() => {
+    const groups: { color: string; items: ServiceData[] }[] = [];
+    const colorMap = new Map<string, ServiceData[]>();
+    for (const s of services) {
+      const key = s.color || "__none__";
+      if (!colorMap.has(key)) colorMap.set(key, []);
+      colorMap.get(key)!.push(s);
+    }
+    for (const [color, items] of Array.from(colorMap.entries())) {
+      groups.push({ color, items });
+    }
+    return groups;
+  }, [services]);
+
+  const blockedDayKeysForPicker = useMemo(() => {
+    if (!isDayMode) return [];
+    const ownDays = new Set(dayDates);
+    return occupiedDayKeys.filter((k) => !ownDays.has(k));
+  }, [dayDates, isDayMode, occupiedDayKeys]);
+
+  const effectiveDurationMinutes = useMemo(
+    () =>
+      Math.max(
+        5,
+        Math.min(240, Number.isFinite(duration) ? duration : 60)
+      ),
+    [duration]
+  );
+
+  const handleAvailabilityMonthChange = useCallback((m: Date) => {
+    setAvailabilityMonth((prev) => {
+      const next = new Date(m.getFullYear(), m.getMonth(), 1);
+      if (prev.getTime() === next.getTime()) return prev;
+      return next;
+    });
+  }, []);
+
+  const adminTimeAvailability = useMemo(() => {
+    if (isDayMode) return undefined;
+    return {
+      occupiedSlots: timeOccupiedSlots,
+      durationMinutes: effectiveDurationMinutes,
+      onViewMonthChange: handleAvailabilityMonthChange,
+    };
+  }, [
+    isDayMode,
+    timeOccupiedSlots,
+    effectiveDurationMinutes,
+    handleAvailabilityMonthChange,
+  ]);
+
+  const availableTimeSlots = useMemo(() => {
+    if (isDayMode || !dateStr) return [];
+    const d = new Date(`${dateStr}T12:00:00`);
+    if (isNaN(d.getTime())) return [];
+    return getAvailableTimeSlots(
+      d,
+      effectiveDurationMinutes,
+      timeOccupiedSlots,
+      placeSchedule
+    );
+  }, [
+    isDayMode,
+    dateStr,
+    effectiveDurationMinutes,
+    timeOccupiedSlots,
+    placeSchedule,
+  ]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    getSchedule(place)
+      .then(setPlaceSchedule)
+      .catch(() => setPlaceSchedule(null));
+  }, [isOpen, place]);
+
+  useEffect(() => {
+    if (!isOpen || isDayMode) return;
+    const d = new Date(`${dateStr}T12:00:00`);
+    if (isNaN(d.getTime())) return;
+    setAvailabilityMonth((prev) => {
+      const next = new Date(d.getFullYear(), d.getMonth(), 1);
+      if (prev.getTime() === next.getTime()) return prev;
+      return next;
+    });
+  }, [isOpen, isDayMode, dateStr]);
+
+  useEffect(() => {
+    if (!isOpen || isDayMode) {
+      setTimeOccupiedSlots([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const y = availabilityMonth.getFullYear();
+      const m = availabilityMonth.getMonth();
+      const rangeStart = new Date(y, m, 1);
+      const rangeEnd = new Date(y, m + 1, 0, 23, 59, 59, 999);
+      try {
+        const q = queryAppointmentsOverlappingRange(
+          db,
+          place,
+          rangeStart,
+          rangeEnd
+        );
+        const snapshot = await getDocs(q);
+        if (cancelled) return;
+        const intervals = appointmentIntervalsFromDocs(snapshot.docs, {
+          excludeDocIds:
+            isEdit && appointment?.id ? [appointment.id] : undefined,
+        });
+        setTimeOccupiedSlots(
+          parseOccupiedSlots(
+            intervals,
+            getPrepBufferMinutes(placeSchedule)
+          )
+        );
+      } catch {
+        if (!cancelled) setTimeOccupiedSlots([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isOpen,
+    isDayMode,
+    place,
+    availabilityMonth,
+    placeSchedule,
+    isEdit,
+    appointment?.id,
+  ]);
+
+  useEffect(() => {
+    if (isDayMode || !dateStr) return;
+    const key = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    if (availableTimeSlots.length === 0) return;
+    if (!availableTimeSlots.includes(key)) {
+      const [h, m] = availableTimeSlots[0].split(":").map(Number);
+      setHour(h);
+      setMinute(m);
+    }
+  }, [isDayMode, dateStr, availableTimeSlots, hour, minute]);
 
   useEffect(() => {
     if (isOpen) {
@@ -108,53 +373,156 @@ export default function AdminAppointmentModal({
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) {
-      if (isEdit && appointment) {
-        const s = appointment.startTime && "toDate" in appointment.startTime
+    if (!isOpen) return;
+    if (isEdit && appointment) {
+      const s =
+        appointment.startTime && "toDate" in appointment.startTime
           ? appointment.startTime.toDate()
           : new Date(appointment.startTime as Date);
-        const e = appointment.endTime && "toDate" in appointment.endTime
+      const e =
+        appointment.endTime && "toDate" in appointment.endTime
           ? appointment.endTime.toDate()
           : new Date(appointment.endTime as Date);
-        setDateStr(getDateKey(s));
-        setHour(s.getHours());
-        setMinute(Math.round(s.getMinutes() / 5) * 5);
-        const dur = Math.round((e.getTime() - s.getTime()) / 60000);
-        setDuration(dur);
-        setService(appointment.service ?? "");
-        setFullName(appointment.fullName ?? "");
-        setEmail(appointment.email ?? "");
-        setPhone(appointment.phone ?? "");
-      } else {
-        setDateStr(getDateKey(defaultDate));
-        setHour(defaultHour);
-        setMinute(Math.round(defaultMinute / 5) * 5);
-        setDuration(services[0]?.durationMinutes ?? 60);
-        setService(services[0]?.title ?? "");
-        setFullName("");
-        setEmail("");
-        setPhone("");
-      }
+      const useTodayForTbdDay = isTbdDayService && appointment.scheduleTbd;
+      setDateStr(useTodayForTbdDay ? getDateKey(new Date()) : getDateKey(s));
+      setHour(useTodayForTbdDay ? 9 : s.getHours());
+      setMinute(useTodayForTbdDay ? 0 : Math.round(s.getMinutes() / 5) * 5);
+      setBookingMode(
+        appointment.adminBookingMode === "day" || isTbdDayService ? "day" : "time"
+      );
+      setDayDates(getInitialDayDates(appointment));
+      setDuration(Math.round((e.getTime() - s.getTime()) / 60000));
+      setService(appointment.service ?? "");
+      setFullName(appointment.fullName ?? "");
+      setEmail(appointment.email ?? "");
+      setPhone(appointment.phone ?? "");
+      setAdminNote(appointment.adminNote ?? "");
+    } else {
+      setDateStr(getDateKey(resolvedDefaultDate));
+      setHour(defaultHour);
+      setMinute(Math.round(defaultMinute / 5) * 5);
+      setBookingMode("time");
+      setDayDates([]);
+      setDuration(services[0]?.durationMinutes ?? 60);
+      setService(services[0]?.title ?? "");
+      setFullName("");
+      setEmail("");
+      setPhone("");
+      setAdminNote("");
     }
-  }, [isOpen, isEdit, appointment, defaultDate, defaultHour, defaultMinute, services]);
+  }, [
+    isOpen,
+    isEdit,
+    appointment,
+    resolvedDefaultDate,
+    defaultHour,
+    defaultMinute,
+    services,
+  ]);
+
+  useEffect(() => {
+    if (!isOpen || !isDayMode) {
+      setOccupiedDayKeys([]);
+      return;
+    }
+    const q = query(
+      collection(db, "appointments"),
+      where("place", "==", place),
+      orderBy("startTime", "asc")
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const blocked = new Set<string>();
+      for (const doc of snapshot.docs) {
+        if (appointment && doc.id === appointment.id) continue;
+        const data = doc.data() as Record<string, unknown>;
+        if (data.scheduleTbd === true) continue;
+        const explicitDays = Array.isArray(data.adminFullDayDates)
+          ? data.adminFullDayDates.filter(
+              (v): v is string => typeof v === "string"
+            )
+          : [];
+        if (explicitDays.length > 0) {
+          for (const dk of explicitDays) blocked.add(dk);
+          continue;
+        }
+        const start =
+          data.startTime &&
+          "toDate" in (data.startTime as { toDate?: () => Date })
+            ? (data.startTime as { toDate: () => Date }).toDate()
+            : new Date(data.startTime as Date);
+        const end =
+          data.endTime &&
+          "toDate" in (data.endTime as { toDate?: () => Date })
+            ? (data.endTime as { toDate: () => Date }).toDate()
+            : new Date(data.endTime as Date);
+        const cur = new Date(start);
+        cur.setHours(0, 0, 0, 0);
+        const endDay = new Date(end);
+        endDay.setHours(0, 0, 0, 0);
+        while (cur.getTime() <= endDay.getTime()) {
+          blocked.add(getDateKey(cur));
+          cur.setDate(cur.getDate() + 1);
+        }
+      }
+      setOccupiedDayKeys(Array.from(blocked).sort());
+    });
+    return () => unsubscribe();
+  }, [appointment, isDayMode, isOpen, place]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isPastAppointment) return;
-    const startTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-    const slotStart = new Date(`${dateStr}T${startTime}:00`);
-    if (!isEdit && slotStart.getTime() < Date.now()) {
-      toast.error(t("cannotCreatePast"));
-      return;
+
+    const normalizedDayDates = sortDateKeys(dayDates).slice(0, 14);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    if (isDayMode) {
+      if (normalizedDayDates.length === 0) {
+        toast.error(t("selectAtLeastOneDay"));
+        return;
+      }
+      if (!isEdit) {
+        if (
+          normalizedDayDates.some(
+            (v) => new Date(`${v}T00:00:00`).getTime() < todayStart.getTime()
+          )
+        ) {
+          toast.error(t("cannotCreatePast"));
+          return;
+        }
+      }
+    } else {
+      if (availableTimeSlots.length === 0) {
+        toast.error(t("adminTimeNoSlots"));
+        return;
+      }
+      const startTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+      if (!availableTimeSlots.includes(startTime)) {
+        toast.error(t("adminTimeNoSlots"));
+        return;
+      }
+      const slotStart = new Date(`${dateStr}T${startTime}:00`);
+      if (slotStart.getTime() < todayStart.getTime()) {
+        toast.error(t("cannotCreatePast"));
+        return;
+      }
     }
+
     setLoading(true);
     try {
-      const dur = isEdit
-        ? duration
-        : (selectedService ? selectedService.durationMinutes : 60);
+      const primaryDate = isDayMode
+        ? normalizedDayDates[0] ?? dateStr
+        : dateStr;
+      const startTime = isDayMode
+        ? "09:00"
+        : `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+      const dur = isDayMode
+        ? undefined
+        : Math.max(5, Math.min(240, Number.isFinite(duration) ? duration : 60));
+      const noteValue = adminNote.trim() || undefined;
 
       if (isEdit && appointment) {
-        const newStart = new Date(`${dateStr}T${startTime}:00`);
         await updateAppointment(
           appointment.id,
           {
@@ -162,25 +530,31 @@ export default function AdminAppointmentModal({
             fullName: fullName || undefined,
             email: email || undefined,
             phone: phone || undefined,
-            startTime: newStart,
+            startTime: new Date(`${primaryDate}T${startTime}:00`),
             durationMinutes: dur,
+            adminBookingMode: bookingMode,
+            adminFullDayDates: isDayMode ? normalizedDayDates : undefined,
+            adminNote: noteValue ?? "",
           },
           place
         );
         toast.success(t("appointmentUpdated"));
       } else {
         const input: AdminBookingInput = {
-          date: dateStr,
+          date: primaryDate,
           startTime,
           durationMinutes: dur,
+          adminBookingMode: bookingMode,
+          adminFullDayDates: isDayMode ? normalizedDayDates : undefined,
           service: service || undefined,
           fullName: fullName || undefined,
           email: email || undefined,
           phone: phone || undefined,
+          adminNote: noteValue,
         };
         await bookAppointmentAdmin(input, place);
         if (email?.trim() && email.includes("@")) {
-          const slotDate = new Date(`${dateStr}T${startTime}:00`);
+          const slotDate = new Date(`${primaryDate}T${startTime}:00`);
           try {
             const res = await fetch("/api/send-confirmation", {
               method: "POST",
@@ -191,13 +565,17 @@ export default function AdminAppointmentModal({
                 to: email.trim(),
                 customerName: fullName?.trim() || t("customer"),
                 date: formatDateForEmail(slotDate),
-                time: formatTimeForEmail(slotDate),
+                time: isDayMode ? t("allDayNoClockTime") : formatTimeForEmail(slotDate),
                 service: service || undefined,
               }),
             });
             if (!res.ok) {
               const data = await res.json().catch(() => ({}));
-              toast.error(t("appointmentAddedEmailFailed", { error: data?.error ?? t("couldNotSend") }));
+              toast.error(
+                t("appointmentAddedEmailFailed", {
+                  error: data?.error ?? t("couldNotSend"),
+                })
+              );
             } else {
               toast.success(t("appointmentAddedNotified"));
             }
@@ -211,9 +589,15 @@ export default function AdminAppointmentModal({
       onSuccess?.();
       onClose();
     } catch (err) {
-      const msg = err instanceof Error && err.message === "OVERLAP"
-        ? t("slotBooked")
-        : t("saveFailed");
+      const code = err instanceof Error ? err.message : "";
+      const msg =
+        code === "OVERLAP"
+          ? t("slotBooked")
+          : code === "DAY_CLOSED"
+            ? t("fullDayClosed")
+            : code === "DAY_REQUIRED"
+              ? t("selectAtLeastOneDay")
+              : t("saveFailed");
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -224,10 +608,14 @@ export default function AdminAppointmentModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-nearBlack/80 backdrop-blur-sm" onClick={onClose} aria-hidden />
+      <div
+        className="fixed inset-0 z-50 bg-nearBlack/80 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden
+      />
       <div
         className={clsx(
-          "fixed left-1/2 top-1/2 z-[51] w-full max-w-md -translate-x-1/2 -translate-y-1/2 p-6",
+          "fixed left-1/2 top-1/2 z-[51] w-[calc(100%-1.5rem)] max-w-md max-h-[min(90dvh,calc(100vh-1rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain p-4 sm:p-6",
           ui.adminModalShell
         )}
         onClick={(e) => e.stopPropagation()}
@@ -235,161 +623,333 @@ export default function AdminAppointmentModal({
         <h2 className="font-serif text-xl text-icyWhite mb-6">
           {isEdit ? t("editAppointment") : t("addAppointment")}
         </h2>
+
+        {isEdit && appointment && (
+          <div className="mb-4 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 space-y-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-icyWhite truncate">
+                {appointment.service || "—"}
+              </span>
+              {serviceDayCount > 0 && (
+                <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-xs text-icyWhite/80">
+                  {t("dayCountValue", { count: serviceDayCount })}
+                </span>
+              )}
+            </div>
+            {appointment.fullName && appointment.fullName !== "—" && (
+              <p className="text-xs text-icyWhite/60">{appointment.fullName}</p>
+            )}
+            {appointment.phone && appointment.phone !== "—" && (
+              <p className="text-xs text-icyWhite/50">{appointment.phone}</p>
+            )}
+          </div>
+        )}
+
         {isPastAppointment && (
           <div className="mb-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
             {t("pastAppointmentNote")}
           </div>
         )}
         {isEdit && appointment?.scheduleTbd && (
-          <div className="mb-4 rounded-lg border border-sky-500/40 bg-sky-500/10 px-4 py-3 text-sm text-sky-100/95 space-y-2">
+          <div className="mb-4 rounded-lg border border-sky-500/40 bg-sky-500/10 px-4 py-3 text-sm text-sky-100/95">
             <p>{t("appointmentTbdNotice")}</p>
-            {appointment.scheduleTbdAdminHint?.trim() && (
-              <p className="text-xs text-icyWhite/70 whitespace-pre-wrap">
-                {appointment.scheduleTbdAdminHint.trim()}
-              </p>
-            )}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <fieldset disabled={!!isPastAppointment} className="space-y-4 [&:disabled]:opacity-75">
-          <div className="grid grid-cols-2 gap-4">
+          <fieldset
+            disabled={!!isPastAppointment}
+            className="space-y-4 [&:disabled]:opacity-75"
+          >
+            {/* ── Appointment type toggle ── */}
             <div className="space-y-1.5">
-              <Label className="text-icyWhite/80">{tCommon("date")}</Label>
-              <AdminDatePicker
-                place={place}
-                value={dateStr}
-                onChange={setDateStr}
-                minDate={!isEdit ? (() => {
-                  const t = new Date();
-                  t.setHours(0, 0, 0, 0);
-                  return t;
-                })() : undefined}
-              />
+              <Label className="text-icyWhite/80">
+                {t("appointmentTypeLabel")}
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => !isLockedDayEdit && setBookingMode("time")}
+                  disabled={isLockedDayEdit}
+                  className={clsx(
+                    "rounded-lg border px-3 py-2 text-sm transition-colors",
+                    bookingMode === "time"
+                      ? "border-white/40 bg-white/15 text-icyWhite"
+                      : "border-white/10 bg-white/5 text-icyWhite/70 hover:bg-white/10",
+                    isLockedDayEdit &&
+                      "cursor-not-allowed opacity-45 hover:bg-white/5"
+                  )}
+                >
+                  {t("appointmentTypeTime")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBookingMode("day")}
+                  className={clsx(
+                    "rounded-lg border px-3 py-2 text-sm transition-colors",
+                    bookingMode === "day"
+                      ? "border-white/40 bg-white/15 text-icyWhite"
+                      : "border-white/10 bg-white/5 text-icyWhite/70 hover:bg-white/10"
+                  )}
+                >
+                  {t("appointmentTypeDay")}
+                </button>
+              </div>
+              {isDayMode && (
+                <p className="text-xs text-icyWhite/55">
+                  {t("appointmentTypeDayHint")}
+                </p>
+              )}
             </div>
+
+            {/* ── Day mode: pick individual days ── */}
+            {isDayMode ? (
+              <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="space-y-2">
+                  <Label className="text-icyWhite/80">
+                    {t("selectedDaysLabel")}
+                    <span className="ml-2 text-xs font-normal text-icyWhite/50">
+                      {dayDates.length}/14
+                    </span>
+                  </Label>
+                  {dayDates.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {dayDates.map((dk) => (
+                        <div
+                          key={dk}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-icyWhite"
+                        >
+                          <span>
+                            {new Date(`${dk}T12:00:00`).toLocaleDateString(
+                              undefined,
+                              {
+                                weekday: "short",
+                                month: "2-digit",
+                                day: "2-digit",
+                              }
+                            )}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDayDates((cur) =>
+                                cur.filter((v) => v !== dk)
+                              )
+                            }
+                            className="ml-0.5 text-icyWhite/50 hover:text-red-400 transition-colors"
+                            aria-label={t("removeDay")}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-lg border border-dashed border-white/10 px-3 py-3 text-sm text-icyWhite/45">
+                      {t("selectedDaysEmpty")}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-icyWhite/80">
+                    {t("addDayLabel")}
+                  </Label>
+                  <AdminDatePicker
+                    place={place}
+                    schedule={placeSchedule}
+                    value=""
+                    keepOpen
+                    selectedDateKeys={dayDates}
+                    disabledDateKeys={blockedDayKeysForPicker}
+                    onChange={(value) => {
+                      if (!value) return;
+                      setDayDates((cur) => {
+                        if (cur.includes(value)) {
+                          return cur.filter((v) => v !== value);
+                        }
+                        if (cur.length >= 14) return cur;
+                        return sortDateKeys([...cur, value]);
+                      });
+                    }}
+                    minDate={minSelectableDate}
+                  />
+                  <p className="text-xs text-icyWhite/55">
+                    {t("selectedDaysHint")}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              /* ── Time mode: date + time ── */
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-icyWhite/80">{tCommon("date")}</Label>
+                  <AdminDatePicker
+                    place={place}
+                    schedule={placeSchedule}
+                    value={dateStr}
+                    onChange={setDateStr}
+                    minDate={minSelectableDate}
+                    timeAvailability={adminTimeAvailability}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-icyWhite/80">{tCommon("time")}</Label>
+                  {availableTimeSlots.length === 0 ? (
+                    <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90">
+                      {t("adminTimeNoSlots")}
+                    </p>
+                  ) : (
+                    <Select
+                      value={`${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`}
+                      onValueChange={(v) => {
+                        const [h, m] = v.split(":").map(Number);
+                        setHour(h);
+                        setMinute(m);
+                      }}
+                    >
+                      <SelectTrigger className="select-menu">
+                        <SelectValue placeholder={t("chooseTime")} />
+                      </SelectTrigger>
+                      <SelectContent
+                        position="popper"
+                        sideOffset={4}
+                        className="z-[100] max-h-[200px]"
+                      >
+                        {availableTimeSlots.map((slot) => (
+                          <SelectItem key={slot} value={slot}>
+                            {formatTimeSlotLabel(slot, locale)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Service ── */}
             <div className="space-y-1.5">
-              <Label className="text-icyWhite/80">{tCommon("time")}</Label>
+              <Label className="text-icyWhite/80">{tCommon("services")}</Label>
               <Select
-                value={`${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`}
+                value={service || "none"}
                 onValueChange={(v) => {
-                  const [h, m] = v.split(":").map(Number);
-                  setHour(h);
-                  setMinute(m);
+                  const val = v === "none" ? "" : v;
+                  setService(val);
+                  const svc = services.find((s) => s.title === val);
+                  if (svc) setDuration(svc.durationMinutes);
                 }}
               >
                 <SelectTrigger className="select-menu">
-                  <SelectValue placeholder={t("chooseTime")} />
+                  <SelectValue placeholder={t("chooseService")} />
                 </SelectTrigger>
-                <SelectContent
-                  position="popper"
-                  sideOffset={4}
-                  className="z-[100] max-h-[200px]"
-                >
-                  {(() => {
-                    const slots: string[] = [];
-                    for (let h = 0; h <= 23; h++) {
-                      for (let m = 0; m < 60; m += 5) {
-                        slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
-                      }
-                    }
-                    return slots.map((slot) => (
-                      <SelectItem key={slot} value={slot}>
-                        {formatTimeSlot(slot)}
-                      </SelectItem>
-                    ));
-                  })()}
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  {groupedServices.map((group, gi) => (
+                    <SelectGroup key={group.color}>
+                      {gi > 0 && <SelectSeparator />}
+                      {group.items.map((s) => (
+                        <SelectItem key={s.id} value={s.title}>
+                          <span className="flex items-center gap-2">
+                            <span
+                              className={`inline-block w-2.5 h-2.5 rounded-full border ${s.color}`}
+                            />
+                            {s.title}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">{tCommon("services")}</Label>
-            <Select
-              value={service || "none"}
-              onValueChange={(v) => {
-                const val = v === "none" ? "" : v;
-                setService(val);
-                const svc = services.find((s) => s.title === val);
-                if (svc) setDuration(svc.durationMinutes);
-              }}
-            >
-              <SelectTrigger className="select-menu">
-                <SelectValue placeholder={t("chooseService")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">—</SelectItem>
-                {services.map((s) => (
-                  <SelectItem key={s.id} value={s.title}>
-                    {s.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">{t("durationLabel")}</Label>
-            <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-icyWhite text-sm">
-              {selectedService
-                ? `${selectedService.durationMinutes} min`
-                : isEdit
-                  ? `${duration} min`
-                  : t("selectServicePlaceholder")}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">{t("nameOptional")}</Label>
-            <Input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="—"
-              className="bg-white/5 border-white/10 text-icyWhite"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">{t("emailOptional")}</Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="—"
-              className="bg-white/5 border-white/10 text-icyWhite"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-icyWhite/80">{t("phoneOptional")}</Label>
-            <Input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="—"
-              className="bg-white/5 border-white/10 text-icyWhite"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1 border-white/10 text-icyWhite hover:bg-white/10"
-              onClick={onClose}
-            >
-              {isPastAppointment ? t("close") : t("cancel")}
-            </Button>
-            {!isPastAppointment && (
-              <Button
-                type="submit"
-                className={`flex-1 ${ui.btnPrimarySm}`}
-                disabled={loading}
-              >
-                {loading ? t("saving") : isEdit ? t("save") : t("add")}
-              </Button>
+            {/* ── Duration (time mode only) ── */}
+            {!isDayMode && (
+              <div className="space-y-1.5">
+                <Label className="text-icyWhite/80">
+                  {t("durationLabel")}
+                </Label>
+                <Input
+                  type="number"
+                  min={5}
+                  max={240}
+                  step={5}
+                  value={Number.isFinite(duration) ? duration : ""}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setDuration(Number.isFinite(v) ? v : 60);
+                  }}
+                  className="bg-white/5 border-white/10 text-icyWhite"
+                />
+              </div>
             )}
-          </div>
+
+            {/* ── Contact fields ── */}
+            <div className="space-y-1.5">
+              <Label className="text-icyWhite/80">{t("nameOptional")}</Label>
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="—"
+                className="bg-white/5 border-white/10 text-icyWhite"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-icyWhite/80">{t("emailOptional")}</Label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="—"
+                className="bg-white/5 border-white/10 text-icyWhite"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-icyWhite/80">{t("phoneOptional")}</Label>
+              <Input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="—"
+                className="bg-white/5 border-white/10 text-icyWhite"
+              />
+            </div>
+
+            {/* ── Admin note ── */}
+            <div className="space-y-1.5">
+              <Label className="text-icyWhite/80">{t("adminNoteLabel")}</Label>
+              <textarea
+                value={adminNote}
+                onChange={(e) => setAdminNote(e.target.value)}
+                placeholder={t("adminNotePlaceholder")}
+                rows={2}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-icyWhite placeholder:text-icyWhite/40 focus:outline-none focus:ring-1 focus:ring-white/20 resize-none"
+              />
+            </div>
+
+            {/* ── Actions ── */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 border-white/10 text-icyWhite hover:bg-white/10"
+                onClick={onClose}
+              >
+                {isPastAppointment ? t("close") : t("cancel")}
+              </Button>
+              {!isPastAppointment && (
+                <Button
+                  type="submit"
+                  className={`flex-1 ${ui.btnPrimarySm}`}
+                  disabled={
+                    loading ||
+                    (!isDayMode && availableTimeSlots.length === 0)
+                  }
+                >
+                  {loading ? t("saving") : isEdit ? t("save") : t("add")}
+                </Button>
+              )}
+            </div>
           </fieldset>
         </form>
       </div>

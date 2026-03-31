@@ -23,6 +23,23 @@
         { "fieldPath": "place", "order": "ASCENDING" },
         { "fieldPath": "scheduleTbd", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "place", "order": "ASCENDING" },
+        { "fieldPath": "adminBookingMode", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "place", "order": "ASCENDING" },
+        { "fieldPath": "endTime", "order": "ASCENDING" },
+        { "fieldPath": "startTime", "order": "ASCENDING" }
+      ]
     }
   ]
 }

@@ -5,14 +5,19 @@ import AdminAvailabilityManager from '@/components/AdminAvailabilityManager'
 import AdminPriceCatalog from '@/components/AdminPriceCatalog'
 import BookingCalendarGrid from '@/components/BookingCalendarGrid'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { buildAdminCalendarServices } from '@/lib/admin-calendar-services'
 import { getPrepBufferMinutes } from '@/lib/availability-firestore'
 import { getPlaceAccentUi } from '@/lib/place-accent-ui'
-import type { AppointmentData } from '@/lib/book-appointment'
+import {
+	type AppointmentData,
+	inferAdminBookingModeFromFirestore,
+} from '@/lib/book-appointment'
 import { db } from '@/lib/firebase'
 import { formatDate, formatTime } from '@/lib/format-date'
 import type { Place } from '@/lib/places'
 import { getSchedule } from '@/lib/schedule-firestore'
 import type { ServiceData } from '@/lib/services'
+import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { clsx } from 'clsx'
 import {
 	collection,
@@ -43,19 +48,48 @@ import { signOut, useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+	type ElementType,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react'
 
 type AdminSection = 'calendar' | 'settings' | 'agenda' | 'analytics' | 'price'
+
+type AdminNavItem = {
+	id: AdminSection
+	label: string
+	icon: ElementType
+	/** Calendar only: TBD = need date & time */
+	calendarTbd?: number
+	/** Calendar only: full-day rows still missing chosen days */
+	calendarDays?: number
+}
 
 function toAppointmentData(doc: {
 	id: string
 	data: () => Record<string, unknown>
 }): AppointmentData {
 	const d = doc.data()
+	const mode = inferAdminBookingModeFromFirestore(d as Record<string, unknown>)
 	return {
 		id: doc.id,
 		startTime: (d.startTime as Timestamp) ?? new Date(),
 		endTime: (d.endTime as Timestamp) ?? new Date(),
+		adminBookingMode: mode,
+		adminFullDayDates: Array.isArray(d.adminFullDayDates)
+			? d.adminFullDayDates.filter(
+					(value): value is string => typeof value === 'string',
+				)
+			: undefined,
+		multiDayFullDayCount:
+			mode === 'day'
+				? Array.isArray(d.adminFullDayDates)
+					? d.adminFullDayDates.filter(value => typeof value === 'string').length
+					: Math.max(1, Math.min(14, Number(d.multiDayFullDayCount) || 1))
+				: undefined,
 		service: (d.service as string) ?? '',
 		serviceId: d.serviceId as string | undefined,
 		fullName: (d.fullName as string) ?? '',
@@ -65,6 +99,7 @@ function toAppointmentData(doc: {
 		createdAt: d.createdAt as Timestamp | undefined,
 		scheduleTbd: d.scheduleTbd === true,
 		scheduleTbdAdminHint: d.scheduleTbdAdminHint as string | undefined,
+		adminNote: d.adminNote as string | undefined,
 	}
 }
 
@@ -95,18 +130,18 @@ export default function AdminPlacePage({
 	const placeLabel = tCommon(place === 'massage' ? 'massage' : 'depilation')
 	const ui = useMemo(() => getPlaceAccentUi(place), [place])
 	const section = sectionProp
-	const navItems: {
-		id: AdminSection
-		label: string
-		icon: React.ElementType
-	}[] = [
-		{ id: 'calendar', label: t('calendar'), icon: Calendar },
-		{ id: 'agenda', label: t('agenda'), icon: CalendarRange },
-		{ id: 'analytics', label: t('analytics'), icon: BarChart2 },
-		{ id: 'price' as const, label: t('priceCatalog'), icon: Banknote },
-		{ id: 'settings', label: t('settings'), icon: Settings },
-	]
+	const navItems = useMemo<AdminNavItem[]>(
+		() => [
+			{ id: 'calendar', label: t('calendar'), icon: Calendar },
+			{ id: 'agenda', label: t('agenda'), icon: CalendarRange },
+			{ id: 'analytics', label: t('analytics'), icon: BarChart2 },
+			{ id: 'price' as const, label: t('priceCatalog'), icon: Banknote },
+			{ id: 'settings', label: t('settings'), icon: Settings },
+		],
+		[t],
+	)
 	const [services, setServices] = useState<ServiceData[]>([])
+	const [calendarServices, setCalendarServices] = useState<ServiceData[]>([])
 	const [addModalOpen, setAddModalOpen] = useState(false)
 	const [editModalOpen, setEditModalOpen] = useState(false)
 	const [editSlot, setEditSlot] = useState<{
@@ -132,6 +167,78 @@ export default function AdminPlacePage({
 	const [analyticsSearch, setAnalyticsSearch] = useState('')
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 	const prepBuffer = getPrepBufferMinutes(schedule)
+	const addModalServices = calendarServices.length > 0 ? calendarServices : services
+
+	const getServiceDayCount = useCallback(
+		(apt: AppointmentData): number => {
+			if (apt.adminBookingMode === 'day') {
+				return (
+					apt.adminFullDayDates?.length ??
+					apt.multiDayFullDayCount ??
+					1
+				)
+			}
+			const allSvcs = [...calendarServices, ...services]
+			const match =
+				(apt.serviceId
+					? allSvcs.find(s => s.id === apt.serviceId)
+					: undefined) ??
+				allSvcs.find(
+					s => s.title.trim().toLocaleLowerCase() === (apt.service ?? '').trim().toLocaleLowerCase(),
+				)
+			if (match?.bookingGranularity === 'day') {
+				return match.bookingDayCount ?? 1
+			}
+			return 0
+		},
+		[calendarServices, services],
+	)
+
+	const calendarColorServices = useMemo(() => {
+		const byTitle = new Map<string, ServiceData>()
+		for (const service of [...calendarServices, ...services]) {
+			const key = service.title.trim().toLocaleLowerCase()
+			if (!key || byTitle.has(key)) continue
+			byTitle.set(key, service)
+		}
+		return Array.from(byTitle.values())
+	}, [calendarServices, services])
+	const formatAppointmentDateLabel = useCallback(
+		(apt: AppointmentData, start: Date, end: Date) => {
+			if (apt.adminBookingMode !== 'day') {
+				return formatDate(start, { locale: currentLocale })
+			}
+			const dayCount =
+				apt.adminFullDayDates?.length ??
+				Math.max(1, Math.min(14, Number(apt.multiDayFullDayCount) || 1))
+			if (dayCount <= 1) {
+				return formatDate(start, { locale: currentLocale })
+			}
+			return `${formatDate(start, { locale: currentLocale })} – ${formatDate(end, {
+				locale: currentLocale,
+			})}`
+		},
+		[currentLocale],
+	)
+	const formatAppointmentTimeLabel = useCallback(
+		(apt: AppointmentData, start: Date) =>
+			apt.adminBookingMode === 'day'
+				? t('allDayNoClockTime')
+				: formatTime(start, { locale: currentLocale }),
+		[currentLocale, t],
+	)
+	const formatAppointmentMetaLabel = useCallback(
+		(apt: AppointmentData, start: Date, end: Date) => {
+			if (apt.adminBookingMode === 'day') {
+				const count =
+					apt.adminFullDayDates?.length ??
+					Math.max(1, Math.min(14, Number(apt.multiDayFullDayCount) || 1))
+				return t('dayCountValue', { count })
+			}
+			return `${Math.round((end.getTime() - start.getTime()) / 60000)}m`
+		},
+		[t],
+	)
 
 	const filteredAnalytics = allAppointments.filter(apt => {
 		if (apt.scheduleTbd) return false
@@ -143,6 +250,40 @@ export default function AdminPlacePage({
 		const qNorm = q.replace(/[\s\-\(\)]/g, '')
 		return name.includes(q) || phone.includes(q) || phoneNorm.includes(qNorm)
 	})
+	/** Waiting for a real date & time (TBD / unscheduled) */
+	const calendarTbdNeedSlotCount = useMemo(
+		() => allAppointments.filter(apt => apt.scheduleTbd === true).length,
+		[allAppointments],
+	)
+	/** Full-day bookings with no chosen days yet (upcoming) */
+	const calendarDayNeedDaysCount = useMemo(() => {
+		const startOfToday = new Date()
+		startOfToday.setHours(0, 0, 0, 0)
+		return allAppointments.filter(apt => {
+			if (apt.scheduleTbd) return false
+			if (apt.adminBookingMode !== 'day') return false
+			if ((apt.adminFullDayDates?.length ?? 0) > 0) return false
+			const end =
+				apt.endTime && 'toDate' in apt.endTime
+					? apt.endTime.toDate()
+					: new Date(apt.endTime as Date)
+			return end >= startOfToday
+		}).length
+	}, [allAppointments])
+
+	const navItemsWithBadges = useMemo(
+		() =>
+			navItems.map(item =>
+				item.id === 'calendar'
+					? {
+							...item,
+							calendarTbd: calendarTbdNeedSlotCount,
+							calendarDays: calendarDayNeedDaysCount,
+						}
+					: item,
+			),
+		[navItems, calendarTbdNeedSlotCount, calendarDayNeedDaysCount],
+	)
 
 	const exportAnalyticsPdf = useCallback(() => {
 		const doc = new jsPDF({ orientation: 'landscape' })
@@ -165,9 +306,13 @@ export default function AdminPlacePage({
 					apt.startTime && 'toDate' in apt.startTime
 						? apt.startTime.toDate()
 						: new Date(apt.startTime as Date)
+				const end =
+					apt.endTime && 'toDate' in apt.endTime
+						? apt.endTime.toDate()
+						: new Date(apt.endTime as Date)
 				return [
-					formatDate(start, { locale: currentLocale }),
-					formatTime(start, { locale: currentLocale }),
+					formatAppointmentDateLabel(apt, start, end),
+					formatAppointmentTimeLabel(apt, start),
 					apt.service,
 					apt.fullName || '—',
 					apt.email || '—',
@@ -179,7 +324,15 @@ export default function AdminPlacePage({
 			headStyles: { fillColor: [232, 184, 0] },
 		})
 		doc.save(`analytics-${place}-${new Date().toISOString().slice(0, 10)}.pdf`)
-	}, [filteredAnalytics, place, placeLabel, t, tCommon, currentLocale])
+	}, [
+		filteredAnalytics,
+		formatAppointmentDateLabel,
+		formatAppointmentTimeLabel,
+		place,
+		placeLabel,
+		t,
+		tCommon,
+	])
 
 	useEffect(() => {
 		getSchedule(place)
@@ -208,7 +361,7 @@ export default function AdminPlacePage({
 					titleEn: data.titleEn as string | undefined,
 					titleRu: data.titleRu as string | undefined,
 					titleUk: data.titleUk as string | undefined,
-					color: (data.color as string) ?? 'bg-gray-500/30 border-gray-500/60',
+					color: (data.color as string) ?? 'bg-gray-500 border-gray-500',
 					durationMinutes: (data.durationMinutes as number) ?? 60,
 				}
 			})
@@ -218,12 +371,36 @@ export default function AdminPlacePage({
 	}, [place, locale])
 
 	useEffect(() => {
+		let cancelled = false
+
+		const loadCalendarServices = async () => {
+			try {
+				const res = await fetch(`/api/price-catalog?place=${place}`, {
+					cache: 'no-store',
+				})
+				if (!res.ok) throw new Error('PRICE_CATALOG_FETCH_FAILED')
+				const catalog = (await res.json()) as PriceCatalogStructure
+				if (cancelled) return
+				setCalendarServices(
+					buildAdminCalendarServices(catalog, place, locale),
+				)
+			} catch {
+				if (!cancelled) setCalendarServices([])
+			}
+		}
+
+		void loadCalendarServices()
+		return () => {
+			cancelled = true
+		}
+	}, [place, locale, section])
+
+	useEffect(() => {
 		const startOfToday = new Date()
 		startOfToday.setHours(0, 0, 0, 0)
 		const q = query(
 			collection(db, 'appointments'),
 			where('place', '==', place),
-			where('startTime', '>=', startOfToday),
 			orderBy('startTime', 'asc'),
 		)
 		const unsub = onSnapshot(q, snapshot => {
@@ -232,7 +409,14 @@ export default function AdminPlacePage({
 					.filter(doc => doc.data().scheduleTbd !== true)
 					.map(doc =>
 						toAppointmentData({ id: doc.id, data: () => doc.data() }),
-					),
+					)
+					.filter(apt => {
+						const end =
+							apt.endTime && 'toDate' in apt.endTime
+								? apt.endTime.toDate()
+								: new Date(apt.endTime as Date)
+						return end >= startOfToday
+					}),
 			)
 		})
 		return () => unsub()
@@ -283,14 +467,14 @@ export default function AdminPlacePage({
 	}, [])
 
 	return (
-		<main className='min-h-screen bg-nearBlack text-icyWhite flex flex-col'>
+		<main className='flex min-h-screen flex-col bg-nearBlack pb-[env(safe-area-inset-bottom,0px)] text-icyWhite'>
 			<header
 				className={clsx(
-					'sticky top-0 z-40 bg-nearBlack/95 backdrop-blur-md',
+					'sticky top-0 z-40 bg-nearBlack/95 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md',
 					ui.adminHeaderBar,
 				)}
 			>
-				<div className='flex items-center justify-between gap-3 px-4 h-16 min-h-16 sm:px-6 lg:px-8'>
+				<div className='flex h-16 min-h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8'>
 					<div className='flex min-w-0 shrink items-center gap-4'>
 						<Link
 							href={`/${locale}/admin`}
@@ -306,7 +490,14 @@ export default function AdminPlacePage({
 							{placeLabel}
 						</span>
 						<nav className='hidden shrink-0 gap-1 sm:flex'>
-							{navItems.map(({ id, label, icon: Icon }) => (
+							{navItemsWithBadges.map(
+								({
+									id,
+									label,
+									icon: Icon,
+									calendarTbd = 0,
+									calendarDays = 0,
+								}) => (
 								<Link
 									key={id}
 									href={
@@ -321,10 +512,34 @@ export default function AdminPlacePage({
 											: 'text-icyWhite/70 hover:text-icyWhite hover:bg-white/5',
 									)}
 								>
-									<Icon className='h-4 w-4 shrink-0' />
+									<span className='relative inline-flex shrink-0'>
+										<Icon className='h-4 w-4 shrink-0' />
+										{id === 'calendar' &&
+										(calendarTbd > 0 || calendarDays > 0) ? (
+											<span className='absolute -right-1 -top-2 flex flex-row gap-0.5'>
+												{calendarTbd > 0 ? (
+													<span
+														className='inline-flex min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-4 text-white'
+														title={t('calendarBadgeTimeTitle')}
+													>
+														{calendarTbd > 99 ? '99+' : calendarTbd}
+													</span>
+												) : null}
+												{calendarDays > 0 ? (
+													<span
+														className='inline-flex min-w-[1rem] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-semibold leading-4 text-nearBlack'
+														title={t('calendarBadgeDayTitle')}
+													>
+														{calendarDays > 99 ? '99+' : calendarDays}
+													</span>
+												) : null}
+											</span>
+										) : null}
+									</span>
 									<span className='hidden truncate sm:inline'>{label}</span>
 								</Link>
-							))}
+								),
+							)}
 						</nav>
 					</div>
 					<div className='flex shrink-0 items-center gap-2'>
@@ -378,7 +593,7 @@ export default function AdminPlacePage({
 				</div>
 				{isMobileMenuOpen && (
 					<div
-						className={`absolute inset-x-0 top-full z-50 bg-nearBlack text-icyWhite px-4 pb-4 pt-3 shadow-xl animate-in slide-in-from-top-2 fade-in-0 duration-200 sm:hidden ${ui.mobileMenuBorder}`}
+						className={`absolute inset-x-0 top-full z-50 max-h-[min(70dvh,calc(100vh-4rem))] overflow-y-auto overscroll-contain bg-nearBlack px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 text-icyWhite shadow-xl animate-in slide-in-from-top-2 fade-in-0 duration-200 sm:hidden ${ui.mobileMenuBorder}`}
 					>
 						<div className='mb-3 text-right'>
 							<span className='block font-serif text-base text-icyWhite'>
@@ -386,7 +601,14 @@ export default function AdminPlacePage({
 							</span>
 						</div>
 						<nav className='mb-3 flex flex-col gap-2 items-end text-right'>
-							{navItems.map(({ id, label, icon: Icon }) => (
+							{navItemsWithBadges.map(
+								({
+									id,
+									label,
+									icon: Icon,
+									calendarTbd = 0,
+									calendarDays = 0,
+								}) => (
 								<Link
 									key={id}
 									href={
@@ -403,9 +625,33 @@ export default function AdminPlacePage({
 									onClick={() => setIsMobileMenuOpen(false)}
 								>
 									<span className='truncate'>{label}</span>
-									<Icon className='h-4 w-4 shrink-0' />
+									<span className='relative inline-flex shrink-0'>
+										<Icon className='h-4 w-4 shrink-0' />
+										{id === 'calendar' &&
+										(calendarTbd > 0 || calendarDays > 0) ? (
+											<span className='absolute -right-1 -top-2 flex flex-row gap-0.5'>
+												{calendarTbd > 0 ? (
+													<span
+														className='inline-flex min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-4 text-white'
+														title={t('calendarBadgeTimeTitle')}
+													>
+														{calendarTbd > 99 ? '99+' : calendarTbd}
+													</span>
+												) : null}
+												{calendarDays > 0 ? (
+													<span
+														className='inline-flex min-w-[1rem] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-semibold leading-4 text-nearBlack'
+														title={t('calendarBadgeDayTitle')}
+													>
+														{calendarDays > 99 ? '99+' : calendarDays}
+													</span>
+												) : null}
+											</span>
+										) : null}
+									</span>
 								</Link>
-							))}
+								),
+							)}
 						</nav>
 						<div className='flex flex-col gap-3 items-end text-right'>
 							{session?.user && (
@@ -438,7 +684,7 @@ export default function AdminPlacePage({
 
 			<div
 				className={clsx(
-					'relative flex-1',
+					'relative min-h-0 min-w-0 flex-1',
 					place === 'depilation' && 'noise-overlay',
 				)}
 			>
@@ -453,15 +699,45 @@ export default function AdminPlacePage({
 				)}
 				<div className={ui.adminMainContent}>
 				{section === 'calendar' && (
-					<div className='space-y-4 animate-in fade-in-0 duration-200'>
-						<div>
-							<h1 className='font-serif text-2xl sm:text-3xl text-icyWhite'>
-								{t('appointments')}
-							</h1>
+					<div className='min-w-0 space-y-4 animate-in fade-in-0 duration-200'>
+						<div className='min-w-0'>
+							<div className='flex flex-wrap items-center gap-2 sm:gap-3'>
+								<h1 className='font-serif text-2xl sm:text-3xl text-icyWhite'>
+									{t('appointments')}
+								</h1>
+								{calendarTbdNeedSlotCount > 0 ? (
+									<span
+										className='inline-flex max-w-full min-w-0 items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-200 sm:px-3'
+										title={t('calendarBadgeTimeTitle')}
+									>
+										<span className='h-2 w-2 shrink-0 rounded-full bg-red-500' />
+										<span className='tabular-nums'>
+											{calendarTbdNeedSlotCount}
+										</span>
+										<span className='min-w-0 break-words text-red-100/90'>
+											{t('calendarAttentionTimeLabel')}
+										</span>
+									</span>
+								) : null}
+								{calendarDayNeedDaysCount > 0 ? (
+									<span
+										className='inline-flex max-w-full min-w-0 items-center gap-2 rounded-full border border-amber-500/35 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-100 sm:px-3'
+										title={t('calendarBadgeDayTitle')}
+									>
+										<span className='h-2 w-2 shrink-0 rounded-full bg-amber-400' />
+										<span className='tabular-nums'>
+											{calendarDayNeedDaysCount}
+										</span>
+										<span className='min-w-0 break-words text-amber-50/95'>
+											{t('calendarAttentionDayLabel')}
+										</span>
+									</span>
+								) : null}
+							</div>
 							<p className='text-icyWhite/60 text-sm mt-0.5'>
 								{t('appointmentsSubtitle')}
 							</p>
-							<p className='text-icyWhite/40 text-xs mt-0.5 flex items-center gap-1.5'>
+							<p className='mt-0.5 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-icyWhite/40'>
 								<span
 									title={t('prepBufferInfoTitle', { minutes: prepBuffer })}
 									className={`inline-flex cursor-help rounded-full p-0.5 text-icyWhite/50 transition-colors ${ui.infoHover}`}
@@ -473,12 +749,12 @@ export default function AdminPlacePage({
 							</p>
 						</div>
 
-						<div className={ui.adminPanel}>
+						<div className={clsx(ui.adminPanel, 'min-w-0')}>
 							<BookingCalendarGrid
 								allowCancel
 								allowDrag
 								onEditAppointment={handleEditAppointment}
-								services={services}
+								services={calendarColorServices}
 								place={place}
 							/>
 						</div>
@@ -520,6 +796,7 @@ export default function AdminPlacePage({
 													const duration = Math.round(
 														(end.getTime() - start.getTime()) / 60000,
 													)
+													const svcDays = getServiceDayCount(apt)
 													return (
 														<div
 															key={apt.id}
@@ -529,19 +806,20 @@ export default function AdminPlacePage({
 																<span className='font-medium text-sky-100/95'>
 																	{t('agendaTbdNoDate')}
 																</span>
-																<span className='text-xs text-icyWhite/60'>
-																	{duration}m
-																</span>
+																{svcDays > 0 ? (
+																	<span className='shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-xs text-icyWhite/80'>
+																		{t('dayCountValue', { count: svcDays })}
+																	</span>
+																) : (
+																	<span className='text-xs text-icyWhite/60'>
+																		{duration}m
+																	</span>
+																)}
 															</div>
 															<div className='text-icyWhite'>{apt.service}</div>
 															<div className='text-xs text-icyWhite/70'>
 																{apt.fullName || '—'}
 															</div>
-															{apt.scheduleTbdAdminHint?.trim() && (
-																<div className='text-[11px] text-icyWhite/55 whitespace-pre-wrap'>
-																	{apt.scheduleTbdAdminHint.trim()}
-																</div>
-															)}
 															<div className='text-[11px] text-icyWhite/60 flex flex-col gap-0.5'>
 																<span>{apt.email || '—'}</span>
 																<span>{apt.phone || '—'}</span>
@@ -568,15 +846,15 @@ export default function AdminPlacePage({
 											return (
 												<div
 													key={apt.id}
-													className='rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-icyWhite space-y-1.5'
+													className='rounded-xl border border-white/10 bg-white/[0.04] shadow-sm shadow-black/20 px-3 py-3 text-sm text-icyWhite space-y-1.5'
 												>
 													<div className='flex items-center justify-between gap-2'>
 														<span className='font-medium'>
-															{formatDate(start, { locale: currentLocale })} ·{' '}
-															{formatTime(start, { locale: currentLocale })}
+															{formatAppointmentDateLabel(apt, start, end)} ·{' '}
+															{formatAppointmentTimeLabel(apt, start)}
 														</span>
 														<span className='text-xs text-icyWhite/60'>
-															{duration}m
+															{formatAppointmentMetaLabel(apt, start, end)}
 														</span>
 													</div>
 													<div className='text-icyWhite'>{apt.service}</div>
@@ -629,6 +907,7 @@ export default function AdminPlacePage({
 														const duration = Math.round(
 															(end.getTime() - start.getTime()) / 60000,
 														)
+														const tbdDayCount = getServiceDayCount(apt)
 														return (
 															<tr
 																key={apt.id}
@@ -643,13 +922,10 @@ export default function AdminPlacePage({
 																<td className='px-4 py-3 text-sm text-icyWhite'>
 																	<span>{apt.service}</span>
 																	<span className='text-icyWhite/50 text-xs ml-1'>
-																		({duration}m)
+																		{tbdDayCount > 0
+																			? `(${t('dayCountValue', { count: tbdDayCount })})`
+																			: `(${duration}m)`}
 																	</span>
-																	{apt.scheduleTbdAdminHint?.trim() && (
-																		<div className='text-[11px] text-icyWhite/50 mt-1 max-w-md whitespace-pre-wrap'>
-																			{apt.scheduleTbdAdminHint.trim()}
-																		</div>
-																	)}
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
 																	{apt.fullName || '—'}
@@ -681,15 +957,15 @@ export default function AdminPlacePage({
 																className='border-b border-white/5 hover:bg-white/[0.02] transition-colors'
 															>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
-																	{formatDate(start, { locale: currentLocale })}
+																	{formatAppointmentDateLabel(apt, start, end)}
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
-																	{formatTime(start, { locale: currentLocale })}
+																	{formatAppointmentTimeLabel(apt, start)}
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
 																	<span>{apt.service}</span>
 																	<span className='text-icyWhite/50 text-xs ml-1'>
-																		({duration}m)
+																		({formatAppointmentMetaLabel(apt, start, end)})
 																	</span>
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
@@ -769,15 +1045,15 @@ export default function AdminPlacePage({
 											return (
 												<div
 													key={apt.id}
-													className='rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3 text-sm text-icyWhite space-y-1.5'
+													className='rounded-xl border border-white/10 bg-white/[0.04] shadow-sm shadow-black/20 px-3 py-3 text-sm text-icyWhite space-y-1.5'
 												>
 													<div className='flex items-center justify-between gap-2'>
 														<span className='font-medium'>
-															{formatDate(start, { locale: currentLocale })} ·{' '}
-															{formatTime(start, { locale: currentLocale })}
+															{formatAppointmentDateLabel(apt, start, end)} ·{' '}
+															{formatAppointmentTimeLabel(apt, start)}
 														</span>
 														<span className='text-xs text-icyWhite/60'>
-															{duration}m
+															{formatAppointmentMetaLabel(apt, start, end)}
 														</span>
 													</div>
 													<div className='text-icyWhite'>{apt.service}</div>
@@ -836,15 +1112,15 @@ export default function AdminPlacePage({
 																className='border-b border-white/5 hover:bg-white/[0.02] transition-colors'
 															>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
-																	{formatDate(start, { locale: currentLocale })}
+																	{formatAppointmentDateLabel(apt, start, end)}
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
-																	{formatTime(start, { locale: currentLocale })}
+																	{formatAppointmentTimeLabel(apt, start)}
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
 																	<span>{apt.service}</span>
 																	<span className='text-icyWhite/50 text-xs ml-1'>
-																		({duration}m)
+																		({formatAppointmentMetaLabel(apt, start, end)})
 																	</span>
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
@@ -938,10 +1214,12 @@ export default function AdminPlacePage({
 					type='button'
 					onClick={openAddAppointment}
 					aria-label={t('addAppointment')}
-					className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full font-medium hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-nearBlack ${ui.fab}`}
+					className={`fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] z-50 flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium shadow-lg transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-nearBlack sm:bottom-6 sm:right-6 sm:px-5 ${ui.fab}`}
 				>
 					<span className='text-lg leading-none'>+</span>
-					{t('addAppointment')}
+					<span className='hidden max-w-[10rem] truncate sm:inline'>
+						{t('addAppointment')}
+					</span>
 				</button>
 			)}
 
@@ -955,7 +1233,7 @@ export default function AdminPlacePage({
 				defaultDate={editSlot?.date}
 				defaultHour={editSlot?.hour}
 				defaultMinute={editSlot?.minute}
-				services={services}
+				services={addModalServices}
 				place={place}
 			/>
 
@@ -967,7 +1245,7 @@ export default function AdminPlacePage({
 				}}
 				mode='edit'
 				appointment={editAppointment}
-				services={services}
+				services={calendarColorServices}
 				place={place}
 			/>
 		</main>

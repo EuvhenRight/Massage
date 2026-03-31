@@ -4,7 +4,6 @@ import BookingPageLayout from '@/components/BookingPageLayout'
 import BookingFlow from '@/components/booking-flow'
 import BookingPageSkeleton from '@/components/booking-flow/BookingPageSkeleton'
 import type { ServiceData } from '@/lib/services'
-import { normalizeItemBookingDayCount } from '@/types/price-catalog'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 
@@ -32,10 +31,7 @@ export default function BookingPage() {
 				: s.bookingGranularity === 'tbd'
 					? ('tbd' as const)
 					: ('time' as const),
-		bookingDayCount:
-			s.bookingGranularity === 'day'
-				? normalizeItemBookingDayCount(s.bookingDayCount)
-				: 1,
+		bookingDayCount: s.bookingDayCount,
 		scheduleTbdMessage: s.scheduleTbdMessage,
 		scheduleTbdAdminNote: s.scheduleTbdAdminNote,
 	}))
@@ -50,12 +46,11 @@ export default function BookingPage() {
 						serviceOptions.length > 0
 							? serviceOptions
 							: [
-									{
-										title: t('appointmentFallback'),
-										durationMinutes: 60,
-										bookingGranularity: 'time' as const,
-										bookingDayCount: 1,
-									},
+							{
+									title: t('appointmentFallback'),
+									durationMinutes: 60,
+									bookingGranularity: 'time' as const,
+								},
 								]
 					}
 					defaultDuration={60}

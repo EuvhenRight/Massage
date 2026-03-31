@@ -5,15 +5,15 @@ import { useLocale, useTranslations } from "next-intl";
 import { getDateKey } from "@/lib/booking";
 import { getPlaceAccentUi } from "@/lib/place-accent-ui";
 import type { Place } from "@/lib/places";
+import {
+  getWorkingHoursForDate,
+  isDateAvailable,
+  type OccupiedSlot,
+} from "@/lib/availability-firestore";
+import type { ScheduleData } from "@/lib/schedule-firestore";
+import { getSchedule } from "@/lib/schedule-firestore";
 import { clsx } from "clsx";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const MONTH_KEYS = ["month1", "month2", "month3", "month4", "month5", "month6", "month7", "month8", "month9", "month10", "month11", "month12"] as const;
 
@@ -38,6 +38,13 @@ function sameDay(a: Date, b: Date): boolean {
   );
 }
 
+export interface AdminTimeAvailabilityConfig {
+  occupiedSlots: OccupiedSlot[];
+  durationMinutes: number;
+  /** Called when the visible month changes so the parent can load overlapping appointments */
+  onViewMonthChange?: (monthStart: Date) => void;
+}
+
 interface AdminDatePickerProps {
   value: string;
   onChange: (value: string) => void;
@@ -45,20 +52,59 @@ interface AdminDatePickerProps {
   /** When set, dates before this are not selectable (e.g. today for add mode) */
   minDate?: Date;
   place?: Place;
+  disabledDateKeys?: string[];
+  /** Keep the calendar open after selecting a date (useful for multi-day picking) */
+  keepOpen?: boolean;
+  /** Extra date keys to highlight as "already selected" */
+  selectedDateKeys?: string[];
+  /**
+   * Parent-controlled schedule. When omitted, this component loads schedule itself.
+   */
+  schedule?: ScheduleData | null;
+  /**
+   * When set, dates with no free slot for the given duration are disabled (admin time booking).
+   */
+  timeAvailability?: AdminTimeAvailabilityConfig | null;
 }
 
-export default function AdminDatePicker({ value, onChange, id, minDate, place = "massage" }: AdminDatePickerProps) {
+export default function AdminDatePicker({
+  value,
+  onChange,
+  id,
+  minDate,
+  place = "massage",
+  disabledDateKeys = [],
+  keepOpen = false,
+  selectedDateKeys = [],
+  schedule: scheduleProp,
+  timeAvailability = null,
+}: AdminDatePickerProps) {
   const locale = useLocale();
   const t = useTranslations("admin");
   const ui = useMemo(() => getPlaceAccentUi(place), [place]);
+  const [internalSchedule, setInternalSchedule] =
+    useState<Awaited<ReturnType<typeof getSchedule>> | null>(null);
+  const schedule =
+    scheduleProp !== undefined ? scheduleProp : internalSchedule;
+  const disabledDates = useMemo(() => new Set(disabledDateKeys), [disabledDateKeys]);
+  const selectedDates = useMemo(() => new Set(selectedDateKeys), [selectedDateKeys]);
   const MONTHS = MONTH_KEYS.map((k) => t(k));
   const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
   const weekHeaders = WEEKDAY_KEYS.map((k) => t(k));
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedDate = value ? new Date(value + "T12:00:00") : new Date();
+  const fallbackViewDate = useMemo(() => {
+    if (value) return new Date(value + "T12:00:00");
+    if (minDate) return new Date(minDate);
+    return new Date();
+  }, [value, minDate]);
+  const selectedDate = fallbackViewDate;
   const [viewMonth, setViewMonth] = useState(() => new Date(selectedDate.getFullYear(), selectedDate.getMonth()));
+  const yearOptions = useMemo(
+    () => Array.from({ length: 11 }, (_, i) => viewMonth.getFullYear() - 5 + i),
+    [viewMonth]
+  );
 
   const days = useMemo(
     () => getDaysInMonth(viewMonth.getFullYear(), viewMonth.getMonth()),
@@ -73,10 +119,25 @@ export default function AdminDatePicker({ value, onChange, id, minDate, place = 
 
   useEffect(() => {
     if (open) {
-      const d = value ? new Date(value + "T12:00:00") : new Date();
+      const d = fallbackViewDate;
       setViewMonth(new Date(d.getFullYear(), d.getMonth()));
     }
-  }, [open, value]);
+  }, [open, fallbackViewDate]);
+
+  useEffect(() => {
+    if (scheduleProp !== undefined) return;
+    getSchedule(place)
+      .then(setInternalSchedule)
+      .catch(() => setInternalSchedule(null));
+  }, [place, scheduleProp]);
+
+  const onAvailabilityMonthChange = timeAvailability?.onViewMonthChange;
+  useEffect(() => {
+    if (!open || !onAvailabilityMonthChange) return;
+    onAvailabilityMonthChange(
+      new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1)
+    );
+  }, [open, viewMonth, onAvailabilityMonthChange]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -96,9 +157,20 @@ export default function AdminDatePicker({ value, onChange, id, minDate, place = 
       day.setHours(0, 0, 0, 0);
       if (day.getTime() < min.getTime()) return;
     }
+    if (getWorkingHoursForDate(schedule, d) == null) return;
+    if (timeAvailability) {
+      const ok = isDateAvailable(
+        d,
+        timeAvailability.durationMinutes,
+        timeAvailability.occupiedSlots,
+        schedule
+      );
+      if (!ok) return;
+    }
+    if (disabledDates.has(getDateKey(d))) return;
     const str = getDateKey(d);
     onChange(str);
-    setOpen(false);
+    if (!keepOpen) setOpen(false);
   };
 
   const handleMonthChange = (monthIndex: number) => {
@@ -131,11 +203,11 @@ export default function AdminDatePicker({ value, onChange, id, minDate, place = 
 
       {open && (
         <div
-          className="absolute left-0 top-full z-[60] mt-1 min-w-[280px] rounded-lg border border-white/10 bg-black p-4 shadow-xl"
+          className="absolute left-0 top-full z-[60] mt-1 w-[320px] max-w-[calc(100vw-2rem)] rounded-xl border border-white/10 bg-black p-4 shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Month / Year header with dropdowns */}
-          <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="mb-4 grid grid-cols-[auto,1fr,auto] items-center gap-2">
             <button
               type="button"
               onClick={() => setViewMonth((m) => new Date(m.getFullYear(), m.getMonth() - 1))}
@@ -145,37 +217,37 @@ export default function AdminDatePicker({ value, onChange, id, minDate, place = 
               <ChevronLeft className="h-5 w-5" />
             </button>
 
-            <div className="flex gap-1">
-              <Select
+            <div className="grid grid-cols-2 gap-1">
+              <label className="sr-only" htmlFor={`${id ?? "admin-date"}-month`}>
+                Month
+              </label>
+              <select
+                id={`${id ?? "admin-date"}-month`}
                 value={String(viewMonth.getMonth())}
-                onValueChange={(v) => handleMonthChange(Number(v))}
+                onChange={(e) => handleMonthChange(Number(e.target.value))}
+                className="h-8 w-full min-w-0 rounded-md border border-white/10 bg-white/5 px-2 text-sm text-icyWhite outline-none transition-colors focus:border-white/20"
               >
-                <SelectTrigger className="select-menu h-8 min-w-[100px] border-0 bg-white/5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {MONTHS.map((m, i) => (
-                    <SelectItem key={m} value={String(i)}>
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
+                {MONTHS.map((m, i) => (
+                  <option key={m} value={String(i)} className="bg-nearBlack text-icyWhite">
+                    {m}
+                  </option>
+                ))}
+              </select>
+              <label className="sr-only" htmlFor={`${id ?? "admin-date"}-year`}>
+                Year
+              </label>
+              <select
+                id={`${id ?? "admin-date"}-year`}
                 value={String(viewMonth.getFullYear())}
-                onValueChange={(v) => handleYearChange(Number(v))}
+                onChange={(e) => handleYearChange(Number(e.target.value))}
+                className="h-8 w-full min-w-0 rounded-md border border-white/10 bg-white/5 px-2 text-sm text-icyWhite outline-none transition-colors focus:border-white/20"
               >
-                <SelectTrigger className="select-menu h-8 min-w-[70px] border-0 bg-white/5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 7 }, (_, i) => new Date().getFullYear() - 1 + i).map((y) => (
-                    <SelectItem key={y} value={String(y)}>
-                      {y}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {yearOptions.map((y) => (
+                  <option key={y} value={String(y)} className="bg-nearBlack text-icyWhite">
+                    {y}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <button
@@ -206,7 +278,9 @@ export default function AdminDatePicker({ value, onChange, id, minDate, place = 
               if (!date) {
                 return <div key={`pad-${i}`} className="aspect-square" />;
               }
+              const dateKey = getDateKey(date);
               const selected = value && sameDay(date, new Date(value + "T12:00:00"));
+              const isMultiSelected = selectedDates.has(dateKey);
               const isToday = sameDay(date, today);
               const isPast =
                 minDate &&
@@ -217,20 +291,43 @@ export default function AdminDatePicker({ value, onChange, id, minDate, place = 
                   d.setHours(0, 0, 0, 0);
                   return d.getTime() < min.getTime();
                 })();
+              const isUnavailable =
+                getWorkingHoursForDate(schedule, date) == null;
+              const isFullyBookedForTime =
+                timeAvailability &&
+                !isUnavailable &&
+                !isDateAvailable(
+                  date,
+                  timeAvailability.durationMinutes,
+                  timeAvailability.occupiedSlots,
+                  schedule
+                );
+              const isOccupied = disabledDates.has(dateKey);
 
               return (
                 <button
                   key={date.toISOString()}
                   type="button"
                   onClick={() => handleSelect(date)}
-                  disabled={!!isPast}
+                  disabled={
+                    !!isPast ||
+                    isUnavailable ||
+                    !!isFullyBookedForTime ||
+                    isOccupied
+                  }
                   className={clsx(
                     "aspect-square min-h-[32px] rounded-lg text-sm font-medium transition-colors flex items-center justify-center",
                     selected
                       ? ui.adminDatePickerSelected
-                      : "text-icyWhite hover:bg-white/10",
-                    isToday && !selected && ui.adminDatePickerToday,
-                    isPast && "opacity-40 cursor-not-allowed hover:bg-transparent"
+                      : isMultiSelected
+                        ? "bg-white/20 text-icyWhite ring-1 ring-white/30"
+                        : "text-icyWhite hover:bg-white/10",
+                    isToday && !selected && !isMultiSelected && ui.adminDatePickerToday,
+                    (isPast ||
+                      isUnavailable ||
+                      isFullyBookedForTime ||
+                      isOccupied) &&
+                      "opacity-40 cursor-not-allowed hover:bg-transparent"
                   )}
                 >
                   {date.getDate()}

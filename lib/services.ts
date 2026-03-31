@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Place } from "./places";
+import { DEFAULT_SECTION_CALENDAR_COLOR } from "@/lib/section-calendar-colors";
 import { normalizeItemBookingDayCount } from "@/types/price-catalog";
 
 export type Locale = "sk" | "en" | "ru" | "uk";
@@ -46,6 +47,41 @@ export interface ServiceInput {
   color: string;
   durationMinutes: number;
   place?: Place;
+}
+
+function normalizeServiceMatchKey(s: string): string {
+  return s.trim().toLocaleLowerCase();
+}
+
+const SERVICE_TITLE_LOCALE_KEYS = ["titleSk", "titleEn", "titleRu", "titleUk"] as const;
+
+/** Fallback slot fill when no service row matches or color is empty/transparent — neutral slate (not a hue). */
+export const ADMIN_APPOINTMENT_FALLBACK_COLOR = DEFAULT_SECTION_CALENDAR_COLOR;
+
+/**
+ * Match a calendar row to an appointment when `service` was stored in any locale
+ * and admin `ServiceData.title` is resolved for the current UI locale.
+ */
+export function findServiceDataForAppointment(
+  appointment: { service: string; serviceId?: string },
+  services: ServiceData[],
+): ServiceData | undefined {
+  if (appointment.serviceId) {
+    const byId = services.find((x) => x.id === appointment.serviceId);
+    if (byId) return byId;
+  }
+  const needle = normalizeServiceMatchKey(appointment.service);
+  if (!needle) return undefined;
+  for (const x of services) {
+    if (normalizeServiceMatchKey(x.title) === needle) return x;
+    for (const key of SERVICE_TITLE_LOCALE_KEYS) {
+      const v = x[key];
+      if (typeof v === "string" && v.trim() && normalizeServiceMatchKey(v) === needle) {
+        return x;
+      }
+    }
+  }
+  return undefined;
 }
 
 function resolveTitle(data: Record<string, unknown>, locale: Locale): string {
@@ -86,7 +122,7 @@ export async function getServices(place?: Place, locale: Locale = "sk"): Promise
       titleEn: data.titleEn as string | undefined,
       titleRu: data.titleRu as string | undefined,
       titleUk: data.titleUk as string | undefined,
-      color: (data.color as string) ?? "bg-gray-500/30 border-gray-500/60",
+      color: (data.color as string) ?? DEFAULT_SECTION_CALENDAR_COLOR,
       durationMinutes: (data.durationMinutes as number) ?? 60,
       place: (data.place as Place) ?? "massage",
       bookingGranularity:

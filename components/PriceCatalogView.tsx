@@ -36,7 +36,12 @@ function ZoneItemsList({
       {items.map((item) => {
         const title = getTitleForLocale(item, locale);
         const desc = getDescriptionForLocale(item, locale);
-        const bookingHref = `${localePath}/depilation/booking?service=${encodeURIComponent(title)}&duration=${item.durationMinutes}`;
+        const isTbd = item.bookingGranularity === "tbd";
+        const bookingPath =
+          place === "massage" ? "massage/booking" : "depilation/booking";
+        const bookingHref = isTbd
+          ? `${localePath}/${bookingPath}?service=${encodeURIComponent(title)}`
+          : `${localePath}/${bookingPath}?service=${encodeURIComponent(title)}&duration=${item.durationMinutes}`;
         return (
           <li
             key={item.id}
@@ -49,9 +54,11 @@ function ZoneItemsList({
               ) : null}
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <span className="text-icyWhite/70 text-sm">
-                {item.durationMinutes} {t("min")}
-              </span>
+              {!isTbd && (
+                <span className="text-icyWhite/70 text-sm">
+                  {item.durationMinutes} {t("min")}
+                </span>
+              )}
               <span className="text-purple-soft/90 font-medium">
                 {formatPrice(item.price)} €
               </span>

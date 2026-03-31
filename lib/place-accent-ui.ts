@@ -25,8 +25,8 @@ export function getPlaceAccentUi(place: Place) {
 			? "border-purple-soft/50 bg-purple-soft/20 text-purple-glow hover:bg-purple-soft/30"
 			: "border-gold-soft/50 bg-gold-soft/20 text-gold-glow hover:bg-gold-soft/30",
 		fab: m
-			? "bg-purple-soft/25 border border-purple-soft/50 text-purple-glow shadow-lg shadow-purple-soft/10 hover:bg-purple-soft/35 hover:shadow-purple-soft/20 focus:ring-purple-soft"
-			: "bg-gold-soft/25 border border-gold-soft/50 text-gold-glow shadow-lg shadow-gold-soft/10 hover:bg-gold-soft/35 hover:shadow-gold-soft/20 focus:ring-gold-soft",
+			? "border border-purple-glow bg-purple-soft text-icyWhite shadow-lg shadow-black/35 hover:brightness-110 focus:ring-2 focus:ring-purple-glow focus:ring-offset-2 focus:ring-offset-nearBlack"
+			: "border border-gold-glow bg-gold-soft text-nearBlack shadow-lg shadow-black/35 hover:brightness-110 focus:ring-2 focus:ring-gold-glow focus:ring-offset-2 focus:ring-offset-nearBlack",
 		toolbarActive: m
 			? "bg-purple-soft/25 border border-purple-soft/50 text-purple-glow"
 			: "bg-gold-soft/25 border border-gold-soft/50 text-gold-glow",
@@ -119,8 +119,8 @@ export function getPlaceAccentUi(place: Place) {
 			: "text-gold-soft hover:text-gold-glow",
 		/** Depilation admin: full-page content shell (massage keeps compact rail) */
 		adminMainContent: m
-			? "px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto w-full"
-			: "relative z-10 px-4 sm:px-8 lg:px-12 py-8 sm:py-10 w-full min-h-[calc(100dvh-4rem)]",
+			? "px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto w-full min-w-0"
+			: "relative z-10 px-4 sm:px-8 lg:px-12 py-8 sm:py-10 w-full min-w-0 min-h-[calc(100dvh-4rem)]",
 		adminPanel: m
 			? "rounded-2xl border border-white/10 overflow-hidden shadow-xl"
 			: "rounded-3xl glass-card overflow-hidden shadow-xl",
@@ -140,5 +140,9 @@ export function getPlaceAccentUi(place: Place) {
 		calendarDropTarget: m
 			? "bg-purple-soft/20 ring-1 ring-purple-soft/50"
 			: "bg-gold-soft/20 ring-1 ring-gold-soft/50",
+		/** Week view: circular “today” date (Google Calendar–style header) */
+		weekCalendarTodayCircle: m
+			? "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums bg-purple-soft/35 text-purple-glow ring-1 ring-purple-soft/45 shadow-sm shadow-purple-soft/20 sm:h-9 sm:w-9 sm:text-sm"
+			: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums bg-gold-soft/35 text-gold-glow ring-1 ring-gold-soft/45 shadow-sm shadow-gold-soft/15 sm:h-9 sm:w-9 sm:text-sm",
 	}
 }

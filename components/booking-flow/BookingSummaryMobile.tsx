@@ -1,5 +1,6 @@
 'use client'
 
+import { formatTimeFromSlotString } from '@/lib/format-date'
 import { getBookingAccent } from '@/lib/booking-accent'
 import type { Place } from '@/lib/places'
 import { useLocale, useTranslations } from 'next-intl'
@@ -7,14 +8,6 @@ import { motion } from 'framer-motion'
 import { useMemo } from 'react'
 import { TruncateText } from '@/components/ui/truncate-text'
 import { useBookingFlow } from './BookingFlowContext'
-
-function formatTime(time: string): string {
-	const [h, m] = time.split(':').map(Number)
-	if (h === 0) return `12:${String(m).padStart(2, '0')} am`
-	if (h < 12) return `${h}:${String(m).padStart(2, '0')} am`
-	if (h === 12) return `12:${String(m).padStart(2, '0')} pm`
-	return `${h - 12}:${String(m).padStart(2, '0')} pm`
-}
 
 interface BookingSummaryMobileProps {
 	place?: Place
@@ -35,7 +28,7 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 		bookingDayCount,
 	} = useBookingFlow()
 
-	if (!service && !date && !time) return null
+	if (!service && !date && !(time || bookingGranularity === 'day')) return null
 
 	return (
 		<motion.div
@@ -60,13 +53,13 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 							>
 								{service}
 							</TruncateText>
-							{bookingGranularity === 'day' ? (
+							{bookingGranularity === 'tbd' ? (
 								<span className="text-icyWhite/50 text-xs shrink-0">
-									(
-									{bookingDayCount >= 2
-										? t('fullDaysBookingCount', { count: bookingDayCount })
-										: t('fullDayBooking')}
-									)
+									({t('scheduleTbdBookingBadge')})
+								</span>
+							) : bookingGranularity === 'day' ? (
+								<span className="text-icyWhite/50 text-xs shrink-0">
+									({t('allDayBadge', { count: bookingDayCount })})
 								</span>
 							) : (
 								durationMinutes > 0 && (
@@ -91,16 +84,13 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 						</dd>
 					</div>
 				)}
-				{time && (
+				{(bookingGranularity === 'day' || time) && (
 					<div className="flex items-center justify-between gap-3">
 						<dt className="text-icyWhite/50 shrink-0 min-w-[3rem]">{tCommon('time')}</dt>
 						<dd className="text-icyWhite font-medium text-right">
-							{formatTime(time)}
-							{bookingGranularity === 'day' && (
-								<span className="block text-xs text-icyWhite/55 font-normal mt-0.5">
-									{t('fullDayBooking')}
-								</span>
-							)}
+							{bookingGranularity === 'day'
+								? t('allDayLabel')
+								: formatTimeFromSlotString(time!, locale)}
 						</dd>
 					</div>
 				)}

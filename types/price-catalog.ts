@@ -108,6 +108,18 @@ export function getTitleForLocale(
   return typeof withId.id === "string" ? withId.id : "";
 }
 
+/** Title in the given locale only — no cross-language fallback (for admin UI consistency with the active locale). */
+export function getTitleStrictForLocale(
+  item: LocalizedText | undefined | null,
+  locale: PriceLocale
+): string {
+  if (!item) return "";
+  const key =
+    `title${locale.charAt(0).toUpperCase()}${locale.slice(1)}` as keyof LocalizedText;
+  const v = (item as unknown as Record<string, unknown>)[key as string];
+  return typeof v === "string" && v.trim() ? v.trim() : "";
+}
+
 /** Resolve description for a locale */
 export function getDescriptionForLocale(
   item: LocalizedText | undefined | null,

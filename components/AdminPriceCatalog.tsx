@@ -2,9 +2,13 @@
 
 import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import { normalizePriceCatalog } from '@/lib/price-catalog-normalize'
-import { pickNextCalendarColor } from '@/lib/section-calendar-colors'
+import {
+	pickNextCalendarColor,
+	SECTION_CALENDAR_COLORS,
+} from '@/lib/section-calendar-colors'
 import type { Place } from '@/lib/places'
 import type {
+	LocalizedText,
 	PriceCatalogStructure,
 	PriceSection,
 	PriceService,
@@ -14,9 +18,7 @@ import type {
 } from '@/types/price-catalog'
 import {
 	generatePriceItemId,
-	getTitleForLocale,
-	MAX_ITEM_BOOKING_DAY_COUNT,
-	normalizeItemBookingDayCount,
+	getTitleStrictForLocale,
 } from '@/types/price-catalog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
@@ -63,8 +65,26 @@ type SelectedNode =
 
 export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 	const t = useTranslations('admin')
+	const tPrice = useTranslations('price')
 	const ui = useMemo(() => getPlaceAccentUi(place), [place])
 	const locale = (useLocale() || 'en') as 'sk' | 'en' | 'ru' | 'uk'
+
+	const catalogTreeTitle = useCallback(
+		(
+			item: LocalizedText & { id?: string },
+			kind: 'service' | 'section' | 'zone',
+			index: number,
+		) => {
+			const strict = getTitleStrictForLocale(item, locale)
+			if (strict) return strict
+			return kind === 'service'
+				? t('priceCatalogUnnamedService', { n: index + 1 })
+				: kind === 'section'
+					? t('priceCatalogUnnamedSection', { n: index + 1 })
+					: t('priceCatalogUnnamedZone', { n: index + 1 })
+		},
+		[locale, t],
+	)
 	const [catalog, setCatalog] = useState<PriceCatalogStructure>(EMPTY_CATALOG)
 	const [loading, setLoading] = useState(true)
 	const [saving, setSaving] = useState(false)
@@ -504,7 +524,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 									const v = e.target.value.slice(0, MAX_DESCRIPTION_LENGTH)
 									onChange(key, v)
 								}}
-								placeholder='Important info for customers (e.g. availability, pricing notes)'
+								placeholder={t('priceCatalogDescriptionInputPlaceholder')}
 								className='w-full mt-0.5 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm resize-y'
 							/>
 							<p className='text-[10px] text-icyWhite/40 mt-0.5'>
@@ -518,6 +538,43 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 	}
 
 	const MAX_TBD_TEXT = 600
+
+	const renderCalendarColorPicker = (
+		currentColor: string | undefined,
+		onChange: (color: string) => void,
+		hint: string,
+	) => (
+		<div className='mt-3 space-y-2'>
+			<p className='text-xs text-icyWhite/45 flex items-center gap-2'>
+				<span
+					className={clsx(
+						'w-3 h-3 rounded-sm shrink-0',
+						currentColor ?? 'bg-gray-500 border-gray-500',
+					)}
+					aria-hidden
+				/>
+				{hint}
+			</p>
+			<div className='flex flex-wrap gap-2'>
+				{SECTION_CALENDAR_COLORS.map(color => (
+					<button
+						key={color}
+						type='button'
+						onClick={() => onChange(color)}
+						className={clsx(
+							'w-7 h-7 rounded-md border transition-all',
+							color,
+							currentColor === color
+								? 'ring-2 ring-white/80 ring-offset-2 ring-offset-nearBlack scale-105'
+								: 'opacity-80 hover:opacity-100',
+						)}
+						aria-label={`${t('colorLabel')}: ${color}`}
+						title={color}
+					/>
+				))}
+			</div>
+		</div>
+	)
 
 	const renderScheduleTbdFields = (
 		item: ZonePriceItem,
@@ -539,34 +596,6 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 							</label>
 							<textarea
 								rows={3}
-								maxLength={MAX_TBD_TEXT}
-								value={value}
-								onChange={e =>
-									onPatch({
-										[key]: e.target.value.slice(0, MAX_TBD_TEXT),
-									} as Partial<ZonePriceItem>)
-								}
-								className='w-full mt-0.5 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm resize-y'
-							/>
-						</div>
-					)
-				})}
-			</div>
-			<p className='text-xs text-icyWhite/50 mt-3'>
-				{t('itemScheduleTbdAdminTitle')}
-			</p>
-			<div className='grid grid-cols-2 gap-2 text-sm mt-1'>
-				{(['Sk', 'En', 'Ru', 'Uk'] as const).map(lang => {
-					const key = `scheduleTbdAdminNote${lang}` as keyof ZonePriceItem
-					const raw = String((item[key] as string) ?? '')
-					const value = raw.slice(0, MAX_TBD_TEXT)
-					return (
-						<div key={String(key)}>
-							<label className='text-icyWhite/50 text-xs'>
-								{t(`title${lang}` as 'titleSk')}
-							</label>
-							<textarea
-								rows={2}
 								maxLength={MAX_TBD_TEXT}
 								value={value}
 								onChange={e =>
@@ -649,7 +678,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 								},
 							)
 						}}
-						placeholder='Price or e.g. from 20'
+						placeholder={t('priceCatalogPriceInputPlaceholder')}
 						className='w-28 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
 					/>
 					<button
@@ -674,10 +703,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 						<div className='flex items-center gap-2'>
 							<Checkbox
 								id={`mode-time-${item.id}`}
-								checked={
-									item.bookingGranularity !== 'day' &&
-									item.bookingGranularity !== 'tbd'
-								}
+								checked={item.bookingGranularity !== 'tbd'}
 								onCheckedChange={c => {
 									if (c === true) {
 										updateZoneItem(
@@ -696,35 +722,6 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 								className='text-icyWhite/75 text-sm font-normal cursor-pointer'
 							>
 								{t('itemBookingModeTime')}
-							</Label>
-						</div>
-						<div className='flex items-center gap-2'>
-							<Checkbox
-								id={`mode-day-${item.id}`}
-								checked={item.bookingGranularity === 'day'}
-								onCheckedChange={c => {
-									if (c === true) {
-										updateZoneItem(
-											sex,
-											serviceIndex,
-											sectionIndex,
-											zoneIndex,
-											itemIndex,
-											{
-												bookingGranularity: 'day',
-												bookingDayCount: normalizeItemBookingDayCount(
-													item.bookingDayCount,
-												),
-											},
-										)
-									}
-								}}
-							/>
-							<Label
-								htmlFor={`mode-day-${item.id}`}
-								className='text-icyWhite/75 text-sm font-normal cursor-pointer'
-							>
-								{t('itemBookingModeDays')}
 							</Label>
 						</div>
 						<div className='flex items-center gap-2'>
@@ -763,41 +760,6 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 								patch,
 							),
 						)}
-					{item.bookingGranularity === 'day' && (
-						<div className='flex items-center gap-2 flex-wrap'>
-							<label
-								htmlFor={`day-count-${item.id}`}
-								className='text-xs text-icyWhite/60 shrink-0'
-							>
-								{t('itemBookingDayCountLabel')}
-							</label>
-							<input
-								id={`day-count-${item.id}`}
-								type='number'
-								min={1}
-								max={MAX_ITEM_BOOKING_DAY_COUNT}
-								value={normalizeItemBookingDayCount(item.bookingDayCount)}
-								onChange={e =>
-									updateZoneItem(
-										sex,
-										serviceIndex,
-										sectionIndex,
-										zoneIndex,
-										itemIndex,
-										{
-											bookingDayCount: normalizeItemBookingDayCount(
-												parseInt(e.target.value, 10),
-											),
-										},
-									)
-								}
-								className='w-16 px-2 py-1 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
-							/>
-							<span className='text-[10px] text-icyWhite/40'>
-								1–{MAX_ITEM_BOOKING_DAY_COUNT}
-							</span>
-						</div>
-					)}
 				</div>
 			</div>
 		)
@@ -818,18 +780,18 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 			>
 				<div className='flex justify-between items-start gap-2 mb-2'>
 					<div className='flex-1 min-w-0'>
-						<span className='text-xs text-icyWhite/50 uppercase'>Zone</span>
+						<span className='text-xs text-icyWhite/50 uppercase'>
+							{t('priceCatalogHeadingZone')}
+						</span>
 						{sectionIndex === null && zone.calendarColor && (
-							<p className='text-xs text-icyWhite/45 mt-1 flex items-center gap-2'>
-								<span
-									className={clsx(
-										'w-3 h-3 rounded-sm shrink-0',
-										zone.calendarColor,
-									)}
-									aria-hidden
-								/>
-								{t('rootZoneColorInCalendar')}
-							</p>
+							renderCalendarColorPicker(
+								zone.calendarColor,
+								color =>
+									updateZone(sex, serviceIndex, sectionIndex, zoneIndex, {
+										calendarColor: color,
+									}),
+								t('rootZoneColorInCalendar'),
+							)
 						)}
 						{sectionIndex !== null && (
 							<p className='text-xs text-icyWhite/40 mt-1'>
@@ -850,7 +812,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 							}
 							className={ui.priceCatalogLink}
 						>
-							+ {t('add')} item
+							{t('priceCatalogAddLineUnderZone')}
 						</button>
 						<button
 							type='button'
@@ -895,7 +857,9 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 			>
 				<div className='flex justify-between items-start gap-2 mb-3'>
 					<div className='flex-1 min-w-0'>
-						<span className='text-xs text-icyWhite/50 uppercase'>Section</span>
+						<span className='text-xs text-icyWhite/50 uppercase'>
+							{t('priceCatalogHeadingSection')}
+						</span>
 						{renderTitles(section, (k, v) =>
 							updateSection(sex, serviceIndex, sectionIndex, {
 								[k]: v,
@@ -906,17 +870,13 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 								[k]: v,
 							} as Partial<PriceSection>),
 						)}
-						{section.calendarColor && (
-							<p className='text-xs text-icyWhite/45 mt-2 flex items-center gap-2'>
-								<span
-									className={clsx(
-										'w-3 h-3 rounded-sm shrink-0',
-										section.calendarColor,
-									)}
-									aria-hidden
-								/>
-								{t('sectionColorInCalendar')}
-							</p>
+						{renderCalendarColorPicker(
+							section.calendarColor,
+							color =>
+								updateSection(sex, serviceIndex, sectionIndex, {
+									calendarColor: color,
+								}),
+							t('sectionColorInCalendar'),
 						)}
 					</div>
 					<div className='flex gap-2 shrink-0'>
@@ -925,7 +885,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 							onClick={() => addZone(sex, serviceIndex, sectionIndex)}
 							className={ui.priceCatalogLink}
 						>
-							+ Zone
+							{t('priceCatalogBtnAddZone')}
 						</button>
 						<button
 							type='button'
@@ -957,7 +917,9 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 			<div key={service.id} className={ui.priceCatalogCard}>
 				<div className='flex justify-between items-start gap-2 mb-4'>
 					<div className='flex-1 min-w-0'>
-						<span className='text-xs text-icyWhite/50 uppercase'>Service</span>
+						<span className='text-xs text-icyWhite/50 uppercase'>
+							{t('priceCatalogHeadingService')}
+						</span>
 						{renderTitles(service, (k, v) =>
 							updateService(sex, serviceIndex, { [k]: v }),
 						)}
@@ -968,21 +930,21 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 							onClick={() => addSection(sex, serviceIndex)}
 							className={ui.priceCatalogLink}
 						>
-							+ Section
+							{t('priceCatalogBtnAddSection')}
 						</button>
 						<button
 							type='button'
 							onClick={() => addZone(sex, serviceIndex, null)}
 							className={ui.priceCatalogLink}
 						>
-							+ Zone
+							{t('priceCatalogBtnAddZone')}
 						</button>
 						<button
 							type='button'
 							onClick={() => addServiceItem(sex, serviceIndex)}
 							className={ui.priceCatalogLink}
 						>
-							+ Item
+							{t('priceCatalogBtnAddItem')}
 						</button>
 						<button
 							type='button'
@@ -1005,19 +967,12 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 					{(service.items ?? []).length > 0 && (
 						<div className='rounded-lg border border-white/10 p-3 bg-white/[0.02]'>
 							<span className='text-xs text-icyWhite/50 uppercase'>
-								Items (direct)
+								{t('priceCatalogHeadingDirectItems')}
 							</span>
-							{service.calendarColor && (
-								<p className='text-xs text-icyWhite/45 mt-1 flex items-center gap-2'>
-									<span
-										className={clsx(
-											'w-3 h-3 rounded-sm shrink-0',
-											service.calendarColor,
-										)}
-										aria-hidden
-									/>
-									{t('directItemsColorInCalendar')}
-								</p>
+							{renderCalendarColorPicker(
+								service.calendarColor,
+								color => updateService(sex, serviceIndex, { calendarColor: color }),
+								t('directItemsColorInCalendar'),
 							)}
 							{(service.items ?? []).map((item, itemIndex) => (
 								<div
@@ -1057,7 +1012,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 													price: Number.isFinite(n) ? n : v,
 												})
 											}}
-											placeholder='Price'
+											placeholder={t('priceCatalogPriceInputPlaceholderShort')}
 											className='w-28 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
 										/>
 										<button
@@ -1078,10 +1033,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 											<div className='flex items-center gap-2'>
 												<Checkbox
 													id={`mode-time-direct-${item.id}`}
-													checked={
-														item.bookingGranularity !== 'day' &&
-														item.bookingGranularity !== 'tbd'
-													}
+													checked={item.bookingGranularity !== 'tbd'}
 													onCheckedChange={c => {
 														if (c === true) {
 															updateServiceItem(
@@ -1098,34 +1050,6 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 													className='text-icyWhite/75 text-sm font-normal cursor-pointer'
 												>
 													{t('itemBookingModeTime')}
-												</Label>
-											</div>
-											<div className='flex items-center gap-2'>
-												<Checkbox
-													id={`mode-day-direct-${item.id}`}
-													checked={item.bookingGranularity === 'day'}
-													onCheckedChange={c => {
-														if (c === true) {
-															updateServiceItem(
-																sex,
-																serviceIndex,
-																itemIndex,
-																{
-																	bookingGranularity: 'day',
-																	bookingDayCount:
-																		normalizeItemBookingDayCount(
-																			item.bookingDayCount,
-																		),
-																},
-															)
-														}
-													}}
-												/>
-												<Label
-													htmlFor={`mode-day-direct-${item.id}`}
-													className='text-icyWhite/75 text-sm font-normal cursor-pointer'
-												>
-													{t('itemBookingModeDays')}
 												</Label>
 											</div>
 											<div className='flex items-center gap-2'>
@@ -1155,42 +1079,6 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 											renderScheduleTbdFields(item, patch =>
 												updateServiceItem(sex, serviceIndex, itemIndex, patch),
 											)}
-										{item.bookingGranularity === 'day' && (
-											<div className='flex items-center gap-2 flex-wrap'>
-												<label
-													htmlFor={`day-count-direct-${item.id}`}
-													className='text-xs text-icyWhite/60 shrink-0'
-												>
-													{t('itemBookingDayCountLabel')}
-												</label>
-												<input
-													id={`day-count-direct-${item.id}`}
-													type='number'
-													min={1}
-													max={MAX_ITEM_BOOKING_DAY_COUNT}
-													value={normalizeItemBookingDayCount(
-														item.bookingDayCount,
-													)}
-													onChange={e =>
-														updateServiceItem(
-															sex,
-															serviceIndex,
-															itemIndex,
-															{
-																bookingDayCount:
-																	normalizeItemBookingDayCount(
-																		parseInt(e.target.value, 10),
-																	),
-															},
-														)
-													}
-													className='w-16 px-2 py-1 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
-												/>
-												<span className='text-[10px] text-icyWhite/40'>
-													1–{MAX_ITEM_BOOKING_DAY_COUNT}
-												</span>
-											</div>
-										)}
 									</div>
 								</div>
 							))}
@@ -1242,13 +1130,13 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 								<button
 									type='button'
 									onClick={() => setSelected({ type: 'sex', sex })}
-									className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
+									className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
 										isSelected({ type: 'sex', sex })
 											? ui.priceCatalogPill
 											: 'hover:bg-white/5 text-icyWhite'
 									}`}
 								>
-									{sex}
+									{tPrice(sex)}
 								</button>
 								<div className='ml-3 mt-1 space-y-0.5'>
 									{catalog[sex].services.map((svc, si) => (
@@ -1268,7 +1156,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 														: 'hover:bg-white/5 text-icyWhite/90'
 												}`}
 											>
-												{getTitleForLocale(svc, locale) || `Service ${si + 1}`}
+												{catalogTreeTitle(svc, 'service', si)}
 											</button>
 											{(svc.sections ?? []).map((sec, sei) =>
 												!sec ? null : (
@@ -1304,8 +1192,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 																/>
 															) : null}
 															<span className='truncate'>
-																{getTitleForLocale(sec, locale) ||
-																	`Section ${sei + 1}`}
+																{catalogTreeTitle(sec, 'section', sei)}
 															</span>
 														</button>
 														{(sec.zones ?? []).map((z, zi) =>
@@ -1334,8 +1221,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 																				: 'hover:bg-white/5 text-icyWhite/60'
 																		}`}
 																	>
-																		{getTitleForLocale(z, locale) ||
-																			`Zone ${zi + 1}`}
+																		{catalogTreeTitle(z, 'zone', zi)}
 																	</button>
 																</div>
 															),
@@ -1379,8 +1265,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 																/>
 															) : null}
 															<span className='truncate'>
-																{getTitleForLocale(z, locale) ||
-																	`Zone ${zi + 1}`}
+																{catalogTreeTitle(z, 'zone', zi)}
 															</span>
 														</button>
 													</div>
@@ -1404,8 +1289,8 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 					<div className='flex-1 overflow-y-auto p-4'>
 						{selected?.type === 'sex' && (
 							<div className='space-y-3'>
-								<p className='text-icyWhite/60 text-sm capitalize'>
-									{selected.sex}
+								<p className='text-icyWhite/60 text-sm'>
+									{tPrice(selected.sex)}
 								</p>
 								<button
 									type='button'

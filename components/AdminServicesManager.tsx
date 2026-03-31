@@ -12,20 +12,26 @@ import {
   type ServiceData,
   type ServiceInput,
 } from "@/lib/services";
+import { DEFAULT_SECTION_CALENDAR_COLOR } from "@/lib/section-calendar-colors";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { clsx } from "clsx";
 
 export const COLOR_PRESETS = [
-  { value: "bg-amber-500/30 border-amber-500/60", label: "Amber" },
-  { value: "bg-rose-500/30 border-rose-500/60", label: "Rose" },
-  { value: "bg-orange-500/30 border-orange-500/60", label: "Orange" },
-  { value: "bg-violet-500/30 border-violet-500/60", label: "Violet" },
-  { value: "bg-emerald-500/30 border-emerald-500/60", label: "Emerald" },
-  { value: "bg-pink-500/30 border-pink-500/60", label: "Pink" },
-  { value: "bg-aurora-magenta/30 border-aurora-magenta/50", label: "Magenta" },
-  { value: "bg-cyan-500/30 border-cyan-500/60", label: "Cyan" },
-  { value: "bg-teal-500/30 border-teal-500/60", label: "Teal" },
+  { value: DEFAULT_SECTION_CALENDAR_COLOR, label: "Neutral" },
+  { value: "bg-rose-500 border-rose-400", label: "Rose" },
+  { value: "bg-amber-500 border-amber-400", label: "Amber" },
+  { value: "bg-emerald-500 border-emerald-400", label: "Emerald" },
+  { value: "bg-sky-500 border-sky-400", label: "Sky" },
+  { value: "bg-violet-500 border-violet-400", label: "Violet" },
+  { value: "bg-orange-500 border-orange-400", label: "Orange" },
+  { value: "bg-teal-500 border-teal-400", label: "Teal" },
+  { value: "bg-pink-400 border-pink-300", label: "Pink" },
+  { value: "bg-lime-500 border-lime-400", label: "Lime" },
+  { value: "bg-indigo-500 border-indigo-400", label: "Indigo" },
+  { value: "bg-fuchsia-500 border-fuchsia-400", label: "Fuchsia" },
+  { value: "bg-cyan-400 border-cyan-300", label: "Cyan" },
+  { value: "bg-aurora-magenta border-aurora-magenta", label: "Magenta (legacy)" },
 ];
 
 function ServiceForm({
@@ -152,7 +158,7 @@ export default function AdminServicesManager() {
         return {
           id: d.id,
           title: (data.title as string) ?? "",
-          color: (data.color as string) ?? "bg-gray-500/30 border-gray-500/60",
+          color: (data.color as string) ?? "bg-gray-500 border-gray-500",
           durationMinutes: (data.durationMinutes as number) ?? 60,
         };
       });

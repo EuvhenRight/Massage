@@ -4,13 +4,10 @@ import type { BookingAccent } from '@/lib/booking-accent'
 import type { OccupiedSlot } from '@/lib/availability-firestore'
 import {
 	isDateAvailable,
-	isMultiDayFullDaysStartAvailable,
 } from '@/lib/availability-firestore'
 import type { ScheduleData } from '@/lib/schedule-firestore'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useMemo } from 'react'
-
-type BookingGranularity = 'time' | 'day'
 
 interface PublicDatePickerProps {
 	accent: BookingAccent
@@ -18,10 +15,6 @@ interface PublicDatePickerProps {
 	onSelectDate: (date: Date) => void
 	occupiedSlots: OccupiedSlot[]
 	durationMinutes: number
-	/** Whole working day vs slot-based availability (default time). */
-	bookingGranularity?: BookingGranularity
-	/** When `bookingGranularity` is day: require this many consecutive free full days from each start date. */
-	multiDayCount?: number
 	month: Date
 	onMonthChange: (date: Date) => void
 	schedule?: ScheduleData | null
@@ -64,8 +57,6 @@ export default function PublicDatePicker({
 	onSelectDate,
 	occupiedSlots,
 	durationMinutes,
-	bookingGranularity = 'time',
-	multiDayCount = 1,
 	month,
 	onMonthChange,
 	schedule = null,
@@ -88,23 +79,9 @@ export default function PublicDatePicker({
 	const isAvailable = useCallback(
 		(date: Date) => {
 			if (isPast(date)) return false
-			if (bookingGranularity === 'day') {
-				return isMultiDayFullDaysStartAvailable(
-					date,
-					multiDayCount,
-					occupiedSlots,
-					schedule,
-				)
-			}
 			return isDateAvailable(date, durationMinutes, occupiedSlots, schedule)
 		},
-		[
-			bookingGranularity,
-			multiDayCount,
-			durationMinutes,
-			occupiedSlots,
-			schedule,
-		],
+		[durationMinutes, occupiedSlots, schedule],
 	)
 
 	return (

@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { bookingSchema, type BookingFormData } from "@/lib/booking-schema";
 import { bookAppointment } from "@/lib/book-appointment";
 import { getDateKey } from "@/lib/booking";
+import { formatDate, formatTime } from "@/lib/format-date";
+import { useLocale } from "next-intl";
 import {
   Form,
   FormControl,
@@ -36,8 +38,15 @@ interface BookingFormModalProps {
   onSuccess?: () => void;
 }
 
-function formatSlot(date: Date, hour: number, minute: number): string {
-  return `${date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} at ${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour}:${String(minute).padStart(2, "0")} ${hour < 12 ? "am" : "pm"}`;
+function formatSlot(
+  date: Date,
+  hour: number,
+  minute: number,
+  locale: string,
+): string {
+  const slotDate = new Date(date);
+  slotDate.setHours(hour, minute, 0, 0);
+  return `${formatDate(slotDate, { locale })} · ${formatTime(slotDate, { locale })}`;
 }
 
 export default function BookingFormModal({
@@ -50,6 +59,7 @@ export default function BookingFormModal({
   services = [],
   onSuccess,
 }: BookingFormModalProps) {
+  const locale = useLocale();
   const date = defaultDate ?? new Date();
   const defaultService = service || services[0]?.title || "";
 
@@ -97,17 +107,8 @@ export default function BookingFormModal({
         body: JSON.stringify({
           to: values.email,
           customerName: values.fullName,
-          date: slotDate.toLocaleDateString("en-US", {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }),
-          time: slotDate.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }),
+          date: formatDate(slotDate, { locale }),
+          time: formatTime(slotDate, { locale }),
           service: values.service,
         }),
       });
@@ -143,7 +144,7 @@ export default function BookingFormModal({
       <div className="fixed left-1/2 top-1/2 z-[51] w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-lg">
         <h2 className="font-serif text-xl mb-2">New appointment</h2>
         <p className="text-sm text-muted-foreground mb-6">
-          {formatSlot(date, defaultHour, defaultMinute)}
+          {formatSlot(date, defaultHour, defaultMinute, locale)}
         </p>
 
         <Form {...form}>

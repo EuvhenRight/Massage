@@ -3,37 +3,83 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { X, Pencil, Copy } from "lucide-react";
-import { toast } from "sonner";
 import type { AppointmentData } from "@/lib/book-appointment";
-import type { ServiceData } from "@/lib/services";
+import {
+  adminCalendarBlockHeightPx,
+  adminCalendarEffectiveSlotTier,
+  adminCalendarMinDisplayHeightForTier,
+  adminCalendarSlotTier,
+  type AdminCalendarSlotTier,
+} from "@/lib/admin-calendar-grid-layout";
+import { formatTime as formatTimeUi } from "@/lib/format-date";
+import {
+  ADMIN_APPOINTMENT_FALLBACK_COLOR,
+  findServiceDataForAppointment,
+  type ServiceData,
+} from "@/lib/services";
+import { resolvedOpaqueCalendarSlotFill } from "@/lib/section-calendar-colors";
 
-const DEFAULT_COLOR = "bg-aurora-magenta/30 border-aurora-magenta/50 text-icyWhite";
+const DEFAULT_COLOR = `${ADMIN_APPOINTMENT_FALLBACK_COLOR} text-icyWhite`;
 
-function getServiceColor(service: string, services: ServiceData[]): string {
-  const s = services.find((x) => x.title === service);
-  if (s) return `${s.color} text-icyWhite`;
+function getServiceColor(
+  appointment: Pick<AppointmentData, "service" | "serviceId">,
+  services: ServiceData[],
+): string {
+  const s = findServiceDataForAppointment(appointment, services);
+  if (s) {
+    return `${resolvedOpaqueCalendarSlotFill(s.color, ADMIN_APPOINTMENT_FALLBACK_COLOR)} text-icyWhite`;
+  }
   return DEFAULT_COLOR;
 }
 
-const PAST_COLOR = "bg-gray-600/30 border-gray-500/50 text-icyWhite/80";
+const PAST_COLOR = "bg-gray-600 border-gray-500 text-icyWhite/80";
+
+export interface PositionedCalendarLayout {
+  topPx: number;
+  heightPx: number;
+  zIndex: number;
+}
 
 interface DraggableAppointmentProps {
   appointment: AppointmentData;
   disabled?: boolean;
+  /** Rendered under `DragOverlay`: no absolute grid positioning; fixed size for correct grab preview. */
+  isDragOverlay?: boolean;
+  dragId?: string;
+  blockHeight?: number;
+  positionedCalendar?: PositionedCalendarLayout | null;
+  onOpenDetail?: () => void;
   onEdit?: () => void;
   onCancel?: () => void;
   services?: ServiceData[];
   isPast?: boolean;
-  /** List row under the calendar (e.g. unscheduled / TBD). */
   layout?: "calendar" | "list";
+}
+
+function tierChrome(tier: AdminCalendarSlotTier): string {
+  switch (tier) {
+    case "micro":
+      return "rounded-md border border-white/25 px-1.5 py-0.5 shadow-sm shadow-black/40";
+    case "compact":
+      return "rounded-md border border-white/20 px-2 py-1 shadow-sm shadow-black/35";
+    case "short":
+      return "rounded-lg border border-white/18 px-2 py-1.5 shadow-md shadow-black/30";
+    case "medium":
+      return "rounded-lg border border-white/15 px-2.5 py-1.5 shadow-md shadow-black/25 ring-1 ring-black/20";
+    case "full":
+      return "rounded-xl border border-white/12 px-3 py-2 shadow-lg shadow-black/30 ring-1 ring-black/25";
+  }
 }
 
 export default function DraggableAppointment({
   appointment,
   disabled = false,
+  isDragOverlay = false,
+  dragId,
+  blockHeight,
+  positionedCalendar = null,
+  onOpenDetail,
   onEdit,
-  onCancel,
   services = [],
   isPast = false,
   layout = "calendar",
@@ -41,10 +87,6 @@ export default function DraggableAppointment({
   const locale = useLocale();
   const t = useTranslations("admin");
 
-  const formatTime = (date: Date | { toDate?: () => Date }): string => {
-    const d = typeof date === "object" && "toDate" in date && date.toDate ? date.toDate() : new Date(date as Date);
-    return d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12: true });
-  };
   const {
     attributes,
     listeners,
@@ -52,12 +94,14 @@ export default function DraggableAppointment({
     transform,
     isDragging,
   } = useDraggable({
-    id: appointment.id,
+    id: isDragOverlay
+      ? `__drag-overlay__${appointment.id}`
+      : (dragId ?? appointment.id),
     data: {
       type: "appointment",
       appointment,
     },
-    disabled,
+    disabled: disabled || isDragOverlay,
   });
 
   const startDate =
@@ -68,131 +112,333 @@ export default function DraggableAppointment({
     appointment.endTime && "toDate" in appointment.endTime
       ? appointment.endTime.toDate()
       : new Date(appointment.endTime as Date);
-  const durationMinutes = Math.round((endDate.getTime() - startDate.getTime()) / 60000);
+  const durationMinutes = Math.round(
+    (endDate.getTime() - startDate.getTime()) / 60000
+  );
+  const isFullDay = appointment.adminBookingMode === "day";
+  const explicitFullDayCount =
+    appointment.adminFullDayDates?.length && appointment.adminFullDayDates.length > 0
+      ? appointment.adminFullDayDates.length
+      : 0;
+  const storedMultiDay = Math.floor(Number(appointment.multiDayFullDayCount));
+  const fullDayDaysLabel =
+    explicitFullDayCount > 0 ||
+    (Number.isFinite(storedMultiDay) && storedMultiDay > 0)
+      ? t("dayCountValue", {
+          count:
+            explicitFullDayCount > 0
+              ? explicitFullDayCount
+              : Math.max(1, storedMultiDay),
+        })
+      : t("selectedDaysEmpty");
 
-  const slotCount = Math.ceil(durationMinutes / 30); // 30-min slots in admin grid
-  const slotHeight = 30; // 30px per 30-min slot (2 per hour row)
-  const blockHeight = slotCount * slotHeight - 2; // -2 for border
+  const gridBasedHeight = adminCalendarBlockHeightPx(Math.max(1, durationMinutes));
+  const usePositionedCalendar =
+    layout === "calendar" && positionedCalendar != null;
+
+  const rawCalendarHeight = usePositionedCalendar
+    ? positionedCalendar.heightPx
+    : (blockHeight ?? gridBasedHeight);
 
   const isList = layout === "list";
   const isTbd = appointment.scheduleTbd === true;
 
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const dateStr = startDate.toLocaleDateString(locale, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    const timeStr = isTbd
-      ? t("listTbdNoTimeYet")
-      : `${formatTime(startDate)} – ${formatTime(endDate)}`;
-    const text = [
-      appointment.service,
-      appointment.fullName || "—",
-      appointment.email || "—",
-      appointment.phone || "—",
-      isTbd ? timeStr : `${dateStr} at ${timeStr}`,
-      ...(appointment.scheduleTbdAdminHint?.trim()
-        ? [t("listTbdAdminHintPrefix") + " " + appointment.scheduleTbdAdminHint.trim()]
-        : []),
-    ].join("\n");
-    navigator.clipboard.writeText(text).then(
-      () => toast.success(t("copyDetails")),
-      () => toast.error(t("copyFailed"))
-    );
-  };
+  const overlayPixelHeight =
+    isDragOverlay && typeof blockHeight === "number" ? blockHeight : undefined;
+
+  const renderedHeightForTier =
+    usePositionedCalendar && positionedCalendar
+      ? positionedCalendar.heightPx
+      : overlayPixelHeight;
+
+  /** Timed grid only: density by duration (15 / 30 / 45 / 60+ min) and rendered height. */
+  const timedTier: AdminCalendarSlotTier | null =
+    !isList && !isFullDay && !isTbd
+      ? adminCalendarEffectiveSlotTier(durationMinutes, renderedHeightForTier ?? null)
+      : null;
+
+  const displayCalendarHeight = usePositionedCalendar
+    ? positionedCalendar.heightPx
+    : overlayPixelHeight != null
+      ? overlayPixelHeight
+      : isList || isFullDay || isTbd
+        ? rawCalendarHeight
+        : Math.max(
+            rawCalendarHeight,
+            adminCalendarMinDisplayHeightForTier(adminCalendarSlotTier(durationMinutes))
+          );
+
+  const hasNamedCustomer = (appointment.fullName || "").trim().length > 0;
+  const customerLabel = hasNamedCustomer
+    ? (appointment.fullName || "").trim()
+    : t("customer");
 
   const style: React.CSSProperties = isList
     ? {
         minHeight: 52,
         ...(transform ? { transform: CSS.Translate.toString(transform) } : {}),
       }
-    : {
-        minHeight: blockHeight,
-        ...(transform ? { transform: CSS.Translate.toString(transform) } : {}),
-      };
+    : isDragOverlay && layout === "calendar"
+      ? {
+          position: "relative",
+          width: "7.35rem",
+          minWidth: "5rem",
+          maxWidth: "8rem",
+          height: displayCalendarHeight,
+          minHeight: displayCalendarHeight,
+          maxHeight: displayCalendarHeight,
+          boxSizing: "border-box",
+        }
+    : usePositionedCalendar
+      ? {
+          position: "absolute",
+          top: positionedCalendar.topPx,
+          height: positionedCalendar.heightPx,
+          left: "0.1875rem",
+          right: "0.1875rem",
+          zIndex: positionedCalendar.zIndex,
+          minHeight: 0,
+          ...(transform ? { transform: CSS.Translate.toString(transform) } : {}),
+        }
+      : {
+          minHeight: displayCalendarHeight,
+          ...(transform ? { transform: CSS.Translate.toString(transform) } : {}),
+        };
+
+  const hoverTitle = (() => {
+    if (timedTier === "micro" || timedTier === "compact") {
+      return [
+        appointment.service,
+        hasNamedCustomer ? customerLabel : undefined,
+        `${formatTimeUi(startDate, { locale })} – ${formatTimeUi(endDate, { locale })}`,
+        appointment.adminNote?.trim() || undefined,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+    }
+    const parts: (string | undefined)[] = [
+      appointment.service,
+      appointment.fullName?.trim() || undefined,
+    ];
+    if (!isTbd && !isFullDay) {
+      parts.push(`${formatTimeUi(startDate, { locale })} – ${formatTimeUi(endDate, { locale })}`);
+    } else if (isFullDay) {
+      parts.push(`${t("allDayNoClockTime")} · ${fullDayDaysLabel}`);
+    } else if (isTbd) {
+      parts.push(t("listTbdNoTimeYet"));
+    }
+    if (appointment.adminNote?.trim()) parts.push(appointment.adminNote.trim());
+    return parts.filter(Boolean).join(" · ");
+  })();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (!onOpenDetail) return;
+    e.stopPropagation();
+    onOpenDetail();
+  };
+
+  const listOrSpecialChrome =
+    "rounded-xl border border-white/12 px-3 py-2.5 text-sm shadow-md ring-1 ring-black/20";
+
+  const calendarShell =
+    isList || isFullDay || isTbd
+      ? listOrSpecialChrome
+      : timedTier
+        ? tierChrome(timedTier)
+        : "rounded-lg border border-white/15 px-2 py-1.5";
+
+  /** Tall grid blocks: pin service / name / time to the top instead of vertically centering. */
+  const timedBlockHeightPx = usePositionedCalendar
+    ? positionedCalendar.heightPx
+    : !isList && !isFullDay && !isTbd
+      ? displayCalendarHeight
+      : 0;
+  const alignTimedContentToTop =
+    timedTier === "medium" ||
+    timedTier === "full" ||
+    (!isList && !isFullDay && !isTbd && timedBlockHeightPx >= 62);
+  const innerColumnJustify =
+    isList || isTbd || isFullDay || alignTimedContentToTop
+      ? "justify-start"
+      : "justify-center";
 
   return (
     <div
       ref={setNodeRef}
       data-testid="appointment-block"
       data-appointment-id={appointment.id}
+      data-slot-tier={timedTier ?? (isList ? "list" : "special")}
       style={style}
+      title={onOpenDetail ? undefined : hoverTitle || undefined}
       {...(!disabled ? { ...listeners, ...attributes } : {})}
+      onClick={
+        onOpenDetail
+          ? handleCardClick
+          : isFullDay && onEdit
+            ? (e) => {
+                e.stopPropagation();
+                onEdit();
+              }
+            : undefined
+      }
       className={`
-        ${isList ? "relative w-full" : "absolute left-1 right-1"}
-        rounded-lg border px-2 py-1.5 text-xs font-medium
-        ${isList ? "" : "truncate overflow-hidden"}
+        ${
+          isList
+            ? "relative w-full"
+            : isDragOverlay && layout === "calendar"
+              ? "relative shrink-0"
+              : usePositionedCalendar
+                ? ""
+                : "absolute left-1 right-1"
+        }
+        text-xs font-medium
+        ${calendarShell}
+        relative overflow-hidden
+        before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-to-b before:from-white/[0.1] before:to-transparent
         group select-none
-        ${isPast ? PAST_COLOR : getServiceColor(appointment.service, services)}
+        ${usePositionedCalendar ? "pointer-events-auto" : ""}
+        ${isPast ? PAST_COLOR : getServiceColor(appointment, services)}
         ${isDragging ? "opacity-0 pointer-events-none" : ""}
-        ${disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing touch-none"}
+        ${
+          isFullDay && onEdit
+            ? "cursor-pointer"
+            : disabled
+              ? "cursor-default"
+              : "cursor-grab touch-none active:cursor-grabbing"
+        }
       `}
     >
-      <div className={`${isList ? "pr-14" : "pr-16"} flex flex-col justify-center h-full min-h-[22px]`}>
-        <div className={`font-semibold ${isList ? "line-clamp-2" : "truncate"}`}>{appointment.service}</div>
-        <div className={`text-[10px] opacity-90 ${isList ? "line-clamp-1" : "truncate"}`}>{appointment.fullName}</div>
-        <div className="text-[10px] opacity-75">
-          {isTbd ? (
-            <>
-              <span>{t("listTbdNoTimeYet")}</span>
-              {durationMinutes > 0 && (
-                <span className="text-icyWhite/55"> · {durationMinutes} min</span>
-              )}
-            </>
-          ) : (
-            <>
-              {formatTime(startDate)} – {formatTime(endDate)}
-            </>
-          )}
-        </div>
-        {isTbd && appointment.scheduleTbdAdminHint?.trim() && (
-          <div className="text-[10px] opacity-70 mt-0.5 line-clamp-2 whitespace-pre-wrap">
-            {appointment.scheduleTbdAdminHint.trim()}
-          </div>
-        )}
-      </div>
       <div
-        className="absolute top-1 right-1 flex gap-0.5 z-10"
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
+        className={`relative z-[1] flex h-full min-h-[18px] w-full flex-col ${innerColumnJustify}`}
       >
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="p-0.5 rounded hover:bg-black/20 opacity-70 hover:opacity-100 transition-opacity"
-          aria-label={t("copyAria")}
-        >
-          <Copy className="w-3 h-3" />
-        </button>
-        {onEdit && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit?.();
-              }}
-              className="p-0.5 rounded hover:bg-black/20 opacity-70 hover:opacity-100 transition-opacity"
-              aria-label={t("editAria")}
-            >
-              <Pencil className="w-3 h-3" />
-            </button>
-          )}
-          {onCancel && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onCancel?.();
-              }}
-              className="p-0.5 rounded hover:bg-black/20 opacity-70 hover:opacity-100 transition-opacity"
-              aria-label={t("cancelAria")}
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
+        {isList ? (
+          <>
+            <div className="line-clamp-2 text-sm font-semibold tracking-tight">
+              {appointment.service}
+            </div>
+            <div className="mt-0.5 line-clamp-1 text-[11px] opacity-90">
+              {appointment.fullName}
+            </div>
+            <div className="mt-0.5 text-[10px] tabular-nums text-icyWhite/70">
+              {isTbd ? (
+                <>
+                  <span>{t("listTbdNoTimeYet")}</span>
+                  {durationMinutes > 0 && (
+                    <span className="text-icyWhite/50">
+                      {" "}
+                      · {t("durationMinutesAbbr", { minutes: durationMinutes })}
+                    </span>
+                  )}
+                </>
+              ) : isFullDay ? (
+                <>
+                  {t("allDayNoClockTime")}
+                  <span className="text-icyWhite/55">
+                    {" "}
+                    · {fullDayDaysLabel}
+                  </span>
+                </>
+              ) : (
+                <>
+                  {formatTimeUi(startDate, { locale })} – {formatTimeUi(endDate, { locale })}
+                </>
+              )}
+            </div>
+            {appointment.adminNote?.trim() && (
+              <div className="mt-0.5 line-clamp-2 text-[10px] italic opacity-60">
+                {appointment.adminNote.trim()}
+              </div>
+            )}
+          </>
+        ) : isTbd ? (
+          <>
+            <div className="line-clamp-2 text-[11px] font-semibold leading-snug tracking-tight sm:text-xs">
+              {appointment.service}
+            </div>
+            <div className="mt-0.5 text-[9px] leading-tight text-icyWhite/75">
+              {t("listTbdNoTimeYet")}
+              {durationMinutes > 0 && (
+                <span className="text-icyWhite/50">
+                  {" "}
+                  · {t("durationMinutesAbbr", { minutes: durationMinutes })}
+                </span>
+              )}
+            </div>
+          </>
+        ) : isFullDay ? (
+          <>
+            <div className="line-clamp-2 text-xs font-semibold leading-snug tracking-tight sm:text-sm">
+              {appointment.service}
+            </div>
+            <div className="mt-1 text-[10px] leading-snug text-icyWhite/80">
+              {t("allDayNoClockTime")}
+              <span className="text-icyWhite/55">
+                {" "}
+                · {fullDayDaysLabel}
+              </span>
+            </div>
+          </>
+        ) : timedTier === "micro" ? (
+          <div className="line-clamp-1 text-[9px] font-semibold leading-none tracking-tight text-icyWhite sm:text-[10px]">
+            <span className="text-icyWhite">{appointment.service || "—"}</span>
+            <span className="font-normal text-icyWhite/75"> · {formatTimeUi(startDate, { locale })}</span>
+          </div>
+        ) : timedTier === "compact" ? (
+          <div className="flex min-h-0 flex-col justify-center gap-0.5">
+            <div className="line-clamp-1 text-[10px] font-semibold leading-tight tracking-tight text-icyWhite">
+              {appointment.service || "—"}
+            </div>
+            <div className="line-clamp-1 text-[9px] tabular-nums leading-none text-icyWhite/70">
+              {formatTimeUi(startDate, { locale })} – {formatTimeUi(endDate, { locale })}
+            </div>
+          </div>
+        ) : timedTier === "short" ? (
+          <div className="flex min-h-0 flex-col justify-center gap-0.5">
+            <div className="line-clamp-2 text-[10px] font-semibold leading-snug tracking-tight text-icyWhite sm:text-[11px]">
+              {appointment.service}
+            </div>
+            <div className="line-clamp-1 truncate text-[9px] text-icyWhite/88 sm:text-[10px]">
+              {customerLabel}
+            </div>
+            <div className="text-[9px] tabular-nums leading-none text-icyWhite/65 sm:text-[10px]">
+              {formatTimeUi(startDate, { locale })} – {formatTimeUi(endDate, { locale })}
+            </div>
+          </div>
+        ) : timedTier === "medium" ? (
+          <div className="flex min-h-0 flex-col justify-start gap-1">
+            <div className="line-clamp-2 text-[11px] font-semibold leading-snug tracking-tight sm:text-xs">
+              {appointment.service}
+            </div>
+            <div className="line-clamp-1 truncate text-[10px] text-icyWhite/90">
+              {customerLabel}
+            </div>
+            <div className="text-[10px] tabular-nums text-icyWhite/65">
+              {formatTimeUi(startDate, { locale })} – {formatTimeUi(endDate, { locale })}
+            </div>
+            {appointment.adminNote?.trim() ? (
+              <div className="line-clamp-1 truncate text-[9px] italic text-icyWhite/50">
+                {appointment.adminNote.trim()}
+              </div>
+            ) : null}
+          </div>
+        ) : timedTier === "full" ? (
+          <div className="flex min-h-0 flex-col justify-start gap-1">
+            <div className="line-clamp-2 text-xs font-semibold leading-snug tracking-tight sm:text-sm">
+              {appointment.service}
+            </div>
+            <div className="line-clamp-1 truncate text-[11px] text-icyWhite/92">
+              {customerLabel}
+            </div>
+            <div className="text-[11px] tabular-nums text-icyWhite/70">
+              {formatTimeUi(startDate, { locale })} – {formatTimeUi(endDate, { locale })}
+            </div>
+            {appointment.adminNote?.trim() ? (
+              <div className="line-clamp-2 truncate text-[10px] italic text-icyWhite/55">
+                {appointment.adminNote.trim()}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );

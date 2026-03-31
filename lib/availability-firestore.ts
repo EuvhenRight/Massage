@@ -74,9 +74,7 @@ function slotOverlaps(
   slotStart.setHours(h, m, 0, 0);
   const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60 * 1000);
 
-  const dateStr = getDateKey(date);
   for (const { start, end } of occupied) {
-    if (getDateKey(start) !== dateStr) continue;
     if (start < slotEnd && end > slotStart) return true;
   }
   return false;
@@ -86,6 +84,63 @@ function slotOverlaps(
  * Get working hours for a date from schedule. Returns null if closed.
  * Checks date overrides first (YYYY-MM-DD), then month overrides (YYYY-MM), then default weekly schedule.
  */
+const ADMIN_CALENDAR_DEFAULT_GRID = { startHour: 8, endHourExclusive: 20 };
+
+function workingHoursToGridBounds(open: string, close: string): {
+  startHour: number;
+  endHourExclusive: number;
+} {
+  const openM = timeToMinutes(open);
+  const closeM = timeToMinutes(close);
+  if (!Number.isFinite(openM) || !Number.isFinite(closeM) || closeM <= openM) {
+    return { ...ADMIN_CALENDAR_DEFAULT_GRID };
+  }
+  const startHour = Math.floor(openM / 60);
+  const endHourExclusive = Math.ceil(closeM / 60);
+  return {
+    startHour: Math.max(0, Math.min(23, startHour)),
+    endHourExclusive: Math.max(
+      Math.min(23, startHour) + 1,
+      Math.min(24, endHourExclusive)
+    ),
+  };
+}
+
+/**
+ * Hour range for the admin week/day grid: union of working hours across the given dates.
+ * Uses the same rules as public booking (`getWorkingHoursForDate`).
+ */
+export function getAdminCalendarGridHourBounds(
+  schedule: ScheduleData | null | undefined,
+  displayDays: Date[]
+): { gridStartHour: number; gridEndHour: number } {
+  const fb = ADMIN_CALENDAR_DEFAULT_GRID;
+  if (!displayDays.length) {
+    return { gridStartHour: fb.startHour, gridEndHour: fb.endHourExclusive };
+  }
+
+  let minStart = 24;
+  let maxEndEx = 0;
+  let anyOpen = false;
+
+  for (const day of displayDays) {
+    const wh = getWorkingHoursForDate(schedule ?? null, day);
+    if (!wh) continue;
+    anyOpen = true;
+    const b = workingHoursToGridBounds(wh.open, wh.close);
+    minStart = Math.min(minStart, b.startHour);
+    maxEndEx = Math.max(maxEndEx, b.endHourExclusive);
+  }
+
+  if (!anyOpen) {
+    return { gridStartHour: fb.startHour, gridEndHour: fb.endHourExclusive };
+  }
+
+  minStart = Math.max(0, Math.min(23, minStart));
+  maxEndEx = Math.max(minStart + 1, Math.min(24, maxEndEx));
+  return { gridStartHour: minStart, gridEndHour: maxEndEx };
+}
+
 export function getWorkingHoursForDate(
   schedule: ScheduleData | null,
   date: Date
@@ -190,9 +245,7 @@ export function isWorkingDayWindowAvailable(
   if (slotDate.getTime() < today.getTime()) return false;
   if (slotDate.getTime() === today.getTime() && windowEnd.getTime() <= Date.now()) return false;
 
-  const dateStr = getDateKey(date);
   for (const { start, end } of occupied) {
-    if (getDateKey(start) !== dateStr) continue;
     if (start < windowEnd && end > windowStart) return false;
   }
   return true;

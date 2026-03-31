@@ -1,7 +1,9 @@
 'use client'
 
+import { formatMonthYear, formatTime, formatTimeFromSlotString } from '@/lib/format-date'
 import { clsx } from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useLocale } from 'next-intl'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -62,23 +64,6 @@ function isSameDay(a: Date, b: Date): boolean {
 function isToday(d: Date): boolean {
 	return isSameDay(d, new Date())
 }
-function formatMonthYear(d: Date): string {
-	return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-}
-function formatTime(iso: string): string {
-	return new Date(iso).toLocaleTimeString('en-US', {
-		hour: 'numeric',
-		minute: '2-digit',
-		hour12: true,
-	})
-}
-function formatTimeSlot(t: string): string {
-	const [h, m] = t.split(':').map(Number)
-	if (h === 0) return `12:${String(m).padStart(2, '0')} am`
-	if (h < 12) return `${h}:${String(m).padStart(2, '0')} am`
-	if (h === 12) return `12:${String(m).padStart(2, '0')} pm`
-	return `${h - 12}:${String(m).padStart(2, '0')} pm`
-}
 function parseEventTime(iso: string): { hour: number; minute: number } {
 	const d = new Date(iso)
 	return { hour: d.getHours(), minute: d.getMinutes() }
@@ -135,6 +120,7 @@ export default function BookingCalendar({
 	services = [],
 	onBookingSuccess,
 }: BookingCalendarProps) {
+	const locale = useLocale()
 	const [currentDate, setCurrentDate] = useState(new Date())
 	const [view, setView] = useState<'month' | 'week' | 'list'>('month')
 	const [schedule, setSchedule] = useState<{
@@ -377,7 +363,7 @@ export default function BookingCalendar({
 													month: 'long',
 													day: 'numeric',
 												})}{' '}
-												at {formatTimeSlot(selectedSlot)}
+												at {formatTimeFromSlotString(selectedSlot, locale)}
 											</>
 										)}
 									</p>
@@ -442,7 +428,7 @@ export default function BookingCalendar({
 																	: 'bg-white/5 border border-white/10 text-icyWhite/80 hover:border-purple-soft/40',
 															)}
 														>
-															{formatTimeSlot(slot)}
+															{formatTimeFromSlotString(slot, locale)}
 														</button>
 													))}
 												</div>
@@ -579,7 +565,7 @@ export default function BookingCalendar({
 										</div>
 										<h3 className='font-serif text-xl text-icyWhite min-w-[200px] text-center'>
 											{view === 'month'
-												? formatMonthYear(currentDate)
+												? formatMonthYear(currentDate, locale)
 												: `${weekDays[0].toLocaleDateString()} – ${weekDays[6].toLocaleDateString()}`}
 										</h3>
 										<div className='flex items-center gap-1'>
@@ -756,8 +742,8 @@ export default function BookingCalendar({
 																					{evt.title}
 																					<br />
 																					<span className='text-icyWhite/70'>
-																						{formatTime(evt.start)} –{' '}
-																						{formatTime(evt.end)}
+																						{formatTime(new Date(evt.start), { locale })} –{' '}
+																						{formatTime(new Date(evt.end), { locale })}
 																					</span>
 																				</div>
 																			))}
@@ -804,8 +790,8 @@ export default function BookingCalendar({
 																			{event.title}
 																		</div>
 																		<div className='text-sm text-icyWhite/70'>
-																			{formatTime(event.start)} –{' '}
-																			{formatTime(event.end)}
+																			{formatTime(new Date(event.start), { locale })} –{' '}
+																			{formatTime(new Date(event.end), { locale })}
 																		</div>
 																	</div>
 																</div>

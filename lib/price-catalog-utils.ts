@@ -4,18 +4,15 @@ import {
   getScheduleTbdAdminNoteForLocale,
   type PriceCatalogStructure,
   type PriceService,
-  type PriceSection,
-  type PriceZone,
   type ZonePriceItem,
   type PriceLocale,
-  normalizeItemBookingDayCount,
 } from "@/types/price-catalog";
 
 export type FlatPriceCatalogService = {
   title: string;
   durationMinutes: number;
   bookingGranularity: "time" | "day" | "tbd";
-  bookingDayCount: number;
+  bookingDayCount?: number;
   scheduleTbdMessage?: string;
   scheduleTbdAdminNote?: string;
 };
@@ -30,19 +27,20 @@ export function flattenPriceCatalogToServices(
   function addItem(item: ZonePriceItem, path: string) {
     const itemTitle = getTitleForLocale(item, locale);
     const fullTitle = path ? `${path} › ${itemTitle}` : itemTitle;
-    const isDay = item.bookingGranularity === "day";
-    const isTbd = item.bookingGranularity === "tbd";
+    const gran = item.bookingGranularity === "day"
+      ? "day"
+      : item.bookingGranularity === "tbd"
+        ? "tbd"
+        : "time";
     result.push({
       title: fullTitle,
       durationMinutes: item.durationMinutes,
-      bookingGranularity: isDay ? "day" : isTbd ? "tbd" : "time",
-      bookingDayCount: isDay
-        ? normalizeItemBookingDayCount(item.bookingDayCount)
-        : 1,
-      scheduleTbdMessage: isTbd
+      bookingGranularity: gran,
+      bookingDayCount: gran === "day" ? (item.bookingDayCount ?? 1) : undefined,
+      scheduleTbdMessage: gran === "tbd"
         ? getScheduleTbdMessageForLocale(item, locale)
         : undefined,
-      scheduleTbdAdminNote: isTbd
+      scheduleTbdAdminNote: gran === "tbd"
         ? getScheduleTbdAdminNoteForLocale(item, locale)
         : undefined,
     });

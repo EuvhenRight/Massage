@@ -1,8 +1,9 @@
 "use client";
 
+import { formatTimeFromSlotString } from "@/lib/format-date";
 import type { BookingAccent } from "@/lib/booking-accent";
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { OccupiedSlot } from "@/lib/availability-firestore";
 import { getAvailableTimeSlots } from "@/lib/availability-firestore";
 import type { ScheduleData } from "@/lib/schedule-firestore";
@@ -24,14 +25,6 @@ interface TimeSlotPickerProps {
   schedule?: ScheduleData | null;
 }
 
-function formatSlot(time: string): string {
-  const [h, m] = time.split(":").map(Number);
-  if (h === 0) return `12:${String(m).padStart(2, "0")} am`;
-  if (h < 12) return `${h}:${String(m).padStart(2, "0")} am`;
-  if (h === 12) return `12:${String(m).padStart(2, "0")} pm`;
-  return `${h - 12}:${String(m).padStart(2, "0")} pm`;
-}
-
 export default function TimeSlotPicker({
   accent,
   date,
@@ -41,6 +34,7 @@ export default function TimeSlotPicker({
   durationMinutes,
   schedule = null,
 }: TimeSlotPickerProps) {
+  const locale = useLocale();
   const availableSlots = useMemo(
     () => getAvailableTimeSlots(date, durationMinutes, occupiedSlots, schedule),
     [date, durationMinutes, occupiedSlots, schedule]
@@ -74,7 +68,7 @@ export default function TimeSlotPicker({
               value={slot}
               className={accent.selectItemFocus}
             >
-              {formatSlot(slot)}
+              {formatTimeFromSlotString(slot, locale)}
             </SelectItem>
           ))}
         </SelectContent>

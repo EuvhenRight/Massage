@@ -1,16 +1,9 @@
 'use client'
 
+import { formatTimeFromSlotString } from '@/lib/format-date'
 import { useLocale, useTranslations } from 'next-intl'
 import { useBookingFlow } from './BookingFlowContext'
 import { TruncateText } from '@/components/ui/truncate-text'
-
-function formatTime(time: string): string {
-	const [h, m] = time.split(':').map(Number)
-	if (h === 0) return `12:${String(m).padStart(2, '0')} am`
-	if (h < 12) return `${h}:${String(m).padStart(2, '0')} am`
-	if (h === 12) return `12:${String(m).padStart(2, '0')} pm`
-	return `${h - 12}:${String(m).padStart(2, '0')} pm`
-}
 
 const sectionLabelClass = 'text-[11px] font-medium text-icyWhite/50 uppercase tracking-wider block'
 
@@ -25,7 +18,6 @@ export default function BookingSidebar() {
 		durationMinutes,
 		bookingGranularity,
 		bookingDayCount,
-		scheduleTbdCustomerMessage,
 		fullName,
 		email,
 		phone,
@@ -42,27 +34,25 @@ export default function BookingSidebar() {
 				{/* Services */}
 				<div className="min-w-0 space-y-1.5">
 					<span className={sectionLabelClass}>{tCommon('services')}</span>
-					{service ? (
-						<div className="flex items-center justify-between gap-2 min-w-0">
-							<TruncateText className="text-sm text-icyWhite font-medium" tooltipThreshold={25}>
-								{service}
-							</TruncateText>
-							{bookingGranularity === 'day' ? (
-								<span className="text-xs text-icyWhite/50 shrink-0">
-									{bookingDayCount >= 2
-										? t('fullDaysBookingCount', { count: bookingDayCount })
-										: t('fullDayBooking')}
-								</span>
-							) : bookingGranularity === 'tbd' ? (
-								<span className="text-xs text-icyWhite/50 shrink-0">
-									{t('scheduleTbdBookingBadge')}
-								</span>
-							) : (
-								durationMinutes > 0 && (
-									<span className="text-xs text-icyWhite/50 shrink-0">{durationMinutes} min</span>
-								)
-							)}
-						</div>
+				{service ? (
+					<div className="flex items-center justify-between gap-2 min-w-0">
+						<TruncateText className="text-sm text-icyWhite font-medium" tooltipThreshold={25}>
+							{service}
+						</TruncateText>
+						{bookingGranularity === 'tbd' ? (
+							<span className="text-xs text-icyWhite/50 shrink-0">
+								{t('scheduleTbdBookingBadge')}
+							</span>
+						) : bookingGranularity === 'day' ? (
+							<span className="text-xs text-icyWhite/50 shrink-0">
+								{t('allDayBadge', { count: bookingDayCount })}
+							</span>
+						) : (
+							durationMinutes > 0 && (
+								<span className="text-xs text-icyWhite/50 shrink-0">{durationMinutes} min</span>
+							)
+						)}
+					</div>
 					) : (
 						<p className="text-sm text-icyWhite/40">—</p>
 					)}
@@ -92,28 +82,16 @@ export default function BookingSidebar() {
 					<span className={sectionLabelClass}>{tCommon('time')}</span>
 					{bookingGranularity === 'tbd' ? (
 						<p className="text-sm text-icyWhite/75">{t('sidebarScheduleTbdTime')}</p>
+					) : bookingGranularity === 'day' ? (
+						<p className="text-sm text-icyWhite/75">{t('allDayLabel')}</p>
 					) : time ? (
 						<p className="text-sm text-icyWhite">
-							{formatTime(time)}
-							{bookingGranularity === 'day' && (
-								<span className="block text-xs text-icyWhite/55 mt-0.5">
-									{t('fullDayBooking')}
-								</span>
-							)}
+							{formatTimeFromSlotString(time, locale)}
 						</p>
 					) : (
 						<p className="text-sm text-icyWhite/40">—</p>
 					)}
 				</div>
-
-				{bookingGranularity === 'tbd' && scheduleTbdCustomerMessage.trim() && (
-					<div className="space-y-1.5 pt-1">
-						<span className={sectionLabelClass}>{t('scheduleTbdCustomerHeading')}</span>
-						<p className="text-xs text-icyWhite/70 whitespace-pre-wrap line-clamp-6">
-							{scheduleTbdCustomerMessage}
-						</p>
-					</div>
-				)}
 
 				{/* Your Details — customer's name, email, phone */}
 				{((step === 3 || step === 4) && (fullName || email || phone)) && (

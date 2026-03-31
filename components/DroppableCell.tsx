@@ -1,7 +1,7 @@
 'use client'
 
 import { useDroppable } from '@dnd-kit/core'
-import { clsx } from 'clsx'
+import { cn } from '@/lib/utils'
 
 /**
  * Cell ID format: "YYYYMMDD-HHmm" (e.g. "20250222-0900")
@@ -62,9 +62,9 @@ export default function DroppableCell({
 		<div
 			ref={setNodeRef}
 			data-cell-id={id}
-			className={clsx(
-				'border-b border-r border-white/5 p-0.5 transition-colors',
-				compact ? 'min-h-[12px] flex-1' : 'min-h-[30px]',
+			className={cn(
+				'border-b border-r border-white/[0.06] p-px transition-colors',
+				compact ? 'min-h-[14px] flex-1' : 'min-h-[30px]',
 				isPast && 'bg-white/5',
 				showOver &&
 					(canDrop

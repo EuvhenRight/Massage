@@ -1,5 +1,3 @@
-import { normalizeItemBookingDayCount } from '@/types/price-catalog'
-
 /** Booking draft storage key prefix */
 const STORAGE_PREFIX = 'booking-draft-'
 const TTL_MS = 60 * 60 * 1000 // 1 hour
@@ -14,7 +12,6 @@ export interface BookingDraft {
   durationMinutes: number
   /** Omit = time (legacy drafts) */
   bookingGranularity?: DraftBookingGranularity;
-  /** Consecutive full days when granularity is day; omit = 1 */
   bookingDayCount?: number;
   scheduleTbdCustomerMessage?: string;
   scheduleTbdAdminHint?: string;
@@ -104,7 +101,10 @@ export function parseDraftToState(draft: BookingDraft): {
         : draft.bookingGranularity === "tbd"
           ? "tbd"
           : "time",
-    bookingDayCount: normalizeItemBookingDayCount(draft.bookingDayCount),
+    bookingDayCount:
+      typeof draft.bookingDayCount === "number" && draft.bookingDayCount >= 1
+        ? Math.min(14, draft.bookingDayCount)
+        : 1,
     scheduleTbdCustomerMessage:
       typeof draft.scheduleTbdCustomerMessage === "string"
         ? draft.scheduleTbdCustomerMessage

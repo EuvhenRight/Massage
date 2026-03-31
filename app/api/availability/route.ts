@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { getDocs } from "firebase/firestore";
+import {
+  appointmentIntervalsFromDocs,
+  queryAppointmentsOverlappingRange,
+} from "@/lib/appointments-overlap-query";
+import {
+  getAvailableTimeSlots,
+  getPrepBufferMinutes,
+  parseOccupiedSlots,
+} from "@/lib/availability-firestore";
 import { db } from "@/lib/firebase";
 import { getSchedule } from "@/lib/schedule-firestore";
-import {
-  parseOccupiedSlots,
-  getPrepBufferMinutes,
-  getAvailableTimeSlots,
-} from "@/lib/availability-firestore";
 import type { Place } from "@/lib/places";
 
 export async function GET(request: NextRequest) {
@@ -24,28 +28,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid date" }, { status: 400 });
     }
 
+    const placeKey = place ?? "massage";
+    const dayStart = new Date(`${dateStr}T00:00:00`);
+    const dayEnd = new Date(`${dateStr}T23:59:59.999`);
+
     const [schedule, snapshot] = await Promise.all([
-      getSchedule(place ?? "massage"),
+      getSchedule(placeKey),
       getDocs(
-        query(
-          collection(db, "appointments"),
-          ...(place ? [where("place", "==", place)] : []),
-          where("startTime", ">=", new Date(`${dateStr}T00:00:00`)),
-          where("startTime", "<=", new Date(`${dateStr}T23:59:59.999`))
-        )
+        queryAppointmentsOverlappingRange(db, placeKey, dayStart, dayEnd)
       ),
     ]);
 
-    const appointments = snapshot.docs.map((docSnap) => {
-      const data = docSnap.data() as {
-        startTime: Date;
-        endTime: Date;
-      };
-      return {
-        startTime: data.startTime,
-        endTime: data.endTime,
-      };
-    });
+    const appointments = appointmentIntervalsFromDocs(snapshot.docs);
 
     const occupied = parseOccupiedSlots(appointments, getPrepBufferMinutes(schedule));
     const durationMinutes = schedule.slotDurationMinutes ?? 60;

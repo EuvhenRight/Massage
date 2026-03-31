@@ -1,8 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
+import { getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import {
+  appointmentIntervalsFromDocs,
+  queryAppointmentsOverlappingRange,
+} from "@/lib/appointments-overlap-query";
 import { useBookingFlow } from "./BookingFlowContext";
 import {
   parseOccupiedSlots,
@@ -43,24 +47,18 @@ export default function StepDateTime({ durationMinutes, place = "massage" }: Ste
     async function fetchAppointments() {
       setLoading(true);
       try {
-        const start = new Date(year, monthNum, 1);
-        const end = new Date(year, monthNum + 1, 0);
-        end.setHours(23, 59, 59, 999);
-        const q = query(
-          collection(db, "appointments"),
-          where("place", "==", place),
-          where("startTime", ">=", start),
-          where("startTime", "<=", end)
+        const rangeStart = new Date(year, monthNum, 1);
+        const rangeEnd = new Date(year, monthNum + 1, 0);
+        rangeEnd.setHours(23, 59, 59, 999);
+        const q = queryAppointmentsOverlappingRange(
+          db,
+          place,
+          rangeStart,
+          rangeEnd
         );
         const snapshot = await getDocs(q);
         if (cancelled) return;
-        const appointments = snapshot.docs.map((doc) => {
-          const d = doc.data();
-          return {
-            startTime: d.startTime as Timestamp,
-            endTime: d.endTime as Timestamp,
-          };
-        });
+        const appointments = appointmentIntervalsFromDocs(snapshot.docs);
         setOccupiedSlots(parseOccupiedSlots(appointments, getPrepBufferMinutes(schedule)));
       } catch {
         setOccupiedSlots([]);

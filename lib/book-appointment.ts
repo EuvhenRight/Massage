@@ -3,6 +3,7 @@ import {
   doc,
   getDoc,
   updateDoc,
+  deleteField,
   serverTimestamp,
   Timestamp,
   addDoc,
@@ -23,6 +24,9 @@ export interface AppointmentData {
   id: string;
   startTime: Timestamp | Date;
   endTime: Timestamp | Date;
+  adminBookingMode?: "time" | "day";
+  multiDayFullDayCount?: number;
+  adminFullDayDates?: string[];
   service: string;
   serviceId?: string;
   serviceSk?: string;
@@ -38,6 +42,8 @@ export interface AppointmentData {
   scheduleTbd?: boolean;
   /** Copied from catalog at booking time (admin hint) */
   scheduleTbdAdminHint?: string;
+  /** Free-form internal note set by admin */
+  adminNote?: string;
 }
 
 export interface BookingInput {
@@ -54,8 +60,11 @@ export interface BookingInput {
   serviceRu?: string;
   serviceUk?: string;
   /**
-   * When >= 2, books this many consecutive full working days from `date` (ignores `durationMinutes`).
-   * Omit or 1: single range using `startTime` + `durationMinutes` as today.
+   * Explicit full-day dates for admin day-only bookings.
+   */
+  adminFullDayDates?: string[];
+  /**
+   * Legacy fallback: when >= 1, books this many consecutive full working days from `date`.
    */
   multiDayFullDayCount?: number;
 }
@@ -82,10 +91,14 @@ export interface AdminBookingInput {
   date: string;
   startTime: string;
   durationMinutes?: number;
+  adminBookingMode?: "time" | "day";
+  adminFullDayDates?: string[];
+  multiDayFullDayCount?: number;
   service?: string;
   fullName?: string;
   email?: string;
   phone?: string;
+  adminNote?: string;
 }
 
 /** Admin can update any field */
@@ -96,6 +109,10 @@ export interface AdminAppointmentUpdate {
   phone?: string;
   startTime?: Date;
   durationMinutes?: number;
+  adminBookingMode?: "time" | "day";
+  adminFullDayDates?: string[];
+  multiDayFullDayCount?: number;
+  adminNote?: string;
 }
 
 /**
@@ -132,26 +149,118 @@ function fullDayWindowForDate(
   return { start, end };
 }
 
-async function bookConsecutiveFullWorkingDays(
+function clampFullDayCount(raw: unknown): number {
+  const n = Math.floor(Number(raw));
+  if (!Number.isFinite(n)) return 1;
+  return Math.max(1, Math.min(14, n));
+}
+
+function parseDateKey(dateKey: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return null;
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+function sortDateKeys(dateKeys: string[]): string[] {
+  return [...dateKeys].sort((a, b) => {
+    const dateA = parseDateKey(a);
+    const dateB = parseDateKey(b);
+    if (!dateA || !dateB) return a.localeCompare(b);
+    return dateA.getTime() - dateB.getTime();
+  });
+}
+
+function normalizeFullDayDates(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const unique = new Set<string>();
+  for (const item of raw) {
+    if (typeof item !== "string") continue;
+    const parsed = parseDateKey(item);
+    if (!parsed) continue;
+    unique.add(getDateKey(parsed));
+    if (unique.size >= 14) break;
+  }
+  return sortDateKeys(Array.from(unique));
+}
+
+/** UI + email: treat as full-day when mode flag is missing but day fields exist */
+export function inferAdminBookingModeFromFirestore(
+  data: Record<string, unknown>
+): "time" | "day" {
+  if (data.adminBookingMode === "day") return "day";
+  if (data.adminBookingMode === "time") return "time";
+  if (normalizeFullDayDates(data.adminFullDayDates).length > 0) return "day";
+  const n = Math.floor(Number(data.multiDayFullDayCount));
+  if (Number.isFinite(n) && n >= 1) return "day";
+  return "time";
+}
+
+function getLegacyFullDayDateKeys(startDate: Date, count: number): string[] {
+  const safeCount = clampFullDayCount(count);
+  const keys: string[] = [];
+  for (let i = 0; i < safeCount; i++) {
+    const current = new Date(startDate);
+    current.setHours(0, 0, 0, 0);
+    current.setDate(current.getDate() + i);
+    keys.push(getDateKey(current));
+  }
+  return keys;
+}
+
+function getAppointmentDayDateKeys(data: Record<string, unknown>): string[] {
+  const explicit = normalizeFullDayDates(data.adminFullDayDates);
+  if (explicit.length > 0) return explicit;
+  const start = (data.startTime as Timestamp).toDate();
+  return getLegacyFullDayDateKeys(start, clampFullDayCount(data.multiDayFullDayCount));
+}
+
+async function getFullDayWindowsForDateKeys(
+  place: Place,
+  dateKeys: string[]
+): Promise<{ dayKey: string; start: Date; end: Date }[]> {
+  const schedule = await getSchedule(place);
+  const normalizedDateKeys = normalizeFullDayDates(dateKeys);
+  if (normalizedDateKeys.length === 0) {
+    throw new Error("DAY_REQUIRED");
+  }
+  const windows: { dayKey: string; start: Date; end: Date }[] = [];
+  for (const dateKey of normalizedDateKeys) {
+    const cal = parseDateKey(dateKey);
+    if (!cal) continue;
+    const w = fullDayWindowForDate(cal, schedule);
+    if (!w) throw new Error("DAY_CLOSED");
+    windows.push({ dayKey: `${place}_${getDateKey(cal)}`, ...w });
+  }
+  return windows;
+}
+
+function getSingleTimeWindow(
+  place: Place,
+  start: Date,
+  durationMinutes: number
+): { dayKey: string; start: Date; end: Date }[] {
+  const slotStart = new Date(start);
+  const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60 * 1000);
+  return [{ dayKey: `${place}_${getDateKey(slotStart)}`, start: slotStart, end: slotEnd }];
+}
+
+async function bookFullDayAppointment(
   input: BookingInput,
   place: Place,
-  n: number
+  dateKeys: string[]
 ): Promise<AppointmentData> {
   const schedule = await getSchedule(place);
   const prepBuffer = getPrepBufferMinutes(schedule);
-  const parts = input.date.split("-").map(Number);
-  const y = parts[0];
-  const mo = parts[1];
-  const d = parts[2];
-  if (!y || !mo || !d) throw new Error("INVALID_DATE");
-
+  const normalizedDateKeys = normalizeFullDayDates(dateKeys);
+  if (normalizedDateKeys.length === 0) throw new Error("DAY_REQUIRED");
   const windows: { dayKey: string; start: Date; end: Date }[] = [];
-  for (let i = 0; i < n; i++) {
-    const cal = new Date(y, mo - 1, d + i);
+  for (const dateKey of normalizedDateKeys) {
+    const cal = parseDateKey(dateKey);
+    if (!cal) throw new Error("INVALID_DATE");
     const w = fullDayWindowForDate(cal, schedule);
     if (!w) throw new Error("DAY_CLOSED");
-    const dateStr = getDateKey(cal);
-    windows.push({ dayKey: `${place}_${dateStr}`, ...w });
+    windows.push({ dayKey: `${place}_${dateKey}`, ...w });
   }
 
   const newStart = windows[0].start;
@@ -184,6 +293,9 @@ async function bookConsecutiveFullWorkingDays(
     const baseData: Record<string, unknown> = {
       startTime: Timestamp.fromDate(newStart),
       endTime: Timestamp.fromDate(newEnd),
+      adminBookingMode: "day",
+      multiDayFullDayCount: normalizedDateKeys.length,
+      adminFullDayDates: normalizedDateKeys,
       service: input.service,
       fullName: input.fullName,
       email: input.email,
@@ -225,6 +337,9 @@ async function bookConsecutiveFullWorkingDays(
       id,
       startTime: Timestamp.fromDate(newStart),
       endTime: Timestamp.fromDate(newEnd),
+      adminBookingMode: "day",
+      multiDayFullDayCount: normalizedDateKeys.length,
+      adminFullDayDates: normalizedDateKeys,
       service: input.service,
       serviceId: input.serviceId,
       serviceSk: input.serviceSk,
@@ -239,9 +354,17 @@ async function bookConsecutiveFullWorkingDays(
 }
 
 export async function bookAppointment(input: BookingInput, place: Place = "massage"): Promise<AppointmentData> {
+  const explicitDayDates = normalizeFullDayDates(input.adminFullDayDates);
+  if (explicitDayDates.length > 0) {
+    return bookFullDayAppointment(input, place, explicitDayDates);
+  }
   const multi = input.multiDayFullDayCount;
-  if (typeof multi === "number" && multi >= 2) {
-    return bookConsecutiveFullWorkingDays(input, place, multi);
+  if (typeof multi === "number" && multi >= 1) {
+    return bookFullDayAppointment(
+      input,
+      place,
+      getLegacyFullDayDateKeys(new Date(`${input.date}T12:00:00`), multi)
+    );
   }
 
   const dateStr = input.date;
@@ -446,16 +569,108 @@ export async function updateAppointmentTime(
   });
 }
 
+async function replaceAppointmentSchedule(
+  appointmentId: string,
+  place: Place,
+  oldMode: "time" | "day",
+  oldStart: Date,
+  oldEnd: Date,
+  oldDayDates: string[],
+  newMode: "time" | "day",
+  newStart: Date,
+  newDurationMinutes: number,
+  newDayDates: string[]
+): Promise<{ newStart: Date; newEnd: Date }> {
+  const schedule = await getSchedule(place);
+  const prepBuffer = getPrepBufferMinutes(schedule);
+
+  const oldWindows =
+    oldMode === "day"
+      ? await getFullDayWindowsForDateKeys(place, oldDayDates)
+      : getSingleTimeWindow(
+          place,
+          oldStart,
+          Math.round((oldEnd.getTime() - oldStart.getTime()) / 60000)
+        );
+  const newWindows =
+    newMode === "day"
+      ? await getFullDayWindowsForDateKeys(place, newDayDates)
+      : getSingleTimeWindow(place, newStart, newDurationMinutes);
+
+  const dayRefs = new Map<string, ReturnType<typeof doc>>();
+  for (const window of [...oldWindows, ...newWindows]) {
+    if (!dayRefs.has(window.dayKey)) {
+      dayRefs.set(window.dayKey, doc(db, "days", window.dayKey));
+    }
+  }
+
+  await runTransaction(db, async (transaction) => {
+    const entries = Array.from(dayRefs.entries());
+    const snaps = new Map<string, Awaited<ReturnType<typeof transaction.get>>>();
+    for (const [dayKey, ref] of entries) {
+      snaps.set(dayKey, await transaction.get(ref));
+    }
+
+    for (const window of newWindows) {
+      const snap = snaps.get(window.dayKey);
+      const dayData = snap?.data() as
+        | { slots?: { id: string; start: Timestamp; end: Timestamp }[] }
+        | undefined;
+      const slots: { id: string; start: Timestamp; end: Timestamp }[] =
+        (snap?.exists() ? dayData?.slots : null) ?? [];
+      for (const slot of slots) {
+        if (slot.id === appointmentId) continue;
+        const existingStart = slot.start.toDate();
+        const existingEnd = slot.end.toDate();
+        const existingEndWithBuffer = new Date(
+          existingEnd.getTime() + prepBuffer * 60 * 1000
+        );
+        if (overlaps(existingStart, existingEndWithBuffer, window.start, window.end)) {
+          throw new Error("OVERLAP");
+        }
+      }
+    }
+
+    for (const [dayKey, ref] of entries) {
+      const snap = snaps.get(dayKey);
+      const dayData = snap?.data() as
+        | { slots?: { id: string; start: Timestamp; end: Timestamp }[] }
+        | undefined;
+      const slots: { id: string; start: Timestamp; end: Timestamp }[] =
+        (snap?.exists() ? dayData?.slots : null) ?? [];
+      const filtered = slots.filter((slot) => slot.id !== appointmentId);
+      const additions = newWindows
+        .filter((window) => window.dayKey === dayKey)
+        .map((window) => ({
+          id: appointmentId,
+          start: Timestamp.fromDate(window.start),
+          end: Timestamp.fromDate(window.end),
+        }));
+      transaction.set(ref, { slots: [...filtered, ...additions] }, { merge: true });
+    }
+  });
+
+  return {
+    newStart: newWindows[0]!.start,
+    newEnd: newWindows[newWindows.length - 1]!.end,
+  };
+}
+
 /** Read a single appointment by ID */
 export async function getAppointment(appointmentId: string): Promise<AppointmentData | null> {
   const appointmentRef = doc(db, "appointments", appointmentId);
   const snap = await getDoc(appointmentRef);
   if (!snap.exists()) return null;
   const d = snap.data();
+  const mode = inferAdminBookingModeFromFirestore(d as Record<string, unknown>);
+  const dayKeys = mode === "day" ? getAppointmentDayDateKeys(d) : [];
   return {
     id: snap.id,
     startTime: (d.startTime as Timestamp) ?? new Date(),
     endTime: (d.endTime as Timestamp) ?? new Date(),
+    adminBookingMode: mode,
+    adminFullDayDates: mode === "day" ? dayKeys : undefined,
+    multiDayFullDayCount: mode === "day" ? dayKeys.length : undefined,
     service: (d.service as string) ?? "",
     serviceId: d.serviceId as string | undefined,
     serviceSk: d.serviceSk as string | undefined,
@@ -469,6 +684,7 @@ export async function getAppointment(appointmentId: string): Promise<Appointment
     createdAt: d.createdAt as Timestamp | undefined,
     scheduleTbd: d.scheduleTbd === true,
     scheduleTbdAdminHint: d.scheduleTbdAdminHint as string | undefined,
+    adminNote: d.adminNote as string | undefined,
   } as AppointmentData;
 }
 
@@ -476,6 +692,9 @@ export async function getAppointment(appointmentId: string): Promise<Appointment
 export async function bookAppointmentAdmin(input: AdminBookingInput, place: Place = "massage"): Promise<AppointmentData> {
   const dateStr = input.date;
   const [startH, startM] = input.startTime.split(":").map(Number);
+  const mode = input.adminBookingMode === "day" ? "day" : "time";
+  const dayDates = normalizeFullDayDates(input.adminFullDayDates);
+  const dayCount = dayDates.length > 0 ? dayDates.length : clampFullDayCount(input.multiDayFullDayCount);
   const duration = input.durationMinutes ?? 60;
   const newStart = new Date(`${dateStr}T${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}:00`);
   const newEnd = new Date(newStart.getTime() + duration * 60 * 1000);
@@ -484,13 +703,49 @@ export async function bookAppointmentAdmin(input: AdminBookingInput, place: Plac
     date: dateStr,
     startTime: input.startTime,
     durationMinutes: duration,
+    adminFullDayDates: mode === "day" ? dayDates : undefined,
+    multiDayFullDayCount: mode === "day" ? dayCount : undefined,
     service: input.service?.trim() || "—",
     fullName: input.fullName?.trim() || "—",
     email: input.email?.trim() || "",
     phone: input.phone?.trim() || "—",
   };
 
-  return bookAppointment(normalized, place);
+  const result = await bookAppointment(normalized, place);
+
+  const ref = doc(db, "appointments", result.id);
+  const note = input.adminNote?.trim();
+  const storedDayDates =
+    mode === "day" && dayDates.length > 0
+      ? dayDates
+      : mode === "day"
+        ? normalizeFullDayDates(result.adminFullDayDates)
+        : [];
+  const storedDayCount =
+    storedDayDates.length > 0 ? storedDayDates.length : dayCount;
+  await updateDoc(ref, {
+    adminBookingMode: mode,
+    ...(mode === "day" && storedDayDates.length > 0
+      ? {
+          multiDayFullDayCount: storedDayCount,
+          adminFullDayDates: storedDayDates,
+        }
+      : mode !== "day"
+        ? {
+            multiDayFullDayCount: deleteField(),
+            adminFullDayDates: deleteField(),
+          }
+        : {}),
+    ...(note ? { adminNote: note } : {}),
+  });
+  result.adminBookingMode = mode;
+  result.adminFullDayDates =
+    mode === "day" && storedDayDates.length > 0 ? storedDayDates : undefined;
+  result.multiDayFullDayCount =
+    mode === "day" && storedDayDates.length > 0 ? storedDayCount : undefined;
+  if (note) result.adminNote = note;
+
+  return result;
 }
 
 /** Admin: update appointment fields (time change updates slots) */
@@ -505,15 +760,54 @@ export async function updateAppointment(
 
   const data = snap.data();
   const aptPlace = (data.place as Place) ?? place;
-  const hasTimeChange = updates.startTime != null || updates.durationMinutes != null;
+  const oldStart = (data.startTime as Timestamp).toDate();
+  const oldEnd = (data.endTime as Timestamp).toDate();
+  const oldMode = data.adminBookingMode === "day" ? "day" : "time";
+  const targetMode = updates.adminBookingMode ?? oldMode;
+  const oldDayDates =
+    oldMode === "day" ? getAppointmentDayDateKeys(data) : [];
+  const targetDayDates =
+    targetMode === "day"
+      ? (() => {
+          const explicit = normalizeFullDayDates(updates.adminFullDayDates);
+          if (explicit.length > 0) return explicit;
+          if (updates.multiDayFullDayCount != null) {
+            return getLegacyFullDayDateKeys(
+              updates.startTime ?? oldStart,
+              updates.multiDayFullDayCount
+            );
+          }
+          return oldDayDates;
+        })()
+      : [];
+  const targetDuration =
+    updates.durationMinutes ??
+    Math.max(5, Math.round((oldEnd.getTime() - oldStart.getTime()) / 60000));
+  const targetStart = updates.startTime ?? oldStart;
+  const hasScheduleChange =
+    updates.startTime != null ||
+    updates.durationMinutes != null ||
+    updates.adminBookingMode != null ||
+    updates.adminFullDayDates != null ||
+    updates.multiDayFullDayCount != null;
 
-  if (hasTimeChange) {
-    const oldStart = (data.startTime as Timestamp).toDate();
-    const oldEnd = (data.endTime as Timestamp).toDate();
-    const duration =
-      updates.durationMinutes ?? Math.round((oldEnd.getTime() - oldStart.getTime()) / 60000);
-    const newStart = updates.startTime ?? oldStart;
-    await updateAppointmentTime(appointmentId, newStart, duration);
+  let nextStart = oldStart;
+  let nextEnd = oldEnd;
+  if (hasScheduleChange) {
+    const replaced = await replaceAppointmentSchedule(
+      appointmentId,
+      aptPlace,
+      oldMode,
+      oldStart,
+      oldEnd,
+      oldDayDates,
+      targetMode,
+      targetStart,
+      targetDuration,
+      targetDayDates
+    );
+    nextStart = replaced.newStart;
+    nextEnd = replaced.newEnd;
   }
 
   const fieldUpdates: Record<string, unknown> = {};
@@ -521,6 +815,16 @@ export async function updateAppointment(
   if (updates.fullName !== undefined) fieldUpdates.fullName = updates.fullName || "—";
   if (updates.email !== undefined) fieldUpdates.email = updates.email || "";
   if (updates.phone !== undefined) fieldUpdates.phone = updates.phone || "—";
+  if (updates.adminNote !== undefined) fieldUpdates.adminNote = updates.adminNote;
+  if (hasScheduleChange) {
+    fieldUpdates.startTime = Timestamp.fromDate(nextStart);
+    fieldUpdates.endTime = Timestamp.fromDate(nextEnd);
+    fieldUpdates.adminBookingMode = targetMode;
+    fieldUpdates.multiDayFullDayCount =
+      targetMode === "day" ? targetDayDates.length : deleteField();
+    fieldUpdates.adminFullDayDates =
+      targetMode === "day" ? targetDayDates : deleteField();
+  }
 
   if (Object.keys(fieldUpdates).length > 0) {
     await updateDoc(appointmentRef, fieldUpdates);
@@ -543,18 +847,10 @@ export async function deleteAppointment(appointmentId: string): Promise<void> {
   }
 
   const place = (data.place as Place | undefined) ?? "massage";
-  const start = (data.startTime as Timestamp).toDate();
-  const end = (data.endTime as Timestamp).toDate();
-
-  const dateKeys = new Set<string>();
-  const cur = new Date(start);
-  cur.setHours(0, 0, 0, 0);
-  const endDay = new Date(end);
-  endDay.setHours(0, 0, 0, 0);
-  while (cur.getTime() <= endDay.getTime()) {
-    dateKeys.add(getDateKey(cur));
-    cur.setDate(cur.getDate() + 1);
-  }
+  const dateKeys =
+    data.adminBookingMode === "day"
+      ? new Set(getAppointmentDayDateKeys(data))
+      : new Set([getDateKey((data.startTime as Timestamp).toDate())]);
 
   const dayRefs = Array.from(dateKeys).map((ds) => doc(db, "days", `${place}_${ds}`));
 
