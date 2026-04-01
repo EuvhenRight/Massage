@@ -16,7 +16,9 @@ import {
 import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import {
 	deleteAppointment,
+	getUiAppointmentDayDateKeys,
 	inferAdminBookingModeFromFirestore,
+	updateAppointment,
 	updateAppointmentTime,
 	type AppointmentData,
 } from '@/lib/book-appointment'
@@ -144,6 +146,27 @@ function extractAppointmentId(dragId: string): string {
 	return m ? m[1] : dragId
 }
 
+function formatFullDayMoveSummary(keys: string[], locale: string): string {
+	const sorted = [...keys].sort((a, b) => a.localeCompare(b))
+	if (sorted.length === 1) {
+		return new Date(`${sorted[0]}T12:00:00`).toLocaleDateString(locale, {
+			weekday: 'short',
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric',
+		})
+	}
+	const a = new Date(`${sorted[0]}T12:00:00`)
+	const b = new Date(`${sorted[sorted.length - 1]}T12:00:00`)
+	const opts: Intl.DateTimeFormatOptions = {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric',
+		year: 'numeric',
+	}
+	return `${a.toLocaleDateString(locale, opts)} – ${b.toLocaleDateString(locale, opts)}`
+}
+
 /** Short TZ label for week grid corner (e.g. GMT+1), Google Calendar–style. */
 function shortTimeZoneName(d = new Date()): string {
 	try {
@@ -177,7 +200,11 @@ function toAppointmentData(doc: {
 				? Array.isArray(d.adminFullDayDates)
 					? d.adminFullDayDates.filter(value => typeof value === 'string').length
 					: Math.max(1, Math.min(14, Number(d.multiDayFullDayCount) || 1))
-				: undefined,
+				: d.scheduleTbd === true &&
+					  typeof d.multiDayFullDayCount === 'number' &&
+					  d.multiDayFullDayCount >= 1
+					? Math.min(14, Math.floor(d.multiDayFullDayCount))
+					: undefined,
 		service: (d.service as string) ?? '',
 		serviceId: d.serviceId as string | undefined,
 		fullName: (d.fullName as string) ?? '',
@@ -262,6 +289,8 @@ export default function BookingCalendarGrid({
 	const [pendingMove, setPendingMove] = useState<{
 		appointment: AppointmentData
 		newCellId: string
+		/** When moving an all-day booking: new explicit day keys (confirm uses `updateAppointment`). */
+		newFullDayDateKeys?: string[]
 	} | null>(null)
 
 	const weekDays = useMemo(
@@ -269,15 +298,14 @@ export default function BookingCalendarGrid({
 		[weekStart],
 	)
 
-	const displayDays = view === 'day' ? [selectedDay] : weekDays
+	const displayDays = useMemo(
+		() => (view === 'day' ? [selectedDay] : weekDays),
+		[view, selectedDay, weekDays],
+	)
 
 	const { gridStartHour, gridEndHour } = useMemo(
-		() =>
-			getAdminCalendarGridHourBounds(
-				schedule,
-				view === 'day' ? [selectedDay] : weekDays,
-			),
-		[schedule, view, selectedDay, weekDays],
+		() => getAdminCalendarGridHourBounds(schedule, displayDays),
+		[schedule, displayDays],
 	)
 
 	const hourSlots = useMemo(
@@ -447,7 +475,7 @@ export default function BookingCalendarGrid({
 			}
 		}
 		return { appointmentsByCell: byCell, cellsOccupiedBy: occupied }
-	}, [appointments, prepBuffer])
+	}, [appointments, prepBuffer, gridStartHour, hourSlots])
 
 	/** Timed + day bookings shown in the stacked overlay (one block per day column). */
 	const appointmentsByDayKeyForOverlay = useMemo(() => {
@@ -580,13 +608,16 @@ export default function BookingCalendarGrid({
 				tbdAppointments.find(a => a.id === appointmentId) ??
 				fullDayAwaitingList.find(a => a.id === appointmentId)
 			if (!appointment) return
-			if (appointment.adminBookingMode === 'day') return
+
+			const newStart = cellIdToTimestamp(cellId)
+			const dropDateKey = getDateKey(newStart)
+
+			// All-day appointments are not draggable; use edit to change days.
 
 			const oldStart =
 				appointment.startTime && 'toDate' in appointment.startTime
 					? appointment.startTime.toDate()
 					: new Date(appointment.startTime as Date)
-			const newStart = cellIdToTimestamp(cellId)
 			const oldCellId = makeCellId(
 				oldStart,
 				oldStart.getHours(),
@@ -624,8 +655,85 @@ export default function BookingCalendarGrid({
 
 	const handleConfirmMove = useCallback(async () => {
 		if (!pendingMove) return
-		const { appointment, newCellId } = pendingMove
+		const { appointment, newCellId, newFullDayDateKeys } = pendingMove
 		setPendingMove(null)
+
+		if (newFullDayDateKeys?.length) {
+			const sorted = [...newFullDayDateKeys].sort((a, b) => a.localeCompare(b))
+			const firstNew = new Date(`${sorted[0]}T12:00:00`)
+			const startOfToday = new Date()
+			startOfToday.setHours(0, 0, 0, 0)
+			if (firstNew < startOfToday) {
+				toast.error(t('cannotMovePast'))
+				return
+			}
+
+			const oldKeys = getUiAppointmentDayDateKeys(appointment)
+			const oldSorted = [...oldKeys].sort((a, b) => a.localeCompare(b))
+			const oldFirstKey = oldSorted[0]!
+			const newFirstKey = sorted[0]!
+			const oldStartEmail = new Date(`${oldFirstKey}T12:00:00`)
+			const newStartEmail = new Date(`${newFirstKey}T12:00:00`)
+			const allDayLabel = t('allDayNoClockTime')
+
+			try {
+				await updateAppointment(
+					appointment.id,
+					{ adminFullDayDates: sorted },
+					appointment.place ?? place,
+				)
+
+				const wasTbd = appointment.scheduleTbd === true
+				try {
+					if (wasTbd) {
+						await fetch('/api/send-confirmation', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								to: appointment.email,
+								customerName: appointment.fullName,
+								date: formatDateForEmail(newStartEmail),
+								time: allDayLabel,
+								service: appointment.service,
+							}),
+						})
+					} else {
+						await fetch('/api/send-confirmation', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								type: 'rescheduled',
+								to: appointment.email,
+								customerName: appointment.fullName,
+								service: appointment.service,
+								oldDate: formatDateForEmail(oldStartEmail),
+								oldTime: allDayLabel,
+								newDate: formatDateForEmail(newStartEmail),
+								newTime: allDayLabel,
+							}),
+						})
+					}
+				} catch {
+					/* email failure */
+				}
+				toast.success(
+					wasTbd ? t('tbdAssignedNotified') : t('movedNotified'),
+				)
+			} catch (err) {
+				const msg = err instanceof Error ? err.message : String(err)
+				const message =
+					msg === 'OVERLAP'
+						? t('slotBooked')
+						: msg === 'DAY_CLOSED'
+							? t('fullDayClosed')
+							: msg === 'APPOINTMENT_NOT_FOUND'
+								? t('notFound')
+								: t('moveFailed', { msg: String(msg) })
+				toast.error(message)
+			}
+			return
+		}
+
 		const newStart = cellIdToTimestamp(newCellId)
 		if (newStart.getTime() < Date.now()) {
 			toast.error(t('cannotMovePast'))
@@ -687,7 +795,7 @@ export default function BookingCalendarGrid({
 						: t('moveFailed', { msg: String(msg) })
 			toast.error(message)
 		}
-	}, [pendingMove, t])
+	}, [pendingMove, place, t])
 
 	const handleCancelMove = useCallback(() => {
 		setPendingMove(null)
@@ -1275,6 +1383,7 @@ export default function BookingCalendarGrid({
 								>
 									<DraggableAppointment
 										appointment={apt}
+										awaitingCalendarAssignment
 										disabled={!allowDrag || !!activeId}
 										layout='list'
 										onOpenDetail={() => setDetailAppointment(apt)}
@@ -1312,6 +1421,7 @@ export default function BookingCalendarGrid({
 								>
 									<DraggableAppointment
 										appointment={apt}
+										awaitingCalendarAssignment
 										disabled={!allowDrag || !!activeId}
 										layout='list'
 										onOpenDetail={() => setDetailAppointment(apt)}
@@ -1338,6 +1448,10 @@ export default function BookingCalendarGrid({
 						<div className='pointer-events-none opacity-95'>
 							<DraggableAppointment
 								appointment={activeAppointment}
+								awaitingCalendarAssignment={
+									activeAppointment.scheduleTbd === true ||
+									isFullDayAwaitingExplicitDays(activeAppointment)
+								}
 								disabled
 								isDragOverlay
 								blockHeight={activeDragOverlayHeightPx}
@@ -1385,12 +1499,23 @@ export default function BookingCalendarGrid({
 								{t('calRescheduleBody', {
 									customerName: pendingMove.appointment.fullName,
 									serviceName: pendingMove.appointment.service,
-									dateStr: formatDateForEmail(
-										cellIdToTimestamp(pendingMove.newCellId),
-									),
-									timeStr: formatTimeForEmail(
-										cellIdToTimestamp(pendingMove.newCellId),
-									),
+									dateStr:
+										pendingMove.newFullDayDateKeys?.length &&
+										pendingMove.newFullDayDateKeys.length > 0
+											? formatFullDayMoveSummary(
+													pendingMove.newFullDayDateKeys,
+													locale,
+												)
+											: formatDateForEmail(
+													cellIdToTimestamp(pendingMove.newCellId),
+												),
+									timeStr:
+										pendingMove.newFullDayDateKeys?.length &&
+										pendingMove.newFullDayDateKeys.length > 0
+											? t('allDayNoClockTime')
+											: formatTimeForEmail(
+													cellIdToTimestamp(pendingMove.newCellId),
+												),
 								})}
 							</p>
 							<div className='flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end sm:gap-3'>

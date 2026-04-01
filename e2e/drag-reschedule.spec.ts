@@ -19,7 +19,7 @@ test.describe("Admin calendar drag reschedule", () => {
     await page.goto("/ru/admin/signin", { waitUntil: "load" });
     await page.locator('input[name="email"]').fill(email);
     await page.locator('input[name="password"]').fill(password);
-    await page.locator('form').getByRole("button", { type: "submit" }).click();
+    await page.locator('form button[type="submit"]').click();
     await page.waitForURL(/\/admin/, { timeout: 20000 });
   });
 

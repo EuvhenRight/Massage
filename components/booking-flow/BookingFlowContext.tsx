@@ -59,15 +59,18 @@ function granularityFromService(
       }
     | undefined
 ): BookingGranularity {
-  if (svc?.bookingGranularity === "day") return "day";
-  if (svc?.bookingGranularity === "tbd") return "tbd";
+  if (svc?.bookingGranularity === "day" || svc?.bookingGranularity === "tbd") {
+    return "tbd";
+  }
   return "time";
 }
 
 function dayCountFromService(
   svc: { bookingDayCount?: number; bookingGranularity?: string } | undefined
 ): number {
-  if (svc?.bookingGranularity !== "day") return 1;
+  if (svc?.bookingGranularity !== "day" && svc?.bookingGranularity !== "tbd") {
+    return 1;
+  }
   const n = Math.floor(Number(svc.bookingDayCount));
   if (!Number.isFinite(n) || n < 1) return 1;
   return Math.min(14, n);
@@ -228,7 +231,7 @@ export function BookingFlowProvider({
         bookingGranularity,
         bookingDayCount: dayCountFromService(svc),
         date: bookingGranularity === "tbd" ? null : s.date,
-        time: bookingGranularity === "day" || bookingGranularity === "tbd" ? null : s.time,
+        time: bookingGranularity === "tbd" ? null : s.time,
         scheduleTbdCustomerMessage:
           bookingGranularity === "tbd" ? (svc?.scheduleTbdMessage ?? "") : "",
         scheduleTbdAdminHint:

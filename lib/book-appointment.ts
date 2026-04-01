@@ -84,6 +84,11 @@ export interface ScheduleTbdBookingInput {
   serviceRu?: string;
   serviceUk?: string;
   scheduleTbdAdminHint?: string;
+  /**
+   * From catalog: how many full calendar days the customer expects (1–14).
+   * Stored on the doc so admin and emails match what was booked.
+   */
+  multiDayFullDayCount?: number;
 }
 
 /** Admin can create with all fields optional */
@@ -213,6 +218,47 @@ function getAppointmentDayDateKeys(data: Record<string, unknown>): string[] {
   if (explicit.length > 0) return explicit;
   const start = (data.startTime as Timestamp).toDate();
   return getLegacyFullDayDateKeys(start, clampFullDayCount(data.multiDayFullDayCount));
+}
+
+/** Client/UI: same day keys as Firestore `getAppointmentDayDateKeys` for an in-memory appointment. */
+export function getUiAppointmentDayDateKeys(appointment: AppointmentData): string[] {
+  const explicit = normalizeFullDayDates(appointment.adminFullDayDates);
+  if (explicit.length > 0) return explicit;
+  const start =
+    appointment.startTime && "toDate" in appointment.startTime
+      ? appointment.startTime.toDate()
+      : new Date(appointment.startTime as Date);
+  return sortDateKeys(
+    getLegacyFullDayDateKeys(start, clampFullDayCount(appointment.multiDayFullDayCount))
+  );
+}
+
+/**
+ * Shift all full-day date keys by the same calendar delta so the first day aligns with `dropDateKey`.
+ * Returns `null` if the drop key is invalid or the span would not change.
+ */
+export function computeShiftedFullDayDateKeys(
+  appointment: AppointmentData,
+  dropDateKey: string
+): string[] | null {
+  const dropCal = parseDateKey(dropDateKey);
+  if (!dropCal) return null;
+  const oldKeys = sortDateKeys(getUiAppointmentDayDateKeys(appointment));
+  if (oldKeys.length === 0) return null;
+  const firstOld = oldKeys[0]!;
+  const firstCal = parseDateKey(firstOld);
+  if (!firstCal) return null;
+  const dropUtc = Date.UTC(dropCal.getFullYear(), dropCal.getMonth(), dropCal.getDate());
+  const firstUtc = Date.UTC(firstCal.getFullYear(), firstCal.getMonth(), firstCal.getDate());
+  const deltaDays = Math.round((dropUtc - firstUtc) / 86400000);
+  if (deltaDays === 0) return null;
+  return oldKeys.map((k) => {
+    const d = parseDateKey(k);
+    if (!d) return k;
+    const nd = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    nd.setDate(nd.getDate() + deltaDays);
+    return getDateKey(nd);
+  });
 }
 
 async function getFullDayWindowsForDateKeys(
@@ -442,6 +488,12 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
  * Customer chose “date arranged with you” — no calendar slot yet.
  * Does not write to `days`; appears in admin “unscheduled” list until moved to the grid.
  */
+function clampTbdRequestedDayCount(n: unknown): number | undefined {
+  const x = Math.floor(Number(n));
+  if (!Number.isFinite(x) || x < 1) return undefined;
+  return Math.min(14, x);
+}
+
 export async function bookScheduleTbdAppointment(
   input: ScheduleTbdBookingInput,
   place: Place = "massage"
@@ -449,6 +501,7 @@ export async function bookScheduleTbdAppointment(
   const dur = Math.max(15, Math.min(240, input.durationMinutes || 60));
   const newStart = new Date(TBD_PLACEHOLDER_START);
   const newEnd = new Date(newStart.getTime() + dur * 60 * 1000);
+  const requestedDays = clampTbdRequestedDayCount(input.multiDayFullDayCount);
 
   const baseData: Record<string, unknown> = {
     startTime: Timestamp.fromDate(newStart),
@@ -461,6 +514,10 @@ export async function bookScheduleTbdAppointment(
     scheduleTbd: true,
     createdAt: serverTimestamp(),
   };
+
+  if (requestedDays != null) {
+    baseData.multiDayFullDayCount = requestedDays;
+  }
 
   if (input.scheduleTbdAdminHint?.trim()) {
     baseData.scheduleTbdAdminHint = input.scheduleTbdAdminHint.trim();
@@ -489,6 +546,7 @@ export async function bookScheduleTbdAppointment(
     place,
     scheduleTbd: true,
     scheduleTbdAdminHint: input.scheduleTbdAdminHint?.trim(),
+    ...(requestedDays != null ? { multiDayFullDayCount: requestedDays } : {}),
   } as AppointmentData;
 }
 
@@ -664,13 +722,21 @@ export async function getAppointment(appointmentId: string): Promise<Appointment
   const d = snap.data();
   const mode = inferAdminBookingModeFromFirestore(d as Record<string, unknown>);
   const dayKeys = mode === "day" ? getAppointmentDayDateKeys(d) : [];
+  const storedMulti = clampTbdRequestedDayCount(d.multiDayFullDayCount);
   return {
     id: snap.id,
     startTime: (d.startTime as Timestamp) ?? new Date(),
     endTime: (d.endTime as Timestamp) ?? new Date(),
     adminBookingMode: mode,
     adminFullDayDates: mode === "day" ? dayKeys : undefined,
-    multiDayFullDayCount: mode === "day" ? dayKeys.length : undefined,
+    multiDayFullDayCount:
+      mode === "day"
+        ? dayKeys.length > 0
+          ? dayKeys.length
+          : Math.max(1, Math.min(14, Number(d.multiDayFullDayCount) || 1))
+        : d.scheduleTbd === true && storedMulti != null
+          ? storedMulti
+          : undefined,
     service: (d.service as string) ?? "",
     serviceId: d.serviceId as string | undefined,
     serviceSk: d.serviceSk as string | undefined,
@@ -824,6 +890,9 @@ export async function updateAppointment(
       targetMode === "day" ? targetDayDates.length : deleteField();
     fieldUpdates.adminFullDayDates =
       targetMode === "day" ? targetDayDates : deleteField();
+    if (data.scheduleTbd === true) {
+      fieldUpdates.scheduleTbd = false;
+    }
   }
 
   if (Object.keys(fieldUpdates).length > 0) {

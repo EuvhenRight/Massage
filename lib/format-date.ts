@@ -9,7 +9,7 @@ type SupportedLocale = "sk" | "en" | "ru" | "uk";
  * All supported UI locales use 24-hour times in `formatTime` / `formatTimeFromHourMinute`
  * (consistent and unambiguous across sk, en, ru, uk).
  */
-export function use24HourClock(_locale: string): boolean {
+export function localeUses24HourClock(_locale: string): boolean {
   return true;
 }
 
@@ -33,7 +33,7 @@ export function formatTime(
 ): string {
   const { locale = "sk", hour12: hour12Opt, ...intlOpts } = options;
   const hour12 =
-    hour12Opt !== undefined ? hour12Opt : !use24HourClock(locale);
+    hour12Opt !== undefined ? hour12Opt : !localeUses24HourClock(locale);
   return date.toLocaleTimeString(locale as string, {
     hour: "numeric",
     minute: "2-digit",

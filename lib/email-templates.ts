@@ -33,7 +33,15 @@ const T = {
 	contactUs:
 		'Kontaktujte nás na presun alebo zrušenie. Odporúčame prijsť o 10 minút skôr.',
 	appointment: 'Rezervácia',
+	/** Full calendar days (customer TBD / multi-day service) */
+	fullDayScope: 'Rozsah',
 } as const
+
+function formatSkFullCalendarDays(count: number): string {
+	if (count === 1) return "1 kalendárny deň (celý deň)"
+	if (count >= 2 && count <= 4) return `${count} kalendárne dni (celý deň)`
+	return `${count} kalendárnych dní (celý deň)`
+}
 
 const BRAND = {
 	name: 'Aurora Salon',
@@ -134,7 +142,14 @@ export function buildConfirmationEmail(
 	date: string,
 	time: string,
 	service: string,
+	fullCalendarDayCount?: number,
 ): string {
+	const scopeRow =
+		typeof fullCalendarDayCount === "number" &&
+		fullCalendarDayCount >= 1 &&
+		fullCalendarDayCount <= 14
+			? detailRow(T.fullDayScope, formatSkFullCalendarDays(fullCalendarDayCount))
+			: ""
 	const inner = `
     ${header(T.confirmed, '#059669')}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
@@ -149,6 +164,7 @@ export function buildConfirmationEmail(
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
             ${detailRow(T.date, date)}
             ${detailRow(T.time, time)}
+            ${scopeRow}
             ${detailRow(T.service, service || T.appointment)}
           </table>
           <p style="margin: 24px 0 0 0; font-size: 14px; color: ${BRAND.muted};">
@@ -236,7 +252,14 @@ export function buildAdminNewBooking(
 	date: string,
 	time: string,
 	service: string,
+	fullCalendarDayCount?: number,
 ): string {
+	const scopeRow =
+		typeof fullCalendarDayCount === "number" &&
+		fullCalendarDayCount >= 1 &&
+		fullCalendarDayCount <= 14
+			? detailRow(T.fullDayScope, formatSkFullCalendarDays(fullCalendarDayCount))
+			: ""
 	const inner = `
     ${header(T.newBooking, BRAND.gold)}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 40px;">
@@ -250,6 +273,7 @@ export function buildAdminNewBooking(
             ${detailRow('Email', `<a href="mailto:${email}" style="color: ${BRAND.gold}; text-decoration: none;">${email}</a>`)}
             ${detailRow(T.date, date)}
             ${detailRow(T.time, time)}
+            ${scopeRow}
             ${detailRow(T.service, service || T.appointment)}
           </table>
         </td>

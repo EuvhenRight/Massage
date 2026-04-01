@@ -89,7 +89,11 @@ function toAppointmentData(doc: {
 				? Array.isArray(d.adminFullDayDates)
 					? d.adminFullDayDates.filter(value => typeof value === 'string').length
 					: Math.max(1, Math.min(14, Number(d.multiDayFullDayCount) || 1))
-				: undefined,
+				: d.scheduleTbd === true &&
+					  typeof d.multiDayFullDayCount === 'number' &&
+					  d.multiDayFullDayCount >= 1
+					? Math.min(14, Math.floor(d.multiDayFullDayCount))
+					: undefined,
 		service: (d.service as string) ?? '',
 		serviceId: d.serviceId as string | undefined,
 		fullName: (d.fullName as string) ?? '',
@@ -178,6 +182,12 @@ export default function AdminPlacePage({
 					1
 				)
 			}
+			if (apt.scheduleTbd) {
+				const stored = Math.floor(Number(apt.multiDayFullDayCount))
+				if (Number.isFinite(stored) && stored >= 1) {
+					return Math.min(14, stored)
+				}
+			}
 			const allSvcs = [...calendarServices, ...services]
 			const match =
 				(apt.serviceId
@@ -187,6 +197,9 @@ export default function AdminPlacePage({
 					s => s.title.trim().toLocaleLowerCase() === (apt.service ?? '').trim().toLocaleLowerCase(),
 				)
 			if (match?.bookingGranularity === 'day') {
+				return match.bookingDayCount ?? 1
+			}
+			if (match?.bookingGranularity === 'tbd') {
 				return match.bookingDayCount ?? 1
 			}
 			return 0

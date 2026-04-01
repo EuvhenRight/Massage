@@ -2,6 +2,7 @@ import {
   getTitleForLocale,
   getScheduleTbdMessageForLocale,
   getScheduleTbdAdminNoteForLocale,
+  normalizeItemBookingDayCount,
   type PriceCatalogStructure,
   type PriceService,
   type ZonePriceItem,
@@ -11,7 +12,7 @@ import {
 export type FlatPriceCatalogService = {
   title: string;
   durationMinutes: number;
-  bookingGranularity: "time" | "day" | "tbd";
+  bookingGranularity: "time" | "tbd";
   bookingDayCount?: number;
   scheduleTbdMessage?: string;
   scheduleTbdAdminNote?: string;
@@ -27,22 +28,26 @@ export function flattenPriceCatalogToServices(
   function addItem(item: ZonePriceItem, path: string) {
     const itemTitle = getTitleForLocale(item, locale);
     const fullTitle = path ? `${path} › ${itemTitle}` : itemTitle;
-    const gran = item.bookingGranularity === "day"
-      ? "day"
-      : item.bookingGranularity === "tbd"
+    const gran =
+      item.bookingGranularity === "tbd" || item.bookingGranularity === "day"
         ? "tbd"
         : "time";
     result.push({
       title: fullTitle,
       durationMinutes: item.durationMinutes,
       bookingGranularity: gran,
-      bookingDayCount: gran === "day" ? (item.bookingDayCount ?? 1) : undefined,
-      scheduleTbdMessage: gran === "tbd"
-        ? getScheduleTbdMessageForLocale(item, locale)
-        : undefined,
-      scheduleTbdAdminNote: gran === "tbd"
-        ? getScheduleTbdAdminNoteForLocale(item, locale)
-        : undefined,
+      bookingDayCount:
+        gran === "tbd"
+          ? normalizeItemBookingDayCount(item.bookingDayCount)
+          : undefined,
+      scheduleTbdMessage:
+        gran === "tbd"
+          ? getScheduleTbdMessageForLocale(item, locale)
+          : undefined,
+      scheduleTbdAdminNote:
+        gran === "tbd"
+          ? getScheduleTbdAdminNoteForLocale(item, locale)
+          : undefined,
     });
   }
 

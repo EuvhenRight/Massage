@@ -89,18 +89,15 @@ export function parseDraftToState(draft: BookingDraft): {
   email: string
   phone: string
 } {
+  const granTbd =
+    draft.bookingGranularity === "day" || draft.bookingGranularity === "tbd"
   return {
     step: draft.step,
     service: draft.service,
-    date: draft.date ? new Date(draft.date) : null,
-    time: draft.time,
+    date: granTbd ? null : draft.date ? new Date(draft.date) : null,
+    time: granTbd ? null : draft.time,
     durationMinutes: draft.durationMinutes,
-    bookingGranularity:
-      draft.bookingGranularity === "day"
-        ? "day"
-        : draft.bookingGranularity === "tbd"
-          ? "tbd"
-          : "time",
+    bookingGranularity: granTbd ? "tbd" : "time",
     bookingDayCount:
       typeof draft.bookingDayCount === "number" && draft.bookingDayCount >= 1
         ? Math.min(14, draft.bookingDayCount)

@@ -19,8 +19,8 @@ import type {
 import {
 	generatePriceItemId,
 	getTitleStrictForLocale,
+	normalizeItemBookingDayCount,
 } from '@/types/price-catalog'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { useLocale, useTranslations } from 'next-intl'
 import { clsx } from 'clsx'
@@ -612,6 +612,88 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 		</>
 	)
 
+	const renderTbdDayCountFields = (
+		item: ZonePriceItem,
+		onPatch: (p: Partial<ZonePriceItem>) => void,
+		idSuffix: string,
+	) => (
+		<div className='flex flex-wrap items-center gap-x-3 gap-y-2 mt-3 pt-2 border-t border-white/10'>
+			<Label
+				htmlFor={`day-count-${idSuffix}-${item.id}`}
+				className='text-xs text-icyWhite/65 shrink-0'
+			>
+				{t('itemTbdDayCountLabel')}
+			</Label>
+			<input
+				id={`day-count-${idSuffix}-${item.id}`}
+				type='number'
+				min={1}
+				max={14}
+				value={normalizeItemBookingDayCount(item.bookingDayCount)}
+				onChange={e =>
+					onPatch({
+						bookingDayCount: normalizeItemBookingDayCount(
+							parseInt(e.target.value, 10),
+						),
+					})
+				}
+				className='w-16 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+			/>
+			<p className='text-[11px] text-icyWhite/40 basis-full sm:basis-auto'>
+				{t('itemTbdDayCountHint')}
+			</p>
+		</div>
+	)
+
+	const renderBookingGranularityRadios = (
+		item: ZonePriceItem,
+		onPatch: (p: Partial<ZonePriceItem>) => void,
+		idSuffix: string,
+	) => {
+		const gran = item.bookingGranularity ?? 'time'
+		const name = `booking-gran-${idSuffix}-${item.id}`
+		return (
+			<div className='space-y-2 pt-2 border-t border-white/10 mt-2'>
+				<p className='text-xs text-icyWhite/50'>{t('itemBookingModeLabel')}</p>
+				<div className='flex flex-col gap-2.5'>
+					<label className='flex items-start gap-2.5 cursor-pointer'>
+						<input
+							type='radio'
+							name={name}
+							checked={gran === 'time'}
+							onChange={() => onPatch({ bookingGranularity: 'time' })}
+							className='mt-1 h-4 w-4 shrink-0 accent-white'
+						/>
+						<span className='text-sm text-icyWhite/75 leading-snug'>
+							{t('itemBookingModeTime')}
+						</span>
+					</label>
+					<label className='flex items-start gap-2.5 cursor-pointer'>
+						<input
+							type='radio'
+							name={name}
+							checked={gran === 'tbd'}
+							onChange={() =>
+								onPatch({
+									bookingGranularity: 'tbd',
+									bookingDayCount: normalizeItemBookingDayCount(
+										item.bookingDayCount ?? 1,
+									),
+								})
+							}
+							className='mt-1 h-4 w-4 shrink-0 accent-white'
+						/>
+						<span className='text-sm text-icyWhite/75 leading-snug'>
+							{t('itemBookingModeTbd')}
+						</span>
+					</label>
+				</div>
+				{gran === 'tbd' && renderTbdDayCountFields(item, onPatch, idSuffix)}
+				{gran === 'tbd' && renderScheduleTbdFields(item, onPatch)}
+			</div>
+		)
+	}
+
 	const renderZoneItem = (
 		sex: SexKey,
 		serviceIndex: number,
@@ -639,28 +721,32 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 					),
 				)}
 				<div className='flex gap-2 flex-wrap'>
-					<input
-						type='number'
-						min={5}
-						max={240}
-						value={item.durationMinutes}
-						onChange={e =>
-							updateZoneItem(
-								sex,
-								serviceIndex,
-								sectionIndex,
-								zoneIndex,
-								itemIndex,
-								{
-									durationMinutes: parseInt(e.target.value, 10) || 15,
-								},
-							)
-						}
-						className='w-20 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
-					/>
-					<span className='text-icyWhite/50 text-sm self-center'>
-						{t('durationLabel')}
-					</span>
+					{(item.bookingGranularity ?? 'time') === 'time' && (
+						<>
+							<input
+								type='number'
+								min={5}
+								max={240}
+								value={item.durationMinutes}
+								onChange={e =>
+									updateZoneItem(
+										sex,
+										serviceIndex,
+										sectionIndex,
+										zoneIndex,
+										itemIndex,
+										{
+											durationMinutes: parseInt(e.target.value, 10) || 15,
+										},
+									)
+								}
+								className='w-20 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+							/>
+							<span className='text-icyWhite/50 text-sm self-center'>
+								{t('durationLabel')}
+							</span>
+						</>
+					)}
 					<input
 						type='text'
 						value={typeof item.price === 'number' ? item.price : item.price}
@@ -697,70 +783,17 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 						{t('delete')}
 					</button>
 				</div>
-				<div className='space-y-2 pt-2 border-t border-white/10 mt-2'>
-					<p className='text-xs text-icyWhite/50'>{t('itemBookingModeLabel')}</p>
-					<div className='flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4'>
-						<div className='flex items-center gap-2'>
-							<Checkbox
-								id={`mode-time-${item.id}`}
-								checked={item.bookingGranularity !== 'tbd'}
-								onCheckedChange={c => {
-									if (c === true) {
-										updateZoneItem(
-											sex,
-											serviceIndex,
-											sectionIndex,
-											zoneIndex,
-											itemIndex,
-											{ bookingGranularity: 'time' },
-										)
-									}
-								}}
-							/>
-							<Label
-								htmlFor={`mode-time-${item.id}`}
-								className='text-icyWhite/75 text-sm font-normal cursor-pointer'
-							>
-								{t('itemBookingModeTime')}
-							</Label>
-						</div>
-						<div className='flex items-center gap-2'>
-							<Checkbox
-								id={`mode-tbd-${item.id}`}
-								checked={item.bookingGranularity === 'tbd'}
-								onCheckedChange={c => {
-									if (c === true) {
-										updateZoneItem(
-											sex,
-											serviceIndex,
-											sectionIndex,
-											zoneIndex,
-											itemIndex,
-											{ bookingGranularity: 'tbd' },
-										)
-									}
-								}}
-							/>
-							<Label
-								htmlFor={`mode-tbd-${item.id}`}
-								className='text-icyWhite/75 text-sm font-normal cursor-pointer'
-							>
-								{t('itemBookingModeTbd')}
-							</Label>
-						</div>
-					</div>
-					{item.bookingGranularity === 'tbd' &&
-						renderScheduleTbdFields(item, patch =>
-							updateZoneItem(
-								sex,
-								serviceIndex,
-								sectionIndex,
-								zoneIndex,
-								itemIndex,
-								patch,
-							),
-						)}
-				</div>
+				{renderBookingGranularityRadios(item, patch =>
+					updateZoneItem(
+						sex,
+						serviceIndex,
+						sectionIndex,
+						zoneIndex,
+						itemIndex,
+						patch,
+					),
+					'zone',
+				)}
 			</div>
 		)
 	}
@@ -985,21 +1018,25 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 										} as Partial<ZonePriceItem>),
 									)}
 									<div className='flex gap-2 flex-wrap'>
-										<input
-											type='number'
-											min={5}
-											max={240}
-											value={item.durationMinutes}
-											onChange={e =>
-												updateServiceItem(sex, serviceIndex, itemIndex, {
-													durationMinutes: parseInt(e.target.value, 10) || 15,
-												})
-											}
-											className='w-20 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
-										/>
-										<span className='text-icyWhite/50 text-sm self-center'>
-											{t('durationLabel')}
-										</span>
+										{(item.bookingGranularity ?? 'time') === 'time' && (
+											<>
+												<input
+													type='number'
+													min={5}
+													max={240}
+													value={item.durationMinutes}
+													onChange={e =>
+														updateServiceItem(sex, serviceIndex, itemIndex, {
+															durationMinutes: parseInt(e.target.value, 10) || 15,
+														})
+													}
+													className='w-20 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+												/>
+												<span className='text-icyWhite/50 text-sm self-center'>
+													{t('durationLabel')}
+												</span>
+											</>
+										)}
 										<input
 											type='text'
 											value={
@@ -1025,61 +1062,10 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 											{t('delete')}
 										</button>
 									</div>
-									<div className='space-y-2 pt-2 border-t border-white/10 mt-2'>
-										<p className='text-xs text-icyWhite/50'>
-											{t('itemBookingModeLabel')}
-										</p>
-										<div className='flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4'>
-											<div className='flex items-center gap-2'>
-												<Checkbox
-													id={`mode-time-direct-${item.id}`}
-													checked={item.bookingGranularity !== 'tbd'}
-													onCheckedChange={c => {
-														if (c === true) {
-															updateServiceItem(
-																sex,
-																serviceIndex,
-																itemIndex,
-																{ bookingGranularity: 'time' },
-															)
-														}
-													}}
-												/>
-												<Label
-													htmlFor={`mode-time-direct-${item.id}`}
-													className='text-icyWhite/75 text-sm font-normal cursor-pointer'
-												>
-													{t('itemBookingModeTime')}
-												</Label>
-											</div>
-											<div className='flex items-center gap-2'>
-												<Checkbox
-													id={`mode-tbd-direct-${item.id}`}
-													checked={item.bookingGranularity === 'tbd'}
-													onCheckedChange={c => {
-														if (c === true) {
-															updateServiceItem(
-																sex,
-																serviceIndex,
-																itemIndex,
-																{ bookingGranularity: 'tbd' },
-															)
-														}
-													}}
-												/>
-												<Label
-													htmlFor={`mode-tbd-direct-${item.id}`}
-													className='text-icyWhite/75 text-sm font-normal cursor-pointer'
-												>
-													{t('itemBookingModeTbd')}
-												</Label>
-											</div>
-										</div>
-										{item.bookingGranularity === 'tbd' &&
-											renderScheduleTbdFields(item, patch =>
-												updateServiceItem(sex, serviceIndex, itemIndex, patch),
-											)}
-									</div>
+									{renderBookingGranularityRadios(item, patch =>
+										updateServiceItem(sex, serviceIndex, itemIndex, patch),
+										'direct',
+									)}
 								</div>
 							))}
 						</div>

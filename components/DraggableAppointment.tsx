@@ -54,6 +54,11 @@ interface DraggableAppointmentProps {
   services?: ServiceData[];
   isPast?: boolean;
   layout?: "calendar" | "list";
+  /**
+   * TBD / full-day-without-days rows: muted transparent look in list (and drag overlay).
+   * Omit for blocks placed on the week grid so catalog section colors apply.
+   */
+  awaitingCalendarAssignment?: boolean;
 }
 
 function tierChrome(tier: AdminCalendarSlotTier): string {
@@ -83,9 +88,13 @@ export default function DraggableAppointment({
   services = [],
   isPast = false,
   layout = "calendar",
+  awaitingCalendarAssignment = false,
 }: DraggableAppointmentProps) {
   const locale = useLocale();
   const t = useTranslations("admin");
+
+  const isTbd = appointment.scheduleTbd === true;
+  const isFullDay = appointment.adminBookingMode === "day";
 
   const {
     attributes,
@@ -101,7 +110,7 @@ export default function DraggableAppointment({
       type: "appointment",
       appointment,
     },
-    disabled: disabled || isDragOverlay,
+    disabled: disabled || isDragOverlay || isTbd || isFullDay,
   });
 
   const startDate =
@@ -115,7 +124,6 @@ export default function DraggableAppointment({
   const durationMinutes = Math.round(
     (endDate.getTime() - startDate.getTime()) / 60000
   );
-  const isFullDay = appointment.adminBookingMode === "day";
   const explicitFullDayCount =
     appointment.adminFullDayDates?.length && appointment.adminFullDayDates.length > 0
       ? appointment.adminFullDayDates.length
@@ -141,7 +149,6 @@ export default function DraggableAppointment({
     : (blockHeight ?? gridBasedHeight);
 
   const isList = layout === "list";
-  const isTbd = appointment.scheduleTbd === true;
 
   const overlayPixelHeight =
     isDragOverlay && typeof blockHeight === "number" ? blockHeight : undefined;
@@ -240,12 +247,28 @@ export default function DraggableAppointment({
   const listOrSpecialChrome =
     "rounded-xl border border-white/12 px-3 py-2.5 text-sm shadow-md ring-1 ring-black/20";
 
-  const calendarShell =
-    isList || isFullDay || isTbd
+  const listAwaitingChrome =
+    "rounded-xl px-3 py-2.5 text-sm shadow-none ring-0";
+
+  /** Unscheduled queue + drag preview only — not for positioned grid cells. */
+  const showAwaitingListChrome =
+    awaitingCalendarAssignment &&
+    !isPast &&
+    (isList || isDragOverlay);
+
+  const calendarShell = showAwaitingListChrome
+    ? listAwaitingChrome
+    : isList || isFullDay || isTbd
       ? listOrSpecialChrome
       : timedTier
         ? tierChrome(timedTier)
         : "rounded-lg border border-white/15 px-2 py-1.5";
+
+  const surfaceClass = isPast
+    ? PAST_COLOR
+    : showAwaitingListChrome
+      ? "bg-transparent border-2 border-dashed border-white/45 text-icyWhite/95"
+      : getServiceColor(appointment, services);
 
   /** Tall grid blocks: pin service / name / time to the top instead of vertically centering. */
   const timedBlockHeightPx = usePositionedCalendar
@@ -267,10 +290,14 @@ export default function DraggableAppointment({
       ref={setNodeRef}
       data-testid="appointment-block"
       data-appointment-id={appointment.id}
-      data-slot-tier={timedTier ?? (isList ? "list" : "special")}
+      data-slot-tier={
+        showAwaitingListChrome
+          ? "awaiting"
+          : timedTier ?? (isList ? "list" : "special")
+      }
       style={style}
       title={onOpenDetail ? undefined : hoverTitle || undefined}
-      {...(!disabled ? { ...listeners, ...attributes } : {})}
+      {...(!disabled && !isTbd && !isFullDay ? { ...listeners, ...attributes } : {})}
       onClick={
         onOpenDetail
           ? handleCardClick
@@ -294,15 +321,19 @@ export default function DraggableAppointment({
         text-xs font-medium
         ${calendarShell}
         relative overflow-hidden
-        before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-to-b before:from-white/[0.1] before:to-transparent
+        ${
+          showAwaitingListChrome
+            ? ""
+            : "before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-to-b before:from-white/[0.1] before:to-transparent"
+        }
         group select-none
         ${usePositionedCalendar ? "pointer-events-auto" : ""}
-        ${isPast ? PAST_COLOR : getServiceColor(appointment, services)}
+        ${surfaceClass}
         ${isDragging ? "opacity-0 pointer-events-none" : ""}
         ${
           isFullDay && onEdit
             ? "cursor-pointer"
-            : disabled
+            : disabled || isTbd || isFullDay
               ? "cursor-default"
               : "cursor-grab touch-none active:cursor-grabbing"
         }

@@ -3,6 +3,7 @@ import type {
 	PriceSection,
 	PriceService,
 	PriceZone,
+	ZonePriceItem,
 } from '@/types/price-catalog'
 import { generatePriceItemId } from '@/types/price-catalog'
 import {
@@ -12,6 +13,15 @@ import {
 
 function ensureId<T extends { id: string }>(item: T): T {
 	return { ...item, id: item.id || generatePriceItemId() }
+}
+
+/** Legacy `day` catalog mode is merged into `tbd` (admin assigns each day). */
+function normalizePriceItemGranularity(item: ZonePriceItem): ZonePriceItem {
+	const i = { ...item }
+	if (i.bookingGranularity === 'day') {
+		i.bookingGranularity = 'tbd'
+	}
+	return i
 }
 
 function fillServiceCalendarColors(svc: PriceService): void {
@@ -52,17 +62,26 @@ export function normalizePriceCatalog(
 					const section = ensureId({ ...sec })
 					section.zones = (section.zones ?? []).map(z => {
 						const zone = ensureId({ ...z })
-						zone.items = zone.items?.map(i => ensureId(i)) ?? []
+						zone.items =
+							zone.items?.map(i =>
+								normalizePriceItemGranularity(ensureId(i)),
+							) ?? []
 						return zone
 					})
 					return section
 				})
 				svc.zones = (svc.zones ?? []).map(z => {
 					const zone = ensureId({ ...z })
-					zone.items = zone.items?.map(i => ensureId(i)) ?? []
+					zone.items =
+						zone.items?.map(i =>
+							normalizePriceItemGranularity(ensureId(i)),
+						) ?? []
 					return zone
 				})
-				svc.items = svc.items?.map(i => ensureId(i)) ?? []
+				svc.items =
+					svc.items?.map(i =>
+						normalizePriceItemGranularity(ensureId(i)),
+					) ?? []
 				fillServiceCalendarColors(svc)
 				return svc
 			}),
@@ -74,17 +93,26 @@ export function normalizePriceCatalog(
 					const section = ensureId({ ...sec })
 					section.zones = (section.zones ?? []).map(z => {
 						const zone = ensureId({ ...z })
-						zone.items = zone.items?.map(i => ensureId(i)) ?? []
+						zone.items =
+							zone.items?.map(i =>
+								normalizePriceItemGranularity(ensureId(i)),
+							) ?? []
 						return zone
 					})
 					return section
 				})
 				svc.zones = (svc.zones ?? []).map(z => {
 					const zone = ensureId({ ...z })
-					zone.items = zone.items?.map(i => ensureId(i)) ?? []
+					zone.items =
+						zone.items?.map(i =>
+							normalizePriceItemGranularity(ensureId(i)),
+						) ?? []
 					return zone
 				})
-				svc.items = svc.items?.map(i => ensureId(i)) ?? []
+				svc.items =
+					svc.items?.map(i =>
+						normalizePriceItemGranularity(ensureId(i)),
+					) ?? []
 				fillServiceCalendarColors(svc)
 				return svc
 			}),

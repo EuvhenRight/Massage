@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     }
 
     if (type === "new") {
-      const { to, customerName, date, time, service, source } = body;
+      const { to, customerName, date, time, service, source, fullCalendarDayCount } = body;
       if (!to || !customerName || !date || !time) {
         return NextResponse.json(
           { error: "Missing required fields: to, customerName, date, time" },
@@ -58,12 +58,23 @@ export async function POST(request: Request) {
       const timeStr = String(time);
       const serviceStr = service ? String(service) : "";
       const isAdminCreated = source === "admin";
+      const dayCountRaw = fullCalendarDayCount;
+      const dayCountNum =
+        typeof dayCountRaw === "number"
+          ? dayCountRaw
+          : typeof dayCountRaw === "string"
+            ? parseInt(dayCountRaw, 10)
+            : NaN;
+      const fullDayCount =
+        Number.isFinite(dayCountNum) && dayCountNum >= 1 && dayCountNum <= 14
+          ? dayCountNum
+          : undefined;
 
       const customerResult = await resend.emails.send({
         from: `${FROM_NAME} <${FROM_EMAIL}>`,
         to: [toStr],
         subject: SUBJECTS.new(dateStr, timeStr),
-        html: buildConfirmationEmail(nameStr, dateStr, timeStr, serviceStr),
+        html: buildConfirmationEmail(nameStr, dateStr, timeStr, serviceStr, fullDayCount),
       });
 
       let errMsg = customerResult.error?.message;
@@ -72,7 +83,7 @@ export async function POST(request: Request) {
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: [ADMIN_EMAIL],
           subject: SUBJECTS.newAdmin(nameStr, dateStr, timeStr),
-          html: buildAdminNewBooking(nameStr, toStr, dateStr, timeStr, serviceStr),
+          html: buildAdminNewBooking(nameStr, toStr, dateStr, timeStr, serviceStr, fullDayCount),
         });
         errMsg = adminResult.error?.message;
       }

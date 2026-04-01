@@ -28,7 +28,7 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 		bookingDayCount,
 	} = useBookingFlow()
 
-	if (!service && !date && !(time || bookingGranularity === 'day')) return null
+	if (!service && !date && !(time || bookingGranularity === 'tbd')) return null
 
 	return (
 		<motion.div
@@ -53,21 +53,22 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 							>
 								{service}
 							</TruncateText>
-							{bookingGranularity === 'tbd' ? (
-								<span className="text-icyWhite/50 text-xs shrink-0">
-									({t('scheduleTbdBookingBadge')})
+							{bookingGranularity !== 'tbd' && durationMinutes > 0 && (
+								<span className="text-icyWhite/50 text-xs shrink-0 tabular-nums">
+									({durationMinutes} min)
 								</span>
-							) : bookingGranularity === 'day' ? (
-								<span className="text-icyWhite/50 text-xs shrink-0">
-									({t('allDayBadge', { count: bookingDayCount })})
-								</span>
-							) : (
-								durationMinutes > 0 && (
-									<span className="text-icyWhite/50 text-xs shrink-0 tabular-nums">
-										({durationMinutes} min)
-									</span>
-								)
 							)}
+						</dd>
+					</div>
+				)}
+				{bookingGranularity === 'tbd' && (
+					<div className="flex items-start justify-between gap-3 min-w-0">
+						<dt className="text-icyWhite/50 shrink-0 min-w-[3.5rem]">{t('tbdSidebarMetaTitle')}</dt>
+						<dd className="text-icyWhite/85 text-sm text-right space-y-0.5">
+							<p className="text-icyWhite/60 text-xs">{t('scheduleTbdBookingBadge')}</p>
+							<p className="text-icyWhite font-medium">
+								{t('tbdYourSelectionDays', { count: bookingDayCount })}
+							</p>
 						</dd>
 					</div>
 				)}
@@ -84,13 +85,19 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 						</dd>
 					</div>
 				)}
-				{(bookingGranularity === 'day' || time) && (
+				{bookingGranularity === 'tbd' && (
 					<div className="flex items-center justify-between gap-3">
 						<dt className="text-icyWhite/50 shrink-0 min-w-[3rem]">{tCommon('time')}</dt>
 						<dd className="text-icyWhite font-medium text-right">
-							{bookingGranularity === 'day'
-								? t('allDayLabel')
-								: formatTimeFromSlotString(time!, locale)}
+							{t('sidebarScheduleTbdTime')}
+						</dd>
+					</div>
+				)}
+				{bookingGranularity !== 'tbd' && time && (
+					<div className="flex items-center justify-between gap-3">
+						<dt className="text-icyWhite/50 shrink-0 min-w-[3rem]">{tCommon('time')}</dt>
+						<dd className="text-icyWhite font-medium text-right">
+							{formatTimeFromSlotString(time, locale)}
 						</dd>
 					</div>
 				)}

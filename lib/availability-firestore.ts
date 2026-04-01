@@ -1,6 +1,6 @@
 import { Timestamp } from "firebase/firestore";
-import type { ScheduleData } from "./schedule-firestore";
 import { getDateKey } from "./booking";
+import type { DaySchedule, ScheduleData } from "./schedule-firestore";
 
 export const SLOT_INTERVAL = 15; // 15-min slots: 13:00, 13:15, 13:30, 13:45 — 4 per hour
 
@@ -40,6 +40,7 @@ export function parseOccupiedSlots(
 }
 
 function timeToMinutes(t: string): number {
+  if (t === "24:00") return 24 * 60;
   const [h, m] = t.split(":").map(Number);
   return (h ?? 0) * 60 + (m ?? 0);
 }
@@ -58,6 +59,11 @@ function getSlotTimesInRange(open: string, close: string): string[] {
     current += SLOT_INTERVAL;
   }
   return slots;
+}
+
+/** 15-minute start times in [open, close), for admin “fill begins from range”. */
+export function getQuarterHourSlotStartsInRange(open: string, close: string): string[] {
+  return getSlotTimesInRange(open, close);
 }
 
 /**
@@ -141,11 +147,12 @@ export function getAdminCalendarGridHourBounds(
   return { gridStartHour: minStart, gridEndHour: maxEndEx };
 }
 
-export function getWorkingHoursForDate(
+/** Raw day rule before expanding to an open–close window (for slot / all-day logic). */
+export function resolveRawDayScheduleForDate(
   schedule: ScheduleData | null,
   date: Date
-): { open: string; close: string } | null {
-  if (!schedule) return { open: "08:00", close: "20:00" };
+): DaySchedule {
+  if (!schedule) return { mode: "window", open: "08:00", close: "20:00" };
   const dateKey = getDateKey(date);
   const dateOverride = schedule.dateOverrides?.[dateKey];
   if (dateOverride !== undefined) return dateOverride;
@@ -158,6 +165,31 @@ export function getWorkingHoursForDate(
   return daySchedule ?? null;
 }
 
+/** Open–close interval for grids, full-day bookings, and window mode. */
+export function dayScheduleToWorkingWindow(
+  raw: NonNullable<DaySchedule>
+): { open: string; close: string } {
+  if (raw.mode === "allDay") {
+    return { open: "00:00", close: "24:00" };
+  }
+  if (raw.mode === "slotBegins") {
+    const begins = raw.slotBegins ?? [];
+    const open = begins[0] ?? raw.open ?? "09:00";
+    const close = raw.close ?? "18:00";
+    return { open, close };
+  }
+  return { open: raw.open ?? "09:00", close: raw.close ?? "18:00" };
+}
+
+export function getWorkingHoursForDate(
+  schedule: ScheduleData | null,
+  date: Date
+): { open: string; close: string } | null {
+  const raw = resolveRawDayScheduleForDate(schedule, date);
+  if (raw === null) return null;
+  return dayScheduleToWorkingWindow(raw);
+}
+
 /**
  * Get available time slots for a date, given occupied ranges and optional schedule.
  * Past slots for today are excluded.
@@ -168,10 +200,17 @@ export function getAvailableTimeSlots(
   occupied: OccupiedSlot[],
   schedule?: ScheduleData | null
 ): string[] {
-  const daySchedule = getWorkingHoursForDate(schedule ?? null, date);
-  if (!daySchedule) return [];
+  const raw = resolveRawDayScheduleForDate(schedule ?? null, date);
+  if (raw === null) return [];
 
-  const allSlots = getSlotTimesInRange(daySchedule.open, daySchedule.close);
+  const wh = dayScheduleToWorkingWindow(raw);
+  const closeM = timeToMinutes(wh.close);
+  const allSlots =
+    raw.mode === "slotBegins"
+      ? (raw.slotBegins ?? []).filter(
+          (t) => timeToMinutes(t) + durationMinutes <= closeM
+        )
+      : getSlotTimesInRange(wh.open, wh.close);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const slotDate = new Date(date);

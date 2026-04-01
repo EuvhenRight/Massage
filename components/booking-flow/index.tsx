@@ -86,7 +86,6 @@ function BookingFlowInner({
 		(step === 1 && !!service) ||
 		(step === 2 &&
 			(bookingGranularity === 'tbd' ||
-				(bookingGranularity === 'day' && !!date) ||
 				(bookingGranularity === 'time' && !!date && !!time)))
 	const canNextStep3 = step === 3 && formValid
 	const isMobileReview = step === 4
@@ -127,6 +126,7 @@ function BookingFlowInner({
 							serviceRu: selected?.titleRu ?? finalService,
 							serviceUk: selected?.titleUk ?? finalService,
 							scheduleTbdAdminHint: scheduleTbdAdminHint || undefined,
+							multiDayFullDayCount: bookingDayCount,
 						},
 						place,
 					)
@@ -140,6 +140,7 @@ function BookingFlowInner({
 							date: t('emailScheduleTbdDateLine'),
 							time: t('emailScheduleTbdTimeLine'),
 							service: finalService,
+							fullCalendarDayCount: bookingDayCount,
 						}),
 					})
 
@@ -159,6 +160,8 @@ function BookingFlowInner({
 							JSON.stringify({
 								title: t('bookingConfirmed'),
 								service: itemName,
+								fullService: finalService,
+								fullDayCount: bookingDayCount,
 							}),
 						)
 					}
@@ -172,7 +175,7 @@ function BookingFlowInner({
 			}
 
 			if (!date) return
-			if (bookingGranularity !== 'day' && !time) return
+			if (!time) return
 
 			const data: BookingFormData = formData ?? {
 				service: service || '',
@@ -187,14 +190,13 @@ function BookingFlowInner({
 				const selected =
 					services.find(s => s.title === finalService) ?? services[0]
 				const dateStr = getDateKey(date)
-				const isDayBooking = bookingGranularity === 'day'
-				const startTime = isDayBooking ? '09:00' : time!
+				const startTime = time!
 
 				await bookAppointment(
 					{
 						date: dateStr,
 						startTime,
-						durationMinutes: isDayBooking ? 60 : durationMinutes,
+						durationMinutes,
 						service: finalService,
 						serviceId: selected?.id,
 						serviceSk: selected?.titleSk ?? finalService,
@@ -204,18 +206,13 @@ function BookingFlowInner({
 						fullName: data.fullName,
 						email: data.email,
 						phone: data.phone,
-						multiDayFullDayCount: isDayBooking ? bookingDayCount : undefined,
 					},
 					place,
 				)
 
 				const slotDate = new Date(date)
-				if (isDayBooking) {
-					slotDate.setHours(9, 0, 0, 0)
-				} else {
-					const [h, m] = time!.split(':').map(Number)
-					slotDate.setHours(h, m, 0, 0)
-				}
+				const [h, m] = time!.split(':').map(Number)
+				slotDate.setHours(h, m, 0, 0)
 
 				const res = await fetch('/api/send-confirmation', {
 					method: 'POST',
@@ -224,9 +221,7 @@ function BookingFlowInner({
 						to: data.email,
 						customerName: data.fullName,
 						date: formatDateForEmail(slotDate),
-						time: isDayBooking
-							? t('allDayLabel')
-							: formatTimeForEmail(slotDate),
+						time: formatTimeForEmail(slotDate),
 						service: finalService,
 					}),
 				})
@@ -264,10 +259,10 @@ function BookingFlowInner({
 			time,
 			durationMinutes,
 			bookingGranularity,
-			bookingDayCount,
 			service,
 			services,
 			scheduleTbdAdminHint,
+			bookingDayCount,
 			fullName,
 			email,
 			phone,
@@ -323,13 +318,23 @@ function BookingFlowInner({
 	if (successMessage) {
 		let title = t('bookingConfirmed')
 		let serviceName = ''
+		let fullServiceLine = ''
+		let fullDayCount: number | undefined
 		try {
 			const parsed = JSON.parse(successMessage)
 			title = parsed.title ?? title
 			serviceName = parsed.service ?? ''
+			fullServiceLine =
+				typeof parsed.fullService === 'string' ? parsed.fullService : ''
+			const n = Number(parsed.fullDayCount)
+			fullDayCount = Number.isFinite(n) && n >= 1 ? Math.min(14, n) : undefined
 		} catch {
 			title = successMessage
 		}
+		const showFullPath =
+			fullServiceLine &&
+			fullServiceLine !== serviceName &&
+			fullServiceLine.length > (serviceName?.length ?? 0)
 		return (
 			<motion.div
 				className='flex-1 flex items-center justify-center p-6 sm:p-8'
@@ -353,6 +358,16 @@ function BookingFlowInner({
 					{serviceName && (
 						<p className='text-icyWhite/80 text-base sm:text-lg'>
 							{serviceName}
+						</p>
+					)}
+					{showFullPath && (
+						<p className='text-icyWhite/55 text-sm leading-snug px-1 break-words'>
+							{fullServiceLine}
+						</p>
+					)}
+					{fullDayCount != null && (
+						<p className='text-icyWhite/70 text-sm'>
+							{t('successFullDayScope', { count: fullDayCount })}
 						</p>
 					)}
 					<button

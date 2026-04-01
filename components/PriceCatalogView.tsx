@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   getTitleForLocale,
   getDescriptionForLocale,
+  normalizeItemBookingDayCount,
   type PriceCatalogStructure,
   type PriceLocale,
   type PriceZone,
@@ -36,10 +37,12 @@ function ZoneItemsList({
       {items.map((item) => {
         const title = getTitleForLocale(item, locale);
         const desc = getDescriptionForLocale(item, locale);
-        const isTbd = item.bookingGranularity === "tbd";
+        const isTbdLine =
+          item.bookingGranularity === "tbd" || item.bookingGranularity === "day";
+        const omitDurationInLink = isTbdLine;
         const bookingPath =
           place === "massage" ? "massage/booking" : "depilation/booking";
-        const bookingHref = isTbd
+        const bookingHref = omitDurationInLink
           ? `${localePath}/${bookingPath}?service=${encodeURIComponent(title)}`
           : `${localePath}/${bookingPath}?service=${encodeURIComponent(title)}&duration=${item.durationMinutes}`;
         return (
@@ -52,9 +55,16 @@ function ZoneItemsList({
               {desc ? (
                 <p className="text-icyWhite/55 text-sm mt-0.5">{desc}</p>
               ) : null}
+              {isTbdLine ? (
+                <p className="text-icyWhite/50 text-xs mt-0.5">
+                  {t("tbdPriceLineDays", {
+                    count: normalizeItemBookingDayCount(item.bookingDayCount),
+                  })}
+                </p>
+              ) : null}
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              {!isTbd && (
+              {!omitDurationInLink && (
                 <span className="text-icyWhite/70 text-sm">
                   {item.durationMinutes} {t("min")}
                 </span>

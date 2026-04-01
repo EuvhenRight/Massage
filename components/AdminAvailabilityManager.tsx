@@ -7,9 +7,17 @@ import { clsx } from "clsx";
 import { Info, Lock } from "lucide-react";
 import { getPlaceAccentUi } from "@/lib/place-accent-ui";
 import type { Place } from "@/lib/places";
-import { getSchedule, saveSchedule, type ScheduleData, type DaySchedule } from "@/lib/schedule-firestore";
+import {
+  getSchedule,
+  saveSchedule,
+  type ScheduleData,
+  type DaySchedule,
+} from "@/lib/schedule-firestore";
 import { getDateKey as getDateKeyUtil } from "@/lib/booking";
-import { getWorkingHoursForDate } from "@/lib/availability-firestore";
+import {
+  dayScheduleToWorkingWindow,
+  getWorkingHoursForDate,
+} from "@/lib/availability-firestore";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -35,6 +43,29 @@ function timeOptions(): string[] {
 }
 
 const TIME_OPTIONS = timeOptions();
+
+const DEFAULT_OPEN_DAY: DaySchedule = {
+  mode: "window",
+  open: "09:00",
+  close: "18:00",
+};
+
+/** Single setup shape: always save as window; derive display for legacy slotBegins/allDay. */
+function coerceToWindowDay(d: NonNullable<DaySchedule>): {
+  mode: "window";
+  open: string;
+  close: string;
+} {
+  if (d.mode === "window") {
+    return {
+      mode: "window",
+      open: d.open ?? "09:00",
+      close: d.close ?? "18:00",
+    };
+  }
+  const wh = dayScheduleToWorkingWindow(d);
+  return { mode: "window", open: wh.open, close: wh.close };
+}
 
 interface AppointmentForDate {
   startTime: { toDate?: () => Date } | Date;
@@ -197,8 +228,14 @@ export default function AdminAvailabilityManager({
       dateOverrides[dateKey] = null;
     } else {
       const dayOfWeek = date.getDay();
-      const fallback = activeSchedule[dayOfWeek] ?? { open: "09:00", close: "18:00" };
-      dateOverrides[dateKey] = fallback;
+      const template =
+        activeSchedule[dayOfWeek] ??
+        schedule.defaultSchedule[dayOfWeek] ??
+        DEFAULT_OPEN_DAY;
+      dateOverrides[dateKey] =
+        template === null
+          ? DEFAULT_OPEN_DAY
+          : coerceToWindowDay(template);
     }
     setSchedule({ ...schedule, dateOverrides });
   };
@@ -289,10 +326,15 @@ export default function AdminAvailabilityManager({
                 <AdminMonthPicker value={scope} onChange={setScope} />
               </div>
             </div>
+            <p className="text-xs text-icyWhite/55 mb-3 max-w-xl leading-relaxed">
+              {t("scheduleHoursOnlyHint")}
+            </p>
             <div className="space-y-2">
         {WEEKDAYS.map(({ day, label }) => {
-          const daySched = activeSchedule[day];
-          const isOpen = daySched !== null;
+          const daySched =
+            activeSchedule[day] ?? schedule?.defaultSchedule[day] ?? null;
+          const isOpen = daySched != null;
+          const windowHours = daySched ? coerceToWindowDay(daySched) : null;
 
           return (
             <div
@@ -310,7 +352,7 @@ export default function AdminAvailabilityManager({
                   checked={isOpen}
                   onCheckedChange={(checked) => {
                     if (checked) {
-                      updateDay(day, { open: "09:00", close: "18:00" });
+                      updateDay(day, { mode: "window", open: "09:00", close: "18:00" });
                     } else {
                       updateDay(day, null);
                     }
@@ -318,36 +360,48 @@ export default function AdminAvailabilityManager({
                 />
                 <span className="text-icyWhite">{label}</span>
               </label>
-              {isOpen && daySched && (
-                <div className="flex items-center gap-2">
+              {isOpen && daySched && windowHours && (
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-icyWhite/60 text-sm">{t("from")}</span>
                   <Select
-                    value={daySched.open}
-                    onValueChange={(v) => updateDay(day, { ...daySched, open: v })}
+                    value={windowHours.open}
+                    onValueChange={(v) =>
+                      updateDay(day, {
+                        mode: "window",
+                        open: v,
+                        close: windowHours.close,
+                      })
+                    }
                   >
                     <SelectTrigger className="w-24 [&>span]:line-clamp-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {TIME_OPTIONS.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
+                      {TIME_OPTIONS.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <span className="text-icyWhite/60 text-sm">{t("to")}</span>
                   <Select
-                    value={daySched.close}
-                    onValueChange={(v) => updateDay(day, { ...daySched, close: v })}
+                    value={windowHours.close}
+                    onValueChange={(v) =>
+                      updateDay(day, {
+                        mode: "window",
+                        open: windowHours.open,
+                        close: v,
+                      })
+                    }
                   >
                     <SelectTrigger className="w-24 [&>span]:line-clamp-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {TIME_OPTIONS.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
+                      {TIME_OPTIONS.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
                         </SelectItem>
                       ))}
                     </SelectContent>

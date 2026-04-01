@@ -17,6 +17,7 @@ import { getSchedule } from '@/lib/schedule-firestore'
 import {
 	getDescriptionForLocale,
 	getTitleForLocale,
+	normalizeItemBookingDayCount,
 	type PriceCatalogStructure,
 	type PriceLocale,
 	type SexKey,
@@ -29,6 +30,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBookingFlow } from './BookingFlowContext'
 import PublicDatePicker from './PublicDatePicker'
+import TbdBookingRecap from './TbdBookingRecap'
 import TimeSlotPicker from './TimeSlotPicker'
 
 interface StepServiceFromPriceCatalogProps {
@@ -213,7 +215,7 @@ export default function StepServiceFromPriceCatalog({
 	}, [place])
 
 	useEffect(() => {
-		if (step === 2 && (bookingGranularity === 'tbd' || bookingGranularity === 'day')) {
+		if (step === 2 && bookingGranularity === 'tbd') {
 			setOccupiedSlots([])
 			setLoading(false)
 			return
@@ -665,10 +667,22 @@ export default function StepServiceFromPriceCatalog({
 																								</div>
 																								<div className='flex items-center gap-2 mt-0.5'>
 																	<span className='text-icyWhite/55 text-xs'>
-																		{item.bookingGranularity === 'tbd'
-																		? t('scheduleTbdBookingBadge')
-																		: item.bookingGranularity === 'day'
-																			? t('allDayBadge', { count: item.bookingDayCount ?? 1 })
+																		{item.bookingGranularity === 'tbd' ||
+																		item.bookingGranularity === 'day'
+																			? (
+																					<>
+																						{t('scheduleTbdBookingBadge')}
+																						<span className='text-icyWhite/45'>
+																							{' '}
+																							·{' '}
+																							{t('allDayBadge', {
+																								count: normalizeItemBookingDayCount(
+																									item.bookingDayCount,
+																								),
+																							})}
+																						</span>
+																					</>
+																				)
 																			: `${item.durationMinutes} ${tPrice('min')}`}
 																	</span>
 																									{desc && (
@@ -731,6 +745,11 @@ export default function StepServiceFromPriceCatalog({
 					transition={{ duration: 0.2 }}
 					className='flex flex-col flex-1 min-h-0'
 				>
+					<TbdBookingRecap
+						accent={accent}
+						service={service}
+						bookingDayCount={bookingDayCount}
+					/>
 					<p className='text-sm font-medium text-icyWhite mb-2'>
 						{t('scheduleTbdCustomerHeading')}
 					</p>
@@ -751,12 +770,7 @@ export default function StepServiceFromPriceCatalog({
 				transition={{ duration: 0.2 }}
 				className='flex flex-col flex-1 min-h-0'
 			>
-				{bookingGranularity === 'day' && (
-					<p className='text-sm text-icyWhite/70 mb-3'>
-						{t('allDayBookingHint', { count: bookingDayCount })}
-					</p>
-				)}
-				<div className='flex-1 min-h-0 flex flex-col overflow-hidden'>
+					<div className='flex-1 min-h-0 flex flex-col overflow-hidden'>
 					<PublicDatePicker
 						accent={accent}
 						selectedDate={date}
@@ -770,7 +784,7 @@ export default function StepServiceFromPriceCatalog({
 						schedule={schedule}
 					/>
 				</div>
-				{bookingGranularity !== 'day' && date && (
+				{date && (
 					<div className='flex-shrink-0 pt-4'>
 						<TimeSlotPicker
 							accent={accent}

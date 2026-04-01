@@ -62,15 +62,10 @@ export const ADMIN_APPOINTMENT_FALLBACK_COLOR = DEFAULT_SECTION_CALENDAR_COLOR;
  * Match a calendar row to an appointment when `service` was stored in any locale
  * and admin `ServiceData.title` is resolved for the current UI locale.
  */
-export function findServiceDataForAppointment(
-  appointment: { service: string; serviceId?: string },
+function matchServiceByNeedle(
+  needle: string,
   services: ServiceData[],
 ): ServiceData | undefined {
-  if (appointment.serviceId) {
-    const byId = services.find((x) => x.id === appointment.serviceId);
-    if (byId) return byId;
-  }
-  const needle = normalizeServiceMatchKey(appointment.service);
   if (!needle) return undefined;
   for (const x of services) {
     if (normalizeServiceMatchKey(x.title) === needle) return x;
@@ -80,6 +75,28 @@ export function findServiceDataForAppointment(
         return x;
       }
     }
+  }
+  return undefined;
+}
+
+export function findServiceDataForAppointment(
+  appointment: { service: string; serviceId?: string },
+  services: ServiceData[],
+): ServiceData | undefined {
+  if (appointment.serviceId) {
+    const byId = services.find((x) => x.id === appointment.serviceId);
+    if (byId) return byId;
+  }
+  const needle = normalizeServiceMatchKey(appointment.service);
+  const full = matchServiceByNeedle(needle, services);
+  if (full) return full;
+  // Price-catalog path: "Zone > … > Item" — match last segment to synced service title
+  const parts = appointment.service.split(">").map((p) => p.trim()).filter(Boolean);
+  if (parts.length > 1) {
+    return matchServiceByNeedle(
+      normalizeServiceMatchKey(parts[parts.length - 1] ?? ""),
+      services,
+    );
   }
   return undefined;
 }
@@ -134,7 +151,8 @@ export async function getServices(place?: Place, locale: Locale = "sk"): Promise
               ? "time"
               : undefined,
       bookingDayCount:
-        data.bookingGranularity === "day"
+        data.bookingGranularity === "day" ||
+        data.bookingGranularity === "tbd"
           ? normalizeItemBookingDayCount(data.bookingDayCount)
           : undefined,
       scheduleTbdMessage:

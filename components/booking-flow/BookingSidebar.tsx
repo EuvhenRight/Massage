@@ -35,22 +35,27 @@ export default function BookingSidebar() {
 				<div className="min-w-0 space-y-1.5">
 					<span className={sectionLabelClass}>{tCommon('services')}</span>
 				{service ? (
-					<div className="flex items-center justify-between gap-2 min-w-0">
-						<TruncateText className="text-sm text-icyWhite font-medium" tooltipThreshold={25}>
-							{service}
-						</TruncateText>
-						{bookingGranularity === 'tbd' ? (
-							<span className="text-xs text-icyWhite/50 shrink-0">
-								{t('scheduleTbdBookingBadge')}
-							</span>
-						) : bookingGranularity === 'day' ? (
-							<span className="text-xs text-icyWhite/50 shrink-0">
-								{t('allDayBadge', { count: bookingDayCount })}
-							</span>
-						) : (
-							durationMinutes > 0 && (
-								<span className="text-xs text-icyWhite/50 shrink-0">{durationMinutes} min</span>
-							)
+					<div className="min-w-0 space-y-2">
+						<div className="flex items-start justify-between gap-2 min-w-0">
+							<TruncateText className="text-sm text-icyWhite font-medium" tooltipThreshold={25}>
+								{service}
+							</TruncateText>
+							{bookingGranularity !== 'tbd' && durationMinutes > 0 && (
+								<span className="text-xs text-icyWhite/50 shrink-0 tabular-nums">
+									{durationMinutes} min
+								</span>
+							)}
+						</div>
+						{bookingGranularity === 'tbd' && (
+							<div className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5 space-y-1.5">
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-icyWhite/40">
+									{t('tbdSidebarMetaTitle')}
+								</p>
+								<p className="text-xs text-icyWhite/60">{t('scheduleTbdBookingBadge')}</p>
+								<p className="text-sm text-icyWhite font-medium">
+									{t('tbdYourSelectionDays', { count: bookingDayCount })}
+								</p>
+							</div>
 						)}
 					</div>
 					) : (
@@ -82,8 +87,6 @@ export default function BookingSidebar() {
 					<span className={sectionLabelClass}>{tCommon('time')}</span>
 					{bookingGranularity === 'tbd' ? (
 						<p className="text-sm text-icyWhite/75">{t('sidebarScheduleTbdTime')}</p>
-					) : bookingGranularity === 'day' ? (
-						<p className="text-sm text-icyWhite/75">{t('allDayLabel')}</p>
 					) : time ? (
 						<p className="text-sm text-icyWhite">
 							{formatTimeFromSlotString(time, locale)}

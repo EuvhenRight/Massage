@@ -22,11 +22,11 @@ export interface ZonePriceItem extends LocalizedText {
   durationMinutes: number;
   /** Price as number (cents or main unit) or string e.g. "from 20" */
   price: number | string;
-  /** Omit or "time" = pick a time slot; "day" = full day(s); "tbd" = message only, date set by you later. */
+  /** Omit or "time" = pick a time slot; "tbd" = arrange with client (no customer calendar); "day" = legacy, normalized to "tbd" on load/save. */
   bookingGranularity?: PriceItemBookingGranularity;
   /**
-   * When `bookingGranularity` is "day": number of consecutive calendar days (1–14).
-   * Ignored for "time" / "tbd". Omit = 1.
+   * When `bookingGranularity` is "tbd" (or legacy "day"): how many full days you assign in admin after booking (1–14). Shown as day count in the public booking UI, not duration.
+   * Ignored for "time".
    */
   bookingDayCount?: number;
   /** When `bookingGranularity` is "tbd": text shown to the customer on the booking step (per locale). */

@@ -37,7 +37,10 @@ import {
   formatTimeForEmail,
   formatTimeFromHourMinute,
 } from "@/lib/format-date";
-import type { ServiceData } from "@/lib/services";
+import {
+  findServiceDataForAppointment,
+  type ServiceData,
+} from "@/lib/services";
 import type { Place } from "@/lib/places";
 import { useLocale, useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
@@ -67,10 +70,11 @@ function sortDateKeys(values: string[]): string[] {
 }
 
 function getInitialDayDates(appointment?: AppointmentData | null): string[] {
-  if (!appointment || appointment.adminBookingMode !== "day") return [];
+  if (!appointment) return [];
   if (appointment.adminFullDayDates?.length) {
     return sortDateKeys(appointment.adminFullDayDates);
   }
+  if (appointment.adminBookingMode !== "day") return [];
   const start =
     appointment.startTime && "toDate" in appointment.startTime
       ? appointment.startTime.toDate()
@@ -84,6 +88,57 @@ function getInitialDayDates(appointment?: AppointmentData | null): string[] {
     d.setDate(d.getDate() + i);
     return getDateKey(d);
   });
+}
+
+/** One string per required day slot; empty string = not chosen yet. */
+function getInitialDaySlots(
+  appointment: AppointmentData | null | undefined,
+  slotCount: number,
+): string[] {
+  const n = Math.max(1, Math.min(14, slotCount));
+  const base = getInitialDayDates(appointment ?? null);
+  const sorted = sortDateKeys(base);
+  return Array.from({ length: n }, (_, i) => sorted[i] ?? "");
+}
+
+/** How many day pickers to show when opening edit (TBD or multi-day day booking). */
+function getEditInitialDaySlotCount(
+  appointment: AppointmentData | null | undefined,
+  services: ServiceData[],
+): number {
+  if (!appointment) return 1;
+  if (appointment.adminFullDayDates?.length) {
+    return Math.min(14, appointment.adminFullDayDates.length);
+  }
+  const catalog = findServiceDataForAppointment(appointment, services);
+  const fromStored =
+    typeof appointment.multiDayFullDayCount === "number" &&
+    appointment.multiDayFullDayCount >= 1
+      ? Math.min(14, Math.floor(appointment.multiDayFullDayCount))
+      : undefined;
+  if (appointment.adminBookingMode === "day" || appointment.scheduleTbd) {
+    const fromCat =
+      catalog &&
+      (catalog.bookingGranularity === "day" ||
+        catalog.bookingGranularity === "tbd")
+        ? (catalog.bookingDayCount ?? 1)
+        : undefined;
+    return Math.max(1, Math.min(14, fromStored ?? fromCat ?? 1));
+  }
+  return 1;
+}
+
+function disabledKeysForFullDaySlot(
+  slotIndex: number,
+  daySlotValues: string[],
+  blockedDayKeysForPicker: string[],
+): string[] {
+  const own = new Set(daySlotValues.filter(Boolean));
+  const pickedOnOtherSlots = daySlotValues
+    .map((v, j) => (j !== slotIndex && v ? v : null))
+    .filter((x): x is string => Boolean(x));
+  const base = blockedDayKeysForPicker.filter((k) => !own.has(k));
+  return Array.from(new Set([...base, ...pickedOnOtherSlots]));
 }
 
 interface AdminAppointmentModalProps {
@@ -142,33 +197,13 @@ export default function AdminAppointmentModal({
   const durationMinutes = appointment
     ? Math.round((endDate.getTime() - startDate.getTime()) / 60000)
     : 60;
-  const matchedService = useMemo(() => {
+  const appointmentCatalogService = useMemo(() => {
     if (!appointment) return undefined;
-    if (appointment.serviceId) {
-      const byId = services.find((s) => s.id === appointment.serviceId);
-      if (byId) return byId;
-    }
-    return services.find((s) => s.title === appointment.service);
+    return findServiceDataForAppointment(appointment, services);
   }, [appointment, services]);
 
-  const serviceDayCount = useMemo(() => {
-    if (appointment?.adminBookingMode === "day") {
-      return (
-        appointment.adminFullDayDates?.length ??
-        appointment.multiDayFullDayCount ??
-        matchedService?.bookingDayCount ??
-        1
-      );
-    }
-    if (matchedService?.bookingGranularity === "day") {
-      return matchedService.bookingDayCount ?? 1;
-    }
-    return 0;
-  }, [appointment, matchedService]);
-
-  const isTbdDayService = Boolean(
-    appointment?.scheduleTbd && matchedService?.bookingGranularity === "day"
-  );
+  /** Customer “schedule later” booking — always assign real calendar day(s) here (catalog match optional). */
+  const isTbdDayService = Boolean(appointment?.scheduleTbd);
 
   const initialBookingMode =
     appointment?.adminBookingMode === "day" || isTbdDayService ? "day" : "time";
@@ -188,7 +223,14 @@ export default function AdminAppointmentModal({
   const [bookingMode, setBookingMode] = useState<"time" | "day">(
     initialBookingMode
   );
-  const [dayDates, setDayDates] = useState<string[]>(initialDayDates);
+  /** New all-day bookings: how many calendar days to assign (1–14). Edits locked to service/appointment use `fullDaySlotsTarget` instead. */
+  const [allDayDayCount, setAllDayDayCount] = useState(1);
+  const [daySlotValues, setDaySlotValues] = useState<string[]>(() =>
+    getInitialDaySlots(
+      appointment ?? null,
+      getEditInitialDaySlotCount(appointment ?? null, services),
+    ),
+  );
   const [occupiedDayKeys, setOccupiedDayKeys] = useState<string[]>([]);
   const [duration, setDuration] = useState(durationMinutes);
   const [service, setService] = useState(appointment?.service ?? "");
@@ -196,6 +238,47 @@ export default function AdminAppointmentModal({
   const [email, setEmail] = useState(appointment?.email ?? "");
   const [phone, setPhone] = useState(appointment?.phone ?? "");
   const [adminNote, setAdminNote] = useState(appointment?.adminNote ?? "");
+
+  const catalogServiceForSlots = useMemo(() => {
+    return (
+      appointmentCatalogService ??
+      services.find((s) => s.title === service) ??
+      undefined
+    );
+  }, [appointmentCatalogService, services, service]);
+
+  const serviceDayCount = useMemo(() => {
+    if (appointment?.scheduleTbd === true) {
+      const stored =
+        typeof appointment.multiDayFullDayCount === "number" &&
+        appointment.multiDayFullDayCount >= 1
+          ? Math.min(14, Math.floor(appointment.multiDayFullDayCount))
+          : undefined;
+      const cat = appointmentCatalogService;
+      const fromCat =
+        cat &&
+        (cat.bookingGranularity === "day" || cat.bookingGranularity === "tbd")
+          ? (cat.bookingDayCount ?? 1)
+          : undefined;
+      return Math.max(1, Math.min(14, stored ?? fromCat ?? 1));
+    }
+    if (appointment?.adminBookingMode === "day") {
+      return (
+        appointment.adminFullDayDates?.length ??
+        appointment.multiDayFullDayCount ??
+        appointmentCatalogService?.bookingDayCount ??
+        1
+      );
+    }
+    if (catalogServiceForSlots?.bookingGranularity === "day") {
+      return catalogServiceForSlots.bookingDayCount ?? 1;
+    }
+    if (catalogServiceForSlots?.bookingGranularity === "tbd") {
+      return catalogServiceForSlots.bookingDayCount ?? 1;
+    }
+    return 0;
+  }, [appointment, appointmentCatalogService, catalogServiceForSlots]);
+
   const [loading, setLoading] = useState(false);
   const [placeSchedule, setPlaceSchedule] = useState<ScheduleData | null>(null);
   const [timeOccupiedSlots, setTimeOccupiedSlots] = useState<OccupiedSlot[]>(
@@ -209,6 +292,32 @@ export default function AdminAppointmentModal({
   const isDayMode = bookingMode === "day";
   const isLockedDayEdit = Boolean(
     isEdit && (appointment?.adminBookingMode === "day" || isTbdDayService)
+  );
+  /** How many full days this booking should cover (multi-day services + TBD awaiting assignment). */
+  const fullDaySlotsTarget = useMemo(() => {
+    if (!isDayMode) return 0;
+    if (isLockedDayEdit) {
+      const n =
+        serviceDayCount > 0
+          ? serviceDayCount
+          : catalogServiceForSlots?.bookingGranularity === "day" ||
+              catalogServiceForSlots?.bookingGranularity === "tbd"
+            ? (catalogServiceForSlots.bookingDayCount ?? 1)
+            : 1;
+      return Math.max(1, Math.min(14, n));
+    }
+    return Math.max(1, Math.min(14, allDayDayCount));
+  }, [
+    isDayMode,
+    isLockedDayEdit,
+    serviceDayCount,
+    catalogServiceForSlots,
+    allDayDayCount,
+  ]);
+
+  const filledDaySlotCount = useMemo(
+    () => daySlotValues.filter((v) => v.trim()).length,
+    [daySlotValues],
   );
   const minSelectableDate = useMemo(() => {
     const d = new Date();
@@ -232,9 +341,9 @@ export default function AdminAppointmentModal({
 
   const blockedDayKeysForPicker = useMemo(() => {
     if (!isDayMode) return [];
-    const ownDays = new Set(dayDates);
+    const ownDays = new Set(daySlotValues.filter(Boolean));
     return occupiedDayKeys.filter((k) => !ownDays.has(k));
-  }, [dayDates, isDayMode, occupiedDayKeys]);
+  }, [daySlotValues, isDayMode, occupiedDayKeys]);
 
   const effectiveDurationMinutes = useMemo(
     () =>
@@ -390,9 +499,29 @@ export default function AdminAppointmentModal({
       setBookingMode(
         appointment.adminBookingMode === "day" || isTbdDayService ? "day" : "time"
       );
-      setDayDates(getInitialDayDates(appointment));
+      const slotN = Math.max(
+        1,
+        Math.min(
+          14,
+          appointment.adminBookingMode === "day" || isTbdDayService
+            ? appointment.adminFullDayDates?.length ??
+              appointment.multiDayFullDayCount ??
+              findServiceDataForAppointment(appointment, services)?.bookingDayCount ??
+              1
+            : 1,
+        ),
+      );
+      setDaySlotValues(
+        appointment.adminBookingMode === "day" || isTbdDayService
+          ? getInitialDaySlots(appointment, slotN)
+          : [],
+      );
       setDuration(Math.round((e.getTime() - s.getTime()) / 60000));
-      setService(appointment.service ?? "");
+      setService(
+        findServiceDataForAppointment(appointment, services)?.title ??
+          appointment.service ??
+          ""
+      );
       setFullName(appointment.fullName ?? "");
       setEmail(appointment.email ?? "");
       setPhone(appointment.phone ?? "");
@@ -402,7 +531,8 @@ export default function AdminAppointmentModal({
       setHour(defaultHour);
       setMinute(Math.round(defaultMinute / 5) * 5);
       setBookingMode("time");
-      setDayDates([]);
+      setAllDayDayCount(1);
+      setDaySlotValues([]);
       setDuration(services[0]?.durationMinutes ?? 60);
       setService(services[0]?.title ?? "");
       setFullName("");
@@ -418,7 +548,31 @@ export default function AdminAppointmentModal({
     defaultHour,
     defaultMinute,
     services,
+    isTbdDayService,
   ]);
+
+  useEffect(() => {
+    if (!isOpen || !isDayMode) return;
+    const n = fullDaySlotsTarget;
+    if (n <= 0) return;
+    setDaySlotValues((prev) => {
+      if (prev.length === n) return prev;
+      return Array.from({ length: n }, (_, i) => prev[i] ?? "");
+    });
+  }, [isOpen, isDayMode, fullDaySlotsTarget]);
+
+  /** Prefill day count from catalog when the chosen service is day/TBD multi-day. */
+  useEffect(() => {
+    if (!isOpen || isEdit || !isDayMode) return;
+    const s = services.find((x) => x.title === service);
+    if (
+      !s ||
+      (s.bookingGranularity !== "day" && s.bookingGranularity !== "tbd")
+    ) {
+      return;
+    }
+    setAllDayDayCount(Math.max(1, Math.min(14, s.bookingDayCount ?? 1)));
+  }, [isOpen, isEdit, isDayMode, service, services]);
 
   useEffect(() => {
     if (!isOpen || !isDayMode) {
@@ -473,13 +627,20 @@ export default function AdminAppointmentModal({
     e.preventDefault();
     if (isPastAppointment) return;
 
-    const normalizedDayDates = sortDateKeys(dayDates).slice(0, 14);
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
+    let normalizedDayDates: string[] = [];
+
     if (isDayMode) {
-      if (normalizedDayDates.length === 0) {
-        toast.error(t("selectAtLeastOneDay"));
+      const filled = daySlotValues.filter((v) => v.trim());
+      if (filled.length !== fullDaySlotsTarget) {
+        toast.error(t("fullDayPickExactlyDays", { count: fullDaySlotsTarget }));
+        return;
+      }
+      normalizedDayDates = sortDateKeys(filled);
+      if (new Set(normalizedDayDates).size !== normalizedDayDates.length) {
+        toast.error(t("fullDayDaysMustBeDistinct"));
         return;
       }
       if (!isEdit) {
@@ -697,85 +858,85 @@ export default function AdminAppointmentModal({
               </div>
               {isDayMode && (
                 <p className="text-xs text-icyWhite/55">
-                  {t("appointmentTypeDayHint")}
+                  {isLockedDayEdit
+                    ? t("appointmentTypeDayLockedHint")
+                    : t("appointmentTypeDayHint")}
                 </p>
               )}
             </div>
 
-            {/* ── Day mode: pick individual days ── */}
+            {/* ── Day mode: one calendar per required day ── */}
             {isDayMode ? (
               <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                <div className="space-y-2">
+                {!isLockedDayEdit && (
+                  <div className="space-y-1.5">
+                    <Label className="text-icyWhite/80">
+                      {t("adminAllDayDayCountLabel")}
+                    </Label>
+                    <Select
+                      value={String(allDayDayCount)}
+                      onValueChange={(v) =>
+                        setAllDayDayCount(
+                          Math.max(1, Math.min(14, parseInt(v, 10) || 1)),
+                        )
+                      }
+                    >
+                      <SelectTrigger className="select-menu w-full sm:max-w-[12rem]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent position="popper" sideOffset={4}>
+                        {Array.from({ length: 14 }, (_, i) => i + 1).map((n) => (
+                          <SelectItem key={n} value={String(n)}>
+                            {t("adminAllDayDayCountOption", { count: n })}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-icyWhite/55">
+                      {t("adminAllDayDayCountHint")}
+                    </p>
+                  </div>
+                )}
+                <div className="space-y-1">
                   <Label className="text-icyWhite/80">
                     {t("selectedDaysLabel")}
                     <span className="ml-2 text-xs font-normal text-icyWhite/50">
-                      {dayDates.length}/14
+                      {filledDaySlotCount}/{fullDaySlotsTarget}
                     </span>
                   </Label>
-                  {dayDates.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {dayDates.map((dk) => (
-                        <div
-                          key={dk}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm text-icyWhite"
-                        >
-                          <span>
-                            {new Date(`${dk}T12:00:00`).toLocaleDateString(
-                              undefined,
-                              {
-                                weekday: "short",
-                                month: "2-digit",
-                                day: "2-digit",
-                              }
-                            )}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setDayDates((cur) =>
-                                cur.filter((v) => v !== dk)
-                              )
-                            }
-                            className="ml-0.5 text-icyWhite/50 hover:text-red-400 transition-colors"
-                            aria-label={t("removeDay")}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="rounded-lg border border-dashed border-white/10 px-3 py-3 text-sm text-icyWhite/45">
-                      {t("selectedDaysEmpty")}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-icyWhite/80">
-                    {t("addDayLabel")}
-                  </Label>
-                  <AdminDatePicker
-                    place={place}
-                    schedule={placeSchedule}
-                    value=""
-                    keepOpen
-                    selectedDateKeys={dayDates}
-                    disabledDateKeys={blockedDayKeysForPicker}
-                    onChange={(value) => {
-                      if (!value) return;
-                      setDayDates((cur) => {
-                        if (cur.includes(value)) {
-                          return cur.filter((v) => v !== value);
-                        }
-                        if (cur.length >= 14) return cur;
-                        return sortDateKeys([...cur, value]);
-                      });
-                    }}
-                    minDate={minSelectableDate}
-                  />
                   <p className="text-xs text-icyWhite/55">
-                    {t("selectedDaysHint")}
+                    {t("selectedDaysPerSlotHint", {
+                      count: fullDaySlotsTarget,
+                    })}
                   </p>
+                </div>
+                <div className="space-y-4">
+                  {daySlotValues.map((slotValue, index) => (
+                    <div key={`day-slot-${index}`} className="space-y-1.5">
+                      <Label className="text-sm text-icyWhite/75">
+                        {t("fullDaySlotPickerLabel", { n: index + 1 })}
+                      </Label>
+                      <AdminDatePicker
+                        place={place}
+                        schedule={placeSchedule}
+                        value={slotValue}
+                        onChange={(value) => {
+                          setDaySlotValues((cur) => {
+                            const next = [...cur];
+                            next[index] = value;
+                            return next;
+                          });
+                        }}
+                        selectedDateKeys={daySlotValues.filter(Boolean)}
+                        disabledDateKeys={disabledKeysForFullDaySlot(
+                          index,
+                          daySlotValues,
+                          blockedDayKeysForPicker,
+                        )}
+                        minDate={minSelectableDate}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             ) : (
@@ -829,38 +990,56 @@ export default function AdminAppointmentModal({
 
             {/* ── Service ── */}
             <div className="space-y-1.5">
-              <Label className="text-icyWhite/80">{tCommon("services")}</Label>
-              <Select
-                value={service || "none"}
-                onValueChange={(v) => {
-                  const val = v === "none" ? "" : v;
-                  setService(val);
-                  const svc = services.find((s) => s.title === val);
-                  if (svc) setDuration(svc.durationMinutes);
-                }}
-              >
-                <SelectTrigger className="select-menu">
-                  <SelectValue placeholder={t("chooseService")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">—</SelectItem>
-                  {groupedServices.map((group, gi) => (
-                    <SelectGroup key={group.color}>
-                      {gi > 0 && <SelectSeparator />}
-                      {group.items.map((s) => (
-                        <SelectItem key={s.id} value={s.title}>
-                          <span className="flex items-center gap-2">
-                            <span
-                              className={`inline-block w-2.5 h-2.5 rounded-full border ${s.color}`}
-                            />
-                            {s.title}
-                          </span>
-                        </SelectItem>
+              {isLockedDayEdit ? (
+                <>
+                  <Label className="text-icyWhite/80">
+                    {t("currentServiceLabel")}
+                  </Label>
+                  <p className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-icyWhite">
+                    {appointment?.service || service || "—"}
+                  </p>
+                  <p className="text-xs text-icyWhite/50">
+                    {t("allDayServiceLockedHint")}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Label className="text-icyWhite/80">
+                    {tCommon("services")}
+                  </Label>
+                  <Select
+                    value={service || "none"}
+                    onValueChange={(v) => {
+                      const val = v === "none" ? "" : v;
+                      setService(val);
+                      const svc = services.find((s) => s.title === val);
+                      if (svc) setDuration(svc.durationMinutes);
+                    }}
+                  >
+                    <SelectTrigger className="select-menu">
+                      <SelectValue placeholder={t("chooseService")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      {groupedServices.map((group, gi) => (
+                        <SelectGroup key={group.color}>
+                          {gi > 0 && <SelectSeparator />}
+                          {group.items.map((s) => (
+                            <SelectItem key={s.id} value={s.title}>
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className={`inline-block w-2.5 h-2.5 rounded-full border ${s.color}`}
+                                />
+                                {s.title}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </SelectContent>
+                  </Select>
+                </>
+              )}
             </div>
 
             {/* ── Duration (time mode only) ── */}
@@ -941,10 +1120,15 @@ export default function AdminAppointmentModal({
                 <Button
                   type="submit"
                   className={`flex-1 ${ui.btnPrimarySm}`}
-                  disabled={
-                    loading ||
-                    (!isDayMode && availableTimeSlots.length === 0)
-                  }
+                  disabled={(() => {
+                    if (loading) return true;
+                    if (!isDayMode) return availableTimeSlots.length === 0;
+                    const filled = daySlotValues.filter((v) => v.trim());
+                    return (
+                      filled.length !== fullDaySlotsTarget ||
+                      new Set(filled).size !== filled.length
+                    );
+                  })()}
                 >
                   {loading ? t("saving") : isEdit ? t("save") : t("add")}
                 </Button>

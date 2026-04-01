@@ -93,11 +93,9 @@ export default function MassageBookingPage() {
 			title: s.title,
 			durationMinutes: s.durationMinutes,
 			bookingGranularity:
-				s.bookingGranularity === 'day'
-					? ('day' as const)
-					: s.bookingGranularity === 'tbd'
-						? ('tbd' as const)
-						: ('time' as const),
+				s.bookingGranularity === 'day' || s.bookingGranularity === 'tbd'
+					? ('tbd' as const)
+					: ('time' as const),
 			bookingDayCount: s.bookingDayCount,
 			scheduleTbdMessage: s.scheduleTbdMessage,
 			scheduleTbdAdminNote: s.scheduleTbdAdminNote,

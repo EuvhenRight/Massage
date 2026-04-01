@@ -1,8 +1,75 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { timeToMinutes } from "./booking";
 import { db } from "./firebase";
 import type { Place } from "./places";
 
-export type DaySchedule = { open: string; close: string } | null;
+export type DayScheduleMode = "window" | "slotBegins" | "allDay";
+
+/** One day: fixed hours, reusable begin-only times, or all-day availability. */
+export type DaySchedule =
+  | null
+  | {
+      mode: DayScheduleMode;
+      open?: string;
+      close?: string;
+      /** mode slotBegins: allowed start times (HH:mm), same list every week for this weekday. */
+      slotBegins?: string[];
+    };
+
+function normalizeHm(raw: string): string | null {
+  const m = raw.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  const h = Math.min(23, Math.max(0, parseInt(m[1]!, 10)));
+  const min = Math.min(59, Math.max(0, parseInt(m[2]!, 10)));
+  return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
+function normalizeCloseHm(raw: string): string | null {
+  const t = raw.trim();
+  if (t === "24:00") return "24:00";
+  return normalizeHm(t);
+}
+
+/**
+ * Parse Firestore / JSON into a normalized day schedule.
+ * Legacy `{ open, close }` without `mode` becomes `mode: window`.
+ */
+export function parseDaySchedule(v: unknown): DaySchedule {
+  if (v === null) return null;
+  if (typeof v !== "object" || v === null) return null;
+  const o = v as Record<string, unknown>;
+  if (o.mode === "allDay") {
+    return { mode: "allDay" };
+  }
+  const modeRaw = o.mode;
+  const openRaw = typeof o.open === "string" ? normalizeHm(o.open) : undefined;
+  const closeRaw = typeof o.close === "string" ? normalizeCloseHm(o.close) : undefined;
+  let slotBegins: string[] | undefined;
+  if (Array.isArray(o.slotBegins)) {
+    const xs = o.slotBegins
+      .filter((x): x is string => typeof x === "string")
+      .map((x) => normalizeHm(x))
+      .filter((x): x is string => x !== null);
+    slotBegins = Array.from(new Set(xs)).sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
+    if (slotBegins.length === 0) slotBegins = undefined;
+  }
+  const wantsSlots =
+    modeRaw === "slotBegins" || (slotBegins !== undefined && slotBegins.length > 0);
+  if (wantsSlots) {
+    const begins = slotBegins ?? [];
+    if (begins.length === 0) return null;
+    return {
+      mode: "slotBegins",
+      slotBegins: begins,
+      close: closeRaw ?? "18:00",
+      ...(openRaw ? { open: openRaw } : {}),
+    };
+  }
+  if (openRaw && closeRaw) {
+    return { mode: "window", open: openRaw, close: closeRaw };
+  }
+  return null;
+}
 
 /** Key: "YYYY-MM" (e.g. "2025-03"), value: weekly schedule for that month */
 export type MonthOverrides = Record<string, Record<number, DaySchedule>>;
@@ -24,12 +91,12 @@ export interface ScheduleData {
 const DEFAULT_SCHEDULE: ScheduleData = {
   defaultSchedule: {
     0: null,
-    1: { open: "09:00", close: "18:00" },
-    2: { open: "09:00", close: "18:00" },
-    3: { open: "09:00", close: "18:00" },
-    4: { open: "09:00", close: "18:00" },
-    5: { open: "09:00", close: "18:00" },
-    6: { open: "10:00", close: "16:00" },
+    1: { mode: "window", open: "09:00", close: "18:00" },
+    2: { mode: "window", open: "09:00", close: "18:00" },
+    3: { mode: "window", open: "09:00", close: "18:00" },
+    4: { mode: "window", open: "09:00", close: "18:00" },
+    5: { mode: "window", open: "09:00", close: "18:00" },
+    6: { mode: "window", open: "10:00", close: "16:00" },
   },
   slotDurationMinutes: 30,
   prepBufferMinutes: 15,
@@ -47,9 +114,8 @@ export async function getSchedule(place: Place = "massage"): Promise<ScheduleDat
   const defaultSchedule: Record<number, DaySchedule> = { 0: null, 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
   for (let i = 0; i <= 6; i++) {
     const v = d.defaultSchedule?.[i];
-    defaultSchedule[i] = v === null || (v && typeof v.open === "string" && typeof v.close === "string")
-      ? (v as DaySchedule)
-      : DEFAULT_SCHEDULE.defaultSchedule[i];
+    defaultSchedule[i] =
+      v === null ? null : parseDaySchedule(v) ?? DEFAULT_SCHEDULE.defaultSchedule[i];
   }
   const monthOverrides: MonthOverrides = {};
   const raw = d.monthOverrides as Record<string, Record<number, DaySchedule>> | undefined;
@@ -59,9 +125,7 @@ export async function getSchedule(place: Place = "massage"): Promise<ScheduleDat
       const parsed: Record<number, DaySchedule> = {};
       for (let i = 0; i <= 6; i++) {
         const v = val[i];
-        parsed[i] = v === null || (v && typeof v.open === "string" && typeof v.close === "string")
-          ? (v as DaySchedule)
-          : null;
+        parsed[i] = v === null ? null : parseDaySchedule(v);
       }
       monthOverrides[key] = parsed;
     }
@@ -71,10 +135,7 @@ export async function getSchedule(place: Place = "massage"): Promise<ScheduleDat
   if (rawDates && typeof rawDates === "object") {
     for (const [key, val] of Object.entries(rawDates)) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) continue;
-      dateOverrides[key] =
-        val === null || (val && typeof val.open === "string" && typeof val.close === "string")
-          ? val
-          : null;
+      dateOverrides[key] = val === null ? null : parseDaySchedule(val);
     }
   }
   const prepBufferMinutes =

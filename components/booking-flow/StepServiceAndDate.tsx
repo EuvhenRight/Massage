@@ -25,6 +25,7 @@ import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBookingFlow } from './BookingFlowContext'
 import PublicDatePicker from './PublicDatePicker'
+import TbdBookingRecap from './TbdBookingRecap'
 import TimeSlotPicker from './TimeSlotPicker'
 
 interface StepServiceAndDateProps {
@@ -54,6 +55,7 @@ export default function StepServiceAndDate({
 		time,
 		durationMinutes,
 		bookingGranularity,
+		bookingDayCount,
 		scheduleTbdCustomerMessage,
 	} = useBookingFlow()
 	const [month, setMonth] = useState(() => {
@@ -83,7 +85,7 @@ export default function StepServiceAndDate({
 	}, [place])
 
 	useEffect(() => {
-		if (step === 2 && (bookingGranularity === 'tbd' || bookingGranularity === 'day')) {
+		if (step === 2 && bookingGranularity === 'tbd') {
 			setOccupiedSlots([])
 			setLoading(false)
 			return
@@ -137,13 +139,13 @@ export default function StepServiceAndDate({
 								{services.map(s => (
 									<SelectItem key={s.title} value={s.title}>
 										{s.title}
-										{s.bookingGranularity === 'tbd' ? (
+										{s.bookingGranularity === 'tbd' ||
+										s.bookingGranularity === 'day' ? (
 											<span className='text-icyWhite/55 ml-1'>
-												({t('scheduleTbdBookingBadge')})
-											</span>
-										) : s.bookingGranularity === 'day' ? (
-											<span className='text-icyWhite/55 ml-1'>
-												({t('allDayBadge', { count: s.bookingDayCount ?? 1 })})
+												({t('scheduleTbdBookingBadge')}) ·{' '}
+												{t('allDayBadge', {
+													count: s.bookingDayCount ?? 1,
+												})}
 											</span>
 										) : s.durationMinutes ? (
 											<span className='text-icyWhite/55 ml-1'>
@@ -159,6 +161,11 @@ export default function StepServiceAndDate({
 
 				{step === 2 && bookingGranularity === 'tbd' && (
 					<div className='flex flex-col flex-1 min-h-0'>
+						<TbdBookingRecap
+							accent={accent}
+							service={service}
+							bookingDayCount={bookingDayCount}
+						/>
 						<p className='text-sm font-medium text-icyWhite mb-2'>
 							{t('scheduleTbdCustomerHeading')}
 						</p>
@@ -188,7 +195,7 @@ export default function StepServiceAndDate({
 							schedule={schedule}
 						/>
 					</div>
-					{bookingGranularity !== 'day' && date && (
+					{date && (
 						<div className='flex-shrink-0 pt-4'>
 							<TimeSlotPicker
 								accent={accent}

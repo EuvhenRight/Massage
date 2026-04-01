@@ -9,6 +9,7 @@ import { getBookingAccent } from "@/lib/booking-accent";
 import { getBookingSchema, type BookingFormData } from "@/lib/booking-schema";
 import type { Place } from "@/lib/places";
 import { useBookingFlow } from "./BookingFlowContext";
+import TbdBookingRecap from "./TbdBookingRecap";
 import {
   Form,
   FormControl,
@@ -41,7 +42,15 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
   const accent = useMemo(() => getBookingAccent(place), [place]);
   const t = useTranslations("booking");
   const tValidation = useTranslations("validation");
-  const { fullName, email, phone, setCustomerInfo } = useBookingFlow();
+  const {
+    fullName,
+    email,
+    phone,
+    setCustomerInfo,
+    bookingGranularity,
+    service,
+    bookingDayCount,
+  } = useBookingFlow();
   const schema = getBookingSchema({
     fullNameMin: tValidation("fullNameMin"),
     fullNameMax: tValidation("fullNameMax"),
@@ -113,6 +122,13 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
     >
       <Form {...form}>
         <form className="space-y-5 sm:space-y-6" onSubmit={(e) => e.preventDefault()}>
+          {bookingGranularity === "tbd" && service && (
+            <TbdBookingRecap
+              accent={accent}
+              service={service}
+              bookingDayCount={bookingDayCount}
+            />
+          )}
           <FormField
             control={form.control}
             name="fullName"

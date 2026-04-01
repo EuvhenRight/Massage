@@ -104,11 +104,9 @@ function servicePayload(
 		Math.min(240, Number(item.durationMinutes) || 60),
 	)
 	const gran =
-		item.bookingGranularity === 'day'
-			? 'day'
-			: item.bookingGranularity === 'tbd'
-				? 'tbd'
-				: 'time'
+		item.bookingGranularity === 'tbd' || item.bookingGranularity === 'day'
+			? 'tbd'
+			: 'time'
 	const base = {
 		title: titleSk,
 		titleSk,
@@ -123,15 +121,10 @@ function servicePayload(
 		fromPriceCatalog: true,
 		bookingGranularity: gran,
 	}
-	if (gran === 'day') {
-		return {
-			...base,
-			bookingDayCount: normalizeItemBookingDayCount(item.bookingDayCount),
-		}
-	}
 	if (gran === 'tbd') {
 		return {
 			...base,
+			bookingDayCount: normalizeItemBookingDayCount(item.bookingDayCount),
 			scheduleTbdMessageSk: (item.scheduleTbdMessageSk ?? '').trim(),
 			scheduleTbdMessageEn: (item.scheduleTbdMessageEn ?? '').trim(),
 			scheduleTbdMessageRu: (item.scheduleTbdMessageRu ?? '').trim(),
