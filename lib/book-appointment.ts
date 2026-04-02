@@ -78,6 +78,14 @@ export interface BookingInput {
 /** Placeholder start for TBD bookings — not shown on the week grid; admin assigns a real slot later. */
 const TBD_PLACEHOLDER_START = new Date(2099, 0, 1, 9, 0, 0, 0);
 
+const MAX_TIMED_BOOKING_DURATION_MINUTES = 24 * 60;
+
+function safeTimedBookingDurationMinutes(raw: unknown): number {
+  const n = Math.floor(Number(raw));
+  if (!Number.isFinite(n) || n <= 0) return 60;
+  return Math.min(Math.max(n, 15), MAX_TIMED_BOOKING_DURATION_MINUTES);
+}
+
 export interface ScheduleTbdBookingInput {
   service: string;
   fullName: string;
@@ -420,9 +428,10 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
   }
 
   const dateStr = input.date;
+  const durationMinutes = safeTimedBookingDurationMinutes(input.durationMinutes);
   const [startH, startM] = input.startTime.split(":").map(Number);
   const newStart = new Date(`${dateStr}T${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}:00`);
-  const newEnd = new Date(newStart.getTime() + input.durationMinutes * 60 * 1000);
+  const newEnd = new Date(newStart.getTime() + durationMinutes * 60 * 1000);
   const dayKey = `${place}_${dateStr}`;
   const schedule = await getSchedule(place);
   const prepBuffer = getPrepBufferMinutes(schedule);

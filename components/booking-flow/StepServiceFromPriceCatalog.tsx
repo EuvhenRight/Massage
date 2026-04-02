@@ -8,6 +8,8 @@ import type { Place } from '@/lib/places'
 import { getSchedule } from '@/lib/schedule-firestore'
 import {
 	getDescriptionForLocale,
+	getScheduleTbdAdminNoteForLocale,
+	getScheduleTbdMessageForLocale,
 	getTitleForLocale,
 	normalizeItemBookingDayCount,
 	type PriceCatalogStructure,
@@ -322,8 +324,21 @@ export default function StepServiceFromPriceCatalog({
 		}
 	}, [searchQuery, filteredSections])
 
-	const handleItemClick = (fullTitle: string) => {
-		setService(service === fullTitle ? '' : fullTitle)
+	const handleItemClick = (fullTitle: string, item: ZonePriceItem) => {
+		if (service === fullTitle) {
+			setService('')
+			return
+		}
+		setService(fullTitle, {
+			durationMinutes: item.durationMinutes,
+			bookingGranularity: item.bookingGranularity,
+			bookingDayCount: item.bookingDayCount,
+			scheduleTbdCustomerMessage: getScheduleTbdMessageForLocale(
+				item,
+				priceLocale,
+			),
+			scheduleTbdAdminHint: getScheduleTbdAdminNoteForLocale(item, priceLocale),
+		})
 	}
 
 	const toggleDescription = (e: React.MouseEvent, itemId: string) => {
@@ -632,7 +647,7 @@ export default function StepServiceFromPriceCatalog({
 																								role='button'
 																								tabIndex={0}
 																								onClick={() =>
-																									handleItemClick(fullTitle)
+																									handleItemClick(fullTitle, item)
 																								}
 																								onKeyDown={e => {
 																									if (
@@ -640,7 +655,7 @@ export default function StepServiceFromPriceCatalog({
 																										e.key === ' '
 																									) {
 																										e.preventDefault()
-																										handleItemClick(fullTitle)
+																										handleItemClick(fullTitle, item)
 																									}
 																								}}
 																								className={`flex items-center justify-between gap-3 px-3 py-2.5 sm:py-2 rounded-lg border cursor-pointer transition-all touch-manipulation active:scale-[0.99] ${

@@ -52,6 +52,8 @@ If any of these are missing, WhatsApp is skipped and emails behave as before. Th
 
 **End-to-end:** use a real **public** booking on the site (not admin-created) or cancel an appointment in the admin calendar; both paths call `/api/send-confirmation` after Resend succeeds. If the customer email step fails, WhatsApp is not attempted.
 
+**Twilio error 63007** (“could not find a Channel with the specified From address”): `TWILIO_WHATSAPP_FROM` does not match any WhatsApp sender on **this** Twilio account. Copy the sandbox **From** exactly from Console → **Messaging** → **Try WhatsApp** (e.g. `whatsapp:+14155238886`). No spaces; `TWILIO_ACCOUNT_SID` / token must be from the same account (not another subaccount). Production needs a Twilio number that is **WhatsApp-enabled** for that account.
+
 > **Note**: If you see `EPERM` or npm cache errors, fix permissions with:
 > `sudo chown -R $(whoami) ~/.npm`
 

@@ -40,7 +40,7 @@ async function main() {
   }
   if (newResult === "failed" || cancelledResult === "failed") {
     console.log(
-      "\nIf Twilio says To and From are the same (63031): TWILIO_WHATSAPP_FROM must be Twilio’s sender (e.g. sandbox whatsapp:+14155238886), not your personal number. ADMIN_WHATSAPP_PHONE is where you receive messages."
+      "\n63031: From and To must differ — TWILIO_WHATSAPP_FROM = Twilio sandbox/prod sender; ADMIN_WHATSAPP_PHONE = your phone.\n63007: Copy the exact From from Console → Messaging → Try WhatsApp; SID/token must be the same Twilio account."
     );
     process.exitCode = 1;
   }

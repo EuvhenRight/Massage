@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getAvailableTimeSlots,
+  safeSlotDurationMinutes,
 } from "@/lib/availability-firestore";
 import { fetchMergedPublicOccupiedSlots } from "@/lib/booking-occupied-slots";
 import { getSchedule } from "@/lib/schedule-firestore";
@@ -33,7 +34,9 @@ export async function GET(request: NextRequest) {
       dayEnd,
       schedule
     );
-    const durationMinutes = schedule.slotDurationMinutes ?? 60;
+    const durationMinutes = safeSlotDurationMinutes(
+      schedule.slotDurationMinutes ?? 60
+    );
     const slots = getAvailableTimeSlots(date, durationMinutes, occupied, schedule);
 
     return NextResponse.json({ date: dateStr, slots });

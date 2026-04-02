@@ -194,12 +194,21 @@ export function getWorkingHoursForDate(
  * Get available time slots for a date, given occupied ranges and optional schedule.
  * Past slots for today are excluded.
  */
+const MAX_SLOT_DURATION_MINUTES = 24 * 60;
+
+export function safeSlotDurationMinutes(durationMinutes: number): number {
+  const n = Math.floor(Number(durationMinutes));
+  if (!Number.isFinite(n) || n <= 0) return 60;
+  return Math.min(Math.max(n, 15), MAX_SLOT_DURATION_MINUTES);
+}
+
 export function getAvailableTimeSlots(
   date: Date,
   durationMinutes: number,
   occupied: OccupiedSlot[],
   schedule?: ScheduleData | null
 ): string[] {
+  const dur = safeSlotDurationMinutes(durationMinutes);
   const raw = resolveRawDayScheduleForDate(schedule ?? null, date);
   if (raw === null) return [];
 
@@ -208,7 +217,7 @@ export function getAvailableTimeSlots(
   const allSlots =
     raw.mode === "slotBegins"
       ? (raw.slotBegins ?? []).filter(
-          (t) => timeToMinutes(t) + durationMinutes <= closeM
+          (t) => timeToMinutes(t) + dur <= closeM
         )
       : getSlotTimesInRange(wh.open, wh.close);
   const today = new Date();
@@ -219,12 +228,12 @@ export function getAvailableTimeSlots(
   const isToday = slotDate.getTime() === today.getTime();
 
   return allSlots.filter((slot) => {
-    if (slotOverlaps(date, slot, durationMinutes, occupied)) return false;
+    if (slotOverlaps(date, slot, dur, occupied)) return false;
     if (isToday) {
       const [h, m] = slot.split(":").map(Number);
       const slotStart = new Date(date);
       slotStart.setHours(h, m, 0, 0);
-      const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60 * 1000);
+      const slotEnd = new Date(slotStart.getTime() + dur * 60 * 1000);
       if (slotEnd.getTime() <= Date.now()) return false;
     }
     return true;

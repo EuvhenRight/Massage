@@ -16,10 +16,36 @@ import {
   parseDraftToState,
 } from "@/lib/booking-draft-storage";
 import { findBookableServiceForSelection } from "@/lib/services";
+import { normalizeItemBookingDayCount } from "@/types/price-catalog";
 
 export type BookingStep = 1 | 2 | 3 | 4;
 
 export type BookingGranularity = "time" | "day" | "tbd";
+
+/** When picking from the price catalog, pass row metadata so duration/granularity match the item (not only the matched Firestore service row). */
+export interface CatalogBookingOverrides {
+  durationMinutes?: number;
+  bookingGranularity?: string;
+  bookingDayCount?: number;
+  scheduleTbdCustomerMessage?: string;
+  scheduleTbdAdminHint?: string;
+}
+
+const MAX_BOOKING_DURATION_MINUTES = 24 * 60;
+
+function clampBookingDurationMinutes(
+  raw: unknown,
+  fallback: number
+): number {
+  const n = Math.floor(Number(raw));
+  if (!Number.isFinite(n) || n <= 0) {
+    const f = Math.floor(Number(fallback));
+    return Number.isFinite(f) && f > 0
+      ? Math.min(Math.max(f, 15), MAX_BOOKING_DURATION_MINUTES)
+      : 60;
+  }
+  return Math.min(Math.max(n, 15), MAX_BOOKING_DURATION_MINUTES);
+}
 
 export interface BookingFlowState {
   step: BookingStep;
@@ -78,7 +104,7 @@ function dayCountFromService(
 }
 
 interface BookingFlowContextValue extends BookingFlowState {
-  setService: (v: string) => void;
+  setService: (v: string, catalog?: CatalogBookingOverrides | null) => void;
   /** Second arg: when set, stores that time; when omitted, clears time (normal date change). */
   setDate: (v: Date | null, presetTime?: string | null) => void;
   setTime: (v: string | null) => void;
@@ -220,26 +246,50 @@ export function BookingFlowProvider({
     clearBookingDraft(place);
   }, [place]);
 
-  const setService = useCallback((service: string) => {
-    setState((s) => {
-      const svc = findBookableServiceForSelection(service, services);
-      const duration = svc?.durationMinutes ?? defaultDuration;
-      const bookingGranularity = granularityFromService(svc);
-      return {
-        ...s,
-        service,
-        durationMinutes: duration,
-        bookingGranularity,
-        bookingDayCount: dayCountFromService(svc),
-        date: bookingGranularity === "tbd" ? null : s.date,
-        time: bookingGranularity === "tbd" ? null : s.time,
-        scheduleTbdCustomerMessage:
-          bookingGranularity === "tbd" ? (svc?.scheduleTbdMessage ?? "") : "",
-        scheduleTbdAdminHint:
-          bookingGranularity === "tbd" ? (svc?.scheduleTbdAdminNote ?? "") : "",
-      };
-    });
-  }, [services, defaultDuration]);
+  const setService = useCallback(
+    (service: string, catalog?: CatalogBookingOverrides | null) => {
+      setState((s) => {
+        const trimmed = service.trim();
+        const svc = trimmed
+          ? findBookableServiceForSelection(service, services)
+          : undefined;
+        const fallbackDuration = svc?.durationMinutes ?? defaultDuration;
+        const duration = catalog
+          ? clampBookingDurationMinutes(catalog.durationMinutes, fallbackDuration)
+          : clampBookingDurationMinutes(fallbackDuration, 60);
+        const bookingGranularity = catalog
+          ? granularityFromService({
+              bookingGranularity: catalog.bookingGranularity,
+            })
+          : granularityFromService(svc);
+        const bookingDayCount = catalog?.bookingDayCount != null
+          ? normalizeItemBookingDayCount(catalog.bookingDayCount)
+          : dayCountFromService(svc);
+        return {
+          ...s,
+          service,
+          durationMinutes: duration,
+          bookingGranularity,
+          bookingDayCount,
+          date: bookingGranularity === "tbd" ? null : s.date,
+          time: bookingGranularity === "tbd" ? null : s.time,
+          scheduleTbdCustomerMessage:
+            bookingGranularity === "tbd"
+              ? (catalog?.scheduleTbdCustomerMessage?.trim() ||
+                  svc?.scheduleTbdMessage ||
+                  "")
+              : "",
+          scheduleTbdAdminHint:
+            bookingGranularity === "tbd"
+              ? (catalog?.scheduleTbdAdminHint?.trim() ||
+                  svc?.scheduleTbdAdminNote ||
+                  "")
+              : "",
+        };
+      });
+    },
+    [services, defaultDuration]
+  );
 
   const setDate = useCallback((date: Date | null, presetTime?: string | null) => {
     setState((s) => ({

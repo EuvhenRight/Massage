@@ -181,10 +181,28 @@ async function sendTwilioWhatsApp(body: string): Promise<{ ok: true } | { ok: fa
 
   if (!res.ok) {
     const text = await res.text();
+    logTwilioWhatsAppHint(text, fromFinal);
     return { ok: false, error: text || res.statusText };
   }
 
   return { ok: true };
+}
+
+/** Parse Twilio JSON errors and print fix hints (codes 63007, etc.) */
+function logTwilioWhatsAppHint(responseBody: string, fromAddr: string): void {
+  let code: number | undefined;
+  try {
+    const j = JSON.parse(responseBody) as { code?: number };
+    code = typeof j.code === "number" ? j.code : undefined;
+  } catch {
+    return;
+  }
+  if (code === 63007) {
+    console.error(
+      "[whatsapp-admin] Twilio 63007: No WhatsApp sender matches TWILIO_WHATSAPP_FROM (%s). Open Twilio Console → Messaging → Try WhatsApp / Sandbox, copy the exact \"From\" (format whatsapp:+14155238886). Use the same Twilio account as TWILIO_ACCOUNT_SID (not a different subaccount). For production, the number must be WhatsApp-enabled on that account.",
+      fromAddr
+    );
+  }
 }
 
 export async function notifyAdminWhatsAppNew(payload: {
