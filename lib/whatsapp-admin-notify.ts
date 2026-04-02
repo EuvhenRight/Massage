@@ -154,6 +154,14 @@ async function sendTwilioWhatsApp(body: string): Promise<{ ok: true } | { ok: fa
   const fromFinal = ensureWhatsAppAddress(process.env.TWILIO_WHATSAPP_FROM!);
   const toFinal = ensureWhatsAppAddress(process.env.ADMIN_WHATSAPP_PHONE!);
 
+  if (fromFinal === toFinal) {
+    console.error(
+      "[whatsapp-admin] Twilio 63031: From and To are the same (%s). Set TWILIO_WHATSAPP_FROM to Twilio's sender (Console → Messaging → WhatsApp sandbox number, e.g. whatsapp:+14155238886), not your personal number. ADMIN_WHATSAPP_PHONE should be your phone (+31…) that joined the sandbox.",
+      fromFinal
+    );
+    return { ok: false, error: "same From and To (see logs)" };
+  }
+
   const params = new URLSearchParams();
   params.set("From", fromFinal);
   params.set("To", toFinal);
