@@ -40,7 +40,11 @@ import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import type { Place } from '@/lib/places'
 import type { ScheduleData } from '@/lib/schedule-firestore'
 import { subscribeSchedule } from '@/lib/schedule-firestore'
-import { findServiceDataForAppointment, type ServiceData } from '@/lib/services'
+import {
+	findServiceDataForAppointment,
+	resolveAppointmentRequiredFullDayCount,
+	type ServiceData,
+} from '@/lib/services'
 import { clsx } from 'clsx'
 import {
 	collection,
@@ -68,7 +72,10 @@ function sortDateKeys(values: string[]): string[] {
 	)
 }
 
-function getInitialDayDates(appointment?: AppointmentData | null): string[] {
+function getInitialDayDates(
+	appointment?: AppointmentData | null,
+	slotCountForExpansion?: number,
+): string[] {
 	if (!appointment) return []
 	if (appointment.adminFullDayDates?.length) {
 		return sortDateKeys(appointment.adminFullDayDates)
@@ -84,7 +91,12 @@ function getInitialDayDates(appointment?: AppointmentData | null): string[] {
 	if (start.getFullYear() >= 2090) return []
 	const count = Math.max(
 		1,
-		Math.min(14, Number(appointment.multiDayFullDayCount) || 1),
+		Math.min(
+			14,
+			(slotCountForExpansion ??
+				Number(appointment.multiDayFullDayCount)) ||
+				1,
+		),
 	)
 	return Array.from({ length: count }, (_, i) => {
 		const d = new Date(start)
@@ -99,7 +111,7 @@ function getInitialDaySlots(
 	slotCount: number,
 ): string[] {
 	const n = Math.max(1, Math.min(14, slotCount))
-	const base = getInitialDayDates(appointment ?? null)
+	const base = getInitialDayDates(appointment ?? null, n)
 	const sorted = sortDateKeys(base)
 	return Array.from({ length: n }, (_, i) => sorted[i] ?? '')
 }
@@ -110,23 +122,9 @@ function getEditInitialDaySlotCount(
 	services: ServiceData[],
 ): number {
 	if (!appointment) return 1
-	if (appointment.adminFullDayDates?.length) {
-		return Math.min(14, appointment.adminFullDayDates.length)
-	}
-	const catalog = findServiceDataForAppointment(appointment, services)
-	const fromStored =
-		typeof appointment.multiDayFullDayCount === 'number' &&
-		appointment.multiDayFullDayCount >= 1
-			? Math.min(14, Math.floor(appointment.multiDayFullDayCount))
-			: undefined
 	if (appointment.adminBookingMode === 'day' || appointment.scheduleTbd) {
-		const fromCat =
-			catalog &&
-			(catalog.bookingGranularity === 'day' ||
-				catalog.bookingGranularity === 'tbd')
-				? (catalog.bookingDayCount ?? 1)
-				: undefined
-		return Math.max(1, Math.min(14, fromStored ?? fromCat ?? 1))
+		const catalog = findServiceDataForAppointment(appointment, services)
+		return resolveAppointmentRequiredFullDayCount(appointment, catalog)
 	}
 	return 1
 }
@@ -248,26 +246,13 @@ export default function AdminAppointmentModal({
 	}, [appointmentCatalogService, services, service])
 
 	const serviceDayCount = useMemo(() => {
-		if (appointment?.scheduleTbd === true) {
-			const stored =
-				typeof appointment.multiDayFullDayCount === 'number' &&
-				appointment.multiDayFullDayCount >= 1
-					? Math.min(14, Math.floor(appointment.multiDayFullDayCount))
-					: undefined
-			const cat = appointmentCatalogService
-			const fromCat =
-				cat &&
-				(cat.bookingGranularity === 'day' || cat.bookingGranularity === 'tbd')
-					? (cat.bookingDayCount ?? 1)
-					: undefined
-			return Math.max(1, Math.min(14, stored ?? fromCat ?? 1))
-		}
-		if (appointment?.adminBookingMode === 'day') {
-			return (
-				appointment.adminFullDayDates?.length ??
-				appointment.multiDayFullDayCount ??
-				appointmentCatalogService?.bookingDayCount ??
-				1
+		if (
+			appointment?.scheduleTbd === true ||
+			appointment?.adminBookingMode === 'day'
+		) {
+			return resolveAppointmentRequiredFullDayCount(
+				appointment,
+				appointmentCatalogService,
 			)
 		}
 		if (catalogServiceForSlots?.bookingGranularity === 'day') {
@@ -545,11 +530,10 @@ export default function AdminAppointmentModal({
 				Math.min(
 					14,
 					appointment.adminBookingMode === 'day' || isTbdDayService
-						? (appointment.adminFullDayDates?.length ??
-								appointment.multiDayFullDayCount ??
-								findServiceDataForAppointment(appointment, services)
-									?.bookingDayCount ??
-								1)
+						? resolveAppointmentRequiredFullDayCount(
+								appointment,
+								findServiceDataForAppointment(appointment, services),
+							)
 						: 1,
 				),
 			)

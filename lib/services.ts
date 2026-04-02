@@ -38,6 +38,14 @@ export interface ServiceData {
   scheduleTbdAdminNote?: string;
 }
 
+/** For matching stored booking strings to catalog rows (booking UI may omit `color`, etc.). */
+export type ServiceMatchRow = Omit<
+  Pick<ServiceData, "title"> & Partial<Omit<ServiceData, "title">>,
+  "bookingGranularity"
+> & {
+  bookingGranularity?: ServiceBookingGranularity | string;
+};
+
 export interface ServiceInput {
   title?: string; // deprecated, use titleSk/titleEn/titleRu/titleUk
   titleSk?: string;
@@ -64,8 +72,8 @@ export const ADMIN_APPOINTMENT_FALLBACK_COLOR = DEFAULT_SECTION_CALENDAR_COLOR;
  */
 function matchServiceByNeedle(
   needle: string,
-  services: ServiceData[],
-): ServiceData | undefined {
+  services: ServiceMatchRow[],
+): ServiceMatchRow | undefined {
   if (!needle) return undefined;
   for (const x of services) {
     if (normalizeServiceMatchKey(x.title) === needle) return x;
@@ -89,8 +97,8 @@ function servicePathParts(raw: string): string[] {
 
 export function findServiceDataForAppointment(
   appointment: { service: string; serviceId?: string },
-  services: ServiceData[],
-): ServiceData | undefined {
+  services: ServiceMatchRow[],
+): ServiceMatchRow | undefined {
   if (appointment.serviceId) {
     const byId = services.find((x) => x.id === appointment.serviceId);
     if (byId) return byId;
@@ -111,6 +119,74 @@ export function findServiceDataForAppointment(
     }
   }
   return undefined;
+}
+
+const ADMIN_APPOINTMENT_FULL_DAY_MAX = 14;
+
+function clampAdminAppointmentFullDayCount(n: number): number {
+  const x = Math.floor(Number(n));
+  if (!Number.isFinite(x)) return 1;
+  return Math.max(1, Math.min(ADMIN_APPOINTMENT_FULL_DAY_MAX, x));
+}
+
+function catalogRequiredFullDayCount(catalog: ServiceMatchRow | undefined): number | undefined {
+  if (!catalog) return undefined;
+  if (catalog.bookingGranularity !== "day" && catalog.bookingGranularity !== "tbd") {
+    return undefined;
+  }
+  return clampAdminAppointmentFullDayCount(catalog.bookingDayCount ?? 1);
+}
+
+/**
+ * How many calendar day rows this booking should use in admin (TBD assignment, full-day edits).
+ * Uses the maximum of explicit dates, stored `multiDayFullDayCount`, and the matched catalog item
+ * so an under-counted or missing Firestore value cannot hide extra day pickers.
+ */
+export function resolveAppointmentRequiredFullDayCount(
+  appointment: {
+    adminFullDayDates?: string[];
+    multiDayFullDayCount?: number;
+    adminBookingMode?: string;
+    scheduleTbd?: boolean;
+  },
+  catalog?: ServiceMatchRow,
+): number {
+  const rawDates = appointment.adminFullDayDates;
+  const explicit =
+    Array.isArray(rawDates) && rawDates.length > 0
+      ? rawDates.filter((d) => typeof d === "string" && d.trim()).length
+      : 0;
+  const storedRaw = appointment.multiDayFullDayCount;
+  const stored =
+    typeof storedRaw === "number" && storedRaw >= 1
+      ? clampAdminAppointmentFullDayCount(storedRaw)
+      : undefined;
+  const cat = catalogRequiredFullDayCount(catalog);
+
+  const tbd = appointment.scheduleTbd === true;
+  const dayMode = appointment.adminBookingMode === "day";
+  if (!tbd && !dayMode) {
+    return 1;
+  }
+
+  const parts: number[] = [];
+  if (explicit > 0) parts.push(explicit);
+  if (stored != null) parts.push(stored);
+  if (cat != null) parts.push(cat);
+  if (parts.length === 0) return 1;
+  return Math.max(...parts);
+}
+
+/** Match booking step selection to catalog row (exact title or path-style `A › B › C`). */
+export function findBookableServiceForSelection(
+  selectedTitle: string,
+  services: ServiceMatchRow[],
+): ServiceMatchRow | undefined {
+  const t = selectedTitle.trim();
+  if (!t) return undefined;
+  const exact = services.find((x) => x.title === t);
+  if (exact) return exact;
+  return findServiceDataForAppointment({ service: t }, services);
 }
 
 function resolveTitle(data: Record<string, unknown>, locale: Locale): string {

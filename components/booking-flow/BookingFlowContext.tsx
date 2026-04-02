@@ -15,6 +15,7 @@ import {
   clearBookingDraft,
   parseDraftToState,
 } from "@/lib/booking-draft-storage";
+import { findBookableServiceForSelection } from "@/lib/services";
 
 export type BookingStep = 1 | 2 | 3 | 4;
 
@@ -221,7 +222,7 @@ export function BookingFlowProvider({
 
   const setService = useCallback((service: string) => {
     setState((s) => {
-      const svc = services.find((x) => x.title === service);
+      const svc = findBookableServiceForSelection(service, services);
       const duration = svc?.durationMinutes ?? defaultDuration;
       const bookingGranularity = granularityFromService(svc);
       return {

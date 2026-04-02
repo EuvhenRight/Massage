@@ -2,31 +2,24 @@
 
 import { TruncateText } from '@/components/ui/truncate-text'
 import {
+	appointmentIntervalsFromDocs,
+	queryAppointmentsOverlappingRange,
+} from '@/lib/appointments-overlap-query'
+import {
 	getPrepBufferMinutes,
 	parseOccupiedSlots,
 	type OccupiedSlot,
 } from '@/lib/availability-firestore'
-import {
-	appointmentIntervalsFromDocs,
-	queryAppointmentsOverlappingRange,
-} from '@/lib/appointments-overlap-query'
 import type { BookingAccent } from '@/lib/booking-accent'
 import { db } from '@/lib/firebase'
 import type { Place } from '@/lib/places'
-import {
-	calendarColorForDirectItems,
-	calendarColorForRootZone,
-	calendarColorForSection,
-} from '@/lib/price-catalog-normalize'
 import { getSchedule } from '@/lib/schedule-firestore'
-import { resolvedOpaqueCalendarSlotFill } from '@/lib/section-calendar-colors'
 import {
 	getDescriptionForLocale,
 	getTitleForLocale,
 	normalizeItemBookingDayCount,
 	type PriceCatalogStructure,
 	type PriceLocale,
-	type PriceService,
 	type SexKey,
 	type ZonePriceItem,
 } from '@/types/price-catalog'
@@ -71,12 +64,9 @@ interface CatalogSection {
 	sectionId: string
 	sectionTitle: string
 	sectionDescription: string
-	/** Tailwind bg/border bundle for section tabs (matches admin calendar legend). */
-	sectionCalendarColor: string
 	zones: Array<{
 		zoneId: string
 		zoneTitle: string
-		zoneCalendarColor: string
 		items: Array<{ item: ZonePriceItem; path: string }>
 	}>
 }
@@ -101,14 +91,12 @@ function buildSectionsWithZones(
 		secTitle: string,
 		secDesc: string,
 		zones: CatalogSection['zones'],
-		sectionColorRaw: string,
 	) {
 		if (zones.length === 0) return
 		sections.push({
 			sectionId: secId,
 			sectionTitle: secTitle,
 			sectionDescription: secDesc,
-			sectionCalendarColor: resolvedOpaqueCalendarSlotFill(sectionColorRaw),
 			zones,
 		})
 	}
@@ -123,7 +111,6 @@ function buildSectionsWithZones(
 			for (const sec of secs) {
 				const secTitle = getTitleForLocale(sec, locale)
 				const secDesc = getDescriptionForLocale(sec, locale)
-				const secColor = calendarColorForSection(sec)
 				const zoneList: CatalogSection['zones'] = []
 				for (const zone of sec.zones ?? []) {
 					const zoneTitle = getTitleForLocale(zone, locale)
@@ -132,20 +119,15 @@ function buildSectionsWithZones(
 					zoneList.push({
 						zoneId: zone.id,
 						zoneTitle,
-						zoneCalendarColor: resolvedOpaqueCalendarSlotFill(secColor),
 						items: zoneItems,
 					})
 				}
-				addSection(sec.id, secTitle, secDesc, zoneList, secColor)
+				addSection(sec.id, secTitle, secDesc, zoneList)
 			}
 		} else if (zones.length > 0) {
-			const svcBlockColor = calendarColorForDirectItems(svc)
 			const zoneList: CatalogSection['zones'] = zones.map(zone => ({
 				zoneId: zone.id,
 				zoneTitle: getTitleForLocale(zone, locale),
-				zoneCalendarColor: resolvedOpaqueCalendarSlotFill(
-					calendarColorForRootZone(svc, zone),
-				),
 				items: (zone.items ?? []).map(item => ({
 					item,
 					path: `${svcTitle} › ${getTitleForLocale(zone, locale)}`,
@@ -156,10 +138,8 @@ function buildSectionsWithZones(
 				svcTitle,
 				getDescriptionForLocale(svc, locale),
 				zoneList,
-				svcBlockColor,
 			)
 		} else if (items.length > 0) {
-			const directColor = calendarColorForDirectItems(svc)
 			addSection(
 				`${svc.id}-items`,
 				svcTitle,
@@ -168,24 +148,13 @@ function buildSectionsWithZones(
 					{
 						zoneId: `${svc.id}-items`,
 						zoneTitle: svcTitle,
-						zoneCalendarColor: resolvedOpaqueCalendarSlotFill(directColor),
 						items: items.map(item => ({ item, path: svcTitle })),
 					},
 				],
-				directColor,
 			)
 		}
 	}
 	return sections
-}
-
-/** Representative swatch when picking a service (first section color, else service direct color). */
-function servicePickerAccentColor(svc: PriceService): string {
-	const firstSec = svc.sections?.[0]
-	if (firstSec) {
-		return resolvedOpaqueCalendarSlotFill(calendarColorForSection(firstSec))
-	}
-	return resolvedOpaqueCalendarSlotFill(calendarColorForDirectItems(svc))
 }
 
 export default function StepServiceFromPriceCatalog({
@@ -476,16 +445,12 @@ export default function StepServiceFromPriceCatalog({
 												setActiveSectionId('')
 												setOpenZoneId(null)
 											}}
-											className='min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12] flex items-center gap-2.5'
+											className='min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12] flex items-center'
 										>
-											<span
-												className={clsx(
-													'w-1.5 shrink-0 self-stretch min-h-[2.25rem] rounded-full',
-													servicePickerAccentColor(svc),
-												)}
-												aria-hidden
-											/>
-											<TruncateText className='text-left flex-1 min-w-0' tooltipThreshold={25}>
+											<TruncateText
+												className='text-left flex-1 min-w-0'
+												tooltipThreshold={25}
+											>
 												{getTitleForLocale(svc, priceLocale)}
 											</TruncateText>
 										</button>
@@ -515,20 +480,16 @@ export default function StepServiceFromPriceCatalog({
 											animate={{ opacity: 1, y: 0 }}
 											transition={{ duration: 0.2 }}
 											className={clsx(
-												'min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] flex items-center gap-2.5',
+												'min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] flex items-center',
 												effectiveSectionId === sec.sectionId
 													? accent.sectionPillActive
 													: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]',
 											)}
 										>
-											<span
-												className={clsx(
-													'w-1.5 shrink-0 self-stretch min-h-[2.25rem] rounded-full',
-													sec.sectionCalendarColor,
-												)}
-												aria-hidden
-											/>
-											<TruncateText className='text-left flex-1 min-w-0' tooltipThreshold={25}>
+											<TruncateText
+												className='text-left flex-1 min-w-0'
+												tooltipThreshold={25}
+											>
 												{sec.sectionTitle}
 											</TruncateText>
 										</motion.button>
@@ -563,18 +524,11 @@ export default function StepServiceFromPriceCatalog({
 											{sec.sectionDescription && (
 												<div
 													className={clsx(
-														'flex-shrink-0 flex gap-2.5 items-stretch',
-														openZoneId ? 'hidden md:flex' : '',
+														'flex-shrink-0',
+														openZoneId ? 'hidden md:block' : '',
 													)}
 												>
-													<span
-														className={clsx(
-															'w-1 shrink-0 rounded-full min-h-[2.5rem]',
-															sec.sectionCalendarColor,
-														)}
-														aria-hidden
-													/>
-													<div className='flex-1 min-w-0 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm font-normal text-icyWhite'>
+													<div className='w-full min-w-0 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm font-normal text-icyWhite'>
 														<p className='break-words'>
 															{expandedSectionDescriptions.has(sec.sectionId)
 																? sec.sectionDescription
@@ -632,174 +586,175 @@ export default function StepServiceFromPriceCatalog({
 														<div
 															key={zone.zoneId}
 															className={clsx(
-																'border border-white/10 rounded-lg overflow-hidden flex flex-row',
-																isOpen
-																	? 'flex-1 min-h-0'
-																	: 'flex-shrink-0',
+																'border border-white/10 rounded-lg overflow-hidden flex flex-col',
+																isOpen ? 'flex-1 min-h-0' : 'flex-shrink-0',
 															)}
 														>
-															<span
-																className={clsx(
-																	'w-1 shrink-0 self-stretch min-h-[3rem]',
-																	zone.zoneCalendarColor,
-																)}
-																aria-hidden
-															/>
 															<div
 																className={clsx(
 																	'min-w-0 flex-1 flex flex-col',
-																	isOpen
-																		? 'flex-1 min-h-0'
-																		: '',
+																	isOpen ? 'flex-1 min-h-0' : '',
 																)}
 															>
-															<button
-																type='button'
-																onClick={() =>
-																	setOpenZoneId(isOpen ? null : zoneValue)
-																}
-																className='w-full min-h-[48px] flex items-center justify-between px-3 sm:px-4 py-3 sm:py-2.5 hover:bg-white/5 active:bg-white/[0.07] text-icyWhite text-left text-sm font-medium flex-shrink-0 transition-colors touch-manipulation'
-															>
-																<span className='flex-1 min-w-0 text-left'>
-																	<TruncateText tooltipThreshold={20}>
-																		{zone.zoneTitle}
-																	</TruncateText>
-																</span>
-																<span className='text-icyWhite/70 shrink-0'>
-																	{isOpen ? (
-																		<Undo2 className='w-5 h-5' aria-hidden />
-																	) : (
-																		<span className='text-base'>+</span>
-																	)}
-																</span>
-															</button>
-															{isOpen && (
-																<div className='flex-1 min-h-0 overflow-y-auto pt-3 pb-2 px-2'>
-																	{zone.items.length === 0 ? (
-																		<p className='text-sm text-icyWhite/50 py-4 text-center'>
-																			{t('noServicesInCategory')}
-																		</p>
-																	) : (
-																		<ul className='grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-1.5'>
-																			{zone.items.map(({ item, path }) => {
-																				const fullTitle = path
-																					? `${path} › ${getTitleForLocale(item, priceLocale)}`
-																					: getTitleForLocale(item, priceLocale)
-																				const isSelected = service === fullTitle
-																				const desc = getDescriptionForLocale(
-																					item,
-																					priceLocale,
-																				)
-																				const isExpanded =
-																					expandedDescriptions.has(item.id)
-																				return (
-																					<li key={item.id}>
-																						<motion.div
-																							role='button'
-																							tabIndex={0}
-																							onClick={() =>
-																								handleItemClick(fullTitle)
-																							}
-																							onKeyDown={e => {
-																								if (
-																									e.key === 'Enter' ||
-																									e.key === ' '
-																								) {
-																									e.preventDefault()
+																<button
+																	type='button'
+																	onClick={() =>
+																		setOpenZoneId(isOpen ? null : zoneValue)
+																	}
+																	className='w-full min-h-[48px] flex items-center justify-between px-3 sm:px-4 py-3 sm:py-2.5 hover:bg-white/5 active:bg-white/[0.07] text-icyWhite text-left text-sm font-medium flex-shrink-0 transition-colors touch-manipulation'
+																>
+																	<span className='flex-1 min-w-0 text-left'>
+																		<TruncateText tooltipThreshold={20}>
+																			{zone.zoneTitle}
+																		</TruncateText>
+																	</span>
+																	<span className='text-icyWhite/70 shrink-0'>
+																		{isOpen ? (
+																			<Undo2 className='w-5 h-5' aria-hidden />
+																		) : (
+																			<span className='text-base'>+</span>
+																		)}
+																	</span>
+																</button>
+																{isOpen && (
+																	<div className='flex-1 min-h-0 overflow-y-auto pt-3 pb-2 px-2'>
+																		{zone.items.length === 0 ? (
+																			<p className='text-sm text-icyWhite/50 py-4 text-center'>
+																				{t('noServicesInCategory')}
+																			</p>
+																		) : (
+																			<ul className='grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-1.5'>
+																				{zone.items.map(({ item, path }) => {
+																					const fullTitle = path
+																						? `${path} › ${getTitleForLocale(item, priceLocale)}`
+																						: getTitleForLocale(
+																								item,
+																								priceLocale,
+																							)
+																					const isSelected =
+																						service === fullTitle
+																					const desc = getDescriptionForLocale(
+																						item,
+																						priceLocale,
+																					)
+																					const isExpanded =
+																						expandedDescriptions.has(item.id)
+																					return (
+																						<li key={item.id}>
+																							<motion.div
+																								role='button'
+																								tabIndex={0}
+																								onClick={() =>
 																									handleItemClick(fullTitle)
 																								}
-																							}}
-																							className={`flex items-center justify-between gap-3 px-3 py-2.5 sm:py-2 rounded-lg border cursor-pointer transition-all touch-manipulation active:scale-[0.99] ${
-																								isSelected
-																									? accent.itemSelected
-																									: 'border-white/10 bg-white/5 hover:border-white/20 active:border-white/25'
-																							}`}
-																							whileTap={{
-																								scale: 0.99,
-																							}}
-																						>
-																							<div className='flex-1 min-w-0'>
-																								{path && (
-																									<p
-																										className='text-xs text-icyWhite/50 truncate mb-0.5'
-																										title={
-																											path.length > 30
-																												? path
-																												: undefined
-																										}
-																									>
-																										{path}
-																									</p>
-																								)}
-																								<div className='flex items-center justify-between gap-2'>
-																									<TruncateText
-																										className='font-medium text-icyWhite text-sm flex-1 min-w-0'
-																										tooltipThreshold={25}
-																									>
-																										{getTitleForLocale(
-																											item,
-																											priceLocale,
-																										)}
-																									</TruncateText>
-																									<span
-																										className={accent.priceText}
-																									>
-																										{formatPrice(item.price)} €
-																									</span>
-																								</div>
-																								<div className='flex items-center gap-2 mt-0.5'>
-																	<span className='text-icyWhite/55 text-xs'>
-																		{item.bookingGranularity === 'tbd' ||
-																		item.bookingGranularity === 'day'
-																			? (
-																					<>
-																						{t('scheduleTbdBookingBadge')}
-																						<span className='text-icyWhite/45'>
-																							{' '}
-																							·{' '}
-																							{t('allDayBadge', {
-																								count: normalizeItemBookingDayCount(
-																									item.bookingDayCount,
-																								),
-																							})}
-																						</span>
-																					</>
-																				)
-																			: `${item.durationMinutes} ${tPrice('min')}`}
-																	</span>
-																									{desc && (
-																										<button
-																											type='button'
-																											onClick={e =>
-																												toggleDescription(
-																													e,
-																													item.id,
-																												)
-																											}
-																											className={
-																												accent.descLink
+																								onKeyDown={e => {
+																									if (
+																										e.key === 'Enter' ||
+																										e.key === ' '
+																									) {
+																										e.preventDefault()
+																										handleItemClick(fullTitle)
+																									}
+																								}}
+																								className={`flex items-center justify-between gap-3 px-3 py-2.5 sm:py-2 rounded-lg border cursor-pointer transition-all touch-manipulation active:scale-[0.99] ${
+																									isSelected
+																										? accent.itemSelected
+																										: 'border-white/10 bg-white/5 hover:border-white/20 active:border-white/25'
+																								}`}
+																								whileTap={{
+																									scale: 0.99,
+																								}}
+																							>
+																								<div className='flex-1 min-w-0'>
+																									{path && (
+																										<p
+																											className='text-xs text-icyWhite/50 truncate mb-0.5'
+																											title={
+																												path.length > 30
+																													? path
+																													: undefined
 																											}
 																										>
-																											{isExpanded
-																												? t('showLess')
-																												: t('showMore')}
-																										</button>
+																											{path}
+																										</p>
+																									)}
+																									<div className='flex items-center justify-between gap-2'>
+																										<TruncateText
+																											className='font-medium text-icyWhite text-sm flex-1 min-w-0'
+																											tooltipThreshold={25}
+																										>
+																											{getTitleForLocale(
+																												item,
+																												priceLocale,
+																											)}
+																										</TruncateText>
+																										<span
+																											className={
+																												accent.priceText
+																											}
+																										>
+																											{formatPrice(item.price)}{' '}
+																											€
+																										</span>
+																									</div>
+																									<div className='flex items-center gap-2 mt-0.5'>
+																										<span className='text-icyWhite/55 text-xs'>
+																											{item.bookingGranularity ===
+																												'tbd' ||
+																											item.bookingGranularity ===
+																												'day' ? (
+																												<>
+																													{t(
+																														'scheduleTbdBookingBadge',
+																													)}
+																													<span className='text-icyWhite/45'>
+																														{' '}
+																														·{' '}
+																														{t('allDayBadge', {
+																															count:
+																																normalizeItemBookingDayCount(
+																																	item.bookingDayCount,
+																																),
+																														})}
+																													</span>
+																												</>
+																											) : (
+																												`${item.durationMinutes} ${tPrice('min')}`
+																											)}
+																										</span>
+																										{desc && (
+																											<button
+																												type='button'
+																												onClick={e =>
+																													toggleDescription(
+																														e,
+																														item.id,
+																													)
+																												}
+																												className={
+																													accent.descLink
+																												}
+																											>
+																												{isExpanded
+																													? t('showLess')
+																													: t('showMore')}
+																											</button>
+																										)}
+																									</div>
+																									{desc && isExpanded && (
+																										<p className='mt-1.5 text-xs font-normal text-icyWhite whitespace-pre-wrap'>
+																											{desc}
+																										</p>
 																									)}
 																								</div>
-																								{desc && isExpanded && (
-																									<p className='mt-1.5 text-xs font-normal text-icyWhite whitespace-pre-wrap'>
-																										{desc}
-																									</p>
-																								)}
-																							</div>
-																						</motion.div>
-																					</li>
-																				)
-																			})}
-																		</ul>
-																	)}
-																</div>
-															)}
+																							</motion.div>
+																						</li>
+																					)
+																				})}
+																			</ul>
+																		)}
+																	</div>
+																)}
 															</div>
 														</div>
 													)
@@ -846,42 +801,42 @@ export default function StepServiceFromPriceCatalog({
 				</motion.div>
 			)}
 
-		{step === 2 && service && bookingGranularity !== 'tbd' && (
-			<motion.div
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				transition={{ duration: 0.2 }}
-				className='flex flex-col flex-1 min-h-0'
-			>
+			{step === 2 && service && bookingGranularity !== 'tbd' && (
+				<motion.div
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ duration: 0.2 }}
+					className='flex flex-col flex-1 min-h-0'
+				>
 					<div className='flex-1 min-h-0 flex flex-col overflow-hidden'>
-					<PublicDatePicker
-						accent={accent}
-						selectedDate={date}
-						onSelectDate={handleSelectDate}
-						occupiedSlots={occupiedSlots}
-						durationMinutes={durationMinutes}
-						month={month}
-						onMonthChange={d =>
-							setMonth(new Date(d.getFullYear(), d.getMonth(), 1))
-						}
-						schedule={schedule}
-					/>
-				</div>
-				{date && (
-					<div className='flex-shrink-0 pt-4'>
-						<TimeSlotPicker
+						<PublicDatePicker
 							accent={accent}
-							date={date}
-							selectedTime={time}
-							onSelectTime={setTime}
+							selectedDate={date}
+							onSelectDate={handleSelectDate}
 							occupiedSlots={occupiedSlots}
 							durationMinutes={durationMinutes}
+							month={month}
+							onMonthChange={d =>
+								setMonth(new Date(d.getFullYear(), d.getMonth(), 1))
+							}
 							schedule={schedule}
 						/>
 					</div>
-				)}
-			</motion.div>
-		)}
+					{date && (
+						<div className='flex-shrink-0 pt-4'>
+							<TimeSlotPicker
+								accent={accent}
+								date={date}
+								selectedTime={time}
+								onSelectTime={setTime}
+								occupiedSlots={occupiedSlots}
+								durationMinutes={durationMinutes}
+								schedule={schedule}
+							/>
+						</div>
+					)}
+				</motion.div>
+			)}
 
 			{loading && bookingGranularity !== 'tbd' && (
 				<p className='text-xs text-icyWhite/50'>{t('loadingAvailability')}</p>

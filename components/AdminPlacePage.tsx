@@ -23,6 +23,7 @@ import { getSchedule } from '@/lib/schedule-firestore'
 import {
 	ADMIN_APPOINTMENT_FALLBACK_COLOR,
 	findServiceDataForAppointment,
+	resolveAppointmentRequiredFullDayCount,
 	type ServiceData,
 } from '@/lib/services'
 import { resolvedOpaqueCalendarSlotFill } from '@/lib/section-calendar-colors'
@@ -235,40 +236,6 @@ export default function AdminPlacePage({
 	const prepBuffer = getPrepBufferMinutes(schedule)
 	const addModalServices = calendarServices.length > 0 ? calendarServices : services
 
-	const getServiceDayCount = useCallback(
-		(apt: AppointmentData): number => {
-			if (apt.adminBookingMode === 'day') {
-				return (
-					apt.adminFullDayDates?.length ??
-					apt.multiDayFullDayCount ??
-					1
-				)
-			}
-			if (apt.scheduleTbd) {
-				const stored = Math.floor(Number(apt.multiDayFullDayCount))
-				if (Number.isFinite(stored) && stored >= 1) {
-					return Math.min(14, stored)
-				}
-			}
-			const allSvcs = [...calendarServices, ...services]
-			const match =
-				(apt.serviceId
-					? allSvcs.find(s => s.id === apt.serviceId)
-					: undefined) ??
-				allSvcs.find(
-					s => s.title.trim().toLocaleLowerCase() === (apt.service ?? '').trim().toLocaleLowerCase(),
-				)
-			if (match?.bookingGranularity === 'day') {
-				return match.bookingDayCount ?? 1
-			}
-			if (match?.bookingGranularity === 'tbd') {
-				return match.bookingDayCount ?? 1
-			}
-			return 0
-		},
-		[calendarServices, services],
-	)
-
 	/**
 	 * Firestore-synced line items first (stable ids + colors from catalog sync), then
 	 * synthetic catalog rows (`section:…`, `zone:…`) for the legend — no title-based
@@ -281,14 +248,36 @@ export default function AdminPlacePage({
 			...calendarServices.filter(c => !firestoreIds.has(c.id)),
 		]
 	}, [calendarServices, services])
+
+	const getServiceDayCount = useCallback(
+		(apt: AppointmentData): number => {
+			if (apt.adminBookingMode === 'day' || apt.scheduleTbd) {
+				return resolveAppointmentRequiredFullDayCount(
+					apt,
+					findServiceDataForAppointment(apt, calendarColorServices),
+				)
+			}
+			const match = findServiceDataForAppointment(apt, calendarColorServices)
+			if (match?.bookingGranularity === 'day') {
+				return match.bookingDayCount ?? 1
+			}
+			if (match?.bookingGranularity === 'tbd') {
+				return match.bookingDayCount ?? 1
+			}
+			return 0
+		},
+		[calendarColorServices],
+	)
+
 	const formatAppointmentDateLabel = useCallback(
 		(apt: AppointmentData, start: Date, end: Date) => {
 			if (apt.adminBookingMode !== 'day') {
 				return formatDate(start, { locale: currentLocale })
 			}
-			const dayCount =
-				apt.adminFullDayDates?.length ??
-				Math.max(1, Math.min(14, Number(apt.multiDayFullDayCount) || 1))
+			const dayCount = resolveAppointmentRequiredFullDayCount(
+				apt,
+				findServiceDataForAppointment(apt, calendarColorServices),
+			)
 			if (dayCount <= 1) {
 				return formatDate(start, { locale: currentLocale })
 			}
@@ -296,7 +285,7 @@ export default function AdminPlacePage({
 				locale: currentLocale,
 			})}`
 		},
-		[currentLocale],
+		[currentLocale, calendarColorServices],
 	)
 	const formatAppointmentTimeLabel = useCallback(
 		(apt: AppointmentData, start: Date) =>
@@ -308,14 +297,15 @@ export default function AdminPlacePage({
 	const formatAppointmentMetaLabel = useCallback(
 		(apt: AppointmentData, start: Date, end: Date) => {
 			if (apt.adminBookingMode === 'day') {
-				const count =
-					apt.adminFullDayDates?.length ??
-					Math.max(1, Math.min(14, Number(apt.multiDayFullDayCount) || 1))
+				const count = resolveAppointmentRequiredFullDayCount(
+					apt,
+					findServiceDataForAppointment(apt, calendarColorServices),
+				)
 				return t('dayCountValue', { count })
 			}
 			return `${Math.round((end.getTime() - start.getTime()) / 60000)}m`
 		},
-		[t],
+		[t, calendarColorServices],
 	)
 
 	const filteredAnalytics = allAppointments.filter(apt => {

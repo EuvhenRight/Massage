@@ -6,6 +6,7 @@ import { formatDate, formatTime } from '@/lib/format-date'
 import type { Place } from '@/lib/places'
 import {
 	findServiceDataForAppointment,
+	resolveAppointmentRequiredFullDayCount,
 	type ServiceData,
 } from '@/lib/services'
 import {
@@ -68,10 +69,14 @@ export default function AdminCalendarEventDetail({
 
 	const isTbd = appointment.scheduleTbd === true
 	const isFullDay = appointment.adminBookingMode === 'day'
-	const fullDayCount =
-		appointment.adminFullDayDates?.length && appointment.adminFullDayDates.length > 0
-			? appointment.adminFullDayDates.length
-			: appointment.multiDayFullDayCount ?? 1
+	const catalogForApt = useMemo(
+		() => findServiceDataForAppointment(appointment, services),
+		[appointment, services],
+	)
+	const fullDayCount = resolveAppointmentRequiredFullDayCount(
+		appointment,
+		catalogForApt,
+	)
 
 	const durationMinutes = Math.round(
 		(endDate.getTime() - startDate.getTime()) / 60000,

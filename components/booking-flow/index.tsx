@@ -8,6 +8,7 @@ import { getDateKey } from '@/lib/booking'
 import { getBookingAccent } from '@/lib/booking-accent'
 import type { BookingFormData } from '@/lib/booking-schema'
 import { formatDateForEmail, formatTimeForEmail } from '@/lib/format-date'
+import { findBookableServiceForSelection } from '@/lib/services'
 import type { Place } from '@/lib/places'
 import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -112,7 +113,8 @@ function BookingFlowInner({
 					const finalService =
 						(service || dataTbd.service || services[0]?.title) ?? ''
 					const selected =
-						services.find(s => s.title === finalService) ?? services[0]
+						findBookableServiceForSelection(finalService, services) ??
+						services[0]
 					await bookScheduleTbdAppointment(
 						{
 							service: finalService,
@@ -188,7 +190,8 @@ function BookingFlowInner({
 				const finalService =
 					(service || data.service || services[0]?.title) ?? ''
 				const selected =
-					services.find(s => s.title === finalService) ?? services[0]
+					findBookableServiceForSelection(finalService, services) ??
+					services[0]
 				const dateStr = getDateKey(date)
 				const startTime = time!
 

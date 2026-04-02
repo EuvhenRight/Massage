@@ -15,6 +15,7 @@ import { formatTime as formatTimeUi } from "@/lib/format-date";
 import {
   ADMIN_APPOINTMENT_FALLBACK_COLOR,
   findServiceDataForAppointment,
+  resolveAppointmentRequiredFullDayCount,
   type ServiceData,
 } from "@/lib/services";
 import { resolvedOpaqueCalendarSlotFill } from "@/lib/section-calendar-colors";
@@ -124,21 +125,12 @@ export default function DraggableAppointment({
   const durationMinutes = Math.round(
     (endDate.getTime() - startDate.getTime()) / 60000
   );
-  const explicitFullDayCount =
-    appointment.adminFullDayDates?.length && appointment.adminFullDayDates.length > 0
-      ? appointment.adminFullDayDates.length
-      : 0;
-  const storedMultiDay = Math.floor(Number(appointment.multiDayFullDayCount));
-  const fullDayDaysLabel =
-    explicitFullDayCount > 0 ||
-    (Number.isFinite(storedMultiDay) && storedMultiDay > 0)
-      ? t("dayCountValue", {
-          count:
-            explicitFullDayCount > 0
-              ? explicitFullDayCount
-              : Math.max(1, storedMultiDay),
-        })
-      : t("selectedDaysEmpty");
+  const fullDayDaysLabel = t("dayCountValue", {
+    count: resolveAppointmentRequiredFullDayCount(
+      appointment,
+      findServiceDataForAppointment(appointment, services),
+    ),
+  });
 
   const gridBasedHeight = adminCalendarBlockHeightPx(Math.max(1, durationMinutes));
   const usePositionedCalendar =

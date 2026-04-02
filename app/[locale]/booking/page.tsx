@@ -44,11 +44,11 @@ export default function BookingPage() {
 						serviceOptions.length > 0
 							? serviceOptions
 							: [
-							{
-									title: t('appointmentFallback'),
-									durationMinutes: 60,
-									bookingGranularity: 'time' as const,
-								},
+									{
+										title: t('appointmentFallback'),
+										durationMinutes: 60,
+										bookingGranularity: 'time' as const,
+									},
 								]
 					}
 					defaultDuration={60}
