@@ -206,6 +206,34 @@ export function BookingFlowProvider({
     };
   });
 
+  /** Draft may reference a service line removed from the catalog or an old locale title — unstick the flow. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!services.length) return;
+    setState((s) => {
+      const title = s.service.trim();
+      if (!title) return s;
+      if (findBookableServiceForSelection(title, services)) return s;
+      clearBookingDraft(place);
+      const first = services[0];
+      return {
+        ...initialState,
+        service: defaultService?.trim() ?? "",
+        durationMinutes: first?.durationMinutes ?? defaultDuration,
+        bookingGranularity: granularityFromService(first),
+        bookingDayCount: dayCountFromService(first),
+        scheduleTbdCustomerMessage:
+          granularityFromService(first) === "tbd"
+            ? (first?.scheduleTbdMessage ?? "")
+            : "",
+        scheduleTbdAdminHint:
+          granularityFromService(first) === "tbd"
+            ? (first?.scheduleTbdAdminNote ?? "")
+            : "",
+      };
+    });
+  }, [services, place, defaultDuration, defaultService]);
+
   const isFirstMount = useRef(true);
   useEffect(() => {
     if (isFirstMount.current) {
