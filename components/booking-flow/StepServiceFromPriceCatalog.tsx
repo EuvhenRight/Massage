@@ -185,6 +185,18 @@ export default function StepServiceFromPriceCatalog({
 		ReturnType<typeof getSchedule>
 	> | null>(null)
 	const [loading, setLoading] = useState(true)
+	/** Bumped when the tab becomes visible again so occupancy refetches after admin changes. */
+	const [occupancyRefreshTick, setOccupancyRefreshTick] = useState(0)
+
+	useEffect(() => {
+		const onVis = () => {
+			if (document.visibilityState === 'visible') {
+				setOccupancyRefreshTick(t => t + 1)
+			}
+		}
+		document.addEventListener('visibilitychange', onVis)
+		return () => document.removeEventListener('visibilitychange', onVis)
+	}, [])
 
 	const handleSelectDate = useCallback(
 		(d: Date) => {
@@ -243,7 +255,7 @@ export default function StepServiceFromPriceCatalog({
 		return () => {
 			cancelled = true
 		}
-	}, [year, monthNum, place, schedule, step, bookingGranularity])
+	}, [year, monthNum, place, schedule, step, bookingGranularity, occupancyRefreshTick])
 
 	const servicesForSex = useMemo(() => {
 		if (!catalog || !selectedSex) return []

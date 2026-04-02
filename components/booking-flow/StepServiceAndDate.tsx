@@ -58,6 +58,17 @@ export default function StepServiceAndDate({
 		ReturnType<typeof getSchedule>
 	> | null>(null)
 	const [loading, setLoading] = useState(true)
+	const [occupancyRefreshTick, setOccupancyRefreshTick] = useState(0)
+
+	useEffect(() => {
+		const onVis = () => {
+			if (document.visibilityState === 'visible') {
+				setOccupancyRefreshTick(t => t + 1)
+			}
+		}
+		document.addEventListener('visibilitychange', onVis)
+		return () => document.removeEventListener('visibilitychange', onVis)
+	}, [])
 
 	const handleSelectDate = useCallback(
 		(d: Date) => {
@@ -106,7 +117,7 @@ export default function StepServiceAndDate({
 		return () => {
 			cancelled = true
 		}
-	}, [year, monthNum, place, schedule, step, bookingGranularity])
+	}, [year, monthNum, place, schedule, step, bookingGranularity, occupancyRefreshTick])
 
 	return (
 		<div className='flex flex-col flex-1 min-h-0'>

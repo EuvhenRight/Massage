@@ -946,10 +946,11 @@ export async function deleteAppointment(appointmentId: string): Promise<void> {
   }
 
   const place = (data.place as Place | undefined) ?? "massage";
-  const dateKeys =
-    data.adminBookingMode === "day"
-      ? new Set(getAppointmentDayDateKeys(data))
-      : new Set([getDateKey((data.startTime as Timestamp).toDate())]);
+  // Always derive day docs from the same rules as slot writes (explicit full-day dates,
+  // legacy multi-day span, or single calendar day from startTime). Relying only on
+  // `adminBookingMode === "day"` left orphan rows in `days/*` for legacy / inconsistent
+  // documents and made slots stay "busy" after delete.
+  const dateKeys = new Set(getAppointmentDayDateKeys(data as Record<string, unknown>));
 
   const dayRefs = Array.from(dateKeys).map((ds) => doc(db, "days", `${place}_${ds}`));
 

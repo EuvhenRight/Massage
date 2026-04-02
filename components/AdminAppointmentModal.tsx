@@ -49,7 +49,6 @@ import { clsx } from 'clsx'
 import {
 	collection,
 	doc,
-	getDocs,
 	onSnapshot,
 	orderBy,
 	query,
@@ -441,38 +440,29 @@ export default function AdminAppointmentModal({
 			setTimeSlotsLoading(false)
 			return
 		}
-		let cancelled = false
 		setTimeSlotsLoading(true)
-		;(async () => {
-			const y = availabilityMonth.getFullYear()
-			const m = availabilityMonth.getMonth()
-			const rangeStart = new Date(y, m, 1)
-			const rangeEnd = new Date(y, m + 1, 0, 23, 59, 59, 999)
-			try {
-				const q = queryAppointmentsOverlappingRange(
-					db,
-					place,
-					rangeStart,
-					rangeEnd,
-				)
-				const snapshot = await getDocs(q)
-				if (cancelled) return
+		const y = availabilityMonth.getFullYear()
+		const m = availabilityMonth.getMonth()
+		const rangeStart = new Date(y, m, 1)
+		const rangeEnd = new Date(y, m + 1, 0, 23, 59, 59, 999)
+		const q = queryAppointmentsOverlappingRange(db, place, rangeStart, rangeEnd)
+		const prep = getPrepBufferMinutes(placeSchedule)
+		const excludeId = isEdit && appointment?.id ? appointment.id : undefined
+		const unsub = onSnapshot(
+			q,
+			snapshot => {
 				const intervals = appointmentIntervalsFromDocs(snapshot.docs, {
-					excludeDocIds:
-						isEdit && appointment?.id ? [appointment.id] : undefined,
+					excludeDocIds: excludeId ? [excludeId] : undefined,
 				})
-				setTimeOccupiedSlots(
-					parseOccupiedSlots(intervals, getPrepBufferMinutes(placeSchedule)),
-				)
-			} catch {
-				if (!cancelled) setTimeOccupiedSlots([])
-			} finally {
-				if (!cancelled) setTimeSlotsLoading(false)
-			}
-		})()
-		return () => {
-			cancelled = true
-		}
+				setTimeOccupiedSlots(parseOccupiedSlots(intervals, prep))
+				setTimeSlotsLoading(false)
+			},
+			() => {
+				setTimeOccupiedSlots([])
+				setTimeSlotsLoading(false)
+			},
+		)
+		return () => unsub()
 	}, [
 		isOpen,
 		isDayMode,
