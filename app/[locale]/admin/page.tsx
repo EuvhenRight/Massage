@@ -1,7 +1,7 @@
 'use client'
 
 import LanguageSwitcher from '@/components/LanguageSwitcher'
-import { Hand, LogOut, Menu, Sparkles, X } from 'lucide-react'
+import { BookOpen, Hand, LogOut, Menu, Sparkles, X } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -24,6 +24,16 @@ export default function AdminPage() {
 						<h1 className='font-serif text-lg text-icyWhite'>{t('admin')}</h1>
 					</div>
 					<div className='flex shrink-0 items-center gap-2'>
+						<Link
+							href={`/${locale}/admin/help`}
+							className='hidden sm:inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-icyWhite/70 hover:text-icyWhite hover:bg-white/5 transition-colors'
+							aria-label={t('helpManualAria')}
+						>
+							<BookOpen className='h-4 w-4 shrink-0' />
+							<span className='hidden md:inline truncate max-w-[6rem]'>
+								{t('helpManual')}
+							</span>
+						</Link>
 						<LanguageSwitcher variant='admin' />
 						<button
 							type='button'
@@ -54,6 +64,15 @@ export default function AdminPage() {
 								</span>
 							</div>
 						)}
+						<Link
+							href={`/${locale}/admin/help`}
+							onClick={() => setIsMobileMenuOpen(false)}
+							className='flex w-full max-w-xs ml-auto items-center justify-end gap-2 rounded-lg px-3 py-2 text-sm text-icyWhite/90 hover:text-icyWhite hover:bg-white/5 transition-colors mb-2'
+							aria-label={t('helpManualAria')}
+						>
+							<span className='truncate'>{t('helpManual')}</span>
+							<BookOpen className='h-4 w-4 shrink-0' />
+						</Link>
 						{session?.user && (
 							<button
 								type='button'

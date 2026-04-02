@@ -7,6 +7,11 @@ import {
   buildAdminNewBooking,
   buildAdminCancelled,
 } from "@/lib/email-templates";
+import {
+  notifyAdminWhatsAppNew,
+  notifyAdminWhatsAppCancelled,
+  type WhatsAppNotifyResult,
+} from "@/lib/whatsapp-admin-notify";
 
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -15,13 +20,13 @@ function getResend() {
 }
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
-const FROM_NAME = "Aurora Salon";
+const FROM_NAME = "V2studio";
 
 const SUBJECTS = {
-  new: (date: string, time: string) => `Aurora Salon — Rezervácia potvrdená na ${date} o ${time}`,
+  new: (date: string, time: string) => `V2studio — Rezervácia potvrdená na ${date} o ${time}`,
   newAdmin: (name: string, date: string, time: string) => `Nová rezervácia: ${name} — ${date} ${time}`,
-  rescheduled: (newDate: string, newTime: string) => `Aurora Salon — Rezervácia presunutá na ${newDate} o ${newTime}`,
-  cancelled: "Aurora Salon — Rezervácia zrušená",
+  rescheduled: (newDate: string, newTime: string) => `V2studio — Rezervácia presunutá na ${newDate} o ${newTime}`,
+  cancelled: "V2studio — Rezervácia zrušená",
   cancelledAdmin: (name: string, date: string, time: string) => `Zrušené: ${name} — ${date} ${time}`,
 } as const;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "admin@aurorasalon.com";
@@ -38,6 +43,8 @@ export async function POST(request: Request) {
     }
     const type: EmailType =
       body.type === "rescheduled" || body.type === "cancelled" ? body.type : "new";
+
+    let whatsappStatus: WhatsAppNotifyResult = "skipped";
 
     const resend = getResend();
     if (!resend) {
@@ -93,6 +100,16 @@ export async function POST(request: Request) {
           { error: errMsg },
           { status: 500 }
         );
+      }
+      if (!isAdminCreated) {
+        whatsappStatus = await notifyAdminWhatsAppNew({
+          customerName: nameStr,
+          email: toStr,
+          date: dateStr,
+          time: timeStr,
+          service: serviceStr,
+          fullCalendarDayCount: fullDayCount,
+        });
       }
     } else if (type === "rescheduled") {
       const { to, customerName, service, oldDate, oldTime, newDate, newTime } = body;
@@ -158,11 +175,18 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
+      whatsappStatus = await notifyAdminWhatsAppCancelled({
+        customerName: nameStr,
+        email: toStr,
+        date: dateStr,
+        time: timeStr,
+        service: serviceStr,
+      });
     } else {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, whatsapp: whatsappStatus });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to send email";
     console.error("[send-confirmation] Error:", e);

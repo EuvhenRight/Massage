@@ -1,8 +1,8 @@
-# Aurora — Luxury Massage & Depilation Salon
+# V2studio — Luxury Massage & Depilation Salon
 
 A production-ready, ultra-luxury salon website with a **dark, cinematic, and cozy** aesthetic. Built with Next.js and Framer Motion.
 
-![Aurora Salon](https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1200)
+![V2studio](https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1200)
 
 ## Features
 
@@ -35,6 +35,22 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Admin WhatsApp (optional)
+
+Booking confirmations use Resend. You can also notify the salon admin on **WhatsApp** via **Twilio** for the same cases as the admin email: **new bookings** from the public flow (not admin-created) and **cancellations**.
+
+Set these in `.env.local` (see [`.env.example`](.env.example)):
+
+- `ADMIN_WHATSAPP_PHONE` — E.164 number that receives alerts (e.g. `+31687630005`)
+- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` — from the [Twilio Console](https://www.twilio.com/console)
+- `TWILIO_WHATSAPP_FROM` — **Twilio’s** WhatsApp sender (sandbox: `whatsapp:+14155238886` from the Twilio console — not your own mobile number). `ADMIN_WHATSAPP_PHONE` is **your** phone that receives alerts (must join the sandbox first).
+
+If any of these are missing, WhatsApp is skipped and emails behave as before. The `POST /api/send-confirmation` response includes `whatsapp`: `skipped` | `sent` | `failed` for debugging.
+
+**Quick test (Twilio only, no email):** from the project root run `npm run test:whatsapp` — it sends two sample messages (new booking + cancelled) to `ADMIN_WHATSAPP_PHONE` if all Twilio variables are set.
+
+**End-to-end:** use a real **public** booking on the site (not admin-created) or cancel an appointment in the admin calendar; both paths call `/api/send-confirmation` after Resend succeeds. If the customer email step fails, WhatsApp is not attempted.
 
 > **Note**: If you see `EPERM` or npm cache errors, fix permissions with:
 > `sudo chown -R $(whoami) ~/.npm`

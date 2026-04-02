@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"test:crud": "tsx scripts/test-crud.ts",
+		"test:whatsapp": "tsx scripts/test-whatsapp-admin.ts",
 		"delete-appointments": "tsx scripts/delete-all-appointments.ts",
 		"test:e2e": "playwright test",
 		"test:e2e:headed": "playwright test --headed",

@@ -1,5 +1,5 @@
 /**
- * Professional appointment email templates for Aurora Salon.
+ * Professional appointment email templates for V2studio.
  * Emails are always sent in Slovak (default site language).
  * Uses table-based layout and inline CSS for maximum email client compatibility.
  */
@@ -18,13 +18,13 @@ const T = {
 	newTime: 'Nový termín',
 	hi: 'Ahoj',
 	confirmedBody:
-		'Vaša rezervácia v salóne Aurora bola potvrdená. Tešíme sa na Vašu návštevu.',
+		'Vaša rezervácia vo štúdiu V2studio bola potvrdená. Tešíme sa na Vašu návštevu.',
 	arriveEarly:
 		'Prosíme prijdite o 10 minút skôr, aby ste sa v pohode stihli prihlásiť.',
 	rescheduledBody: 'Vaša rezervácia bola presunutá. Tu sú aktualizované údaje.',
 	arriveEarlyResched: 'Prosíme prijdite o 10 minút skôr na nový termín.',
 	cancelledBody:
-		'Vaša rezervácia v salóne Aurora bola podľa požiadavky zrušená.',
+		'Vaša rezervácia vo štúdiu V2studio bola podľa požiadavky zrušená.',
 	hopeToSee:
 		'Dúfame, že sa opäť uvidíme. Rezervujte si nový termín, kedykoľvek budete pripravení.',
 	newBookingAdmin: 'Bola vytvorená nová rezervácia.',
@@ -44,7 +44,7 @@ function formatSkFullCalendarDays(count: number): string {
 }
 
 const BRAND = {
-	name: 'Aurora Salon',
+	name: 'V2studio',
 	gold: '#C89E00',
 	goldLight: '#E8B800',
 	dark: '#1a1a1a',
@@ -71,7 +71,7 @@ function emailWrapper(html: string): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aurora Salon</title>
+  <title>V2studio</title>
 </head>
 <body style="${BASE_STYLES} background-color: ${BRAND.bg}; padding: 24px;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; margin: 0 auto;">
@@ -82,7 +82,7 @@ function emailWrapper(html: string): string {
     </tr>
     <tr>
       <td style="padding: 24px; text-align: center; font-size: 12px; color: ${BRAND.muted};">
-        &copy; ${new Date().getFullYear()} Aurora Salon &middot; Luxusný salón masáží a depilácie
+        &copy; ${new Date().getFullYear()} V2studio &middot; Luxusný salón masáží a depilácie
       </td>
     </tr>
   </table>
@@ -96,7 +96,7 @@ function header(status: string, statusColor: string): string {
       <tr>
         <td style="padding: 32px 40px; text-align: center;">
           <h1 style="margin: 0 0 12px 0; font-size: 24px; font-weight: 600; color: ${BRAND.white}; letter-spacing: 0.5px;">
-            Aurora
+            V2studio
           </h1>
           <p style="margin: 0; font-size: 12px; color: ${BRAND.goldLight}; letter-spacing: 2px; text-transform: uppercase;">
             ${T.luxurySalon}

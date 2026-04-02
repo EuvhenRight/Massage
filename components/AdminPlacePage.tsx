@@ -42,6 +42,7 @@ import { autoTable } from 'jspdf-autotable'
 import {
 	Banknote,
 	BarChart2,
+	BookOpen,
 	Calendar,
 	CalendarRange,
 	ChevronLeft,
@@ -628,6 +629,16 @@ export default function AdminPlacePage({
 						</button>
 						<div className='hidden items-center gap-3 sm:flex'>
 							<Link
+								href={`/${locale}/admin/help?place=${place}`}
+								className={`flex min-w-[4.5rem] shrink-0 items-center gap-1.5 text-sm text-icyWhite/70 ${ui.publicBookingHover} transition-colors whitespace-nowrap sm:min-w-[5rem]`}
+								aria-label={t('helpManualAria')}
+							>
+								<BookOpen className='h-4 w-4 shrink-0' />
+								<span className='hidden truncate sm:inline'>
+									{t('helpManual')}
+								</span>
+							</Link>
+							<Link
 								href={bookingUrl}
 								target='_blank'
 								rel='noopener noreferrer'
@@ -727,6 +738,15 @@ export default function AdminPlacePage({
 									{session.user.email}
 								</span>
 							)}
+							<Link
+								href={`/${locale}/admin/help?place=${place}`}
+								onClick={() => setIsMobileMenuOpen(false)}
+								className='inline-flex w-full max-w-xs items-center justify-end gap-1.5 rounded-lg px-3 py-2 text-sm text-icyWhite/90 hover:text-icyWhite hover:bg-white/5 transition-colors'
+								aria-label={t('helpManualAria')}
+							>
+								<span className='truncate'>{t('helpManual')}</span>
+								<BookOpen className='h-4 w-4 shrink-0' />
+							</Link>
 							<Link
 								href={bookingUrl}
 								target='_blank'

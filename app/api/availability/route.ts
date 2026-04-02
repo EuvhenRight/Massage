@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDocs } from "firebase/firestore";
-import {
-  appointmentIntervalsFromDocs,
-  queryAppointmentsOverlappingRange,
-} from "@/lib/appointments-overlap-query";
 import {
   getAvailableTimeSlots,
-  getPrepBufferMinutes,
-  parseOccupiedSlots,
 } from "@/lib/availability-firestore";
-import { db } from "@/lib/firebase";
+import { fetchMergedPublicOccupiedSlots } from "@/lib/booking-occupied-slots";
 import { getSchedule } from "@/lib/schedule-firestore";
 import type { Place } from "@/lib/places";
 
@@ -32,16 +25,14 @@ export async function GET(request: NextRequest) {
     const dayStart = new Date(`${dateStr}T00:00:00`);
     const dayEnd = new Date(`${dateStr}T23:59:59.999`);
 
-    const [schedule, snapshot] = await Promise.all([
-      getSchedule(placeKey),
-      getDocs(
-        queryAppointmentsOverlappingRange(db, placeKey, dayStart, dayEnd)
-      ),
-    ]);
+    const schedule = await getSchedule(placeKey);
 
-    const appointments = appointmentIntervalsFromDocs(snapshot.docs);
-
-    const occupied = parseOccupiedSlots(appointments, getPrepBufferMinutes(schedule));
+    const occupied = await fetchMergedPublicOccupiedSlots(
+      placeKey,
+      dayStart,
+      dayEnd,
+      schedule
+    );
     const durationMinutes = schedule.slotDurationMinutes ?? 60;
     const slots = getAvailableTimeSlots(date, durationMinutes, occupied, schedule);
 

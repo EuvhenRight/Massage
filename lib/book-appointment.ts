@@ -2,6 +2,7 @@ import {
   runTransaction,
   doc,
   getDoc,
+  getDocs,
   updateDoc,
   deleteField,
   serverTimestamp,
@@ -10,12 +11,17 @@ import {
   collection,
   deleteDoc,
 } from "firebase/firestore";
+import {
+  appointmentIntervalsFromDocs,
+  queryAppointmentsOverlappingRange,
+} from "./appointments-overlap-query";
 import { db } from "./firebase";
 import type { Place } from "./places";
 import { getDateKey } from "./booking";
 import {
   getPrepBufferMinutes,
   getWorkingHoursForDate,
+  parseOccupiedSlots,
 } from "./availability-firestore";
 import { getSchedule } from "./schedule-firestore";
 import type { ScheduleData } from "./schedule-firestore";
@@ -420,6 +426,21 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
   const dayKey = `${place}_${dateStr}`;
   const schedule = await getSchedule(place);
   const prepBuffer = getPrepBufferMinutes(schedule);
+
+  const dayQueryStart = new Date(`${dateStr}T00:00:00`);
+  const dayQueryEnd = new Date(`${dateStr}T23:59:59.999`);
+  const aptOverlapSnap = await getDocs(
+    queryAppointmentsOverlappingRange(db, place, dayQueryStart, dayQueryEnd)
+  );
+  const aptOccupied = parseOccupiedSlots(
+    appointmentIntervalsFromDocs(aptOverlapSnap.docs),
+    prepBuffer
+  );
+  for (const occ of aptOccupied) {
+    if (overlaps(occ.start, occ.end, newStart, newEnd)) {
+      throw new Error("OVERLAP");
+    }
+  }
 
   return runTransaction(db, async (transaction) => {
     const dayRef = doc(db, "days", dayKey);
