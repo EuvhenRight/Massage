@@ -4,7 +4,14 @@ import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import type { AppointmentData } from '@/lib/book-appointment'
 import { formatDate, formatTime } from '@/lib/format-date'
 import type { Place } from '@/lib/places'
-import type { ServiceData } from '@/lib/services'
+import {
+	findServiceDataForAppointment,
+	type ServiceData,
+} from '@/lib/services'
+import {
+	DEFAULT_SECTION_CALENDAR_COLOR,
+	resolvedOpaqueCalendarSlotFill,
+} from '@/lib/section-calendar-colors'
 import { cn } from '@/lib/utils'
 import { Copy, Pencil, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -12,14 +19,19 @@ import { useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 
-function colorStripClass(services: ServiceData[], serviceTitle: string): string {
-	const t = (serviceTitle || '').trim().toLowerCase()
-	const s = services.find(
-		x => x.title.trim().toLowerCase() === t,
-	)
+/** Left accent bar: never transparent (catalog may use bg-transparent + border only). */
+function colorStripClass(
+	services: ServiceData[],
+	appointment: Pick<AppointmentData, 'service' | 'serviceId'>,
+): string {
+	const s = findServiceDataForAppointment(appointment, services)
 	const raw = s?.color ?? ''
-	const token = raw.split(/\s+/).find(c => c.startsWith('bg-'))
-	return token ?? 'bg-white/45'
+	const filled = resolvedOpaqueCalendarSlotFill(
+		raw,
+		DEFAULT_SECTION_CALENDAR_COLOR,
+	)
+	const token = filled.split(/\s+/).find(c => c.startsWith('bg-'))
+	return token ?? 'bg-slate-600'
 }
 
 interface AdminCalendarEventDetailProps {
@@ -78,7 +90,7 @@ export default function AdminCalendarEventDetail({
 			? `${t('allDayNoClockTime')} · ${t('dayCountValue', { count: fullDayCount })}`
 			: `${formatTime(startDate, { locale })} – ${formatTime(endDate, { locale })}`
 
-	const strip = colorStripClass(services, appointment.service)
+	const strip = colorStripClass(services, appointment)
 
 	const handleCopy = () => {
 		const dateStr = formatDate(startDate, { locale })

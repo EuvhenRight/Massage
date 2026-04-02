@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"test:crud": "tsx scripts/test-crud.ts",
+		"delete-appointments": "tsx scripts/delete-all-appointments.ts",
 		"test:e2e": "playwright test",
 		"test:e2e:headed": "playwright test --headed",
 		"test:e2e:ui": "playwright test --ui",

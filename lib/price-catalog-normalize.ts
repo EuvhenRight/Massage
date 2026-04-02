@@ -34,14 +34,7 @@ function fillServiceCalendarColors(svc: PriceService): void {
 		sectionColors.push(sec.calendarColor!)
 	}
 
-	const rootZones = svc.zones ?? []
-	const rootZoneColors: string[] = []
-	for (const z of rootZones) {
-		if (!z.calendarColor?.trim()) {
-			z.calendarColor = pickNextCalendarColor(rootZoneColors)
-		}
-		rootZoneColors.push(z.calendarColor!)
-	}
+	// Root-level zones: only use an explicit admin-picked color (no auto palette).
 
 	if ((svc.items?.length ?? 0) > 0 && !svc.calendarColor?.trim()) {
 		svc.calendarColor = pickNextCalendarColor([])
@@ -125,15 +118,12 @@ export function calendarColorForSection(section: PriceSection): string {
 	return section.calendarColor?.trim() || DEFAULT_SECTION_CALENDAR_COLOR
 }
 
+/** Root-level zone: color only if set on the zone (no inheritance from the service). */
 export function calendarColorForRootZone(
-	svc: PriceService,
+	_svc: PriceService,
 	zone: PriceZone,
 ): string {
-	return (
-		zone.calendarColor?.trim() ||
-		svc.calendarColor?.trim() ||
-		DEFAULT_SECTION_CALENDAR_COLOR
-	)
+	return zone.calendarColor?.trim() || DEFAULT_SECTION_CALENDAR_COLOR
 }
 
 export function calendarColorForDirectItems(svc: PriceService): string {

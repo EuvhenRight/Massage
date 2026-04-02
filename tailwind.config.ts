@@ -1,4 +1,19 @@
 import type { Config } from 'tailwindcss'
+import {
+	DEFAULT_SECTION_CALENDAR_COLOR,
+	SECTION_CALENDAR_COLORS,
+} from './lib/section-calendar-colors'
+
+/** Dynamic calendar/price-catalog color classes must not be purged (Firestore + runtime className). */
+const sectionCalendarColorSafelist = Array.from(
+	new Set(
+		[
+			...SECTION_CALENDAR_COLORS,
+			DEFAULT_SECTION_CALENDAR_COLOR,
+			'bg-aurora-magenta border-aurora-magenta',
+		].flatMap(c => c.trim().split(/\s+/).filter(Boolean)),
+	),
+)
 
 const config: Config = {
 	darkMode: 'class',
@@ -205,6 +220,7 @@ const config: Config = {
 			},
 		},
 	},
+	safelist: sectionCalendarColorSafelist,
 	plugins: [require('tailwindcss-animate')],
 }
 

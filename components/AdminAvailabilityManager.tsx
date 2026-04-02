@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -10,6 +18,7 @@ import type { Place } from "@/lib/places";
 import {
   getSchedule,
   saveSchedule,
+  resolveMonthScopedDaySchedule,
   type ScheduleData,
   type DaySchedule,
 } from "@/lib/schedule-firestore";
@@ -18,7 +27,6 @@ import {
   dayScheduleToWorkingWindow,
   getWorkingHoursForDate,
 } from "@/lib/availability-firestore";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -71,11 +79,16 @@ interface AppointmentForDate {
   startTime: { toDate?: () => Date } | Date;
 }
 
+export type AdminAvailabilityManagerHandle = {
+  save: () => Promise<void>;
+};
+
 interface AdminAvailabilityManagerProps {
   place?: Place;
   schedule?: ScheduleData | null;
   onScheduleChange?: (schedule: ScheduleData | null) => void;
   appointments?: AppointmentForDate[];
+  onSavingChange?: (saving: boolean) => void;
 }
 
 function formatMonthLabel(value: string, monthNames: string[]): string {
@@ -160,12 +173,19 @@ function countAppointmentsOnDate(
   }).length;
 }
 
-export default function AdminAvailabilityManager({
-  place = "massage",
-  schedule: scheduleProp,
-  onScheduleChange,
-  appointments = [],
-}: AdminAvailabilityManagerProps) {
+const AdminAvailabilityManager = forwardRef<
+  AdminAvailabilityManagerHandle,
+  AdminAvailabilityManagerProps
+>(function AdminAvailabilityManager(
+  {
+    place = "massage",
+    schedule: scheduleProp,
+    onScheduleChange,
+    appointments = [],
+    onSavingChange,
+  },
+  ref,
+) {
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
   const ui = useMemo(() => getPlaceAccentUi(place), [place]);
@@ -175,7 +195,6 @@ export default function AdminAvailabilityManager({
   const weekHeaders = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map((k) => t(k));
   const WEEKDAYS = WEEKDAY_KEYS.map((key, i) => ({ day: i, label: t(key) }));
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [scope, setScope] = useState<string>(() => {
     const n = new Date();
     return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`;
@@ -201,14 +220,12 @@ export default function AdminAvailabilityManager({
       .finally(() => setLoading(false));
   }, [place, scheduleProp, t]);
 
-  const activeSchedule: Record<number, DaySchedule> =
-    schedule?.monthOverrides?.[scope] ?? schedule?.defaultSchedule ?? {};
-
   const updateDay = (day: number, value: DaySchedule) => {
     if (!schedule) return;
     const overrides = { ...(schedule.monthOverrides ?? {}) };
-    const current = overrides[scope] ?? { ...schedule.defaultSchedule };
-    overrides[scope] = { ...current, [day]: value };
+    const current = { ...(overrides[scope] ?? {}) };
+    current[day] = value;
+    overrides[scope] = current;
     setSchedule({ ...schedule, monthOverrides: overrides });
   };
 
@@ -228,22 +245,17 @@ export default function AdminAvailabilityManager({
       dateOverrides[dateKey] = null;
     } else {
       const dayOfWeek = date.getDay();
-      const template =
-        activeSchedule[dayOfWeek] ??
-        schedule.defaultSchedule[dayOfWeek] ??
-        DEFAULT_OPEN_DAY;
+      const base = resolveMonthScopedDaySchedule(schedule, scope, dayOfWeek);
       dateOverrides[dateKey] =
-        template === null
-          ? DEFAULT_OPEN_DAY
-          : coerceToWindowDay(template);
+        base === null ? DEFAULT_OPEN_DAY : coerceToWindowDay(base);
     }
     setSchedule({ ...schedule, dateOverrides });
   };
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     const toSave = scheduleRef.current;
     if (!toSave) return;
-    setSaving(true);
+    onSavingChange?.(true);
     try {
       await saveSchedule(toSave, place);
       toast.success(t("availabilitySaved"));
@@ -251,9 +263,11 @@ export default function AdminAvailabilityManager({
       console.error("Save schedule failed:", err);
       toast.error(t("saveFailed"));
     } finally {
-      setSaving(false);
+      onSavingChange?.(false);
     }
-  };
+  }, [place, t, onSavingChange]);
+
+  useImperativeHandle(ref, () => ({ save: handleSave }), [handleSave]);
 
   if (loading) {
     return (
@@ -331,8 +345,7 @@ export default function AdminAvailabilityManager({
             </p>
             <div className="space-y-2">
         {WEEKDAYS.map(({ day, label }) => {
-          const daySched =
-            activeSchedule[day] ?? schedule?.defaultSchedule[day] ?? null;
+          const daySched = resolveMonthScopedDaySchedule(schedule, scope, day);
           const isOpen = daySched != null;
           const windowHours = daySched ? coerceToWindowDay(daySched) : null;
 
@@ -462,17 +475,11 @@ export default function AdminAvailabilityManager({
             </div>
           )}
         </div>
-
-        <div className="pt-6 mt-6 border-t border-white/10">
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className={ui.availabilitySaveBtn}
-          >
-            {saving ? t("saving") : t("saveAvailability")}
-          </Button>
-        </div>
       </div>
     </div>
   );
-}
+});
+
+AdminAvailabilityManager.displayName = "AdminAvailabilityManager";
+
+export default AdminAvailabilityManager;

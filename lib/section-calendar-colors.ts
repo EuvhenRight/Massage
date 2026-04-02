@@ -29,6 +29,12 @@ export function opaqueCalendarSlotClasses(classStr: string): string {
 		.filter(Boolean)
 		.map((tok) => {
 			if (tok.startsWith('bg-') || tok.startsWith('border-')) {
+				if (tok.startsWith('bg-')) {
+					// Fully transparent opacity → treat as no fill so fallback applies
+					if (/\/0(?:\.0+)?$/.test(tok) || /\/\[0\]/.test(tok)) {
+						return 'bg-transparent'
+					}
+				}
 				return tok.replace(/\/(?:\d+|\[[^\]]+\])$/, '')
 			}
 			return tok
@@ -44,6 +50,10 @@ function slotHasVisibleBackground(opaqueClasses: string): boolean {
 	const bg = tokens.find((t) => t.startsWith('bg-'))
 	if (!bg) return false
 	if (INVISIBLE_BG_TOKENS.has(bg)) return false
+	const lower = bg.toLowerCase()
+	if (lower.includes('transparent')) return false
+	// Arbitrary colors that are fully transparent, e.g. bg-[rgba(0,0,0,0)]
+	if (/rgba?\([^)]*,\s*0(?:\.0+)?\s*\)/.test(lower)) return false
 	return true
 }
 

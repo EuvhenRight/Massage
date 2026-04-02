@@ -79,6 +79,14 @@ function matchServiceByNeedle(
   return undefined;
 }
 
+/** Split catalog path "A › B › C" or "A > B > C" into segments. */
+function servicePathParts(raw: string): string[] {
+  return raw
+    .split(/\s*(?:›|>)\s*/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
 export function findServiceDataForAppointment(
   appointment: { service: string; serviceId?: string },
   services: ServiceData[],
@@ -90,13 +98,17 @@ export function findServiceDataForAppointment(
   const needle = normalizeServiceMatchKey(appointment.service);
   const full = matchServiceByNeedle(needle, services);
   if (full) return full;
-  // Price-catalog path: "Zone > … > Item" — match last segment to synced service title
-  const parts = appointment.service.split(">").map((p) => p.trim()).filter(Boolean);
+  const parts = servicePathParts(appointment.service);
   if (parts.length > 1) {
-    return matchServiceByNeedle(
-      normalizeServiceMatchKey(parts[parts.length - 1] ?? ""),
-      services,
-    );
+    for (let n = parts.length; n >= 1; n--) {
+      const chunk = parts.slice(-n);
+      const withGuillemet = normalizeServiceMatchKey(chunk.join(" › "));
+      const hitG = matchServiceByNeedle(withGuillemet, services);
+      if (hitG) return hitG;
+      const withSpace = normalizeServiceMatchKey(chunk.join(" "));
+      const hitS = matchServiceByNeedle(withSpace, services);
+      if (hitS) return hitS;
+    }
   }
   return undefined;
 }

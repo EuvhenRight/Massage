@@ -45,8 +45,9 @@ export interface ZonePriceItem extends LocalizedText {
 export interface PriceZone extends LocalizedText {
   id: string;
   /**
-   * Calendar color when this zone sits directly under a service (no parent section).
-   * Ignored for booking color when the zone is inside a section — parent section color wins.
+   * Optional calendar color when this zone sits directly under a service (no parent section).
+   * If unset, calendar/agenda use the neutral default — the service color is not inherited.
+   * Ignored when the zone is inside a section (section color applies).
    */
   calendarColor?: string;
   items: ZonePriceItem[];

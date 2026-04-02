@@ -1,8 +1,12 @@
 'use client'
 
 import AdminAppointmentModal from '@/components/AdminAppointmentModal'
-import AdminAvailabilityManager from '@/components/AdminAvailabilityManager'
-import AdminPriceCatalog from '@/components/AdminPriceCatalog'
+import AdminAvailabilityManager, {
+	type AdminAvailabilityManagerHandle,
+} from '@/components/AdminAvailabilityManager'
+import AdminPriceCatalog, {
+	type AdminPriceCatalogHandle,
+} from '@/components/AdminPriceCatalog'
 import BookingCalendarGrid from '@/components/BookingCalendarGrid'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { buildAdminCalendarServices } from '@/lib/admin-calendar-services'
@@ -16,7 +20,12 @@ import { db } from '@/lib/firebase'
 import { formatDate, formatTime } from '@/lib/format-date'
 import type { Place } from '@/lib/places'
 import { getSchedule } from '@/lib/schedule-firestore'
-import type { ServiceData } from '@/lib/services'
+import {
+	ADMIN_APPOINTMENT_FALLBACK_COLOR,
+	findServiceDataForAppointment,
+	type ServiceData,
+} from '@/lib/services'
+import { resolvedOpaqueCalendarSlotFill } from '@/lib/section-calendar-colors'
 import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { clsx } from 'clsx'
 import {
@@ -40,6 +49,7 @@ import {
 	Info,
 	LogOut,
 	Menu,
+	Save,
 	Search,
 	Settings,
 	X,
@@ -50,9 +60,11 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import {
 	type ElementType,
+	type ReactNode,
 	useCallback,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from 'react'
 
@@ -66,6 +78,43 @@ type AdminNavItem = {
 	calendarTbd?: number
 	/** Calendar only: full-day rows still missing chosen days */
 	calendarDays?: number
+}
+
+function agendaServiceSwatchClassName(
+	apt: AppointmentData,
+	services: ServiceData[],
+): string {
+	const svc = findServiceDataForAppointment(apt, services)
+	return resolvedOpaqueCalendarSlotFill(
+		svc?.color ?? '',
+		ADMIN_APPOINTMENT_FALLBACK_COLOR,
+	)
+}
+
+function AgendaServiceLine({
+	apt,
+	services,
+	meta,
+}: {
+	apt: AppointmentData
+	services: ServiceData[]
+	meta?: ReactNode
+}) {
+	return (
+		<span className='inline-flex items-start gap-2 min-w-0'>
+			<span
+				className={clsx(
+					'mt-1 h-2.5 w-2.5 shrink-0 rounded-sm shadow-sm shadow-black/30',
+					agendaServiceSwatchClassName(apt, services),
+				)}
+				aria-hidden
+			/>
+			<span className='min-w-0 flex-1'>
+				<span className='text-icyWhite'>{apt.service}</span>
+				{meta}
+			</span>
+		</span>
+	)
 }
 
 function toAppointmentData(doc: {
@@ -133,6 +182,13 @@ export default function AdminPlacePage({
 
 	const placeLabel = tCommon(place === 'massage' ? 'massage' : 'depilation')
 	const ui = useMemo(() => getPlaceAccentUi(place), [place])
+	/** Same shell as the calendar “add appointment” FAB; used for all primary admin actions. */
+	const adminDockFabClass = clsx(
+		'flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium shadow-lg transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-nearBlack sm:px-5 max-w-[min(100vw-2rem,18rem)]',
+		ui.fab,
+	)
+	const adminDockFabDisabled =
+		'disabled:opacity-50 disabled:pointer-events-none disabled:hover:scale-100'
 	const section = sectionProp
 	const navItems = useMemo<AdminNavItem[]>(
 		() => [
@@ -170,6 +226,12 @@ export default function AdminPlacePage({
 	const [allAppointments, setAllAppointments] = useState<AppointmentData[]>([])
 	const [analyticsSearch, setAnalyticsSearch] = useState('')
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+	const [availabilitySaving, setAvailabilitySaving] = useState(false)
+	const [priceCatalogSaving, setPriceCatalogSaving] = useState(false)
+	const availabilityManagerRef = useRef<AdminAvailabilityManagerHandle | null>(
+		null,
+	)
+	const priceCatalogRef = useRef<AdminPriceCatalogHandle | null>(null)
 	const prepBuffer = getPrepBufferMinutes(schedule)
 	const addModalServices = calendarServices.length > 0 ? calendarServices : services
 
@@ -207,14 +269,17 @@ export default function AdminPlacePage({
 		[calendarServices, services],
 	)
 
+	/**
+	 * Firestore-synced line items first (stable ids + colors from catalog sync), then
+	 * synthetic catalog rows (`section:…`, `zone:…`) for the legend — no title-based
+	 * dedupe so a section title never hides a bookable service with the same label.
+	 */
 	const calendarColorServices = useMemo(() => {
-		const byTitle = new Map<string, ServiceData>()
-		for (const service of [...calendarServices, ...services]) {
-			const key = service.title.trim().toLocaleLowerCase()
-			if (!key || byTitle.has(key)) continue
-			byTitle.set(key, service)
-		}
-		return Array.from(byTitle.values())
+		const firestoreIds = new Set(services.map(s => s.id))
+		return [
+			...services,
+			...calendarServices.filter(c => !firestoreIds.has(c.id)),
+		]
 	}, [calendarServices, services])
 	const formatAppointmentDateLabel = useCallback(
 		(apt: AppointmentData, start: Date, end: Date) => {
@@ -829,7 +894,10 @@ export default function AdminPlacePage({
 																	</span>
 																)}
 															</div>
-															<div className='text-icyWhite'>{apt.service}</div>
+															<AgendaServiceLine
+																apt={apt}
+																services={calendarColorServices}
+															/>
 															<div className='text-xs text-icyWhite/70'>
 																{apt.fullName || '—'}
 															</div>
@@ -853,9 +921,6 @@ export default function AdminPlacePage({
 												apt.endTime && 'toDate' in apt.endTime
 													? apt.endTime.toDate()
 													: new Date(apt.endTime as Date)
-											const duration = Math.round(
-												(end.getTime() - start.getTime()) / 60000,
-											)
 											return (
 												<div
 													key={apt.id}
@@ -870,7 +935,10 @@ export default function AdminPlacePage({
 															{formatAppointmentMetaLabel(apt, start, end)}
 														</span>
 													</div>
-													<div className='text-icyWhite'>{apt.service}</div>
+													<AgendaServiceLine
+														apt={apt}
+														services={calendarColorServices}
+													/>
 													<div className='text-xs text-icyWhite/70'>
 														{apt.fullName || '—'}
 													</div>
@@ -933,12 +1001,17 @@ export default function AdminPlacePage({
 																	—
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
-																	<span>{apt.service}</span>
-																	<span className='text-icyWhite/50 text-xs ml-1'>
-																		{tbdDayCount > 0
-																			? `(${t('dayCountValue', { count: tbdDayCount })})`
-																			: `(${duration}m)`}
-																	</span>
+																	<AgendaServiceLine
+																		apt={apt}
+																		services={calendarColorServices}
+																		meta={
+																			<span className='text-icyWhite/50 text-xs ml-1'>
+																				{tbdDayCount > 0
+																					? `(${t('dayCountValue', { count: tbdDayCount })})`
+																					: `(${duration}m)`}
+																			</span>
+																		}
+																	/>
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
 																	{apt.fullName || '—'}
@@ -961,9 +1034,6 @@ export default function AdminPlacePage({
 															apt.endTime && 'toDate' in apt.endTime
 																? apt.endTime.toDate()
 																: new Date(apt.endTime as Date)
-														const duration = Math.round(
-															(end.getTime() - start.getTime()) / 60000,
-														)
 														return (
 															<tr
 																key={apt.id}
@@ -976,10 +1046,21 @@ export default function AdminPlacePage({
 																	{formatAppointmentTimeLabel(apt, start)}
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
-																	<span>{apt.service}</span>
-																	<span className='text-icyWhite/50 text-xs ml-1'>
-																		({formatAppointmentMetaLabel(apt, start, end)})
-																	</span>
+																	<AgendaServiceLine
+																		apt={apt}
+																		services={calendarColorServices}
+																		meta={
+																			<span className='text-icyWhite/50 text-xs ml-1'>
+																				(
+																				{formatAppointmentMetaLabel(
+																					apt,
+																					start,
+																					end,
+																				)}
+																				)
+																			</span>
+																		}
+																	/>
 																</td>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
 																	{apt.fullName || '—'}
@@ -1013,25 +1094,15 @@ export default function AdminPlacePage({
 								{t('analyticsSubtitle')}
 							</p>
 						</div>
-						<div className='flex flex-col sm:flex-row gap-4'>
-							<div className='relative flex-1'>
-								<Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-icyWhite/50' />
-								<input
-									type='search'
-									value={analyticsSearch}
-									onChange={e => setAnalyticsSearch(e.target.value)}
-									placeholder={t('searchByNameOrPhone')}
-									className={`w-full pl-10 pr-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:outline-none focus:ring-2 ${ui.analyticsSearchFocus}`}
-								/>
-							</div>
-							<button
-								type='button'
-								onClick={exportAnalyticsPdf}
-								className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border transition-colors ${ui.analyticsExportBtn}`}
-							>
-								<FileDown className='h-4 w-4' />
-								{t('exportPdf')}
-							</button>
+						<div className='relative max-w-2xl'>
+							<Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-icyWhite/50' />
+							<input
+								type='search'
+								value={analyticsSearch}
+								onChange={e => setAnalyticsSearch(e.target.value)}
+								placeholder={t('searchByNameOrPhone')}
+								className={`w-full pl-10 pr-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:outline-none focus:ring-2 ${ui.analyticsSearchFocus}`}
+							/>
 						</div>
 						<div className={ui.adminPanel}>
 							{filteredAnalytics.length === 0 ? (
@@ -1201,9 +1272,11 @@ export default function AdminPlacePage({
 								</p>
 								<div className={ui.adminPanel}>
 									<AdminAvailabilityManager
+										ref={availabilityManagerRef}
 										place={place}
 										schedule={schedule}
 										onScheduleChange={setSchedule}
+										onSavingChange={setAvailabilitySaving}
 										appointments={allAppointments.filter(
 											a => a.place === place,
 										)}
@@ -1216,24 +1289,89 @@ export default function AdminPlacePage({
 
 				{section === 'price' && (
 					<div className='animate-in fade-in-0 duration-200 w-full'>
-						<AdminPriceCatalog place={place} />
+						<AdminPriceCatalog
+							ref={priceCatalogRef}
+							place={place}
+							onSavingChange={setPriceCatalogSaving}
+						/>
 					</div>
 				)}
 				</div>
 			</div>
 
-			{section === 'calendar' && (
-				<button
-					type='button'
-					onClick={openAddAppointment}
-					aria-label={t('addAppointment')}
-					className={`fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))] z-50 flex items-center gap-2 rounded-full px-4 py-3 text-sm font-medium shadow-lg transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-nearBlack sm:bottom-6 sm:right-6 sm:px-5 ${ui.fab}`}
+			{(section === 'calendar' ||
+				section === 'agenda' ||
+				section === 'settings' ||
+				section === 'price' ||
+				section === 'analytics') && (
+				<div
+					className={clsx(
+						'fixed z-50 flex flex-col gap-2 items-end',
+						'bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] right-[calc(1rem+env(safe-area-inset-right,0px))]',
+						'sm:bottom-6 sm:right-6',
+					)}
 				>
-					<span className='text-lg leading-none'>+</span>
-					<span className='hidden max-w-[10rem] truncate sm:inline'>
-						{t('addAppointment')}
-					</span>
-				</button>
+					{section === 'analytics' && (
+						<button
+							type='button'
+							onClick={exportAnalyticsPdf}
+							className={adminDockFabClass}
+							aria-label={t('exportPdf')}
+						>
+							<FileDown className='h-4 w-4 shrink-0' aria-hidden />
+							<span className='truncate hidden sm:inline'>{t('exportPdf')}</span>
+						</button>
+					)}
+					{section === 'price' && (
+						<button
+							type='button'
+							disabled={priceCatalogSaving}
+							onClick={() => void priceCatalogRef.current?.save()}
+							className={clsx(adminDockFabClass, adminDockFabDisabled)}
+							aria-label={
+								priceCatalogSaving ? t('saving') : t('save')
+							}
+						>
+							<Save className='h-4 w-4 shrink-0' aria-hidden />
+							<span className='truncate hidden sm:inline'>
+								{priceCatalogSaving ? t('saving') : t('save')}
+							</span>
+						</button>
+					)}
+					{section === 'settings' && (
+						<button
+							type='button'
+							disabled={availabilitySaving}
+							onClick={() => void availabilityManagerRef.current?.save()}
+							className={clsx(adminDockFabClass, adminDockFabDisabled)}
+							aria-label={
+								availabilitySaving ? t('saving') : t('saveAvailability')
+							}
+						>
+							<Save className='h-4 w-4 shrink-0' aria-hidden />
+							<span className='truncate hidden sm:inline'>
+								{availabilitySaving
+									? t('saving')
+									: t('saveAvailability')}
+							</span>
+						</button>
+					)}
+					{(section === 'calendar' || section === 'agenda') && (
+						<button
+							type='button'
+							onClick={openAddAppointment}
+							aria-label={t('addAppointment')}
+							className={adminDockFabClass}
+						>
+							<span className='text-lg leading-none' aria-hidden>
+								+
+							</span>
+							<span className='hidden max-w-[10rem] truncate sm:inline'>
+								{t('addAppointment')}
+							</span>
+						</button>
+					)}
+				</div>
 			)}
 
 			<AdminAppointmentModal

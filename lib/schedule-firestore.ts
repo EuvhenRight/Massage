@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
 import { timeToMinutes } from "./booking";
 import { db } from "./firebase";
 import type { Place } from "./places";
@@ -88,6 +88,33 @@ export interface ScheduleData {
   dateOverrides?: DateOverrides;
 }
 
+/**
+ * Weekday hours for `monthKey` (YYYY-MM). A key present in that month’s map wins — including
+ * `null` (explicitly closed). Missing weekday keys fall back to `defaultSchedule`.
+ */
+export function resolveMonthScopedDaySchedule(
+  schedule: ScheduleData,
+  monthKey: string,
+  dayOfWeek: number,
+): DaySchedule {
+  const mo = schedule.monthOverrides?.[monthKey];
+  if (!mo) return schedule.defaultSchedule[dayOfWeek] ?? null;
+  if (Object.prototype.hasOwnProperty.call(mo, dayOfWeek)) {
+    return mo[dayOfWeek] ?? null;
+  }
+  return schedule.defaultSchedule[dayOfWeek] ?? null;
+}
+
+function readMonthOverrideDay(
+  val: Record<string | number, unknown>,
+  i: number,
+): unknown {
+  if (Object.prototype.hasOwnProperty.call(val, i)) return val[i];
+  const sk = String(i);
+  if (Object.prototype.hasOwnProperty.call(val, sk)) return val[sk];
+  return undefined;
+}
+
 const DEFAULT_SCHEDULE: ScheduleData = {
   defaultSchedule: {
     0: null,
@@ -102,18 +129,11 @@ const DEFAULT_SCHEDULE: ScheduleData = {
   prepBufferMinutes: 15,
 };
 
-export async function getSchedule(place: Place = "massage"): Promise<ScheduleData> {
-  let ref = doc(db, "schedule", place);
-  let snap = await getDoc(ref);
-  if (!snap.exists() && place === "massage") {
-    ref = doc(db, "schedule", "default");
-    snap = await getDoc(ref);
-  }
-  if (!snap.exists()) return DEFAULT_SCHEDULE;
-  const d = snap.data();
+/** Parse a Firestore `schedule/{place}` document into `ScheduleData`. */
+export function scheduleDataFromFirestoreDoc(d: Record<string, unknown>): ScheduleData {
   const defaultSchedule: Record<number, DaySchedule> = { 0: null, 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
   for (let i = 0; i <= 6; i++) {
-    const v = d.defaultSchedule?.[i];
+    const v = (d.defaultSchedule as Record<string | number, unknown> | undefined)?.[i];
     defaultSchedule[i] =
       v === null ? null : parseDaySchedule(v) ?? DEFAULT_SCHEDULE.defaultSchedule[i];
   }
@@ -124,9 +144,11 @@ export async function getSchedule(place: Place = "massage"): Promise<ScheduleDat
       if (typeof val !== "object" || val === null) continue;
       const parsed: Record<number, DaySchedule> = {};
       for (let i = 0; i <= 6; i++) {
-        const v = val[i];
-        parsed[i] = v === null ? null : parseDaySchedule(v);
+        const v = readMonthOverrideDay(val as Record<string | number, unknown>, i);
+        if (v === undefined) continue;
+        parsed[i] = v === null ? null : parseDaySchedule(v) ?? null;
       }
+      if (Object.keys(parsed).length === 0) continue;
       monthOverrides[key] = parsed;
     }
   }
@@ -148,6 +170,53 @@ export async function getSchedule(place: Place = "massage"): Promise<ScheduleDat
     monthOverrides: Object.keys(monthOverrides).length > 0 ? monthOverrides : undefined,
     dateOverrides: Object.keys(dateOverrides).length > 0 ? dateOverrides : undefined,
   };
+}
+
+/**
+ * Live updates for `schedule/{place}` (same fallback as getSchedule: massage → default doc).
+ * Use in admin UI so closed-day overrides apply without reopening the modal.
+ */
+export function subscribeSchedule(place: Place, onSchedule: (schedule: ScheduleData) => void): () => void {
+  const refPrimary = doc(db, "schedule", place);
+  let unsubDefault: (() => void) | null = null;
+
+  const unsubPrimary = onSnapshot(refPrimary, (snap) => {
+    if (unsubDefault) {
+      unsubDefault();
+      unsubDefault = null;
+    }
+    if (snap.exists()) {
+      onSchedule(scheduleDataFromFirestoreDoc(snap.data() as Record<string, unknown>));
+      return;
+    }
+    if (place === "massage") {
+      unsubDefault = onSnapshot(doc(db, "schedule", "default"), (defSnap) => {
+        if (defSnap.exists()) {
+          onSchedule(scheduleDataFromFirestoreDoc(defSnap.data() as Record<string, unknown>));
+        } else {
+          onSchedule(DEFAULT_SCHEDULE);
+        }
+      });
+    } else {
+      onSchedule(DEFAULT_SCHEDULE);
+    }
+  });
+
+  return () => {
+    if (unsubDefault) unsubDefault();
+    unsubPrimary();
+  };
+}
+
+export async function getSchedule(place: Place = "massage"): Promise<ScheduleData> {
+  let ref = doc(db, "schedule", place);
+  let snap = await getDoc(ref);
+  if (!snap.exists() && place === "massage") {
+    ref = doc(db, "schedule", "default");
+    snap = await getDoc(ref);
+  }
+  if (!snap.exists()) return DEFAULT_SCHEDULE;
+  return scheduleDataFromFirestoreDoc(snap.data() as Record<string, unknown>);
 }
 
 /** Build Firestore-safe payload (no undefined, numeric keys as strings for nested maps) */

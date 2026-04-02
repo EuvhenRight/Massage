@@ -24,7 +24,14 @@ import {
 import { Label } from '@/components/ui/label'
 import { useLocale, useTranslations } from 'next-intl'
 import { clsx } from 'clsx'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+	forwardRef,
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useMemo,
+	useState,
+} from 'react'
 import { toast } from 'sonner'
 
 const EMPTY_CATALOG: PriceCatalogStructure = {
@@ -32,8 +39,13 @@ const EMPTY_CATALOG: PriceCatalogStructure = {
 	woman: { services: [] },
 }
 
+export type AdminPriceCatalogHandle = {
+	save: () => Promise<void>
+}
+
 interface AdminPriceCatalogProps {
 	place: Place
+	onSavingChange?: (saving: boolean) => void
 }
 
 type SelectedNode =
@@ -63,7 +75,8 @@ type SelectedNode =
 	  }
 	| null
 
-export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
+const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogProps>(
+	function AdminPriceCatalog({ place, onSavingChange }, ref) {
 	const t = useTranslations('admin')
 	const tPrice = useTranslations('price')
 	const ui = useMemo(() => getPlaceAccentUi(place), [place])
@@ -87,7 +100,6 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 	)
 	const [catalog, setCatalog] = useState<PriceCatalogStructure>(EMPTY_CATALOG)
 	const [loading, setLoading] = useState(true)
-	const [saving, setSaving] = useState(false)
 
 	const load = useCallback(() => {
 		setLoading(true)
@@ -109,7 +121,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 	}, [load])
 
 	const save = useCallback(async () => {
-		setSaving(true)
+		onSavingChange?.(true)
 		try {
 			const res = await fetch(`/api/price-catalog?place=${place}`, {
 				method: 'PUT',
@@ -125,9 +137,11 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 		} catch (e) {
 			toast.error(t('saveFailed'))
 		} finally {
-			setSaving(false)
+			onSavingChange?.(false)
 		}
-	}, [catalog, place, t, load])
+	}, [catalog, place, t, load, onSavingChange])
+
+	useImperativeHandle(ref, () => ({ save }), [save])
 
 	const updateSex = useCallback((sex: SexKey, services: PriceService[]) => {
 		setCatalog(prev => ({
@@ -747,6 +761,9 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 							</span>
 						</>
 					)}
+					<span className='text-icyWhite/50 text-sm self-center'>
+						{t('priceLabel')}
+					</span>
 					<input
 						type='text'
 						value={typeof item.price === 'number' ? item.price : item.price}
@@ -765,6 +782,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 							)
 						}}
 						placeholder={t('priceCatalogPriceInputPlaceholder')}
+						aria-label={t('priceLabel')}
 						className='w-28 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
 					/>
 					<button
@@ -1037,6 +1055,9 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 												</span>
 											</>
 										)}
+										<span className='text-icyWhite/50 text-sm self-center'>
+											{t('priceLabel')}
+										</span>
 										<input
 											type='text'
 											value={
@@ -1050,6 +1071,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 												})
 											}}
 											placeholder={t('priceCatalogPriceInputPlaceholderShort')}
+											aria-label={t('priceLabel')}
 											className='w-28 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
 										/>
 										<button
@@ -1080,7 +1102,7 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 
 	return (
 		<div className='space-y-4'>
-			<div className='flex justify-between items-center flex-wrap gap-4'>
+			<div className='flex flex-wrap gap-4'>
 				<div>
 					<h1 className='font-serif text-2xl text-icyWhite'>
 						{t('priceCatalog')}
@@ -1092,14 +1114,6 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 						{t('priceCatalogCalendarSyncHint')}
 					</p>
 				</div>
-				<button
-					type='button'
-					onClick={save}
-					disabled={saving}
-					className={ui.priceCatalogSaveBtn}
-				>
-					{saving ? t('saving') : t('save')}
-				</button>
 			</div>
 
 			<div className='grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[480px]'>
@@ -1334,4 +1348,8 @@ export default function AdminPriceCatalog({ place }: AdminPriceCatalogProps) {
 			</div>
 		</div>
 	)
-}
+})
+
+AdminPriceCatalog.displayName = 'AdminPriceCatalog'
+
+export default AdminPriceCatalog

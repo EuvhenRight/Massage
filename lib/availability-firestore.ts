@@ -1,6 +1,10 @@
 import { Timestamp } from "firebase/firestore";
 import { getDateKey } from "./booking";
-import type { DaySchedule, ScheduleData } from "./schedule-firestore";
+import {
+  type DaySchedule,
+  type ScheduleData,
+  resolveMonthScopedDaySchedule,
+} from "./schedule-firestore";
 
 export const SLOT_INTERVAL = 15; // 15-min slots: 13:00, 13:15, 13:30, 13:45 — 4 per hour
 
@@ -158,11 +162,7 @@ export function resolveRawDayScheduleForDate(
   if (dateOverride !== undefined) return dateOverride;
   const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
   const dayOfWeek = date.getDay();
-  const monthSchedule = schedule.monthOverrides?.[monthKey];
-  const daySchedule = monthSchedule
-    ? monthSchedule[dayOfWeek]
-    : schedule.defaultSchedule[dayOfWeek];
-  return daySchedule ?? null;
+  return resolveMonthScopedDaySchedule(schedule, monthKey, dayOfWeek);
 }
 
 /** Open–close interval for grids, full-day bookings, and window mode. */

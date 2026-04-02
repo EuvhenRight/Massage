@@ -20,7 +20,8 @@ const MONTH_KEYS = ["month1", "month2", "month3", "month4", "month5", "month6", 
 function getDaysInMonth(year: number, month: number): (Date | null)[] {
   const first = new Date(year, month, 1);
   const last = new Date(year, month + 1, 0);
-  const startPad = (first.getDay() + 6) % 7;
+  /** Sunday-first padding — matches `MonthCalendar` in AdminAvailabilityManager. */
+  const startPad = first.getDay();
   const days: (Date | null)[] = Array(startPad).fill(null);
   for (let d = 1; d <= last.getDate(); d++) {
     days.push(new Date(year, month, d));
@@ -43,6 +44,8 @@ export interface AdminTimeAvailabilityConfig {
   durationMinutes: number;
   /** Called when the visible month changes so the parent can load overlapping appointments */
   onViewMonthChange?: (monthStart: Date) => void;
+  /** While true, do not pick dates (occupied list may be stale or empty). */
+  slotsLoading?: boolean;
 }
 
 interface AdminDatePickerProps {
@@ -84,8 +87,9 @@ export default function AdminDatePicker({
   const ui = useMemo(() => getPlaceAccentUi(place), [place]);
   const [internalSchedule, setInternalSchedule] =
     useState<Awaited<ReturnType<typeof getSchedule>> | null>(null);
+  /** `null` from parent means “not loaded yet”, not “no schedule” — must still load for closed-day overrides. */
   const schedule =
-    scheduleProp !== undefined ? scheduleProp : internalSchedule;
+    scheduleProp != null ? scheduleProp : internalSchedule;
   const disabledDates = useMemo(() => new Set(disabledDateKeys), [disabledDateKeys]);
   const selectedDates = useMemo(() => new Set(selectedDateKeys), [selectedDateKeys]);
   const MONTHS = MONTH_KEYS.map((k) => t(k));
@@ -125,7 +129,7 @@ export default function AdminDatePicker({
   }, [open, fallbackViewDate]);
 
   useEffect(() => {
-    if (scheduleProp !== undefined) return;
+    if (scheduleProp != null) return;
     getSchedule(place)
       .then(setInternalSchedule)
       .catch(() => setInternalSchedule(null));
@@ -158,6 +162,7 @@ export default function AdminDatePicker({
       if (day.getTime() < min.getTime()) return;
     }
     if (getWorkingHoursForDate(schedule, d) == null) return;
+    if (timeAvailability?.slotsLoading) return;
     if (timeAvailability) {
       const ok = isDateAvailable(
         d,
@@ -293,8 +298,10 @@ export default function AdminDatePicker({
                 })();
               const isUnavailable =
                 getWorkingHoursForDate(schedule, date) == null;
+              const slotsLoading = !!timeAvailability?.slotsLoading;
               const isFullyBookedForTime =
                 timeAvailability &&
+                !slotsLoading &&
                 !isUnavailable &&
                 !isDateAvailable(
                   date,
@@ -312,6 +319,7 @@ export default function AdminDatePicker({
                   disabled={
                     !!isPast ||
                     isUnavailable ||
+                    slotsLoading ||
                     !!isFullyBookedForTime ||
                     isOccupied
                   }
@@ -325,6 +333,7 @@ export default function AdminDatePicker({
                     isToday && !selected && !isMultiSelected && ui.adminDatePickerToday,
                     (isPast ||
                       isUnavailable ||
+                      slotsLoading ||
                       isFullyBookedForTime ||
                       isOccupied) &&
                       "opacity-40 cursor-not-allowed hover:bg-transparent"
@@ -335,6 +344,12 @@ export default function AdminDatePicker({
               );
             })}
           </div>
+
+          {timeAvailability?.slotsLoading ? (
+            <p className="mt-2 text-center text-xs text-icyWhite/55 px-1">
+              {t("adminAvailabilityLoading")}
+            </p>
+          ) : null}
 
           {/* Footer buttons */}
           <div className="mt-3 flex justify-between gap-2 border-t border-white/10 pt-3">

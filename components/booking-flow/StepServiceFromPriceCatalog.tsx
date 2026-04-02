@@ -13,16 +13,24 @@ import {
 import type { BookingAccent } from '@/lib/booking-accent'
 import { db } from '@/lib/firebase'
 import type { Place } from '@/lib/places'
+import {
+	calendarColorForDirectItems,
+	calendarColorForRootZone,
+	calendarColorForSection,
+} from '@/lib/price-catalog-normalize'
 import { getSchedule } from '@/lib/schedule-firestore'
+import { resolvedOpaqueCalendarSlotFill } from '@/lib/section-calendar-colors'
 import {
 	getDescriptionForLocale,
 	getTitleForLocale,
 	normalizeItemBookingDayCount,
 	type PriceCatalogStructure,
 	type PriceLocale,
+	type PriceService,
 	type SexKey,
 	type ZonePriceItem,
 } from '@/types/price-catalog'
+import { clsx } from 'clsx'
 import { getDocs } from 'firebase/firestore'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Undo2 } from 'lucide-react'
@@ -63,9 +71,12 @@ interface CatalogSection {
 	sectionId: string
 	sectionTitle: string
 	sectionDescription: string
+	/** Tailwind bg/border bundle for section tabs (matches admin calendar legend). */
+	sectionCalendarColor: string
 	zones: Array<{
 		zoneId: string
 		zoneTitle: string
+		zoneCalendarColor: string
 		items: Array<{ item: ZonePriceItem; path: string }>
 	}>
 }
@@ -90,12 +101,14 @@ function buildSectionsWithZones(
 		secTitle: string,
 		secDesc: string,
 		zones: CatalogSection['zones'],
+		sectionColorRaw: string,
 	) {
 		if (zones.length === 0) return
 		sections.push({
 			sectionId: secId,
 			sectionTitle: secTitle,
 			sectionDescription: secDesc,
+			sectionCalendarColor: resolvedOpaqueCalendarSlotFill(sectionColorRaw),
 			zones,
 		})
 	}
@@ -110,19 +123,29 @@ function buildSectionsWithZones(
 			for (const sec of secs) {
 				const secTitle = getTitleForLocale(sec, locale)
 				const secDesc = getDescriptionForLocale(sec, locale)
+				const secColor = calendarColorForSection(sec)
 				const zoneList: CatalogSection['zones'] = []
 				for (const zone of sec.zones ?? []) {
 					const zoneTitle = getTitleForLocale(zone, locale)
 					const path = `${svcTitle} › ${secTitle} › ${zoneTitle}`
 					const zoneItems = (zone.items ?? []).map(item => ({ item, path }))
-					zoneList.push({ zoneId: zone.id, zoneTitle, items: zoneItems })
+					zoneList.push({
+						zoneId: zone.id,
+						zoneTitle,
+						zoneCalendarColor: resolvedOpaqueCalendarSlotFill(secColor),
+						items: zoneItems,
+					})
 				}
-				addSection(sec.id, secTitle, secDesc, zoneList)
+				addSection(sec.id, secTitle, secDesc, zoneList, secColor)
 			}
 		} else if (zones.length > 0) {
+			const svcBlockColor = calendarColorForDirectItems(svc)
 			const zoneList: CatalogSection['zones'] = zones.map(zone => ({
 				zoneId: zone.id,
 				zoneTitle: getTitleForLocale(zone, locale),
+				zoneCalendarColor: resolvedOpaqueCalendarSlotFill(
+					calendarColorForRootZone(svc, zone),
+				),
 				items: (zone.items ?? []).map(item => ({
 					item,
 					path: `${svcTitle} › ${getTitleForLocale(zone, locale)}`,
@@ -133,8 +156,10 @@ function buildSectionsWithZones(
 				svcTitle,
 				getDescriptionForLocale(svc, locale),
 				zoneList,
+				svcBlockColor,
 			)
 		} else if (items.length > 0) {
+			const directColor = calendarColorForDirectItems(svc)
 			addSection(
 				`${svc.id}-items`,
 				svcTitle,
@@ -143,13 +168,24 @@ function buildSectionsWithZones(
 					{
 						zoneId: `${svc.id}-items`,
 						zoneTitle: svcTitle,
+						zoneCalendarColor: resolvedOpaqueCalendarSlotFill(directColor),
 						items: items.map(item => ({ item, path: svcTitle })),
 					},
 				],
+				directColor,
 			)
 		}
 	}
 	return sections
+}
+
+/** Representative swatch when picking a service (first section color, else service direct color). */
+function servicePickerAccentColor(svc: PriceService): string {
+	const firstSec = svc.sections?.[0]
+	if (firstSec) {
+		return resolvedOpaqueCalendarSlotFill(calendarColorForSection(firstSec))
+	}
+	return resolvedOpaqueCalendarSlotFill(calendarColorForDirectItems(svc))
 }
 
 export default function StepServiceFromPriceCatalog({
@@ -284,7 +320,10 @@ export default function StepServiceFromPriceCatalog({
 						}),
 					}))
 					.filter(z => z.items.length > 0)
-				return { ...sec, zones }
+				return {
+					...sec,
+					zones,
+				}
 			})
 			.filter(sec => sec.zones.length > 0)
 	}, [sections, searchQuery, priceLocale])
@@ -437,9 +476,16 @@ export default function StepServiceFromPriceCatalog({
 												setActiveSectionId('')
 												setOpenZoneId(null)
 											}}
-											className='min-h-[44px] sm:min-h-0 py-3 px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
+											className='min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12] flex items-center gap-2.5'
 										>
-											<TruncateText className='text-left' tooltipThreshold={25}>
+											<span
+												className={clsx(
+													'w-1.5 shrink-0 self-stretch min-h-[2.25rem] rounded-full',
+													servicePickerAccentColor(svc),
+												)}
+												aria-hidden
+											/>
+											<TruncateText className='text-left flex-1 min-w-0' tooltipThreshold={25}>
 												{getTitleForLocale(svc, priceLocale)}
 											</TruncateText>
 										</button>
@@ -468,13 +514,21 @@ export default function StepServiceFromPriceCatalog({
 											initial={{ opacity: 0, y: 8 }}
 											animate={{ opacity: 1, y: 0 }}
 											transition={{ duration: 0.2 }}
-											className={`min-h-[44px] sm:min-h-0 py-3 px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] ${
+											className={clsx(
+												'min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] flex items-center gap-2.5',
 												effectiveSectionId === sec.sectionId
 													? accent.sectionPillActive
-													: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
-											}`}
+													: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]',
+											)}
 										>
-											<TruncateText className='text-left' tooltipThreshold={25}>
+											<span
+												className={clsx(
+													'w-1.5 shrink-0 self-stretch min-h-[2.25rem] rounded-full',
+													sec.sectionCalendarColor,
+												)}
+												aria-hidden
+											/>
+											<TruncateText className='text-left flex-1 min-w-0' tooltipThreshold={25}>
 												{sec.sectionTitle}
 											</TruncateText>
 										</motion.button>
@@ -508,49 +562,61 @@ export default function StepServiceFromPriceCatalog({
 										>
 											{sec.sectionDescription && (
 												<div
-													className={`flex-shrink-0 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm font-normal text-icyWhite ${openZoneId ? 'hidden md:block' : ''}`}
-												>
-													<p className='break-words'>
-														{expandedSectionDescriptions.has(sec.sectionId)
-															? sec.sectionDescription
-															: sec.sectionDescription.length >
-																  SECTION_DESC_MIN_LENGTH
-																? `${sec.sectionDescription
-																		.slice(
-																			0,
-																			Math.max(
-																				Math.floor(
-																					sec.sectionDescription.length *
-																						SECTION_DESC_PREVIEW_RATIO,
-																				),
-																				20,
-																			),
-																		)
-																		.trim()}\u2026`
-																: sec.sectionDescription}
-													</p>
-													{sec.sectionDescription.length >
-														SECTION_DESC_MIN_LENGTH && (
-														<button
-															type='button'
-															onClick={e =>
-																toggleSectionDescription(e, sec.sectionId)
-															}
-															aria-expanded={expandedSectionDescriptions.has(
-																sec.sectionId,
-															)}
-															aria-label={
-																expandedSectionDescriptions.has(sec.sectionId)
-																	? t('showLess')
-																	: t('showMore')
-															}
-															className={accent.showMoreLink}
-														>
-															{expandedSectionDescriptions.has(sec.sectionId)
-																? t('showLess')
-																: t('showMore')}
-														</button>
+													className={clsx(
+														'flex-shrink-0 flex gap-2.5 items-stretch',
+														openZoneId ? 'hidden md:flex' : '',
 													)}
+												>
+													<span
+														className={clsx(
+															'w-1 shrink-0 rounded-full min-h-[2.5rem]',
+															sec.sectionCalendarColor,
+														)}
+														aria-hidden
+													/>
+													<div className='flex-1 min-w-0 px-3 py-2.5 rounded-lg bg-white/5 border border-white/10 text-sm font-normal text-icyWhite'>
+														<p className='break-words'>
+															{expandedSectionDescriptions.has(sec.sectionId)
+																? sec.sectionDescription
+																: sec.sectionDescription.length >
+																	  SECTION_DESC_MIN_LENGTH
+																	? `${sec.sectionDescription
+																			.slice(
+																				0,
+																				Math.max(
+																					Math.floor(
+																						sec.sectionDescription.length *
+																							SECTION_DESC_PREVIEW_RATIO,
+																					),
+																					20,
+																				),
+																			)
+																			.trim()}\u2026`
+																	: sec.sectionDescription}
+														</p>
+														{sec.sectionDescription.length >
+															SECTION_DESC_MIN_LENGTH && (
+															<button
+																type='button'
+																onClick={e =>
+																	toggleSectionDescription(e, sec.sectionId)
+																}
+																aria-expanded={expandedSectionDescriptions.has(
+																	sec.sectionId,
+																)}
+																aria-label={
+																	expandedSectionDescriptions.has(sec.sectionId)
+																		? t('showLess')
+																		: t('showMore')
+																}
+																className={accent.showMoreLink}
+															>
+																{expandedSectionDescriptions.has(sec.sectionId)
+																	? t('showLess')
+																	: t('showMore')}
+															</button>
+														)}
+													</div>
 												</div>
 											)}
 											{sec.zones
@@ -565,18 +631,34 @@ export default function StepServiceFromPriceCatalog({
 													return (
 														<div
 															key={zone.zoneId}
-															className={`border border-white/10 rounded-lg overflow-hidden ${
+															className={clsx(
+																'border border-white/10 rounded-lg overflow-hidden flex flex-row',
 																isOpen
-																	? 'flex-1 min-h-0 flex flex-col'
-																	: 'flex-shrink-0'
-															}`}
+																	? 'flex-1 min-h-0'
+																	: 'flex-shrink-0',
+															)}
 														>
+															<span
+																className={clsx(
+																	'w-1 shrink-0 self-stretch min-h-[3rem]',
+																	zone.zoneCalendarColor,
+																)}
+																aria-hidden
+															/>
+															<div
+																className={clsx(
+																	'min-w-0 flex-1 flex flex-col',
+																	isOpen
+																		? 'flex-1 min-h-0'
+																		: '',
+																)}
+															>
 															<button
 																type='button'
 																onClick={() =>
 																	setOpenZoneId(isOpen ? null : zoneValue)
 																}
-																className='w-full min-h-[48px] flex items-center justify-between px-4 py-3 sm:py-2.5 hover:bg-white/5 active:bg-white/[0.07] text-icyWhite text-left text-sm font-medium flex-shrink-0 transition-colors touch-manipulation'
+																className='w-full min-h-[48px] flex items-center justify-between px-3 sm:px-4 py-3 sm:py-2.5 hover:bg-white/5 active:bg-white/[0.07] text-icyWhite text-left text-sm font-medium flex-shrink-0 transition-colors touch-manipulation'
 															>
 																<span className='flex-1 min-w-0 text-left'>
 																	<TruncateText tooltipThreshold={20}>
@@ -718,6 +800,7 @@ export default function StepServiceFromPriceCatalog({
 																	)}
 																</div>
 															)}
+															</div>
 														</div>
 													)
 												})}
