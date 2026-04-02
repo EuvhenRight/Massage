@@ -6,6 +6,7 @@
 		"test:crud": "tsx scripts/test-crud.ts",
 		"test:whatsapp": "tsx scripts/test-whatsapp-admin.ts",
 		"delete-appointments": "tsx scripts/delete-all-appointments.ts",
+		"rebuild-days": "tsx scripts/rebuild-days-from-appointments.ts",
 		"test:e2e": "playwright test",
 		"test:e2e:headed": "playwright test --headed",
 		"test:e2e:ui": "playwright test --ui",

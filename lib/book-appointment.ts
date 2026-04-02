@@ -2,7 +2,6 @@ import {
   runTransaction,
   doc,
   getDoc,
-  getDocs,
   updateDoc,
   deleteField,
   serverTimestamp,
@@ -11,18 +10,14 @@ import {
   collection,
   deleteDoc,
 } from "firebase/firestore";
-import {
-  appointmentIntervalsFromDocs,
-  queryAppointmentsOverlappingRange,
-} from "./appointments-overlap-query";
 import { db } from "./firebase";
 import type { Place } from "./places";
 import { getDateKey } from "./booking";
 import {
   getPrepBufferMinutes,
   getWorkingHoursForDate,
-  parseOccupiedSlots,
 } from "./availability-firestore";
+import { fetchMergedPublicOccupiedSlots } from "./booking-occupied-slots";
 import { getSchedule } from "./schedule-firestore";
 import type { ScheduleData } from "./schedule-firestore";
 
@@ -227,7 +222,8 @@ function getLegacyFullDayDateKeys(startDate: Date, count: number): string[] {
   return keys;
 }
 
-function getAppointmentDayDateKeys(data: Record<string, unknown>): string[] {
+/** Which `YYYY-MM-DD` keys this appointment uses under `days/{place}_{date}` (full-day span or timed anchor day). */
+export function getAppointmentDayDateKeys(data: Record<string, unknown>): string[] {
   const explicit = normalizeFullDayDates(data.adminFullDayDates);
   if (explicit.length > 0) return explicit;
   const start = (data.startTime as Timestamp).toDate();
@@ -438,14 +434,14 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
 
   const dayQueryStart = new Date(`${dateStr}T00:00:00`);
   const dayQueryEnd = new Date(`${dateStr}T23:59:59.999`);
-  const aptOverlapSnap = await getDocs(
-    queryAppointmentsOverlappingRange(db, place, dayQueryStart, dayQueryEnd)
+  // Same occupied intervals as public UI + safe query if composite index is missing.
+  const mergedOccupied = await fetchMergedPublicOccupiedSlots(
+    place,
+    dayQueryStart,
+    dayQueryEnd,
+    schedule
   );
-  const aptOccupied = parseOccupiedSlots(
-    appointmentIntervalsFromDocs(aptOverlapSnap.docs),
-    prepBuffer
-  );
-  for (const occ of aptOccupied) {
+  for (const occ of mergedOccupied) {
     if (overlaps(occ.start, occ.end, newStart, newEnd)) {
       throw new Error("OVERLAP");
     }
@@ -652,7 +648,11 @@ export async function updateAppointmentTime(
       const oldSlots: { id: string }[] =
         (oldDaySnap.exists() ? (oldDaySnap.data()?.slots as typeof oldSlots) : null) ?? [];
       const filtered = oldSlots.filter((s: { id: string }) => s.id !== appointmentId);
-      transaction.set(oldDayRef, { slots: filtered }, { merge: true });
+      if (filtered.length === 0) {
+        transaction.delete(oldDayRef);
+      } else {
+        transaction.set(oldDayRef, { slots: filtered }, { merge: true });
+      }
     }
   });
 }
@@ -734,7 +734,14 @@ async function replaceAppointmentSchedule(
           start: Timestamp.fromDate(window.start),
           end: Timestamp.fromDate(window.end),
         }));
-      transaction.set(ref, { slots: [...filtered, ...additions] }, { merge: true });
+      const nextSlots = [...filtered, ...additions];
+      // Avoid ghost `days/{place}_2099-01-01` (TBD placeholder) with slots: [] when
+      // assigning a real date — only write when there is at least one slot.
+      if (nextSlots.length === 0) {
+        if (snap?.exists()) transaction.delete(ref);
+      } else {
+        transaction.set(ref, { slots: nextSlots }, { merge: true });
+      }
     }
   });
 
@@ -964,7 +971,11 @@ export async function deleteAppointment(appointmentId: string): Promise<void> {
       const slots: { id: string; start: Timestamp; end: Timestamp }[] =
         (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
       const filtered = slots.filter((s) => s.id !== appointmentId);
-      transaction.set(dayRefs[i], { slots: filtered }, { merge: true });
+      if (filtered.length === 0 && daySnap.exists()) {
+        transaction.delete(dayRefs[i]);
+      } else if (filtered.length > 0) {
+        transaction.set(dayRefs[i], { slots: filtered }, { merge: true });
+      }
     }
   });
 }

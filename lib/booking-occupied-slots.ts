@@ -1,4 +1,4 @@
-import { doc, getDoc, getDocs, type Timestamp } from "firebase/firestore";
+import { doc, getDoc, type Timestamp } from "firebase/firestore";
 import { db } from "./firebase";
 import { getDateKey } from "./booking";
 import {
@@ -8,7 +8,7 @@ import {
 } from "./availability-firestore";
 import {
   appointmentIntervalsFromDocs,
-  queryAppointmentsOverlappingRange,
+  getAppointmentDocsOverlappingRange,
 } from "./appointments-overlap-query";
 import type { Place } from "./places";
 import type { ScheduleData } from "./schedule-firestore";
@@ -69,11 +69,14 @@ export async function fetchMergedPublicOccupiedSlots(
   schedule: ScheduleData | null
 ): Promise<OccupiedSlot[]> {
   const prep = getPrepBufferMinutes(schedule);
-  const snapshot = await getDocs(
-    queryAppointmentsOverlappingRange(db, place, rangeStart, rangeEnd)
+  const docs = await getAppointmentDocsOverlappingRange(
+    db,
+    place,
+    rangeStart,
+    rangeEnd
   );
   const fromApps = parseOccupiedSlots(
-    appointmentIntervalsFromDocs(snapshot.docs),
+    appointmentIntervalsFromDocs(docs),
     prep
   );
   const fromDays = await fetchOccupiedSlotsFromDayDocuments(

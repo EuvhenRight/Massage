@@ -1,5 +1,6 @@
 import {
   collection,
+  getDocs,
   query,
   Timestamp,
   where,
@@ -57,6 +58,61 @@ function fullLocalDayInterval(dateKey: string): {
     startTime: Timestamp.fromDate(start),
     endTime: Timestamp.fromDate(end),
   };
+}
+
+/** True if any interval derived from this appointment overlaps [rangeStart, rangeEnd] (time bounds). */
+function appointmentDocOverlapsRange(
+  docSnap: QueryDocumentSnapshot<DocumentData>,
+  rangeStart: Date,
+  rangeEnd: Date
+): boolean {
+  const intervals = appointmentIntervalsFromDocs([docSnap]);
+  if (intervals.length === 0) return false;
+  const rs = rangeStart.getTime();
+  const re = rangeEnd.getTime();
+  for (const iv of intervals) {
+    const st = iv.startTime.toDate().getTime();
+    const en = iv.endTime.toDate().getTime();
+    if (en >= rs && st <= re) return true;
+  }
+  return false;
+}
+
+/**
+ * Same logical result as `getDocs(queryAppointmentsOverlappingRange(...))`, but falls back to
+ * `where("place","==",place)` + client-side filter when the composite index is missing.
+ * TBD-only bookings work without this query; timed booking + public availability need it.
+ */
+export async function getAppointmentDocsOverlappingRange(
+  db: Firestore,
+  place: string,
+  rangeStart: Date,
+  rangeEnd: Date
+): Promise<QueryDocumentSnapshot<DocumentData>[]> {
+  try {
+    const snapshot = await getDocs(
+      queryAppointmentsOverlappingRange(db, place, rangeStart, rangeEnd)
+    );
+    return snapshot.docs;
+  } catch (e: unknown) {
+    const code =
+      typeof e === "object" && e !== null && "code" in e
+        ? String((e as { code: string }).code)
+        : "";
+    const msg = e instanceof Error ? e.message : String(e);
+    const missingIndex =
+      code === "failed-precondition" ||
+      code.includes("failed-precondition") ||
+      /\bindex\b/i.test(msg) ||
+      /requires an index/i.test(msg);
+    if (!missingIndex) throw e;
+    const broad = await getDocs(
+      query(collection(db, "appointments"), where("place", "==", place))
+    );
+    return broad.docs.filter((d) =>
+      appointmentDocOverlapsRange(d, rangeStart, rangeEnd)
+    );
+  }
 }
 
 export function appointmentIntervalsFromDocs(
