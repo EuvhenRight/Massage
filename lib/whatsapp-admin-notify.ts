@@ -203,6 +203,28 @@ function logTwilioWhatsAppHint(responseBody: string, fromAddr: string): void {
       fromAddr
     );
   }
+  if (code === 63016) {
+    console.error(
+      "[whatsapp-admin] Twilio 63016: Recipient has not joined the WhatsApp sandbox. From the phone in ADMIN_WHATSAPP_PHONE, open WhatsApp and send the join code (e.g. \"join <keyword>\") to the Twilio sandbox number shown in Console → Messaging → Try it out → Send a WhatsApp message."
+    );
+  }
+}
+
+/** Redacted summary for logs / health checks (no secrets). */
+export function twilioWhatsAppEnvSummary(): {
+  ready: boolean;
+  hasSid: boolean;
+  hasToken: boolean;
+  hasFrom: boolean;
+  hasAdminPhone: boolean;
+} {
+  return {
+    ready: twilioConfigured(),
+    hasSid: Boolean(process.env.TWILIO_ACCOUNT_SID?.trim()),
+    hasToken: Boolean(process.env.TWILIO_AUTH_TOKEN?.trim()),
+    hasFrom: Boolean(process.env.TWILIO_WHATSAPP_FROM?.trim()),
+    hasAdminPhone: Boolean(process.env.ADMIN_WHATSAPP_PHONE?.trim()),
+  };
 }
 
 export async function notifyAdminWhatsAppNew(payload: {

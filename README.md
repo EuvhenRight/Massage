@@ -36,23 +36,28 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Admin WhatsApp (optional)
+### Admin WhatsApp (optional, Twilio)
 
-Booking confirmations use Resend. You can also notify the salon admin on **WhatsApp** via **Twilio** for the same cases as the admin email: **new bookings** from the public flow (not admin-created) and **cancellations**.
+Booking uses **Resend** for email. Optionally, the salon admin also gets **WhatsApp** messages via **Twilio** for:
 
-Set these in `.env.local` (see [`.env.example`](.env.example)):
+- **New** bookings from the **public** flow (`source !== "admin"` in `/api/send-confirmation`) — same moment as the admin Resend email  
+- **Cancellations** — after customer + admin emails send successfully  
 
-- `ADMIN_WHATSAPP_PHONE` — E.164 number that receives alerts (e.g. `+31687630005`)
-- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` — from the [Twilio Console](https://www.twilio.com/console)
-- `TWILIO_WHATSAPP_FROM` — **Twilio’s** WhatsApp sender (sandbox: `whatsapp:+14155238886` from the Twilio console — not your own mobile number). `ADMIN_WHATSAPP_PHONE` is **your** phone that receives alerts (must join the sandbox first).
+Code: [`lib/whatsapp-admin-notify.ts`](lib/whatsapp-admin-notify.ts). API response field: `whatsapp`: `skipped` | `sent` | `failed`.
 
-If any of these are missing, WhatsApp is skipped and emails behave as before. The `POST /api/send-confirmation` response includes `whatsapp`: `skipped` | `sent` | `failed` for debugging.
+#### Setup checklist
 
-**Quick test (Twilio only, no email):** from the project root run `npm run test:whatsapp` — it sends two sample messages (new booking + cancelled) to `ADMIN_WHATSAPP_PHONE` if all Twilio variables are set.
+1. [Twilio Console](https://www.twilio.com/console) → copy **Account SID** and **Auth Token** into `.env.local`.
+2. **Messaging** → **Try it out** → **Send a WhatsApp message** (sandbox). Note the **sandbox keyword** (e.g. `join something-here`).
+3. On the phone that should receive alerts, open **WhatsApp** and send `join <keyword>` to the **sandbox number** Twilio shows (e.g. `+1 415 523 8886`). Wait for the confirmation reply.
+4. In the same Twilio screen, copy the **From** value for WhatsApp (format `whatsapp:+14155238886`) → `TWILIO_WHATSAPP_FROM`. Do **not** use your own mobile as `From`.
+5. Set `ADMIN_WHATSAPP_PHONE` to that same phone’s **E.164** number (e.g. `+4219xxxxxxx`) — the one that joined the sandbox. It must **differ** from `TWILIO_WHATSAPP_FROM` (different roles: Twilio line vs your handset).
+6. Put all four variables in **`.env.local`** (see [`.env.example`](.env.example)). For **Vercel/hosting**, add them under Project → Settings → Environment Variables.
+7. Run `npm run test:whatsapp` — you should get two test messages. If not, check the terminal hint for **63007** (wrong `From`/account), **63016** (sandbox not joined), **63031** (`From` and `To` identical).
 
-**End-to-end:** use a real **public** booking on the site (not admin-created) or cancel an appointment in the admin calendar; both paths call `/api/send-confirmation` after Resend succeeds. If the customer email step fails, WhatsApp is not attempted.
+**Production:** replace the sandbox with a **WhatsApp-enabled** Twilio sender approved for your business; update `TWILIO_WHATSAPP_FROM` accordingly.
 
-**Twilio error 63007** (“could not find a Channel with the specified From address”): `TWILIO_WHATSAPP_FROM` does not match any WhatsApp sender on **this** Twilio account. Copy the sandbox **From** exactly from Console → **Messaging** → **Try WhatsApp** (e.g. `whatsapp:+14155238886`). No spaces; `TWILIO_ACCOUNT_SID` / token must be from the same account (not another subaccount). Production needs a Twilio number that is **WhatsApp-enabled** for that account.
+**Note:** If Resend fails first, WhatsApp is not called. Admin-created bookings skip WhatsApp (only customer email path when applicable).
 
 > **Note**: If you see `EPERM` or npm cache errors, fix permissions with:
 > `sudo chown -R $(whoami) ~/.npm`

@@ -7,9 +7,19 @@ import "./load-env";
 import {
   notifyAdminWhatsAppNew,
   notifyAdminWhatsAppCancelled,
+  twilioWhatsAppEnvSummary,
 } from "../lib/whatsapp-admin-notify";
 
 async function main() {
+  const env = twilioWhatsAppEnvSummary();
+  console.log("Twilio env check:", env);
+  if (!env.ready) {
+    console.log(
+      "\nMissing variables — set all of these in .env.local:\n  ADMIN_WHATSAPP_PHONE (your E.164 mobile, e.g. +4219xxxxxxx)\n  TWILIO_ACCOUNT_SID\n  TWILIO_AUTH_TOKEN\n  TWILIO_WHATSAPP_FROM (Twilio sandbox From, e.g. whatsapp:+14155238886)\n"
+    );
+    process.exitCode = 1;
+    return;
+  }
   console.log("Testing admin WhatsApp (new booking)…");
   const newResult = await notifyAdminWhatsAppNew({
     customerName: "Test zákazník",
@@ -32,9 +42,6 @@ async function main() {
   console.log("cancelled →", cancelledResult);
 
   if (newResult === "skipped" && cancelledResult === "skipped") {
-    console.log(
-      "\nBoth skipped: set ADMIN_WHATSAPP_PHONE + TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_WHATSAPP_FROM in .env.local"
-    );
     process.exitCode = 1;
     return;
   }
