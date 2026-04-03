@@ -139,6 +139,7 @@ function BookingFlowInner({
 						body: JSON.stringify({
 							to: dataTbd.email,
 							customerName: dataTbd.fullName,
+							customerPhone: dataTbd.phone,
 							date: t('emailScheduleTbdDateLine'),
 							time: t('emailScheduleTbdTimeLine'),
 							service: finalService,
@@ -223,6 +224,7 @@ function BookingFlowInner({
 					body: JSON.stringify({
 						to: data.email,
 						customerName: data.fullName,
+						customerPhone: data.phone,
 						date: formatDateForEmail(slotDate),
 						time: formatTimeForEmail(slotDate),
 						service: finalService,

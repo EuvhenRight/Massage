@@ -692,6 +692,7 @@ export default function BookingCalendarGrid({
 							body: JSON.stringify({
 								to: appointment.email,
 								customerName: appointment.fullName,
+								customerPhone: appointment.phone?.trim() ?? '',
 								date: formatDateForEmail(newStartEmail),
 								time: allDayLabel,
 								service: appointment.service,
@@ -705,6 +706,7 @@ export default function BookingCalendarGrid({
 								type: 'rescheduled',
 								to: appointment.email,
 								customerName: appointment.fullName,
+								customerPhone: appointment.phone?.trim() ?? '',
 								service: appointment.service,
 								oldDate: formatDateForEmail(oldStartEmail),
 								oldTime: allDayLabel,
@@ -758,6 +760,7 @@ export default function BookingCalendarGrid({
 						body: JSON.stringify({
 							to: appointment.email,
 							customerName: appointment.fullName,
+							customerPhone: appointment.phone?.trim() ?? '',
 							date: formatDateForEmail(newStart),
 							time: formatTimeForEmail(newStart),
 							service: appointment.service,
@@ -771,6 +774,7 @@ export default function BookingCalendarGrid({
 							type: 'rescheduled',
 							to: appointment.email,
 							customerName: appointment.fullName,
+							customerPhone: appointment.phone?.trim() ?? '',
 							service: appointment.service,
 							oldDate: formatDateForEmail(oldStart),
 							oldTime: formatTimeForEmail(oldStart),
@@ -849,6 +853,7 @@ export default function BookingCalendarGrid({
 						type: 'cancelled',
 						to: appointment.email,
 						customerName: appointment.fullName,
+						customerPhone: appointment.phone?.trim() ?? '',
 						date: formatDateForEmail(start),
 						time:
 							appointment.adminBookingMode === 'day'

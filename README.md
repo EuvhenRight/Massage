@@ -36,20 +36,20 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Admin WhatsApp (optional, Twilio)
+### WhatsApp (optional, Twilio)
 
-Booking uses **Resend** for email. Optionally, the salon admin also gets **WhatsApp** messages via **Twilio** for:
+Booking uses **Resend** for email. Optionally, **Twilio WhatsApp** sends:
 
-- **New** bookings from the **public** flow (`source !== "admin"` in `/api/send-confirmation`) — same moment as the admin Resend email  
-- **Cancellations** — after customer + admin emails send successfully  
+- **Admin** — new bookings from the **public** flow only (same moment as the admin Resend email), and every **cancellation** (after emails succeed).
+- **Customer** — friendly confirmation on **new** bookings and notice on **cancellations**, when the booking includes a phone in **E.164** form (e.g. `+4219xxxxxxx`) and Twilio core env is set.
 
-Code: [`lib/whatsapp-admin-notify.ts`](lib/whatsapp-admin-notify.ts). API response field: `whatsapp`: `skipped` | `sent` | `failed`.
+Code: [`lib/whatsapp-admin-notify.ts`](lib/whatsapp-admin-notify.ts). API response: `whatsapp: { admin, customer }` where each value is `skipped` | `sent` | `failed`.
 
 #### Setup checklist
 
 1. [Twilio Console](https://www.twilio.com/console) → copy **Account SID** and **Auth Token** into `.env.local`.
 2. **Messaging** → **Try it out** → **Send a WhatsApp message** (sandbox). Note the **sandbox keyword** (e.g. `join something-here`).
-3. On the phone that should receive alerts, open **WhatsApp** and send `join <keyword>` to the **sandbox number** Twilio shows (e.g. `+1 415 523 8886`). Wait for the confirmation reply.
+3. On the **admin** phone that should receive alerts, open **WhatsApp** and send `join <keyword>` to the **sandbox number** Twilio shows (e.g. `+1 415 523 8886`). Wait for the confirmation reply. **Customers** who should receive WhatsApp must also join the sandbox from **their** number (same `join` flow) until you use a production WhatsApp sender.
 4. In the same Twilio screen, copy the **From** value for WhatsApp (format `whatsapp:+14155238886`) → `TWILIO_WHATSAPP_FROM`. Do **not** use your own mobile as `From`.
 5. Set `ADMIN_WHATSAPP_PHONE` to that same phone’s **E.164** number (e.g. `+4219xxxxxxx`) — the one that joined the sandbox. It must **differ** from `TWILIO_WHATSAPP_FROM` (different roles: Twilio line vs your handset).
 6. Put all four variables in **`.env.local`** (see [`.env.example`](.env.example)). For **Vercel/hosting**, add them under Project → Settings → Environment Variables.
@@ -57,7 +57,7 @@ Code: [`lib/whatsapp-admin-notify.ts`](lib/whatsapp-admin-notify.ts). API respon
 
 **Production:** replace the sandbox with a **WhatsApp-enabled** Twilio sender approved for your business; update `TWILIO_WHATSAPP_FROM` accordingly.
 
-**Note:** If Resend fails first, WhatsApp is not called. Admin-created bookings skip WhatsApp (only customer email path when applicable).
+**Note:** If Resend fails first, WhatsApp is not called. Admin-created bookings skip **admin** WhatsApp; **customer** WhatsApp still runs when a valid `customerPhone` is sent.
 
 > **Note**: If you see `EPERM` or npm cache errors, fix permissions with:
 > `sudo chown -R $(whoami) ~/.npm`

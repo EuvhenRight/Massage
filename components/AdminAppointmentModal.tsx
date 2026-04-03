@@ -740,6 +740,7 @@ export default function AdminAppointmentModal({
 								source: 'admin',
 								to: email.trim(),
 								customerName: fullName?.trim() || t('customer'),
+								customerPhone: phone?.trim() || undefined,
 								date: formatDateForEmail(slotDate),
 								time: isDayMode
 									? t('allDayNoClockTime')

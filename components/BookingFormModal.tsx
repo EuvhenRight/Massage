@@ -107,6 +107,7 @@ export default function BookingFormModal({
         body: JSON.stringify({
           to: values.email,
           customerName: values.fullName,
+          customerPhone: values.phone,
           date: formatDate(slotDate, { locale }),
           time: formatTime(slotDate, { locale }),
           service: values.service,

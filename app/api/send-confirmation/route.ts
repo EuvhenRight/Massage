@@ -10,6 +10,8 @@ import {
 import {
   notifyAdminWhatsAppNew,
   notifyAdminWhatsAppCancelled,
+  notifyCustomerWhatsAppNew,
+  notifyCustomerWhatsAppCancelled,
   type WhatsAppNotifyResult,
 } from "@/lib/whatsapp-admin-notify";
 
@@ -44,7 +46,13 @@ export async function POST(request: Request) {
     const type: EmailType =
       body.type === "rescheduled" || body.type === "cancelled" ? body.type : "new";
 
-    let whatsappStatus: WhatsAppNotifyResult = "skipped";
+    let whatsappAdmin: WhatsAppNotifyResult = "skipped";
+    let whatsappCustomer: WhatsAppNotifyResult = "skipped";
+
+    const customerPhoneRaw =
+      body.customerPhone != null && String(body.customerPhone).trim() !== ""
+        ? String(body.customerPhone)
+        : "";
 
     const resend = getResend();
     if (!resend) {
@@ -101,16 +109,28 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
-      if (!isAdminCreated) {
-        whatsappStatus = await notifyAdminWhatsAppNew({
+      const [waAdmin, waCust] = await Promise.all([
+        !isAdminCreated
+          ? notifyAdminWhatsAppNew({
+              customerName: nameStr,
+              email: toStr,
+              date: dateStr,
+              time: timeStr,
+              service: serviceStr,
+              fullCalendarDayCount: fullDayCount,
+            })
+          : Promise.resolve("skipped" as WhatsAppNotifyResult),
+        notifyCustomerWhatsAppNew({
+          customerPhone: customerPhoneRaw,
           customerName: nameStr,
-          email: toStr,
           date: dateStr,
           time: timeStr,
           service: serviceStr,
           fullCalendarDayCount: fullDayCount,
-        });
-      }
+        }),
+      ]);
+      whatsappAdmin = waAdmin;
+      whatsappCustomer = waCust;
     } else if (type === "rescheduled") {
       const { to, customerName, service, oldDate, oldTime, newDate, newTime } = body;
       if (!to || !customerName || !oldDate || !oldTime || !newDate || !newTime) {
@@ -175,18 +195,32 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
-      whatsappStatus = await notifyAdminWhatsAppCancelled({
-        customerName: nameStr,
-        email: toStr,
-        date: dateStr,
-        time: timeStr,
-        service: serviceStr,
-      });
+      const [waAdmin, waCust] = await Promise.all([
+        notifyAdminWhatsAppCancelled({
+          customerName: nameStr,
+          email: toStr,
+          date: dateStr,
+          time: timeStr,
+          service: serviceStr,
+        }),
+        notifyCustomerWhatsAppCancelled({
+          customerPhone: customerPhoneRaw,
+          customerName: nameStr,
+          date: dateStr,
+          time: timeStr,
+          service: serviceStr,
+        }),
+      ]);
+      whatsappAdmin = waAdmin;
+      whatsappCustomer = waCust;
     } else {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true, whatsapp: whatsappStatus });
+    return NextResponse.json({
+      ok: true,
+      whatsapp: { admin: whatsappAdmin, customer: whatsappCustomer },
+    });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to send email";
     console.error("[send-confirmation] Error:", e);
