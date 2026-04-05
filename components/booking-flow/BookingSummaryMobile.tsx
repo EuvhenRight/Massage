@@ -6,8 +6,8 @@ import type { Place } from '@/lib/places'
 import { useLocale, useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { useMemo } from 'react'
-import { TruncateText } from '@/components/ui/truncate-text'
 import { useBookingFlow } from './BookingFlowContext'
+import BookingServiceTitleDisplay from './BookingServiceTitleDisplay'
 
 interface BookingSummaryMobileProps {
 	place?: Place
@@ -19,8 +19,10 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 	const locale = useLocale()
 	const t = useTranslations('booking')
 	const tCommon = useTranslations('common')
+	const tPrice = useTranslations('price')
 	const {
 		service,
+		catalogSex,
 		date,
 		time,
 		durationMinutes,
@@ -44,18 +46,20 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 			</h4>
 			<dl className="space-y-2.5 text-sm">
 				{service && (
-					<div className="flex items-center justify-between gap-3 min-w-0">
-						<dt className="text-icyWhite/50 shrink-0 min-w-[3.5rem]">{tCommon('services')}</dt>
-						<dd className="flex-1 min-w-0 flex items-center justify-end gap-1">
-							<TruncateText
-								className="text-icyWhite font-medium text-right"
-								tooltipThreshold={25}
-							>
-								{service}
-							</TruncateText>
+					<div className="flex items-start justify-between gap-3 min-w-0">
+						<dt className="text-icyWhite/50 shrink-0 min-w-[3.5rem] pt-0.5">
+							{tCommon('services')}
+						</dt>
+						<dd className="flex-1 min-w-0 flex flex-col items-end gap-1">
+							<BookingServiceTitleDisplay service={service} variant="mobile" />
+							{catalogSex && (
+								<span className="text-icyWhite/60 text-xs text-right">
+									{tPrice('sex')}: {tPrice(catalogSex)}
+								</span>
+							)}
 							{bookingGranularity !== 'tbd' && durationMinutes > 0 && (
 								<span className="text-icyWhite/50 text-xs shrink-0 tabular-nums">
-									({durationMinutes} min)
+									{durationMinutes} min
 								</span>
 							)}
 						</dd>

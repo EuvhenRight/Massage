@@ -1,6 +1,7 @@
 'use client'
 
 import { getPlaceAccentUi } from '@/lib/place-accent-ui'
+import { isPriceSaleActive } from '@/lib/price-catalog-price-display'
 import { normalizePriceCatalog } from '@/lib/price-catalog-normalize'
 import {
 	pickNextCalendarColor,
@@ -98,6 +99,18 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 		},
 		[locale, t],
 	)
+
+	const catalogItemLineTitle = useCallback(
+		(item: ZonePriceItem, index: number) => {
+			const strict = getTitleStrictForLocale(item, locale)
+			if (strict) return strict
+			return t('priceCatalogUnnamedLine', { n: index + 1 })
+		},
+		[locale, t],
+	)
+
+	const showSaleInStructure = (item: ZonePriceItem) =>
+		Boolean(item.onSale) || isPriceSaleActive(item)
 	const [catalog, setCatalog] = useState<PriceCatalogStructure>(EMPTY_CATALOG)
 	const [loading, setLoading] = useState(true)
 
@@ -708,6 +721,101 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 		)
 	}
 
+	const renderItemPriceRow = (
+		item: ZonePriceItem,
+		onPatch: (p: Partial<ZonePriceItem>) => void,
+		pricePlaceholder: 'short' | 'long',
+		onSaleTurnedOn?: () => void,
+	) => {
+		const ph =
+			pricePlaceholder === 'short'
+				? t('priceCatalogPriceInputPlaceholderShort')
+				: t('priceCatalogPriceInputPlaceholder')
+		return (
+			<>
+				<span className='text-icyWhite/50 text-sm self-center'>{t('priceLabel')}</span>
+				<input
+					type='text'
+					value={typeof item.price === 'number' ? item.price : item.price}
+					onChange={e => {
+						const v = e.target.value
+						const n = parseFloat(v)
+						onPatch({
+							price: Number.isFinite(n) ? n : v,
+						})
+					}}
+					placeholder={ph}
+					aria-label={t('priceLabel')}
+					className='w-28 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+				/>
+				<label className='flex items-center gap-2 cursor-pointer self-center shrink-0'>
+					<input
+						type='checkbox'
+						checked={Boolean(item.onSale)}
+						onChange={e => {
+							const on = e.target.checked
+							if (!on) {
+								onPatch({ onSale: false, salePrice: undefined })
+								return
+							}
+							const raw = item.salePrice
+							const needsInit =
+								raw === undefined ||
+								(typeof raw === 'number' && !Number.isFinite(raw)) ||
+								(typeof raw === 'string' && String(raw).trim() === '')
+							onPatch({
+								onSale: true,
+								...(needsInit
+									? {
+											salePrice:
+												typeof item.price === 'number' &&
+												Number.isFinite(item.price)
+													? item.price
+													: typeof item.price === 'string'
+														? item.price
+														: 0,
+										}
+									: {}),
+							})
+							onSaleTurnedOn?.()
+						}}
+						className='h-4 w-4 rounded border-white/20 accent-white shrink-0'
+					/>
+					<span className='text-xs text-icyWhite/60 whitespace-nowrap'>
+						{t('priceCatalogSale')}
+					</span>
+				</label>
+				{item.onSale && (
+					<>
+						<span className='text-icyWhite/50 text-sm self-center'>
+							{t('priceCatalogSalePrice')}
+						</span>
+						<input
+							type='text'
+							value={
+								item.salePrice === undefined
+									? ''
+									: typeof item.salePrice === 'number'
+										? item.salePrice
+										: item.salePrice
+							}
+							onChange={e => {
+								const v = e.target.value
+								const n = parseFloat(v)
+								onPatch({
+									salePrice: Number.isFinite(n) ? n : v,
+								})
+							}}
+							placeholder={t('priceCatalogSalePricePlaceholder')}
+							aria-label={t('priceCatalogSalePrice')}
+							className='w-28 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/30 text-icyWhite text-sm'
+						/>
+					</>
+				)}
+			</>
+		)
+	}
+
 	const renderZoneItem = (
 		sex: SexKey,
 		serviceIndex: number,
@@ -715,12 +823,16 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 		zoneIndex: number,
 		item: ZonePriceItem | undefined,
 		itemIndex: number,
+		itemClassName?: string,
 	) => {
 		if (!item) return null
 		return (
 			<div
 				key={item.id}
-				className='pl-4 border-l border-white/10 py-2 space-y-2'
+				className={clsx(
+					'pl-4 border-l border-white/10 py-2 space-y-2',
+					itemClassName,
+				)}
 			>
 				{renderTitles(item, (k, v) =>
 					updateZoneItem(
@@ -761,30 +873,28 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 							</span>
 						</>
 					)}
-					<span className='text-icyWhite/50 text-sm self-center'>
-						{t('priceLabel')}
-					</span>
-					<input
-						type='text'
-						value={typeof item.price === 'number' ? item.price : item.price}
-						onChange={e => {
-							const v = e.target.value
-							const n = parseFloat(v)
+					{renderItemPriceRow(
+						item,
+						patch =>
 							updateZoneItem(
 								sex,
 								serviceIndex,
 								sectionIndex,
 								zoneIndex,
 								itemIndex,
-								{
-									price: Number.isFinite(n) ? n : v,
-								},
-							)
-						}}
-						placeholder={t('priceCatalogPriceInputPlaceholder')}
-						aria-label={t('priceLabel')}
-						className='w-28 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
-					/>
+								patch,
+							),
+						'long',
+						() =>
+							setSelected({
+								type: 'item',
+								sex,
+								serviceIndex,
+								sectionIndex,
+								zoneIndex,
+								itemIndex,
+							}),
+					)}
 					<button
 						type='button'
 						onClick={() =>
@@ -877,19 +987,103 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 					</div>
 				</div>
 				<div className='space-y-1'>
-					{(zone.items ?? []).map((item, itemIndex) =>
-						item
-							? renderZoneItem(
-									sex,
-									serviceIndex,
-									sectionIndex,
-									zoneIndex,
-									item,
-									itemIndex,
-								)
-							: null,
-					)}
+					{(zone.items ?? []).map((item, itemIndex) => {
+						if (!item) return null
+						const itemRowSelected =
+							selected?.type === 'item' &&
+							selected.sex === sex &&
+							selected.serviceIndex === serviceIndex &&
+							selected.sectionIndex === sectionIndex &&
+							selected.zoneIndex === zoneIndex &&
+							selected.itemIndex === itemIndex
+						return renderZoneItem(
+							sex,
+							serviceIndex,
+							sectionIndex,
+							zoneIndex,
+							item,
+							itemIndex,
+							itemRowSelected
+								? 'ring-1 ring-red-400/45 rounded-md bg-red-500/[0.06]'
+								: undefined,
+						)
+					})}
 				</div>
+			</div>
+		)
+	}
+
+	const renderDirectServiceItem = (
+		sex: SexKey,
+		serviceIndex: number,
+		item: ZonePriceItem,
+		itemIndex: number,
+	) => {
+		const itemRowSelected =
+			selected?.type === 'serviceItem' &&
+			selected.sex === sex &&
+			selected.serviceIndex === serviceIndex &&
+			selected.itemIndex === itemIndex
+		return (
+			<div
+				key={item.id}
+				className={clsx(
+					'pl-4 border-l border-white/10 py-2 mt-2 space-y-2',
+					itemRowSelected &&
+						'ring-1 ring-red-400/45 rounded-md bg-red-500/[0.06]',
+				)}
+			>
+				{renderTitles(item, (k, v) =>
+					updateServiceItem(sex, serviceIndex, itemIndex, {
+						[k]: v,
+					} as Partial<ZonePriceItem>),
+				)}
+				<div className='flex gap-2 flex-wrap'>
+					{(item.bookingGranularity ?? 'time') === 'time' && (
+						<>
+							<input
+								type='number'
+								min={5}
+								max={240}
+								value={item.durationMinutes}
+								onChange={e =>
+									updateServiceItem(sex, serviceIndex, itemIndex, {
+										durationMinutes: parseInt(e.target.value, 10) || 15,
+									})
+								}
+								className='w-20 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+							/>
+							<span className='text-icyWhite/50 text-sm self-center'>
+								{t('durationLabel')}
+							</span>
+						</>
+					)}
+					{renderItemPriceRow(
+						item,
+						patch => updateServiceItem(sex, serviceIndex, itemIndex, patch),
+						'short',
+						() =>
+							setSelected({
+								type: 'serviceItem',
+								sex,
+								serviceIndex,
+								itemIndex,
+							}),
+					)}
+					<button
+						type='button'
+						onClick={() =>
+							removeServiceItem(sex, serviceIndex, itemIndex)
+						}
+						className='text-red-400/80 hover:text-red-400 text-xs'
+					>
+						{t('delete')}
+					</button>
+				</div>
+				{renderBookingGranularityRadios(item, patch =>
+					updateServiceItem(sex, serviceIndex, itemIndex, patch),
+					'direct',
+				)}
 			</div>
 		)
 	}
@@ -1025,71 +1219,9 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 								color => updateService(sex, serviceIndex, { calendarColor: color }),
 								t('directItemsColorInCalendar'),
 							)}
-							{(service.items ?? []).map((item, itemIndex) => (
-								<div
-									key={item.id}
-									className='pl-4 border-l border-white/10 py-2 mt-2 space-y-2'
-								>
-									{renderTitles(item, (k, v) =>
-										updateServiceItem(sex, serviceIndex, itemIndex, {
-											[k]: v,
-										} as Partial<ZonePriceItem>),
-									)}
-									<div className='flex gap-2 flex-wrap'>
-										{(item.bookingGranularity ?? 'time') === 'time' && (
-											<>
-												<input
-													type='number'
-													min={5}
-													max={240}
-													value={item.durationMinutes}
-													onChange={e =>
-														updateServiceItem(sex, serviceIndex, itemIndex, {
-															durationMinutes: parseInt(e.target.value, 10) || 15,
-														})
-													}
-													className='w-20 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
-												/>
-												<span className='text-icyWhite/50 text-sm self-center'>
-													{t('durationLabel')}
-												</span>
-											</>
-										)}
-										<span className='text-icyWhite/50 text-sm self-center'>
-											{t('priceLabel')}
-										</span>
-										<input
-											type='text'
-											value={
-												typeof item.price === 'number' ? item.price : item.price
-											}
-											onChange={e => {
-												const v = e.target.value
-												const n = parseFloat(v)
-												updateServiceItem(sex, serviceIndex, itemIndex, {
-													price: Number.isFinite(n) ? n : v,
-												})
-											}}
-											placeholder={t('priceCatalogPriceInputPlaceholderShort')}
-											aria-label={t('priceLabel')}
-											className='w-28 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
-										/>
-										<button
-											type='button'
-											onClick={() =>
-												removeServiceItem(sex, serviceIndex, itemIndex)
-											}
-											className='text-red-400/80 hover:text-red-400 text-xs'
-										>
-											{t('delete')}
-										</button>
-									</div>
-									{renderBookingGranularityRadios(item, patch =>
-										updateServiceItem(sex, serviceIndex, itemIndex, patch),
-										'direct',
-									)}
-								</div>
-							))}
+							{(service.items ?? []).map((item, itemIndex) =>
+								renderDirectServiceItem(sex, serviceIndex, item, itemIndex),
+							)}
 						</div>
 					)}
 				</div>
@@ -1112,6 +1244,9 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 					</p>
 					<p className='text-icyWhite/45 text-xs mt-2 max-w-xl'>
 						{t('priceCatalogCalendarSyncHint')}
+					</p>
+					<p className='text-icyWhite/40 text-xs mt-1.5 max-w-xl'>
+						{t('priceCatalogPriceEmptyHint')}
 					</p>
 				</div>
 			</div>
@@ -1158,6 +1293,40 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 											>
 												{catalogTreeTitle(svc, 'service', si)}
 											</button>
+											{(svc.items ?? []).map((item, itemIndex) =>
+												showSaleInStructure(item) ? (
+													<div key={`sale-line-${item.id}`} className='ml-3 mt-0.5'>
+														<button
+															type='button'
+															onClick={() =>
+																setSelected({
+																	type: 'serviceItem',
+																	sex,
+																	serviceIndex: si,
+																	itemIndex,
+																})
+															}
+															className={`w-full text-left px-2 py-1 rounded text-[11px] flex items-center gap-2 min-w-0 ${
+																isSelected({
+																	type: 'serviceItem',
+																	sex,
+																	serviceIndex: si,
+																	itemIndex,
+																})
+																	? ui.priceCatalogPillMuted
+																	: 'hover:bg-white/5 text-icyWhite/90'
+															}`}
+														>
+															<span className='shrink-0 text-[9px] font-bold uppercase tracking-wide text-red-400'>
+																{t('priceCatalogSaleActionLabel')}
+															</span>
+															<span className='truncate'>
+																{catalogItemLineTitle(item, itemIndex)}
+															</span>
+														</button>
+													</div>
+												) : null,
+											)}
 											{(svc.sections ?? []).map((sec, sei) =>
 												!sec ? null : (
 													<div key={sec.id} className='ml-3'>
@@ -1223,6 +1392,47 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 																	>
 																		{catalogTreeTitle(z, 'zone', zi)}
 																	</button>
+																	{(z.items ?? []).map((it, ii) =>
+																		showSaleInStructure(it) ? (
+																			<div
+																				key={`sale-line-${it.id}`}
+																				className='ml-3 mt-0.5'
+																			>
+																				<button
+																					type='button'
+																					onClick={() =>
+																						setSelected({
+																							type: 'item',
+																							sex,
+																							serviceIndex: si,
+																							sectionIndex: sei,
+																							zoneIndex: zi,
+																							itemIndex: ii,
+																						})
+																					}
+																					className={`w-full text-left px-2 py-1 rounded text-[11px] flex items-center gap-2 min-w-0 ${
+																						isSelected({
+																							type: 'item',
+																							sex,
+																							serviceIndex: si,
+																							sectionIndex: sei,
+																							zoneIndex: zi,
+																							itemIndex: ii,
+																						})
+																							? ui.priceCatalogPillMuted
+																							: 'hover:bg-white/5 text-icyWhite/90'
+																					}`}
+																				>
+																					<span className='shrink-0 text-[9px] font-bold uppercase tracking-wide text-red-400'>
+																						{t('priceCatalogSaleActionLabel')}
+																					</span>
+																					<span className='truncate'>
+																						{catalogItemLineTitle(it, ii)}
+																					</span>
+																				</button>
+																			</div>
+																		) : null,
+																	)}
 																</div>
 															),
 														)}
@@ -1268,6 +1478,47 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 																{catalogTreeTitle(z, 'zone', zi)}
 															</span>
 														</button>
+														{(z.items ?? []).map((it, ii) =>
+															showSaleInStructure(it) ? (
+																<div
+																	key={`sale-line-${it.id}`}
+																	className='ml-3 mt-0.5'
+																>
+																	<button
+																		type='button'
+																		onClick={() =>
+																			setSelected({
+																				type: 'item',
+																				sex,
+																				serviceIndex: si,
+																				sectionIndex: null,
+																				zoneIndex: zi,
+																				itemIndex: ii,
+																			})
+																		}
+																		className={`w-full text-left px-2 py-1 rounded text-[11px] flex items-center gap-2 min-w-0 ${
+																			isSelected({
+																				type: 'item',
+																				sex,
+																				serviceIndex: si,
+																				sectionIndex: null,
+																				zoneIndex: zi,
+																				itemIndex: ii,
+																			})
+																				? ui.priceCatalogPillMuted
+																				: 'hover:bg-white/5 text-icyWhite/90'
+																		}`}
+																	>
+																		<span className='shrink-0 text-[9px] font-bold uppercase tracking-wide text-red-400'>
+																			{t('priceCatalogSaleActionLabel')}
+																		</span>
+																		<span className='truncate'>
+																			{catalogItemLineTitle(it, ii)}
+																		</span>
+																	</button>
+																</div>
+															) : null,
+														)}
 													</div>
 												),
 											)}
@@ -1338,6 +1589,119 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 								)}
 							</div>
 						)}
+						{selected?.type === 'item' && (() => {
+							const sel = selected
+							const svc = catalog[sel.sex].services[sel.serviceIndex]
+							const zone =
+								sel.sectionIndex !== null
+									? svc.sections?.[sel.sectionIndex]?.zones?.[sel.zoneIndex]
+									: svc.zones?.[sel.zoneIndex]
+							const item = zone?.items?.[sel.itemIndex]
+							if (!item) {
+								return (
+									<p className='text-icyWhite/50 text-sm'>
+										{t('priceCatalogMissingLine')}
+									</p>
+								)
+							}
+							const parts: string[] = [
+								catalogTreeTitle(svc, 'service', sel.serviceIndex),
+							]
+							if (sel.sectionIndex !== null) {
+								const sec = svc.sections?.[sel.sectionIndex]
+								if (sec) {
+									parts.push(
+										catalogTreeTitle(sec, 'section', sel.sectionIndex),
+									)
+								}
+							}
+							if (zone) {
+								parts.push(catalogTreeTitle(zone, 'zone', sel.zoneIndex))
+							}
+							parts.push(catalogItemLineTitle(item, sel.itemIndex))
+							return (
+								<div className='space-y-3'>
+									<div className='rounded-lg border border-red-400/25 bg-red-500/[0.06] px-3 py-2.5'>
+										<p className='text-[10px] font-semibold uppercase tracking-wide text-red-300/90'>
+											{t('priceCatalogSaleActionLabel')}
+										</p>
+										<p className='text-xs text-icyWhite/75 mt-1 break-words'>
+											{parts.join(' · ')}
+										</p>
+										<button
+											type='button'
+											onClick={() =>
+												setSelected({
+													type: 'zone',
+													sex: sel.sex,
+													serviceIndex: sel.serviceIndex,
+													sectionIndex: sel.sectionIndex,
+													zoneIndex: sel.zoneIndex,
+												})
+											}
+											className='text-[11px] mt-2 text-icyWhite/50 hover:text-icyWhite/80 underline-offset-2 hover:underline'
+										>
+											{t('priceCatalogBackToZone')}
+										</button>
+									</div>
+									{renderZoneItem(
+										sel.sex,
+										sel.serviceIndex,
+										sel.sectionIndex,
+										sel.zoneIndex,
+										item,
+										sel.itemIndex,
+									)}
+								</div>
+							)
+						})()}
+						{selected?.type === 'serviceItem' && (() => {
+							const sel = selected
+							const svc = catalog[sel.sex].services[sel.serviceIndex]
+							const item = svc.items?.[sel.itemIndex]
+							if (!item) {
+								return (
+									<p className='text-icyWhite/50 text-sm'>
+										{t('priceCatalogMissingLine')}
+									</p>
+								)
+							}
+							const parts = [
+								catalogTreeTitle(svc, 'service', sel.serviceIndex),
+								catalogItemLineTitle(item, sel.itemIndex),
+							]
+							return (
+								<div className='space-y-3'>
+									<div className='rounded-lg border border-red-400/25 bg-red-500/[0.06] px-3 py-2.5'>
+										<p className='text-[10px] font-semibold uppercase tracking-wide text-red-300/90'>
+											{t('priceCatalogSaleActionLabel')}
+										</p>
+										<p className='text-xs text-icyWhite/75 mt-1 break-words'>
+											{parts.join(' · ')}
+										</p>
+										<button
+											type='button'
+											onClick={() =>
+												setSelected({
+													type: 'service',
+													sex: sel.sex,
+													serviceIndex: sel.serviceIndex,
+												})
+											}
+											className='text-[11px] mt-2 text-icyWhite/50 hover:text-icyWhite/80 underline-offset-2 hover:underline'
+										>
+											{t('priceCatalogBackToService')}
+										</button>
+									</div>
+									{renderDirectServiceItem(
+										sel.sex,
+										sel.serviceIndex,
+										item,
+										sel.itemIndex,
+									)}
+								</div>
+							)
+						})()}
 						{!selected && (
 							<p className='text-icyWhite/50 text-sm'>
 								{t('selectNodeToEdit')}

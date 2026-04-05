@@ -1,8 +1,10 @@
 'use client'
 
 import { useCookieConsent } from '@/components/CookieConsentContext'
+import DepilationServiceSections from '@/components/DepilationServiceSections'
 import GlowText from '@/components/GlowText'
 import Navbar from '@/components/Navbar'
+import SectionDivider from '@/components/SectionDivider'
 import {
 	Accordion,
 	AccordionContent,
@@ -91,39 +93,6 @@ const TRUST_ITEMS = [
 	'trustChampion',
 	'trustTechniques',
 	'trustClients',
-] as const
-
-const SERVICE_ZONES = [
-	{
-		key: 'face' as const,
-		items: [
-			{ key: 'sugaringUpperLip', duration: 10, price: 8 },
-			{ key: 'sugaringFullFace', duration: 20, price: 15 },
-			{ key: 'waxUpperLip', duration: 10, price: 8 },
-			{ key: 'waxEyebrow', duration: 15, price: 10 },
-			{ key: 'electroFace', duration: 15, price: 18 },
-		],
-	},
-	{
-		key: 'body' as const,
-		items: [
-			{ key: 'sugaringUnderarms', duration: 15, price: 10 },
-			{ key: 'sugaringFullArms', duration: 25, price: 18 },
-			{ key: 'sugaringFullLegs', duration: 40, price: 25 },
-			{ key: 'waxFullLegs', duration: 40, price: 25 },
-			{ key: 'bioFullBody', duration: 60, price: 45 },
-			{ key: 'laserFullLegs', duration: 45, price: 50 },
-		],
-	},
-	{
-		key: 'intimate' as const,
-		items: [
-			{ key: 'sugaringClassicBikini', duration: 20, price: 15 },
-			{ key: 'sugaringDeepBikini', duration: 30, price: 25 },
-			{ key: 'waxClassicBikini', duration: 20, price: 15 },
-			{ key: 'waxDeepBikini', duration: 30, price: 25 },
-		],
-	},
 ] as const
 
 const PROCESS_STEPS = [
@@ -226,11 +195,8 @@ export default function DepilationPage() {
 		target: heroRef,
 		offset: ['start start', 'end start'],
 	})
-	const { scrollY } = useScroll()
 	const heroImgY = useTransform(scrollYProgress, [0, 1], ['0%', '25%'])
 	const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
-	/** Scroll down → marquee shifts right; back to top → shifts left */
-	const trustMarqueeX = useTransform(scrollY, [0, 900], [0, 140])
 
 	const [heroScrolled, setHeroScrolled] = useState(false)
 	const [showFloatingCTA, setShowFloatingCTA] = useState(false)
@@ -380,12 +346,12 @@ export default function DepilationPage() {
 								{t('heroBookButton')}
 								<ChevronRight className='w-4 h-4 group-hover:translate-x-0.5 transition-transform' />
 							</Link>
-							<a
-								href='#services'
+							<Link
+								href={`/${locale}/depilation/price`}
 								className='inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-white/10 text-icyWhite/60 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/30 hover:text-gold-soft/80 transition-all duration-500'
 							>
 								{t('heroPricesButton')}
-							</a>
+							</Link>
 						</motion.div>
 					</motion.div>
 
@@ -405,7 +371,9 @@ export default function DepilationPage() {
 					</motion.div>
 				</motion.div>
 
-				{/* Trust bar — seamless 4-segment loop + soft edges on mobile/tablet */}
+				{/* Trust bar — seamless 4-segment loop + soft edges on mobile/tablet.
+				    Do not wrap the CSS-animated track in a Framer transform parent: iOS Safari
+				    often fails to run nested transform animations. */}
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
@@ -413,29 +381,26 @@ export default function DepilationPage() {
 					className='relative z-10 mt-auto shrink-0 py-3.5 sm:py-4 border-t border-white/[0.06] bg-nearBlack/70 backdrop-blur-md overflow-hidden trust-marquee-viewport'
 					aria-label={t('trustBarLabel')}
 				>
-					<motion.div
-						style={{ x: trustMarqueeX }}
-						className='will-change-transform'
-					>
-						<div className='marquee-track-trust' aria-hidden>
-							{duplicatedTrust.map((text, i) => (
+					<div className='marquee-track-trust' aria-hidden>
+						{duplicatedTrust.map((text, i) => (
+							<span
+								key={`trust-marquee-${i}`}
+								className='flex items-center gap-2 sm:gap-3 md:gap-4 pl-3 pr-2.5 sm:pl-4 sm:pr-3 md:px-5 shrink-0'
+							>
 								<span
-									key={`trust-marquee-${i}`}
-									className='flex items-center gap-2 sm:gap-3 md:gap-4 pl-3 pr-2.5 sm:pl-4 sm:pr-3 md:px-5 shrink-0'
-								>
-									<span
-										className='w-1 h-1 rounded-full bg-gold-soft/50 shrink-0'
-										aria-hidden
-									/>
-									<span className='text-gold-soft/70 text-[10px] sm:text-xs tracking-[0.12em] sm:tracking-[0.2em] uppercase whitespace-nowrap font-medium'>
-										{text}
-									</span>
+									className='w-1 h-1 rounded-full bg-gold-soft/50 shrink-0'
+									aria-hidden
+								/>
+								<span className='text-gold-soft/70 text-[10px] sm:text-xs tracking-[0.12em] sm:tracking-[0.2em] uppercase whitespace-nowrap font-medium'>
+									{text}
 								</span>
-							))}
-						</div>
-					</motion.div>
+							</span>
+						))}
+					</div>
 				</motion.div>
 			</section>
+
+			<SectionDivider variant='depilation' pattern={0} />
 
 			{/* ── 2. ABOUT ME — editorial split layout ── */}
 			<section
@@ -525,54 +490,9 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			{/* ── 3. WHAT YOU GET — value cards with glass effect ── */}
-			<section
-				id='how-i-help'
-				className='py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8'
-				aria-labelledby='how-i-help-heading'
-			>
-				<div className='max-w-6xl mx-auto'>
-					<motion.div
-						variants={stagger}
-						initial='hidden'
-						whileInView='show'
-						viewport={{ once: true, margin: '-60px' }}
-						className='text-center mb-14'
-					>
-						<motion.h2
-							variants={fadeUp}
-							id='how-i-help-heading'
-							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite max-w-4xl mx-auto leading-tight sm:leading-snug'
-						>
-							{t.rich('howIHelpTitle', richStudioBrand)}
-						</motion.h2>
-					</motion.div>
-					<motion.div
-						variants={stagger}
-						initial='hidden'
-						whileInView='show'
-						viewport={{ once: true, margin: '-40px' }}
-						className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4'
-					>
-						{VALUES.map(({ key, icon: Icon }) => (
-							<motion.div
-								key={key}
-								variants={scaleUp}
-								className='group relative p-6 sm:p-7 rounded-2xl glass-card hover:shadow-card-hover transition-all duration-500 cursor-default'
-							>
-								<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-4 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-all duration-500'>
-									<Icon className='w-6 h-6 text-gold-soft/90' aria-hidden />
-								</div>
-								<p className='text-icyWhite font-medium text-sm leading-snug'>
-									{t(key)}
-								</p>
-							</motion.div>
-						))}
-					</motion.div>
-				</div>
-			</section>
+			<SectionDivider variant='depilation' pattern={1} />
 
-			{/* ── 5. ACHIEVEMENTS — horizontal scroll cards ── */}
+			{/* ── 3. ACHIEVEMENTS — horizontal scroll cards ── */}
 			<section
 				id='achievements'
 				className='relative py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8 overflow-hidden'
@@ -651,11 +571,13 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			{/* ── 6. SERVICE MENU — premium card grid ── */}
+			<SectionDivider variant='depilation' pattern={2} />
+
+			{/* ── 4. WHAT YOU GET — value cards with glass effect ── */}
 			<section
-				id='services'
+				id='how-i-help'
 				className='py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8'
-				aria-labelledby='services-heading'
+				aria-labelledby='how-i-help-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
 					<motion.div
@@ -663,85 +585,59 @@ export default function DepilationPage() {
 						initial='hidden'
 						whileInView='show'
 						viewport={{ once: true, margin: '-60px' }}
-						className='text-center mb-16'
+						className='text-center mb-14'
 					>
 						<motion.h2
 							variants={fadeUp}
-							id='services-heading'
-							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+							id='how-i-help-heading'
+							className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite max-w-4xl mx-auto leading-tight sm:leading-snug'
 						>
-							{t('serviceMenu.title')}
+							{t.rich('howIHelpTitle', richStudioBrand)}
 						</motion.h2>
-						<motion.p
-							variants={fadeUp}
-							className='text-icyWhite/50 max-w-2xl mx-auto text-lg'
-						>
-							{t('serviceMenu.subtitle')}
-						</motion.p>
 					</motion.div>
-
-					<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8'>
-						{SERVICE_ZONES.map(({ key: zoneKey, items }, zi) => (
+					<motion.div
+						variants={stagger}
+						initial='hidden'
+						whileInView='show'
+						viewport={{ once: true, margin: '-40px' }}
+						className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4'
+					>
+						{VALUES.map(({ key, icon: Icon }) => (
 							<motion.div
-								key={zoneKey}
-								initial={{ opacity: 0, y: 40 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true, margin: '-40px' }}
-								transition={{
-									delay: zi * 0.12,
-									duration: 0.7,
-									ease: [0.22, 1, 0.36, 1],
-								}}
-								className='rounded-3xl glass-card overflow-hidden group'
+								key={key}
+								variants={scaleUp}
+								className='group relative p-6 sm:p-7 rounded-2xl glass-card hover:shadow-card-hover transition-all duration-500 cursor-default'
 							>
-								<div className='px-6 py-5 border-b border-white/[0.06] bg-white/[0.02]'>
-									<h3 className='font-serif text-2xl text-icyWhite'>
-										{t(`serviceMenu.zone.${zoneKey}`)}
-									</h3>
+								<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-4 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-all duration-500'>
+									<Icon className='w-6 h-6 text-gold-soft/90' aria-hidden />
 								</div>
-								<ul className='divide-y divide-white/[0.04]'>
-									{items.map(item => {
-										const title = t(`serviceMenu.items.${item.key}.name`)
-										return (
-											<li
-												key={item.key}
-												className='px-6 py-4 hover:bg-white/[0.03] transition-colors duration-300'
-											>
-												<div className='flex items-start justify-between gap-3'>
-													<div className='min-w-0'>
-														<p className='text-icyWhite font-medium text-sm'>
-															{title}
-														</p>
-														<p className='text-icyWhite/45 text-xs mt-1 leading-relaxed'>
-															{t(`serviceMenu.items.${item.key}.desc`)}
-														</p>
-													</div>
-													<div className='shrink-0 text-right'>
-														<p className='text-gold-soft font-semibold text-sm'>
-															{t('serviceMenu.from')} {item.price} &euro;
-														</p>
-														<p className='text-icyWhite/35 text-xs flex items-center justify-end gap-1 mt-0.5'>
-															<Clock className='w-3 h-3' />
-															{item.duration} {t('serviceMenu.min')}
-														</p>
-													</div>
-												</div>
-												<Link
-													href={`/${locale}/depilation/booking?service=${encodeURIComponent(title)}&duration=${item.duration}`}
-													className='inline-flex items-center gap-1 text-gold-soft/60 hover:text-gold-soft text-xs tracking-wider uppercase mt-2.5 transition-colors duration-300'
-												>
-													{t('serviceMenu.book')}
-													<ChevronRight className='w-3 h-3' />
-												</Link>
-											</li>
-										)
-									})}
-								</ul>
+								<p className='text-icyWhite font-medium text-sm leading-snug'>
+									{t(key)}
+								</p>
 							</motion.div>
 						))}
-					</div>
+					</motion.div>
 				</div>
 			</section>
+
+			<SectionDivider variant='depilation' pattern={0} />
+
+			{/* ── 5. SERVICE MENU — premium card grid ── */}
+			<section
+				id='services'
+				className='py-20 sm:py-28 lg:py-36 px-5 sm:px-6 lg:px-8'
+				aria-labelledby='services-heading'
+			>
+				<div className='max-w-6xl mx-auto'>
+					<DepilationServiceSections
+						locale={locale}
+						stagger={stagger}
+						fadeUp={fadeUp}
+					/>
+				</div>
+			</section>
+
+			<SectionDivider variant='depilation' pattern={1} />
 
 			{/* ── 7. PROCESS — connected timeline ── */}
 			<section
@@ -811,6 +707,8 @@ export default function DepilationPage() {
 					</motion.div>
 				</div>
 			</section>
+
+			<SectionDivider variant='depilation' pattern={2} />
 
 			{/* ── 8. TEAM SPOTLIGHT — cinematic cards ── */}
 			<section
@@ -934,6 +832,8 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
+			<SectionDivider variant='depilation' pattern={0} />
+
 			{/* ── 9. HYGIENE & SAFETY — bento grid ── */}
 			<section
 				id='hygiene'
@@ -990,6 +890,8 @@ export default function DepilationPage() {
 					</div>
 				</div>
 			</section>
+
+			<SectionDivider variant='depilation' pattern={1} />
 
 			{/* ── 10. TESTIMONIALS — elegant scroll ── */}
 			<section
@@ -1085,6 +987,8 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
+			<SectionDivider variant='depilation' pattern={2} />
+
 			{/* ── 11. FAQ ── */}
 			<section
 				id='faq'
@@ -1141,6 +1045,8 @@ export default function DepilationPage() {
 					</Accordion>
 				</div>
 			</section>
+
+			<SectionDivider variant='depilation' pattern={0} />
 
 			{/* ── 12. CONTACT ── */}
 			<section
@@ -1400,6 +1306,8 @@ export default function DepilationPage() {
 					</div>
 				</div>
 			</section>
+
+			<SectionDivider variant='depilation' pattern={1} />
 
 			{/* ── 13. FINAL BOOKING CTA — dramatic ── */}
 			<section

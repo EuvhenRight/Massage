@@ -20,8 +20,11 @@ import {
 import { clsx } from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Undo2 } from 'lucide-react'
+import { getEffectivePriceForBooking } from '@/lib/price-catalog-price-display'
+import { findBookableServiceForSelection } from '@/lib/services'
 import { useLocale, useTranslations } from 'next-intl'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useBookingFlow } from './BookingFlowContext'
 import PublicDatePicker from './PublicDatePicker'
 import TbdBookingRecap from './TbdBookingRecap'
@@ -162,10 +165,21 @@ export default function StepServiceFromPriceCatalog({
 	const tPrice = useTranslations('price')
 	const priceLocale = (useLocale() || 'en') as PriceLocale
 
+	const searchParams = useSearchParams()
+	const fromPrice = searchParams.get('from') === 'price'
+	const sexParam = searchParams.get('sex') as SexKey | null
+	const autoAdvancedFromPriceRef = useRef(false)
+
+	useEffect(() => {
+		if (!fromPrice) autoAdvancedFromPriceRef.current = false
+	}, [fromPrice])
+
 	const {
 		step,
 		service,
 		setService,
+		setCatalogSex,
+		setStep,
 		date,
 		setDate,
 		setTime,
@@ -174,6 +188,7 @@ export default function StepServiceFromPriceCatalog({
 		bookingGranularity,
 		bookingDayCount,
 		scheduleTbdCustomerMessage,
+		catalogSex,
 	} = useBookingFlow()
 
 	const [month, setMonth] = useState(() => {
@@ -205,7 +220,19 @@ export default function StepServiceFromPriceCatalog({
 		[setDate],
 	)
 
-	const [selectedSex, setSelectedSex] = useState<SexKey | null>(null)
+	const [selectedSex, setSelectedSex] = useState<SexKey | null>(
+		() => catalogSex ?? null,
+	)
+	const urlSexAppliedRef = useRef(false)
+
+	useEffect(() => {
+		setCatalogSex(selectedSex)
+	}, [selectedSex, setCatalogSex])
+
+	useEffect(() => {
+		urlSexAppliedRef.current = false
+	}, [sexParam])
+
 	const [activeServiceId, setActiveServiceId] = useState<string | null>(null)
 	const [activeSectionId, setActiveSectionId] = useState<string>('')
 	const [openZoneId, setOpenZoneId] = useState<string | null>(null)
@@ -308,6 +335,21 @@ export default function StepServiceFromPriceCatalog({
 		if (!catalog) return
 		const hasW = (catalog.woman.services?.length ?? 0) > 0
 		const hasM = (catalog.man.services?.length ?? 0) > 0
+		if (
+			!urlSexAppliedRef.current &&
+			(sexParam === 'woman' || sexParam === 'man')
+		) {
+			if (sexParam === 'woman' && hasW) {
+				setSelectedSex('woman')
+				urlSexAppliedRef.current = true
+				return
+			}
+			if (sexParam === 'man' && hasM) {
+				setSelectedSex('man')
+				urlSexAppliedRef.current = true
+				return
+			}
+		}
 		setSelectedSex(prev => {
 			if (prev !== null) {
 				if (prev === 'woman' && !hasW && hasM) return 'man'
@@ -318,7 +360,31 @@ export default function StepServiceFromPriceCatalog({
 			if (hasM && !hasW) return 'man'
 			return null
 		})
-	}, [catalog])
+	}, [catalog, sexParam])
+
+	/** Deep link from price list: jump to date / time (or TBD) once service + sex are ready. */
+	useEffect(() => {
+		if (autoAdvancedFromPriceRef.current || !fromPrice) return
+		if (step !== 1) return
+		if (!catalog) return
+		const hasW = (catalog.woman.services?.length ?? 0) > 0
+		const hasM = (catalog.man.services?.length ?? 0) > 0
+		const needsSexPick = hasW && hasM
+		if (needsSexPick && selectedSex == null) return
+		const s = service.trim()
+		if (!s) return
+		if (!findBookableServiceForSelection(s, services)) return
+		autoAdvancedFromPriceRef.current = true
+		queueMicrotask(() => setStep(2))
+	}, [
+		fromPrice,
+		step,
+		service,
+		services,
+		catalog,
+		selectedSex,
+		setStep,
+	])
 
 	const isSearching = searchQuery.trim().length > 0
 
@@ -707,7 +773,11 @@ export default function StepServiceFromPriceCatalog({
 																												accent.priceText
 																											}
 																										>
-																											{formatPrice(item.price)}{' '}
+																											{formatPrice(
+																												getEffectivePriceForBooking(
+																													item,
+																												) ?? item.price,
+																											)}{' '}
 																											€
 																										</span>
 																									</div>

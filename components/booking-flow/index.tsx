@@ -46,6 +46,8 @@ export interface BookingFlowProps {
 	onSuccess?: () => void
 	onCancel?: () => void
 	place?: Place
+	/** Skip restoring booking draft (use with `?from=price` deep links). */
+	skipDraftRestore?: boolean
 }
 
 function BookingFlowInner({
@@ -578,6 +580,7 @@ export default function BookingFlow(props: BookingFlowProps) {
 			services={props.services}
 			defaultDuration={props.defaultDuration}
 			defaultService={props.defaultService ?? props.services[0]?.title}
+			skipDraftRestore={props.skipDraftRestore}
 			place={props.place}
 		>
 			<BookingFlowInner {...props} />

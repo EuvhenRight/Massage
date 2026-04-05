@@ -22,7 +22,8 @@
 		"about": "About",
 		"team": "Team",
 		"faq": "FAQ",
-		"contact": "Contact"
+		"contact": "Contact",
+		"prices": "Prices"
 	},
 	"home": {
 		"chooseExperience": "Choose your experience",
@@ -480,6 +481,90 @@
 				}
 			}
 		},
+		"serviceSections": {
+			"kicker": "Our methods",
+			"subtitle": "The same areas as on our price list — open a card for details. Training & courses include placeholder dates until the next group is confirmed.",
+			"tapHint": "Services",
+			"learnMore": "Details",
+			"viewPrices": "Full price list",
+			"book": "Book",
+			"cards": {
+				"laser": {
+					"title": "Laser epilation",
+					"teaser": "Long-term hair reduction with professional diode laser — calibrated for your skin and hair type.",
+					"body": "We plan sessions according to growth cycles and monitor skin reaction after each visit. Ideal for larger areas and for clients who want lasting reduction without daily upkeep.",
+					"bullets": [
+						"Suitable for legs, bikini line, underarms, and more — after consultation.",
+						"Cooling and settings adjusted for comfort; we never rush sensitive zones.",
+						"Course-based approach: we explain realistic expectations up front."
+					]
+				},
+				"wax": {
+					"title": "Wax depilation",
+					"teaser": "Warm professional wax for fast, thorough removal — perfect when you want smooth skin for weeks.",
+					"body": "Classic strip and film waxes for face, body, and intimate areas. We pre-cleanse, work in small sections, and finish with soothing care so redness calms quickly.",
+					"bullets": [
+						"Premium waxes for fine and coarse hair.",
+						"Intimate zones in a private, calm setting.",
+						"Aftercare tips tailored to your skin."
+					]
+				},
+				"sugar": {
+					"title": "Sugaring",
+					"teaser": "Natural sugar paste — gentle on skin, effective on hair, loved for sensitive clients.",
+					"body": "Paste is applied at body temperature and removes hair in the direction of growth, which often means less irritation than traditional wax. Great for face, arms, legs, and bikini.",
+					"bullets": [
+						"Hypoallergenic paste — no plastic strips.",
+						"Ideal if you are prone to ingrown hairs.",
+						"Can be combined with other methods in a long-term plan."
+					]
+				},
+				"cosmetology": {
+					"title": "Cosmetology",
+					"teaser": "Facial care, massage, peelings — support your skin between depilation visits.",
+					"body": "Manual cleansing, massage, and peels help keep pores clear and skin resilient. We recommend routines that match your depilation schedule so treatments complement each other.",
+					"bullets": [
+						"Consultation-first — we adapt to sensitivity and goals.",
+						"Medical-grade hygiene for every procedure.",
+						"Home-care guidance so results last longer."
+					]
+				},
+				"courses": {
+					"title": "Courses & training",
+					"teaser": "Professional education for specialists — waxing, sugaring, hygiene, and client consultation (example info below).",
+					"body": "Small-group and one-to-one formats. Content is updated each season; the schedule below is placeholder text until the next public dates are published.",
+					"bullets": [
+						"Hands-on practice with feedback from an experienced technologist.",
+						"Certificates and product knowledge aligned with brands we work with.",
+						"Optional shadowing blocks for advanced students."
+					],
+					"scheduleLabel": "Example schedule (placeholder)",
+					"scheduleText": "Spring intensive • March 2026 — exact dates and capacity TBC. Email us to join the waitlist; we will confirm the final week at least 30 days in advance.",
+					"topicsLabel": "Sample curriculum (placeholder)",
+					"topicsText": "Salon hygiene, skin assessment, wax & sugar application, troubleshooting sensitive skin, consultation scripts, and business basics for solo practitioners."
+				},
+				"additional": {
+					"title": "Additional services",
+					"teaser": "Electroepilation, bio depilation, whitening, and other add-ons — priced and booked individually.",
+					"body": "These services often require a patch test or a short planning chat. We quote time and price after we see the area and your goals — see the full list on the price page.",
+					"bullets": [
+						"Electroepilation for permanent removal of fine or light hairs.",
+						"Specialty waxes and care products on request.",
+						"Combined packages built around your calendar."
+					]
+				},
+				"piercing": {
+					"title": "Piercing",
+					"teaser": "Ear and cartilage work with sterile jewellery and clear aftercare — calm, precise, by appointment.",
+					"body": "We use implant-grade materials and explain healing timelines before we start. Placement and jewellery are chosen together; minors only with legal guardian present.",
+					"bullets": [
+						"Sterile field and single-use needles where applicable.",
+						"Aftercare sheet + follow-up tips in writing.",
+						"Popular for helix, conch, lobe, and more — ask for availability."
+					]
+				}
+			}
+		},
 		"process": {
 			"title": "How Your Visit Works",
 			"consultation": {
@@ -758,15 +843,21 @@
 		}
 	},
 	"price": {
+		"pageMetaTitle": "Price list",
+		"pageMetaDescription": "Full list of services and prices. Book your appointment online.",
+		"backLink": "Back to {name}",
 		"title": "Price",
 		"subtitle": "Find your service by section and body zone. All prices and durations are listed.",
+		"clickPriceToBookHint": "Click a price (woman or man column) to open booking with that line preset.",
 		"sex": "Booking for",
 		"woman": "Woman",
 		"man": "Man",
 		"min": "min",
 		"bookThis": "Book",
 		"noPricesYet": "Price list is being updated. Please contact us or book a general appointment.",
-		"tbdPriceLineDays": "{count, plural, one {# full day (we set dates with you)} other {# full days (we set dates with you)}}"
+		"noPricesForGender": "No prices listed for this category.",
+		"tbdPriceLineDays": "{count, plural, one {# full day (we set dates with you)} other {# full days (we set dates with you)}}",
+		"saleBadge": "SALE!"
 	},
 	"admin": {
 		"signIn": "Sign in",
@@ -778,6 +869,13 @@
 		"calendar": "Calendar",
 		"agenda": "Agenda",
 		"agendaSubtitle": "Full schedule of upcoming appointments.",
+		"agendaSearchPlaceholder": "Search by name, phone, email, or service…",
+		"agendaStatScheduled": "Scheduled",
+		"agendaStatAwaiting": "Awaiting date",
+		"agendaStatTotal": "Total",
+		"agendaOpenCalendar": "Calendar view",
+		"agendaNoMatches": "No appointments match your search.",
+		"agendaRowHint": "Tap or click a row to edit the appointment.",
 		"analytics": "Analytics",
 		"analyticsSubtitle": "All customers and appointments. Search by name or phone.",
 		"searchByNameOrPhone": "Search by name or phone…",
@@ -1034,6 +1132,7 @@
 		"editPanel": "Edit",
 		"selectNodeToEdit": "Select a node from the left to edit.",
 		"priceCatalogCalendarSyncHint": "When you save, bookable lines become booking services and appear in the admin calendar. Each new section (or top-level zone) gets its own color automatically.",
+		"priceCatalogPriceEmptyHint": "Leave price empty to show \"—\" on the public list; that line has no booking link. TBD / full-day lines still link when price is a dash.",
 		"priceCatalogUnnamedService": "Service {n}",
 		"priceCatalogUnnamedSection": "Section {n}",
 		"priceCatalogUnnamedZone": "Zone {n}",
@@ -1046,6 +1145,14 @@
 		"priceCatalogBtnAddItem": "+ Item",
 		"priceCatalogAddLineUnderZone": "+ Add line",
 		"priceCatalogPriceInputPlaceholder": "Price or e.g. from 20",
+		"priceCatalogSale": "Sale",
+		"priceCatalogSalePrice": "Sale price",
+		"priceCatalogSalePricePlaceholder": "New price",
+		"priceCatalogSaleActionLabel": "SALE",
+		"priceCatalogUnnamedLine": "Line {n}",
+		"priceCatalogMissingLine": "This line is no longer in the catalog. Choose another item in the structure.",
+		"priceCatalogBackToZone": "← Back to zone",
+		"priceCatalogBackToService": "← Back to service",
 		"priceCatalogPriceInputPlaceholderShort": "Price",
 		"priceCatalogDescriptionInputPlaceholder": "Important info for customers (e.g. availability, pricing notes)",
 		"sectionColorInCalendar": "This color is used in the admin calendar for every item in this section.",

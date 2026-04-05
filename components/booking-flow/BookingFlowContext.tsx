@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   type ReactNode,
 } from "react";
@@ -16,7 +17,10 @@ import {
   parseDraftToState,
 } from "@/lib/booking-draft-storage";
 import { findBookableServiceForSelection } from "@/lib/services";
-import { normalizeItemBookingDayCount } from "@/types/price-catalog";
+import {
+  normalizeItemBookingDayCount,
+  type SexKey,
+} from "@/types/price-catalog";
 
 export type BookingStep = 1 | 2 | 3 | 4;
 
@@ -62,6 +66,8 @@ export interface BookingFlowState {
   fullName: string;
   email: string;
   phone: string;
+  /** Woman / man branch when booking from the price catalog (depilation). */
+  catalogSex: SexKey | null;
 }
 
 const initialState: BookingFlowState = {
@@ -77,6 +83,7 @@ const initialState: BookingFlowState = {
   fullName: "",
   email: "",
   phone: "",
+  catalogSex: null,
 };
 
 function granularityFromService(
@@ -105,6 +112,7 @@ function dayCountFromService(
 
 interface BookingFlowContextValue extends BookingFlowState {
   setService: (v: string, catalog?: CatalogBookingOverrides | null) => void;
+  setCatalogSex: (v: SexKey | null) => void;
   /** Second arg: when set, stores that time; when omitted, clears time (normal date change). */
   setDate: (v: Date | null, presetTime?: string | null) => void;
   setTime: (v: string | null) => void;
@@ -128,6 +136,8 @@ interface BookingFlowProviderProps {
   children: ReactNode;
   defaultService?: string;
   defaultDuration?: number;
+  /** When true (e.g. `?from=price`), do not restore local draft so preset service + step-2 works. */
+  skipDraftRestore?: boolean;
   place?: string;
   services: {
     id?: string;
@@ -149,6 +159,7 @@ export function BookingFlowProvider({
   children,
   defaultService = "",
   defaultDuration = 60,
+  skipDraftRestore = false,
   place = "massage",
   services,
   onComplete,
@@ -171,7 +182,7 @@ export function BookingFlowProvider({
             : "",
       };
     }
-    const draft = loadBookingDraft(place);
+    const draft = skipDraftRestore ? null : loadBookingDraft(place);
     if (draft) {
       const parsed = parseDraftToState(draft);
       return {
@@ -187,24 +198,35 @@ export function BookingFlowProvider({
         fullName: parsed.fullName,
         email: parsed.email,
         phone: parsed.phone,
+        catalogSex: parsed.catalogSex ?? null,
       };
     }
+    const preset = defaultService?.trim() ?? "";
+    const matched = preset
+      ? findBookableServiceForSelection(preset, services)
+      : undefined;
+    const baseSvc = matched ?? firstService;
     return {
       ...initialState,
-      service: "",
-      durationMinutes: firstService?.durationMinutes ?? defaultDuration,
-      bookingGranularity: granularityFromService(firstService),
-      bookingDayCount: dayCountFromService(firstService),
+      service: preset,
+      durationMinutes: baseSvc?.durationMinutes ?? defaultDuration,
+      bookingGranularity: granularityFromService(baseSvc),
+      bookingDayCount: dayCountFromService(baseSvc),
       scheduleTbdCustomerMessage:
-        granularityFromService(firstService) === "tbd"
-          ? (firstService?.scheduleTbdMessage ?? "")
+        granularityFromService(baseSvc) === "tbd"
+          ? (baseSvc?.scheduleTbdMessage ?? "")
           : "",
       scheduleTbdAdminHint:
-        granularityFromService(firstService) === "tbd"
-          ? (firstService?.scheduleTbdAdminNote ?? "")
+        granularityFromService(baseSvc) === "tbd"
+          ? (baseSvc?.scheduleTbdAdminNote ?? "")
           : "",
     };
   });
+
+  useLayoutEffect(() => {
+    if (!skipDraftRestore || typeof window === "undefined") return;
+    clearBookingDraft(place);
+  }, [skipDraftRestore, place]);
 
   /** Draft may reference a service line removed from the catalog or an old locale title — unstick the flow. */
   useEffect(() => {
@@ -230,9 +252,41 @@ export function BookingFlowProvider({
           granularityFromService(first) === "tbd"
             ? (first?.scheduleTbdAdminNote ?? "")
             : "",
+        catalogSex: null,
       };
     });
   }, [services, place, defaultDuration, defaultService]);
+
+  /** When the catalog loads after mount, apply duration / TBD fields for URL `service`. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const preset = defaultService?.trim();
+    if (!preset || !services.length) return;
+    setState((s) => {
+      if (s.service.trim() !== preset) return s;
+      const svc = findBookableServiceForSelection(preset, services);
+      if (!svc) return s;
+      const gran = granularityFromService(svc);
+      const nextDuration = svc.durationMinutes ?? s.durationMinutes;
+      if (
+        s.durationMinutes === nextDuration &&
+        s.bookingGranularity === gran &&
+        s.bookingDayCount === dayCountFromService(svc)
+      ) {
+        return s;
+      }
+      return {
+        ...s,
+        durationMinutes: nextDuration,
+        bookingGranularity: gran,
+        bookingDayCount: dayCountFromService(svc),
+        scheduleTbdCustomerMessage:
+          gran === "tbd" ? (svc.scheduleTbdMessage ?? "") : "",
+        scheduleTbdAdminHint:
+          gran === "tbd" ? (svc.scheduleTbdAdminNote ?? "") : "",
+      };
+    });
+  }, [services, defaultService]);
 
   const isFirstMount = useRef(true);
   useEffect(() => {
@@ -253,6 +307,7 @@ export function BookingFlowProvider({
       fullName: state.fullName,
       email: state.email,
       phone: state.phone,
+      catalogSex: state.catalogSex,
     });
   }, [
     place,
@@ -268,6 +323,7 @@ export function BookingFlowProvider({
     state.fullName,
     state.email,
     state.phone,
+    state.catalogSex,
   ]);
 
   const clearDraft = useCallback(() => {
@@ -331,6 +387,10 @@ export function BookingFlowProvider({
     setState((s) => ({ ...s, time }));
   }, []);
 
+  const setCatalogSex = useCallback((catalogSex: SexKey | null) => {
+    setState((s) => ({ ...s, catalogSex }));
+  }, []);
+
   const setStep = useCallback((step: BookingStep) => {
     setState((s) => ({ ...s, step }));
   }, []);
@@ -372,6 +432,7 @@ export function BookingFlowProvider({
         granularityFromService(first) === "tbd"
           ? (first?.scheduleTbdAdminNote ?? "")
           : "",
+      catalogSex: null,
     });
   }, [defaultDuration, services]);
 
@@ -380,6 +441,7 @@ export function BookingFlowProvider({
     setService,
     setDate,
     setTime,
+    setCatalogSex,
     setStep,
     setCustomerInfo,
     nextStep,

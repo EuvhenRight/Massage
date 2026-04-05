@@ -22,7 +22,8 @@
 		"about": "O nás",
 		"team": "Tím",
 		"faq": "FAQ",
-		"contact": "Kontakt"
+		"contact": "Kontakt",
+		"prices": "Cenník"
 	},
 	"home": {
 		"chooseExperience": "Vyberte svoju skúsenosť",
@@ -494,6 +495,90 @@
 				}
 			}
 		},
+		"serviceSections": {
+			"kicker": "Naše metódy",
+			"subtitle": "Rovnaké oblasti ako v cenníku — kliknite na kartu pre detaily. Kurzy: ukážkové termíny do potvrdenia ďalšej skupiny.",
+			"tapHint": "Služby",
+			"learnMore": "Viac info",
+			"viewPrices": "Celý cenník",
+			"book": "Rezervovať",
+			"cards": {
+				"laser": {
+					"title": "Laserová epilácia",
+					"teaser": "Dlhodobé zníženie ochlpenia profesionálnym diódovým laserom — podľa typu pokožky a chĺpkov.",
+					"body": "Plánujeme cykly rastu a sledujeme reakciu pokožky po každej návšteve. Vhodné na väčšie plochy a pre klientov, ktorí chcú menej každodennej starostlivosti.",
+					"bullets": [
+						"Nohy, bikiní, podpazušia a ďalšie zóny po konzultácii.",
+						"Chladenie a výkon nastavený na komfort — citlivé miesta neuponáhľame.",
+						"Realistické očakávania vysvetlíme vopred."
+					]
+				},
+				"wax": {
+					"title": "Vosková depilácia",
+					"teaser": "Teplý profesionálny vosk — rýchle a dôkladné odstránenie chĺpkov.",
+					"body": "Klasické vosky na tvár, telo a intím. Očistíme pokožku, pracujeme po častiach a ukončíme upokojujúcou starostlivosťou.",
+					"bullets": [
+						"Prémiové vosky na jemné aj hrubé chĺpky.",
+						"Intím v súkromí a pokoji.",
+						"Tipy na domácu starostlivosť podľa vašej pokožky."
+					]
+				},
+				"sugar": {
+					"title": "Cukrová depilácia (shugaring)",
+					"teaser": "Prírodná cukrová pasta — šetrná k pokožke, účinná na chĺpky.",
+					"body": "Pasta v tele teplote, smer odstraňovania s rastom — často menej podráždenia ako pri klasickej depilácii voskom.",
+					"bullets": [
+						"Bez fólií a pásov.",
+						"Vhodné pri sklone k zarastaniu.",
+						"Dá sa kombinovať s inými metódami."
+					]
+				},
+				"cosmetology": {
+					"title": "Kozmetológia",
+					"teaser": "Starostlivosť o tvár, masáž, peeling — medzi depiláciami.",
+					"body": "Mechanické čistenie, masáž a peeling podporujú čisté póry a pružnú pokožku. Odporúčame režim v súlade s depiláciou.",
+					"bullets": [
+						"Najprv konzultácia podľa citlivosti a cieľov.",
+						"Lekárska hygiena pri každom výkone.",
+						"Domáca starostlivosť pre dlhší efekt."
+					]
+				},
+				"courses": {
+					"title": "Kurzy a školenia",
+					"teaser": "Odborné vzdelávanie pre špecialistov — vosk, cukor, hygiena (ukážkové info nižšie).",
+					"body": "Malé skupiny alebo individuálne. Obsah sa mení sezónne; termín nižšie je ukážkový do zverejnenia.",
+					"bullets": [
+						"Praktické cvičenia s spätnou väzbou.",
+						"Certifikáty a produktové znalosti.",
+						"Možnosť shadowing pre pokročilých."
+					],
+					"scheduleLabel": "Ukážkový termín (placeholder)",
+					"scheduleText": "Jarný intenzív • marec 2026 — presný dátum a kapacita po potvrdení. Napíšte nám o záujem; týždeň vopred potvrdíme.",
+					"topicsLabel": "Ukážková osnova (placeholder)",
+					"topicsText": "Hygiena salónu, posúdenie pokožky, aplikácia vosku a cukru, citlivá pokožka, konzultácie, základy podnikania."
+				},
+				"additional": {
+					"title": "Doplnkové služby",
+					"teaser": "Elektroepilácia, bio depilácia, bielenie a ďalšie — cena a čas individuálne.",
+					"body": "Často krátka konzultácia alebo test. Presný čas a cena podľa zóny — kompletný zoznam v cenníku.",
+					"bullets": [
+						"Elektroepilácia na trvalé odstránenie jemných chĺpkov.",
+						"Špeciálne vosky a prípravky na požiadanie.",
+						"Balíčky podľa vášho kalendára."
+					]
+				},
+				"piercing": {
+					"title": "Piercing",
+					"teaser": "Ucho a chrupavka — sterilné šperky a jasná pooperačná starostlivosť.",
+					"body": "Materiály vhodné do tela, čas hojenia vopred. Výber miesta a šperku spolu; maloletí len so zákonným zástupcom.",
+					"bullets": [
+						"Sterilné pole, jednorazové ihly kde treba.",
+						"Písomné pooperačné pokyny.",
+						"Helix, conch, lobe a ďalšie — podľa dostupnosti."
+					]
+				}
+			}
+		},
 		"process": {
 			"title": "Ako Prebieha Vaša Návšteva",
 			"consultation": {
@@ -760,15 +845,21 @@
 		}
 	},
 	"price": {
+		"pageMetaTitle": "Cenník",
+		"pageMetaDescription": "Úplný zoznam služieb a cien. Rezervujte si termín online.",
+		"backLink": "Späť na {name}",
 		"title": "Cenník",
 		"subtitle": "Nájdite si službu podľa sekcie a zóny tela. Všetky ceny a trvania sú uvedené.",
+		"clickPriceToBookHint": "Kliknite na cenu (stĺpec žena alebo muž) a otvorí sa rezervácia s daným riadkom.",
 		"sex": "Rezervácia pre",
 		"woman": "Žena",
 		"man": "Muž",
 		"min": "min",
 		"bookThis": "Rezervovať",
 		"noPricesYet": "Cenník sa pripravuje. Kontaktujte nás alebo rezervujte všeobecný termín.",
-		"tbdPriceLineDays": "{count, plural, one {# celý deň (termíny dohodneme s vami)} few {# celé dni (termíny dohodneme s vami)} other {# celých dní (termíny dohodneme s vami)}}"
+		"noPricesForGender": "V tejto kategórii nie sú uvedené ceny.",
+		"tbdPriceLineDays": "{count, plural, one {# celý deň (termíny dohodneme s vami)} few {# celé dni (termíny dohodneme s vami)} other {# celých dní (termíny dohodneme s vami)}}",
+		"saleBadge": "AKCIA!"
 	},
 	"admin": {
 		"signIn": "Prihlásiť sa",
@@ -781,6 +872,13 @@
 		"calendar": "Kalendár",
 		"agenda": "Agenda",
 		"agendaSubtitle": "Kompletný rozvrh nadchádzajúcich rezervácií.",
+		"agendaSearchPlaceholder": "Hľadať podľa mena, telefónu, e-mailu alebo služby…",
+		"agendaStatScheduled": "Na termín",
+		"agendaStatAwaiting": "Čaká na dátum",
+		"agendaStatTotal": "Spolu (zoznam)",
+		"agendaOpenCalendar": "Kalendár",
+		"agendaNoMatches": "Nič nezodpovedá vášmu hľadaniu.",
+		"agendaRowHint": "Ťuknite na riadok pre úpravu rezervácie.",
 		"analytics": "Analytika",
 		"analyticsSubtitle": "Všetci zákazníci a rezervácie. Vyhľadajte podľa mena alebo telefónu.",
 		"searchByNameOrPhone": "Hľadať podľa mena alebo telefónu…",
@@ -1037,6 +1135,7 @@
 		"editPanel": "Upraviť",
 		"selectNodeToEdit": "Vyberte uzol vľavo pre úpravu.",
 		"priceCatalogCalendarSyncHint": "Po uložení sa riadky s cenou stanú rezervačnými službami a zobrazia sa v kalendári. Každá nová sekcia (alebo zóna priamo pod službou) dostane vlastnú farbu.",
+		"priceCatalogPriceEmptyHint": "Prázdnu cenu zobrazíme na webe ako „—“ bez odkazu na rezerváciu. Pri TBD / celý deň s pomlčkou v cene odkaz ostáva.",
 		"priceCatalogUnnamedService": "Služba {n}",
 		"priceCatalogUnnamedSection": "Sekcia {n}",
 		"priceCatalogUnnamedZone": "Zóna {n}",
@@ -1048,6 +1147,14 @@
 		"priceCatalogBtnAddSection": "+ Sekcia",
 		"priceCatalogBtnAddItem": "+ Položka",
 		"priceCatalogAddLineUnderZone": "+ Pridať riadok",
+		"priceCatalogSale": "Akcia",
+		"priceCatalogSalePrice": "Akcia — nová cena",
+		"priceCatalogSalePricePlaceholder": "Nová cena",
+		"priceCatalogSaleActionLabel": "AKCIA",
+		"priceCatalogUnnamedLine": "Riadok {n}",
+		"priceCatalogMissingLine": "Tento riadok už v cenníku nie je. Vyberte inú položku v štruktúre.",
+		"priceCatalogBackToZone": "← Späť do zóny",
+		"priceCatalogBackToService": "← Späť na službu",
 		"priceCatalogPriceInputPlaceholder": "Cena alebo napr. od 20",
 		"priceCatalogPriceInputPlaceholderShort": "Cena",
 		"priceCatalogDescriptionInputPlaceholder": "Dôležité info pre zákazníkov (napr. dostupnosť, poznámky k cene)",

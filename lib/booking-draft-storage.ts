@@ -29,6 +29,8 @@ export interface BookingDraft {
   fullName: string;
   email: string;
   phone: string;
+  /** Price-catalog woman/man branch (optional). */
+  catalogSex?: "woman" | "man" | null;
   savedAt: number;
 }
 
@@ -80,6 +82,12 @@ function sanitizeBookingDraft(draft: BookingDraft): BookingDraft {
   let step = Math.floor(Number(draft.step));
   if (!Number.isFinite(step) || step < 1 || step > 4) step = 1;
   out.step = step;
+
+  if (draft.catalogSex === "woman" || draft.catalogSex === "man") {
+    out.catalogSex = draft.catalogSex;
+  } else {
+    out.catalogSex = null;
+  }
 
   let dur = Math.floor(Number(draft.durationMinutes));
   if (!Number.isFinite(dur) || dur < 15) dur = 60;
@@ -178,6 +186,7 @@ export interface BookingDraftInput {
   fullName: string;
   email: string;
   phone: string;
+  catalogSex?: "woman" | "man" | null;
 }
 
 export function saveBookingDraft(place: string, state: BookingDraftInput): void {
@@ -194,6 +203,7 @@ export function saveBookingDraft(place: string, state: BookingDraftInput): void 
       bookingDayCount: state.bookingDayCount,
       scheduleTbdCustomerMessage: state.scheduleTbdCustomerMessage,
       scheduleTbdAdminHint: state.scheduleTbdAdminHint,
+      catalogSex: state.catalogSex ?? null,
       savedAt: Date.now(),
     };
     localStorage.setItem(storageKey(place), JSON.stringify(draft));
@@ -215,6 +225,7 @@ export function parseDraftToState(draft: BookingDraft): {
   fullName: string;
   email: string;
   phone: string;
+  catalogSex: "woman" | "man" | null;
 } {
   const granTbd =
     draft.bookingGranularity === "day" || draft.bookingGranularity === "tbd";
@@ -242,6 +253,10 @@ export function parseDraftToState(draft: BookingDraft): {
     fullName: draft.fullName,
     email: draft.email,
     phone: draft.phone,
+    catalogSex:
+      draft.catalogSex === "woman" || draft.catalogSex === "man"
+        ? draft.catalogSex
+        : null,
   };
 }
 

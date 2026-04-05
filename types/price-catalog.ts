@@ -22,6 +22,10 @@ export interface ZonePriceItem extends LocalizedText {
   durationMinutes: number;
   /** Price as number (cents or main unit) or string e.g. "from 20" */
   price: number | string;
+  /** When true, public list shows list price struck through and {@link salePrice} as the offer (see admin checkbox). */
+  onSale?: boolean;
+  /** Promotional price shown when {@link onSale} is true; booking uses this when set. */
+  salePrice?: number | string;
   /** Omit or "time" = pick a time slot; "tbd" = arrange with client (no customer calendar); "day" = legacy, normalized to "tbd" on load/save. */
   bookingGranularity?: PriceItemBookingGranularity;
   /**

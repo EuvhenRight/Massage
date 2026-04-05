@@ -140,6 +140,7 @@
 	flex-shrink: 0;
 	animation: marquee-trust-seamless 52s linear infinite;
 	will-change: transform;
+	-webkit-backface-visibility: hidden;
 	backface-visibility: hidden;
 }
 
@@ -183,6 +184,20 @@
 		#000 95%,
 		transparent
 	);
+}
+
+/*
+ * iOS Safari: mask + backdrop-filter on an ancestor can prevent CSS keyframe
+ * transforms from running on children. Drop the mask on touch iOS; edges stay
+ * clipped by overflow-hidden.
+ */
+@supports (-webkit-touch-callout: none) {
+	@media (max-width: 1023px) {
+		.trust-marquee-viewport {
+			-webkit-mask-image: none;
+			mask-image: none;
+		}
+	}
 }
 
 @media (min-width: 1024px) {

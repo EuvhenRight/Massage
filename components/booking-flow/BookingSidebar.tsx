@@ -4,6 +4,7 @@ import { formatTimeFromSlotString } from '@/lib/format-date'
 import { useLocale, useTranslations } from 'next-intl'
 import { useBookingFlow } from './BookingFlowContext'
 import { TruncateText } from '@/components/ui/truncate-text'
+import BookingServiceTitleDisplay from './BookingServiceTitleDisplay'
 
 const sectionLabelClass = 'text-[11px] font-medium text-icyWhite/50 uppercase tracking-wider block'
 
@@ -11,8 +12,10 @@ export default function BookingSidebar() {
 	const locale = useLocale()
 	const t = useTranslations('booking')
 	const tCommon = useTranslations('common')
+	const tPrice = useTranslations('price')
 	const {
 		service,
+		catalogSex,
 		date,
 		time,
 		durationMinutes,
@@ -37,11 +40,13 @@ export default function BookingSidebar() {
 				{service ? (
 					<div className="min-w-0 space-y-2">
 						<div className="flex items-start justify-between gap-2 min-w-0">
-							<TruncateText className="text-sm text-icyWhite font-medium" tooltipThreshold={25}>
-								{service}
-							</TruncateText>
+							<BookingServiceTitleDisplay
+								service={service}
+								variant="sidebar"
+								className="flex-1 min-w-0"
+							/>
 							{bookingGranularity !== 'tbd' && durationMinutes > 0 && (
-								<span className="text-xs text-icyWhite/50 shrink-0 tabular-nums">
+								<span className="text-xs text-icyWhite/50 shrink-0 tabular-nums self-start pt-0.5">
 									{durationMinutes} min
 								</span>
 							)}
@@ -60,6 +65,12 @@ export default function BookingSidebar() {
 					</div>
 					) : (
 						<p className="text-sm text-icyWhite/40">—</p>
+					)}
+					{catalogSex && (
+						<div className="pt-2 space-y-1">
+							<span className={sectionLabelClass}>{tPrice('sex')}</span>
+							<p className="text-sm text-icyWhite font-medium">{tPrice(catalogSex)}</p>
+						</div>
 					)}
 				</div>
 

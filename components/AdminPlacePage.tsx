@@ -119,6 +119,16 @@ function AgendaServiceLine({
 	)
 }
 
+function agendaMatchesSearch(apt: AppointmentData, raw: string): boolean {
+	const q = raw.trim().toLowerCase()
+	if (!q) return true
+	const combined = [apt.fullName, apt.email, apt.phone, apt.service]
+		.filter(Boolean)
+		.join(' ')
+		.toLowerCase()
+	return combined.includes(q)
+}
+
 function toAppointmentData(doc: {
 	id: string
 	data: () => Record<string, unknown>
@@ -213,6 +223,7 @@ export default function AdminPlacePage({
 	} | null>(null)
 	const [editAppointment, setEditAppointment] =
 		useState<AppointmentData | null>(null)
+	const [agendaQuery, setAgendaQuery] = useState('')
 
 	const bookingUrl =
 		place === 'massage'
@@ -535,6 +546,15 @@ export default function AdminPlacePage({
 		setAddModalOpen(true)
 	}, [])
 
+	const filteredAgendaAppointments = useMemo(
+		() => agendaAppointments.filter(a => agendaMatchesSearch(a, agendaQuery)),
+		[agendaAppointments, agendaQuery],
+	)
+	const filteredAgendaTbd = useMemo(
+		() => agendaTbd.filter(a => agendaMatchesSearch(a, agendaQuery)),
+		[agendaTbd, agendaQuery],
+	)
+
 	return (
 		<main className='flex min-h-screen flex-col bg-nearBlack pb-[env(safe-area-inset-bottom,0px)] text-icyWhite'>
 			<header
@@ -851,28 +871,91 @@ export default function AdminPlacePage({
 
 				{section === 'agenda' && (
 					<div className='space-y-6 animate-in fade-in-0 duration-200'>
-						<div>
-							<h1 className='font-serif text-2xl sm:text-3xl text-icyWhite'>
-								{t('agenda')}
-							</h1>
-							<p className='text-icyWhite/60 text-sm mt-0.5'>
-								{t('agendaSubtitle')}
-							</p>
+						<div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+							<div className='min-w-0'>
+								<h1 className='font-serif text-2xl sm:text-3xl text-icyWhite'>
+									{t('agenda')}
+								</h1>
+								<p className='text-icyWhite/60 text-sm mt-0.5 max-w-2xl'>
+									{t('agendaSubtitle')}
+								</p>
+								<p className='text-icyWhite/45 text-xs mt-2'>{t('agendaRowHint')}</p>
+							</div>
+							<Link
+								href={`/${locale}/admin/${place}/calendar`}
+								className={clsx(
+									'inline-flex shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors',
+									place === 'massage'
+										? 'border-purple-soft/40 bg-purple-soft/10 text-purple-soft hover:bg-purple-soft/18'
+										: 'border-gold-soft/40 bg-gold-soft/10 text-gold-soft hover:bg-gold-soft/18',
+								)}
+							>
+								<Calendar className='h-4 w-4' aria-hidden />
+								{t('agendaOpenCalendar')}
+							</Link>
 						</div>
-						<div className={ui.adminPanel}>
+
+						<div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
+							<div className='rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3'>
+								<p className='text-[11px] font-medium uppercase tracking-wider text-icyWhite/45'>
+									{t('agendaStatScheduled')}
+								</p>
+								<p className='mt-1 font-serif text-2xl text-icyWhite tabular-nums'>
+									{filteredAgendaAppointments.length}
+								</p>
+							</div>
+							<div className='rounded-xl border border-sky-500/25 bg-sky-500/[0.06] px-4 py-3'>
+								<p className='text-[11px] font-medium uppercase tracking-wider text-sky-200/75'>
+									{t('agendaStatAwaiting')}
+								</p>
+								<p className='mt-1 font-serif text-2xl text-sky-100 tabular-nums'>
+									{filteredAgendaTbd.length}
+								</p>
+							</div>
+							<div className='rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3'>
+								<p className='text-[11px] font-medium uppercase tracking-wider text-icyWhite/45'>
+									{t('agendaStatTotal')}
+								</p>
+								<p className='mt-1 font-serif text-2xl text-icyWhite tabular-nums'>
+									{filteredAgendaAppointments.length + filteredAgendaTbd.length}
+								</p>
+							</div>
+						</div>
+
+						<div className='relative max-w-2xl'>
+							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-icyWhite/45' />
+							<input
+								type='search'
+								value={agendaQuery}
+								onChange={e => setAgendaQuery(e.target.value)}
+								placeholder={t('agendaSearchPlaceholder')}
+								className={clsx(
+									'w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-icyWhite placeholder:text-icyWhite/40 focus:outline-none focus:ring-2',
+									ui.analyticsSearchFocus,
+								)}
+								aria-label={t('agendaSearchPlaceholder')}
+							/>
+						</div>
+
+						<div className={clsx(ui.adminPanel, 'overflow-hidden')}>
 							{agendaAppointments.length === 0 && agendaTbd.length === 0 ? (
 								<div className='p-12 text-center text-icyWhite/50'>
 									{t('noUpcomingAppointments')}
 								</div>
+							) : filteredAgendaAppointments.length === 0 &&
+							  filteredAgendaTbd.length === 0 ? (
+								<div className='p-12 text-center text-icyWhite/50'>
+									{t('agendaNoMatches')}
+								</div>
 							) : (
 								<>
-									{agendaTbd.length > 0 && (
+									{filteredAgendaTbd.length > 0 && (
 										<>
 											<p className='px-4 pt-4 text-xs font-medium text-sky-200/90 uppercase tracking-wider'>
 												{t('agendaUnscheduledTitle')}
 											</p>
 											<div className='space-y-3 p-4 sm:hidden'>
-												{agendaTbd.map(apt => {
+												{filteredAgendaTbd.map(apt => {
 													const end =
 														apt.endTime && 'toDate' in apt.endTime
 															? apt.endTime.toDate()
@@ -888,7 +971,16 @@ export default function AdminPlacePage({
 													return (
 														<div
 															key={apt.id}
-															className='rounded-xl border border-sky-500/30 bg-sky-500/5 px-3 py-3 text-sm text-icyWhite space-y-1.5'
+															role='button'
+															tabIndex={0}
+															onClick={() => handleEditAppointment(apt)}
+															onKeyDown={e => {
+																if (e.key === 'Enter' || e.key === ' ') {
+																	e.preventDefault()
+																	handleEditAppointment(apt)
+																}
+															}}
+															className='rounded-xl border border-sky-500/30 bg-sky-500/5 px-3 py-3 text-sm text-icyWhite space-y-1.5 cursor-pointer transition-colors hover:bg-sky-500/12 active:scale-[0.99]'
 														>
 															<div className='flex items-center justify-between gap-2'>
 																<span className='font-medium text-sky-100/95'>
@@ -922,7 +1014,7 @@ export default function AdminPlacePage({
 										</>
 									)}
 									<div className='space-y-3 p-4 sm:hidden'>
-										{agendaAppointments.map(apt => {
+										{filteredAgendaAppointments.map(apt => {
 											const start =
 												apt.startTime && 'toDate' in apt.startTime
 													? apt.startTime.toDate()
@@ -934,7 +1026,16 @@ export default function AdminPlacePage({
 											return (
 												<div
 													key={apt.id}
-													className='rounded-xl border border-white/10 bg-white/[0.04] shadow-sm shadow-black/20 px-3 py-3 text-sm text-icyWhite space-y-1.5'
+													role='button'
+													tabIndex={0}
+													onClick={() => handleEditAppointment(apt)}
+													onKeyDown={e => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															e.preventDefault()
+															handleEditAppointment(apt)
+														}
+													}}
+													className='rounded-xl border border-white/10 bg-white/[0.04] shadow-sm shadow-black/20 px-3 py-3 text-sm text-icyWhite space-y-1.5 cursor-pointer transition-colors hover:bg-white/[0.07] active:scale-[0.99]'
 												>
 													<div className='flex items-center justify-between gap-2'>
 														<span className='font-medium'>
@@ -961,10 +1062,10 @@ export default function AdminPlacePage({
 										})}
 									</div>
 									<div className='hidden sm:block'>
-										<div className='overflow-x-auto'>
-											<table className='w-full text-left'>
+										<div className='overflow-x-auto rounded-xl'>
+											<table className='w-full min-w-[640px] text-left'>
 												<thead>
-													<tr className='border-b border-white/10 bg-white/[0.02]'>
+													<tr className='border-b border-white/10 bg-white/[0.04]'>
 														<th className='px-4 py-3 text-xs font-medium text-icyWhite/60 uppercase tracking-wider'>
 															{tCommon('date')}
 														</th>
@@ -986,7 +1087,7 @@ export default function AdminPlacePage({
 													</tr>
 												</thead>
 												<tbody>
-													{agendaTbd.map(apt => {
+													{filteredAgendaTbd.map(apt => {
 														const start =
 															apt.startTime && 'toDate' in apt.startTime
 																? apt.startTime.toDate()
@@ -1002,7 +1103,16 @@ export default function AdminPlacePage({
 														return (
 															<tr
 																key={apt.id}
-																className='border-b border-sky-500/20 bg-sky-500/[0.04] hover:bg-sky-500/[0.07] transition-colors'
+																role='button'
+																tabIndex={0}
+																onClick={() => handleEditAppointment(apt)}
+																onKeyDown={e => {
+																	if (e.key === 'Enter' || e.key === ' ') {
+																		e.preventDefault()
+																		handleEditAppointment(apt)
+																	}
+																}}
+																className='border-b border-sky-500/20 bg-sky-500/[0.04] hover:bg-sky-500/[0.12] transition-colors cursor-pointer'
 															>
 																<td className='px-4 py-3 text-sm text-sky-100/90'>
 																	{t('agendaTbdNoDate')}
@@ -1035,7 +1145,7 @@ export default function AdminPlacePage({
 															</tr>
 														)
 													})}
-													{agendaAppointments.map(apt => {
+													{filteredAgendaAppointments.map(apt => {
 														const start =
 															apt.startTime && 'toDate' in apt.startTime
 																? apt.startTime.toDate()
@@ -1047,7 +1157,16 @@ export default function AdminPlacePage({
 														return (
 															<tr
 																key={apt.id}
-																className='border-b border-white/5 hover:bg-white/[0.02] transition-colors'
+																role='button'
+																tabIndex={0}
+																onClick={() => handleEditAppointment(apt)}
+																onKeyDown={e => {
+																	if (e.key === 'Enter' || e.key === ' ') {
+																		e.preventDefault()
+																		handleEditAppointment(apt)
+																	}
+																}}
+																className='border-b border-white/5 hover:bg-white/[0.05] transition-colors cursor-pointer'
 															>
 																<td className='px-4 py-3 text-sm text-icyWhite'>
 																	{formatAppointmentDateLabel(apt, start, end)}
@@ -1310,7 +1429,6 @@ export default function AdminPlacePage({
 			</div>
 
 			{(section === 'calendar' ||
-				section === 'agenda' ||
 				section === 'settings' ||
 				section === 'price' ||
 				section === 'analytics') && (
@@ -1366,7 +1484,7 @@ export default function AdminPlacePage({
 							</span>
 						</button>
 					)}
-					{(section === 'calendar' || section === 'agenda') && (
+					{section === 'calendar' && (
 						<button
 							type='button'
 							onClick={openAddAppointment}

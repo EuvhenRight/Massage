@@ -22,7 +22,7 @@ type NavLink = { path: string; key: string; icon: LucideIcon }
 
 const MASSAGE_LINKS: NavLink[] = [
 	{ path: '/massage#about', key: 'about', icon: User },
-	{ path: '/massage#services', key: 'services', icon: Sparkles },
+	{ path: '/massage/price', key: 'services', icon: Sparkles },
 	{ path: '/massage#team', key: 'team', icon: Users },
 	{ path: '/massage#faq', key: 'faq', icon: HelpCircle },
 	{ path: '/massage#contact', key: 'contact', icon: Mail },
@@ -30,7 +30,7 @@ const MASSAGE_LINKS: NavLink[] = [
 
 const DEPILATION_LINKS: NavLink[] = [
 	{ path: '/depilation#about', key: 'about', icon: User },
-	{ path: '/depilation#services', key: 'services', icon: Sparkles },
+	{ path: '/depilation/price', key: 'services', icon: Sparkles },
 	{ path: '/depilation#team', key: 'team', icon: Users },
 	{ path: '/depilation#faq', key: 'faq', icon: HelpCircle },
 	{ path: '/depilation#contact', key: 'contact', icon: Mail },

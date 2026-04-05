@@ -3,6 +3,7 @@
 import { useCookieConsent } from '@/components/CookieConsentContext'
 import GlowText from '@/components/GlowText'
 import Navbar from '@/components/Navbar'
+import SectionDivider from '@/components/SectionDivider'
 import {
 	Accordion,
 	AccordionContent,
@@ -292,6 +293,8 @@ export default function MassagePage() {
 				</motion.div>
 			</section>
 
+			<SectionDivider variant='massage' pattern={0} />
+
 			{/* 3. ABOUT */}
 			<section
 				id='about'
@@ -362,6 +365,8 @@ export default function MassagePage() {
 				</div>
 			</section>
 
+			<SectionDivider variant='massage' pattern={1} />
+
 			{/* 4. PHILOSOPHY */}
 			<section
 				id='philosophy'
@@ -389,52 +394,9 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			{/* 5. WHAT WE OFFER */}
-			<section
-				id='how-we-help'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8'
-				aria-labelledby='how-we-help-heading'
-			>
-				<div className='max-w-6xl mx-auto'>
-					<motion.h2
-						id='how-we-help-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
-					>
-						{t('howIHelpTitle')}
-					</motion.h2>
-					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
-						className='text-icyWhite/60 text-center mb-12'
-					>
-						{t('howIHelpIntro')}
-					</motion.p>
-					<div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4'>
-						{VALUES.map(({ key, icon: Icon }, i) => (
-							<motion.div
-								key={key}
-								initial={{ opacity: 0, y: 24 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: i * 0.06 }}
-								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-purple-soft/30 hover:bg-white/[0.04] transition-all duration-300'
-							>
-								<Icon
-									className='w-8 h-8 text-purple-glow/90 mb-3'
-									aria-hidden
-								/>
-								<p className='text-icyWhite font-medium text-sm'>{t(key)}</p>
-							</motion.div>
-						))}
-					</div>
-				</div>
-			</section>
+			<SectionDivider variant='massage' pattern={2} />
 
-			{/* 6. ACHIEVEMENTS */}
+			{/* 5. ACHIEVEMENTS */}
 			<section
 				id='achievements'
 				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
@@ -491,6 +453,55 @@ export default function MassagePage() {
 					</div>
 				</div>
 			</section>
+
+			<SectionDivider variant='massage' pattern={0} />
+
+			{/* 6. WHAT WE OFFER */}
+			<section
+				id='how-we-help'
+				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8'
+				aria-labelledby='how-we-help-heading'
+			>
+				<div className='max-w-6xl mx-auto'>
+					<motion.h2
+						id='how-we-help-heading'
+						initial={{ opacity: 0, y: 20 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+					>
+						{t('howIHelpTitle')}
+					</motion.h2>
+					<motion.p
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 1 }}
+						viewport={{ once: true }}
+						className='text-icyWhite/60 text-center mb-12'
+					>
+						{t('howIHelpIntro')}
+					</motion.p>
+					<div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4'>
+						{VALUES.map(({ key, icon: Icon }, i) => (
+							<motion.div
+								key={key}
+								initial={{ opacity: 0, y: 24 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{ delay: i * 0.06 }}
+								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-purple-soft/30 hover:bg-white/[0.04] transition-all duration-300'
+							>
+								<Icon
+									className='w-8 h-8 text-purple-glow/90 mb-3'
+									aria-hidden
+								/>
+								<p className='text-icyWhite font-medium text-sm'>{t(key)}</p>
+							</motion.div>
+						))}
+					</div>
+				</div>
+			</section>
+
+			<SectionDivider variant='massage' pattern={1} />
 
 			{/* 7. SERVICE MENU */}
 			<section
@@ -549,23 +560,20 @@ export default function MassagePage() {
 															{t(`serviceMenu.items.${item.key}.desc`)}
 														</p>
 													</div>
-													<div className='shrink-0 text-right'>
+													<Link
+														href={`/${locale}/massage/booking?service=${encodeURIComponent(title)}&duration=${item.duration}`}
+														className='shrink-0 text-right rounded-lg px-1.5 -mx-1.5 py-1 -my-1 hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-soft/35 transition-colors'
+														aria-label={`${title} — ${t('serviceMenu.from')} ${item.price} €`}
+													>
 														<p className='text-purple-glow font-medium text-sm'>
 															{t('serviceMenu.from')} {item.price} &euro;
 														</p>
 														<p className='text-icyWhite/40 text-xs flex items-center justify-end gap-1 mt-0.5'>
-															<Clock className='w-3 h-3' />
+															<Clock className='w-3 h-3' aria-hidden />
 															{item.duration} {t('serviceMenu.min')}
 														</p>
-													</div>
+													</Link>
 												</div>
-												<Link
-													href={`/${locale}/massage/booking?service=${encodeURIComponent(title)}&duration=${item.duration}`}
-													className='inline-flex items-center gap-1 text-purple-glow/70 hover:text-purple-glow text-xs tracking-wider uppercase mt-2 transition-colors'
-												>
-													{t('serviceMenu.book')}
-													<ChevronRight className='w-3 h-3' />
-												</Link>
 											</li>
 										)
 									})}
@@ -575,6 +583,8 @@ export default function MassagePage() {
 					</div>
 				</div>
 			</section>
+
+			<SectionDivider variant='massage' pattern={2} />
 
 			{/* 8. PROCESS */}
 			<section
@@ -636,6 +646,8 @@ export default function MassagePage() {
 					</motion.div>
 				</div>
 			</section>
+
+			<SectionDivider variant='massage' pattern={0} />
 
 			{/* 9. TEAM */}
 			<section
@@ -752,6 +764,8 @@ export default function MassagePage() {
 				</div>
 			</section>
 
+			<SectionDivider variant='massage' pattern={1} />
+
 			{/* 10. HYGIENE */}
 			<section
 				id='hygiene'
@@ -802,6 +816,8 @@ export default function MassagePage() {
 					</div>
 				</div>
 			</section>
+
+			<SectionDivider variant='massage' pattern={2} />
 
 			{/* 11. TESTIMONIALS */}
 			<section
@@ -885,6 +901,8 @@ export default function MassagePage() {
 				</div>
 			</section>
 
+			<SectionDivider variant='massage' pattern={0} />
+
 			{/* 12. FAQ */}
 			<section
 				id='faq'
@@ -932,6 +950,8 @@ export default function MassagePage() {
 					</Accordion>
 				</div>
 			</section>
+
+			<SectionDivider variant='massage' pattern={1} />
 
 			{/* 13. CONTACT */}
 			<section
@@ -1185,6 +1205,8 @@ export default function MassagePage() {
 					</div>
 				</div>
 			</section>
+
+			<SectionDivider variant='massage' pattern={2} />
 
 			{/* 14. FINAL BOOKING CTA */}
 			<section

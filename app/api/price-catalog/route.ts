@@ -4,7 +4,10 @@ export const dynamic = "force-dynamic";
 import { auth } from "@/auth";
 import { getPriceCatalog, setPriceCatalog } from "@/lib/price-catalog-firestore";
 import { normalizePriceCatalog } from "@/lib/price-catalog-normalize";
-import { getMassagePriceCatalogExample } from "@/lib/price-catalog-seed";
+import {
+  getDepilationPriceCatalogExample,
+  getMassagePriceCatalogExample,
+} from "@/lib/price-catalog-seed";
 import { isPriceCatalogEmpty } from "@/lib/price-catalog-utils";
 import { syncPriceCatalogToServices } from "@/lib/sync-price-catalog-to-services";
 import type { Place } from "@/lib/places";
@@ -22,10 +25,17 @@ export async function GET(request: NextRequest) {
       );
     }
     const catalog = await getPriceCatalog(place);
-    if (place === "massage" && isPriceCatalogEmpty(catalog)) {
-      return NextResponse.json(
-        normalizePriceCatalog(getMassagePriceCatalogExample())
-      );
+    if (isPriceCatalogEmpty(catalog)) {
+      if (place === "massage") {
+        return NextResponse.json(
+          normalizePriceCatalog(getMassagePriceCatalogExample())
+        );
+      }
+      if (place === "depilation") {
+        return NextResponse.json(
+          normalizePriceCatalog(getDepilationPriceCatalogExample())
+        );
+      }
     }
     return NextResponse.json(
       normalizePriceCatalog(

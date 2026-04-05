@@ -3,7 +3,10 @@
 import BookingPageLayout from '@/components/BookingPageLayout'
 import BookingFlow from '@/components/booking-flow'
 import BookingPageSkeleton from '@/components/booking-flow/BookingPageSkeleton'
-import { flattenPriceCatalogToServices } from '@/lib/price-catalog-utils'
+import {
+	flattenPriceCatalogToServices,
+	matchPresetToCatalogTitle,
+} from '@/lib/price-catalog-utils'
 import type { ServiceData } from '@/lib/services'
 import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { useLocale, useTranslations } from 'next-intl'
@@ -21,6 +24,7 @@ export default function DepilationBookingPage() {
 
 	const presetService = searchParams.get('service')
 	const presetDuration = searchParams.get('duration')
+	const fromPriceList = searchParams.get('from') === 'price'
 
 	useEffect(() => {
 		fetch(`/api/services?place=depilation&locale=${locale}`)
@@ -120,7 +124,17 @@ export default function DepilationBookingPage() {
 		return fromApi
 	}, [services, priceCatalog, locale, presetService, presetDuration])
 
-	const defaultService = presetService?.trim() || undefined
+	const defaultService = useMemo(() => {
+		const raw = presetService?.trim()
+		if (!raw) return undefined
+		const hasCatalog =
+			priceCatalog &&
+			(priceCatalog.man.services.length > 0 ||
+				priceCatalog.woman.services.length > 0)
+		if (!hasCatalog || !priceCatalog) return raw
+		const flat = flattenPriceCatalogToServices(priceCatalog, locale)
+		return matchPresetToCatalogTitle(flat, raw) ?? raw
+	}, [presetService, priceCatalog, locale])
 	const defaultDuration = presetDuration
 		? Math.max(15, Math.min(240, parseInt(presetDuration, 10) || 60))
 		: 60
@@ -147,6 +161,7 @@ export default function DepilationBookingPage() {
 					defaultService={defaultService}
 					priceCatalog={priceCatalog}
 					place='depilation'
+					skipDraftRestore={fromPriceList}
 				/>
 			)}
 		</BookingPageLayout>

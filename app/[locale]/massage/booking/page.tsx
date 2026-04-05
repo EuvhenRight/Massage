@@ -24,6 +24,7 @@ export default function MassageBookingPage() {
 
 	const presetService = searchParams.get('service')
 	const presetDuration = searchParams.get('duration')
+	const fromPriceList = searchParams.get('from') === 'price'
 
 	useEffect(() => {
 		fetch(`/api/services?place=massage&locale=${locale}`)
@@ -166,6 +167,7 @@ export default function MassageBookingPage() {
 					defaultService={defaultService}
 					priceCatalog={priceCatalog}
 					place='massage'
+					skipDraftRestore={fromPriceList}
 				/>
 			)}
 		</BookingPageLayout>
