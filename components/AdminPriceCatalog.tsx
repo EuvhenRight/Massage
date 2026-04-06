@@ -4,6 +4,10 @@ import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import { isPriceSaleActive } from '@/lib/price-catalog-price-display'
 import { normalizePriceCatalog } from '@/lib/price-catalog-normalize'
 import {
+	parsePriceCatalogFieldToStored,
+	sanitizePriceCatalogFieldInput,
+} from '@/lib/price-catalog-price-input'
+import {
 	pickNextCalendarColor,
 	SECTION_CALENDAR_COLORS,
 } from '@/lib/section-calendar-colors'
@@ -738,10 +742,9 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 					type='text'
 					value={typeof item.price === 'number' ? item.price : item.price}
 					onChange={e => {
-						const v = e.target.value
-						const n = parseFloat(v)
+						const v = sanitizePriceCatalogFieldInput(e.target.value)
 						onPatch({
-							price: Number.isFinite(n) ? n : v,
+							price: parsePriceCatalogFieldToStored(v),
 						})
 					}}
 					placeholder={ph}
@@ -800,10 +803,9 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 										: item.salePrice
 							}
 							onChange={e => {
-								const v = e.target.value
-								const n = parseFloat(v)
+								const v = sanitizePriceCatalogFieldInput(e.target.value)
 								onPatch({
-									salePrice: Number.isFinite(n) ? n : v,
+									salePrice: parsePriceCatalogFieldToStored(v),
 								})
 							}}
 							placeholder={t('priceCatalogSalePricePlaceholder')}
