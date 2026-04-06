@@ -1242,7 +1242,49 @@
 	},
 	"metadata": {
 		"title": "V2studio | Luxury Massage & Depilation Salon",
-		"description": "Dark, cinematic, and cozy. Experience ultra-luxury massage and depilation in an intimate sanctuary."
+		"description": "Dark, cinematic, and cozy. Experience ultra-luxury massage and depilation in an intimate sanctuary.",
+		"siteName": "V2studio",
+		"keywords": "V2studio, massage Bratislava, depilation Bratislava, beauty salon Bratislava, waxing Slovakia, spa Križna",
+		"adminTitle": "Admin | V2studio",
+		"adminDescription": "Staff sign-in and salon administration. Not indexed by search engines.",
+		"pages": {
+			"massage": {
+				"title": "Massage & body care in Bratislava | V2studio",
+				"description": "Professional massage and restorative body care at V2studio, Križna 22, Bratislava. Meet the team, explore services, and book your session."
+			},
+			"depilation": {
+				"title": "Depilation & hair removal in Bratislava | V2studio",
+				"description": "Expert depilation and hair removal in a calm, private setting. V2studio on Križna 22—services, FAQs, and easy online booking."
+			},
+			"booking": {
+				"title": "Book online | V2studio",
+				"description": "Choose a service, pick a time, and confirm your appointment at V2studio Bratislava in a few steps."
+			},
+			"massageBooking": {
+				"title": "Book a massage | V2studio",
+				"description": "Reserve your massage appointment online at V2studio—real-time availability and instant confirmation options."
+			},
+			"depilationBooking": {
+				"title": "Book depilation | V2studio",
+				"description": "Schedule depilation online at V2studio Bratislava. Select your treatment and a time that fits you."
+			},
+			"massagePrice": {
+				"title": "Massage price list | V2studio",
+				"description": "Transparent massage pricing at V2studio Bratislava—durations, add-ons, and packages in one place."
+			},
+			"depilationPrice": {
+				"title": "Depilation price list | V2studio",
+				"description": "Depilation and waxing prices at V2studio—clear rates for face and body treatments in Bratislava."
+			},
+			"cookies": {
+				"title": "Cookie policy | V2studio",
+				"description": "How V2studio uses cookies, analytics, and marketing tags—with consent controls aligned with GDPR."
+			},
+			"privacy": {
+				"title": "Privacy policy | V2studio",
+				"description": "How we collect, use, and protect personal data when you book or browse the V2studio website."
+			}
+		}
 	},
 	"email": {
 		"confirmed": "Confirmed",

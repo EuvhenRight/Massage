@@ -1,8 +1,12 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
-import { useId } from 'react'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
+
+/** Wave path shared for measurement + render (must match `d`). */
+const WAVE_PATH_D =
+	'M0 32 C 60 12, 100 12, 160 32 S 280 52, 320 32 S 420 12, 480 32'
 
 export type SectionDividerProps = {
 	variant: 'massage' | 'depilation'
@@ -140,69 +144,95 @@ function PatternWave({
 }) {
 	const uid = useId().replace(/:/g, '')
 	const gradId = `sd-w-${uid}`
+	const wrapRef = useRef<HTMLDivElement>(null)
+	const pathRef = useRef<SVGPathElement>(null)
+	const isInView = useInView(wrapRef, {
+		once: true,
+		/** Thin row: any pixel visible is enough (ratio thresholds can miss on mobile). */
+		amount: 'some',
+		margin: '0px',
+	})
 
-	// Drive path/dot from the root <svg> only. iOS Safari often reports no / wrong
-	// intersection for SVG shape nodes, so whileInView on <path>/<circle> never fires.
-	const svgVariants = {
-		hidden: { opacity: 0 },
-		visible: {
-			opacity: 1,
-			transition: { duration: 0.6 },
-		},
-	}
-	const pathVariants = {
-		hidden: { pathLength: 0 },
-		visible: {
-			pathLength: 1,
-			transition: {
-				duration: reduce ? 0.4 : 1.35,
-				ease: [0.22, 1, 0.36, 1] as const,
-			},
-		},
-	}
-	const dotVariants = {
-		hidden: { opacity: 0, scale: 0 },
-		visible: {
-			opacity: 1,
-			scale: 1,
-			transition: { delay: 0.85, duration: 0.35 },
-		},
-	}
+	const [dashLen, setDashLen] = useState(0)
+	const [runDraw, setRunDraw] = useState(false)
+
+	useLayoutEffect(() => {
+		const el = pathRef.current
+		if (!el) return
+		try {
+			const L = el.getTotalLength()
+			if (L > 0) setDashLen(L)
+		} catch {
+			/* Safari / older engines */
+		}
+	}, [])
+
+	// Double rAF: first paint must use full dash offset, then transition to 0 (Framer
+	// pathLength + whileInView is unreliable on iOS; native stroke-dashoffset is).
+	useEffect(() => {
+		if (!dashLen || !isInView) return
+		let raf2: number | undefined
+		const raf1 = requestAnimationFrame(() => {
+			raf2 = requestAnimationFrame(() => setRunDraw(true))
+		})
+		return () => {
+			cancelAnimationFrame(raf1)
+			if (raf2 !== undefined) cancelAnimationFrame(raf2)
+		}
+	}, [dashLen, isInView])
+
+	const drawMs = reduce ? 400 : 1350
+	const ease = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 	return (
-		<motion.svg
-			viewBox='0 0 480 56'
-			className='mx-auto h-14 w-full max-w-3xl overflow-visible [transform:translateZ(0)]'
-			variants={svgVariants}
-			initial='hidden'
-			whileInView='visible'
-			viewport={{ once: true, amount: 0.25, margin: '0px' }}
-		>
-			<defs>
-				<linearGradient id={gradId} x1='0%' y1='0%' x2='100%' y2='0%'>
-					<stop offset='0%' stopColor='transparent' />
-					<stop offset='50%' stopColor={a.waveMid} stopOpacity={0.55} />
-					<stop offset='100%' stopColor='transparent' />
-				</linearGradient>
-			</defs>
-			<motion.path
-				d='M0 32 C 60 12, 100 12, 160 32 S 280 52, 320 32 S 420 12, 480 32'
-				fill='none'
-				stroke={`url(#${gradId})`}
-				strokeWidth='1.35'
-				strokeLinecap='round'
-				vectorEffect='non-scaling-stroke'
-				variants={pathVariants}
-			/>
-			{!reduce && (
-				<motion.g
-					variants={dotVariants}
-					style={{ transformOrigin: '240px 32px' }}
-				>
-					<circle cx='240' cy='32' r='3' fill={a.waveMid} fillOpacity={0.85} />
-				</motion.g>
-			)}
-		</motion.svg>
+		<div ref={wrapRef} className='mx-auto w-full max-w-3xl'>
+			<svg
+				viewBox='0 0 480 56'
+				className='h-14 w-full overflow-visible [transform:translateZ(0)]'
+				aria-hidden
+			>
+				<defs>
+					<linearGradient id={gradId} x1='0%' y1='0%' x2='100%' y2='0%'>
+						<stop offset='0%' stopColor='transparent' />
+						<stop offset='50%' stopColor={a.waveMid} stopOpacity={0.55} />
+						<stop offset='100%' stopColor='transparent' />
+					</linearGradient>
+				</defs>
+				<path
+					ref={pathRef}
+					d={WAVE_PATH_D}
+					fill='none'
+					stroke={`url(#${gradId})`}
+					strokeWidth='1.35'
+					strokeLinecap='round'
+					vectorEffect='non-scaling-stroke'
+					style={{
+						opacity: dashLen > 0 ? 1 : 0,
+						strokeDasharray: dashLen,
+						strokeDashoffset: runDraw ? 0 : dashLen,
+						transition: dashLen
+							? `stroke-dashoffset ${drawMs}ms ${ease}`
+							: undefined,
+						willChange: runDraw ? undefined : 'stroke-dashoffset',
+					}}
+				/>
+				{!reduce && (
+					<circle
+						cx='240'
+						cy='32'
+						r='3'
+						fill={a.waveMid}
+						fillOpacity={0.85}
+						style={{
+							opacity: runDraw ? 1 : 0,
+							transition: runDraw
+								? `opacity ${reduce ? 200 : 350}ms ${ease} ${reduce ? 0 : 850}ms`
+								: undefined,
+						}}
+					/>
+				)}
+			</svg>
+		</div>
 	)
 }
 
