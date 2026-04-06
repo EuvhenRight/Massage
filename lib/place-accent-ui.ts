@@ -18,9 +18,6 @@ export function getPlaceAccentUi(place: Place) {
 		infoHover: m
 			? "hover:text-purple-soft/80 hover:bg-purple-soft/10"
 			: "hover:text-gold-soft/80 hover:bg-gold-soft/10",
-		analyticsSearchFocus: m
-			? "focus:ring-purple-soft/50 focus:border-purple-soft/50"
-			: "focus:ring-gold-soft/50 focus:border-gold-soft/50",
 		analyticsExportBtn: m
 			? "border-purple-soft/50 bg-purple-soft/20 text-purple-glow hover:bg-purple-soft/30"
 			: "border-gold-soft/50 bg-gold-soft/20 text-gold-glow hover:bg-gold-soft/30",

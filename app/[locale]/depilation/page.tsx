@@ -19,6 +19,8 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { SITE_CONFIG } from '@/lib/site-config'
 import {
 	motion,
@@ -1236,11 +1238,10 @@ export default function DepilationPage() {
 													>
 														{t('contact.nameLabel')}
 													</label>
-													<input
+													<Input
 														id='dlg-name'
 														type='text'
 														required
-														className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors'
 														placeholder={t('contact.namePlaceholder')}
 													/>
 												</div>
@@ -1252,11 +1253,10 @@ export default function DepilationPage() {
 														>
 															{t('contact.emailLabel')}
 														</label>
-														<input
+														<Input
 															id='dlg-email'
 															type='email'
 															required
-															className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors'
 															placeholder={t('contact.emailPlaceholder')}
 														/>
 													</div>
@@ -1267,10 +1267,9 @@ export default function DepilationPage() {
 														>
 															{t('contact.phoneLabel')}
 														</label>
-														<input
+														<Input
 															id='dlg-phone'
 															type='tel'
-															className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors'
 															placeholder={t('contact.phonePlaceholder')}
 														/>
 													</div>
@@ -1282,11 +1281,10 @@ export default function DepilationPage() {
 													>
 														{t('contact.messageLabel')}
 													</label>
-													<textarea
+													<Textarea
 														id='dlg-msg'
 														rows={4}
 														required
-														className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-gold-soft/40 focus:outline-none transition-colors resize-none'
 														placeholder={t('contact.messagePlaceholder')}
 													/>
 												</div>
@@ -1349,20 +1347,20 @@ export default function DepilationPage() {
 						</motion.p>
 						<motion.div
 							variants={fadeUp}
-							className='flex flex-wrap justify-center gap-4'
+							className='grid w-full max-w-xl mx-auto grid-cols-1 sm:grid-cols-2 gap-4'
 						>
 							<Link
 								href={`/${locale}/depilation/booking`}
-								className='group inline-flex items-center gap-2 px-10 py-4.5 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-semibold tracking-wider uppercase hover:bg-gold-soft/25 hover:border-gold-soft/60 hover:shadow-glow transition-all duration-500'
+								className='group inline-flex w-full min-h-[3.5rem] items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft text-sm font-semibold tracking-wider uppercase hover:bg-gold-soft/25 hover:border-gold-soft/60 hover:shadow-glow transition-all duration-500'
 							>
 								{t('bookNow')}
-								<ChevronRight className='w-4 h-4 group-hover:translate-x-0.5 transition-transform' />
+								<ChevronRight className='w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform' />
 							</Link>
 							<a
 								href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
-								className='inline-flex items-center gap-2 px-8 py-4.5 rounded-2xl border border-white/10 text-icyWhite/60 font-medium hover:border-gold-soft/30 hover:text-gold-soft/80 transition-all duration-500'
+								className='inline-flex w-full min-h-[3.5rem] items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-white/10 text-icyWhite/60 text-sm font-semibold tracking-wider uppercase hover:border-gold-soft/30 hover:text-gold-soft/80 transition-all duration-500'
 							>
-								<Phone className='w-4 h-4' />
+								<Phone className='w-4 h-4 shrink-0' />
 								{t('callNow')}
 							</a>
 						</motion.div>

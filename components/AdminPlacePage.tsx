@@ -58,6 +58,7 @@ import {
 } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
+import { Input } from '@/components/ui/input'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import {
@@ -924,15 +925,13 @@ export default function AdminPlacePage({
 
 						<div className='relative max-w-2xl'>
 							<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-icyWhite/45' />
-							<input
+							<Input
 								type='search'
+								variant='search'
 								value={agendaQuery}
 								onChange={e => setAgendaQuery(e.target.value)}
 								placeholder={t('agendaSearchPlaceholder')}
-								className={clsx(
-									'w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-icyWhite placeholder:text-icyWhite/40 focus:outline-none focus:ring-2',
-									ui.analyticsSearchFocus,
-								)}
+								className='rounded-lg text-sm py-2.5'
 								aria-label={t('agendaSearchPlaceholder')}
 							/>
 						</div>
@@ -1225,12 +1224,13 @@ export default function AdminPlacePage({
 						</div>
 						<div className='relative max-w-2xl'>
 							<Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-icyWhite/50' />
-							<input
+							<Input
 								type='search'
+								variant='search'
 								value={analyticsSearch}
 								onChange={e => setAnalyticsSearch(e.target.value)}
 								placeholder={t('searchByNameOrPhone')}
-								className={`w-full pl-10 pr-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite placeholder:text-icyWhite/40 focus:outline-none focus:ring-2 ${ui.analyticsSearchFocus}`}
+								className='rounded-lg text-sm py-2.5'
 							/>
 						</div>
 						<div className={ui.adminPanel}>

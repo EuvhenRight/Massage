@@ -18,6 +18,8 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { SITE_CONFIG } from '@/lib/site-config'
 import { motion } from 'framer-motion'
 import {
@@ -1135,11 +1137,10 @@ export default function MassagePage() {
 													>
 														{t('contact.nameLabel')}
 													</label>
-													<input
+													<Input
 														id='dlg-name-m'
 														type='text'
 														required
-														className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors'
 														placeholder={t('contact.namePlaceholder')}
 													/>
 												</div>
@@ -1151,11 +1152,10 @@ export default function MassagePage() {
 														>
 															{t('contact.emailLabel')}
 														</label>
-														<input
+														<Input
 															id='dlg-email-m'
 															type='email'
 															required
-															className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors'
 															placeholder={t('contact.emailPlaceholder')}
 														/>
 													</div>
@@ -1166,10 +1166,9 @@ export default function MassagePage() {
 														>
 															{t('contact.phoneLabel')}
 														</label>
-														<input
+														<Input
 															id='dlg-phone-m'
 															type='tel'
-															className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors'
 															placeholder={t('contact.phonePlaceholder')}
 														/>
 													</div>
@@ -1181,17 +1180,16 @@ export default function MassagePage() {
 													>
 														{t('contact.messageLabel')}
 													</label>
-													<textarea
+													<Textarea
 														id='dlg-msg-m'
 														rows={4}
 														required
-														className='w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-icyWhite text-sm placeholder:text-icyWhite/25 focus:border-purple-soft/40 focus:outline-none transition-colors resize-none'
 														placeholder={t('contact.messagePlaceholder')}
 													/>
 												</div>
 												<button
 													type='submit'
-													className='w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-purple-soft/20 border border-purple-soft/50 text-purple-glow font-medium text-sm tracking-wider uppercase hover:bg-purple-soft/30 hover:shadow-glow-purple transition-all duration-300'
+													className='w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-all duration-300'
 												>
 													<Send className='w-4 h-4' />
 													{t('contact.submit')}
@@ -1232,19 +1230,19 @@ export default function MassagePage() {
 					>
 						{t('reserveDesc')}
 					</motion.p>
-					<div className='flex flex-wrap justify-center gap-4'>
+					<div className='grid w-full max-w-xl mx-auto grid-cols-1 sm:grid-cols-2 gap-4'>
 						<Link
 							href={`/${locale}/massage/booking`}
-							className='inline-flex items-center gap-2 px-10 py-4 rounded-xl bg-purple-soft/20 border border-purple-soft/50 text-purple-glow font-medium tracking-wider uppercase hover:bg-purple-soft/30 hover:shadow-glow-purple transition-all duration-300'
+							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl bg-purple-soft/20 border border-purple-soft/50 text-purple-glow text-sm font-medium tracking-wider uppercase hover:bg-purple-soft/30 hover:shadow-glow-purple transition-all duration-300'
 						>
 							{t('bookNow')}
-							<ChevronRight className='w-4 h-4' />
+							<ChevronRight className='w-4 h-4 shrink-0' />
 						</Link>
 						<a
 							href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
-							className='inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-white/20 text-icyWhite/80 font-medium hover:border-purple-soft/40 hover:text-purple-glow transition-colors'
+							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl border border-white/20 text-icyWhite/80 text-sm font-medium tracking-wider uppercase hover:border-purple-soft/40 hover:text-purple-glow transition-colors'
 						>
-							<Phone className='w-4 h-4' />
+							<Phone className='w-4 h-4 shrink-0' />
 							{t('callNow')}
 						</a>
 					</div>

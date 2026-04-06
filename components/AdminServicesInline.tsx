@@ -104,7 +104,6 @@ function ServiceForm({
           value={titleSk}
           onChange={(e) => setTitleSk(e.target.value)}
           placeholder={t("titlePlaceholder")}
-          className="bg-white/5 border-white/10 text-icyWhite"
         />
       </div>
       <div>
@@ -113,7 +112,6 @@ function ServiceForm({
           value={titleEn}
           onChange={(e) => setTitleEn(e.target.value)}
           placeholder="e.g. Swedish Massage"
-          className="bg-white/5 border-white/10 text-icyWhite"
         />
       </div>
       <div>
@@ -122,7 +120,6 @@ function ServiceForm({
           value={titleRu}
           onChange={(e) => setTitleRu(e.target.value)}
           placeholder="напр. Шведский массаж"
-          className="bg-white/5 border-white/10 text-icyWhite"
         />
       </div>
       <div>
@@ -131,7 +128,6 @@ function ServiceForm({
           value={titleUk}
           onChange={(e) => setTitleUk(e.target.value)}
           placeholder="напр. Шведський масаж"
-          className="bg-white/5 border-white/10 text-icyWhite"
         />
       </div>
       <div>
@@ -166,7 +162,6 @@ function ServiceForm({
           step={15}
           value={durationMinutes}
           onChange={(e) => setDurationMinutes(e.target.value)}
-          className="bg-white/5 border-white/10 text-icyWhite"
         />
       </div>
       <div className="flex gap-2 pt-2">

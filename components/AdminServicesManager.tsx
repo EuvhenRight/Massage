@@ -80,7 +80,6 @@ function ServiceForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Swedish Massage"
-          className="bg-white/5 border-white/10 text-icyWhite"
         />
       </div>
       <div>
@@ -115,7 +114,6 @@ function ServiceForm({
           step={15}
           value={durationMinutes}
           onChange={(e) => setDurationMinutes(e.target.value)}
-          className="bg-white/5 border-white/10 text-icyWhite"
         />
       </div>
       <div className="flex gap-2 pt-2">

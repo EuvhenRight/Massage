@@ -19,6 +19,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { BookingFlowProvider, useBookingFlow } from './BookingFlowContext'
 import BookingSidebar from './BookingSidebar'
+import { Input } from '@/components/ui/input'
 import BookingStepProgress from './BookingStepProgress'
 import StepCustomerInfo, {
 	type StepCustomerInfoHandle,
@@ -433,13 +434,14 @@ function BookingFlowInner({
 										className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-icyWhite/50 pointer-events-none'
 										aria-hidden
 									/>
-									<input
+									<Input
 										type='search'
+										variant='search'
 										value={searchQuery}
 										onChange={e => setSearchQuery(e.target.value)}
 										placeholder={t('searchServicePlaceholder')}
 										aria-label={t('searchServicePlaceholder')}
-										className={accent.searchFocus}
+										className='text-base sm:text-sm py-2.5 sm:py-3'
 									/>
 								</div>
 							)}

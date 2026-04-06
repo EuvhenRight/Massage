@@ -187,7 +187,7 @@ export default function BookingFormModal({
                 <FormItem>
                   <FormLabel>Full name *</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Smith" {...field} />
+                    <Input variant="booking" placeholder="John Smith" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -202,6 +202,7 @@ export default function BookingFormModal({
                   <FormLabel>Email *</FormLabel>
                   <FormControl>
                     <Input
+                      variant="booking"
                       type="email"
                       placeholder="john@example.com"
                       {...field}
@@ -220,8 +221,12 @@ export default function BookingFormModal({
                   <FormLabel>Phone *</FormLabel>
                   <FormControl>
                     <Input
+                      variant="booking"
                       type="tel"
-                      placeholder="+1 234 567 8900"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="+421 912 345 678"
+                      maxLength={28}
                       {...field}
                     />
                   </FormControl>

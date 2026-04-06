@@ -256,10 +256,25 @@
 	display: none;
 }
 
+/*
+  Unified fields: Tailwind merge or extra className can drop focus:border-gold-soft.
+  Anchor class from lib/unified-field-styles — same gold as theme `gold.soft` (#E8B800).
+*/
+input.u-field:focus,
+input.u-field:focus-visible,
+textarea.u-field:focus,
+textarea.u-field:focus-visible {
+	border-color: #e8b800 !important;
+	border-style: solid !important;
+	outline: none !important;
+	box-shadow: none !important;
+}
+
 /* Shared select/dropdown menu style - used by SelectTrigger and native selects */
 .select-menu {
-	@apply w-full rounded-lg border border-white/10 bg-black px-3 py-2 text-sm text-icyWhite;
-	@apply focus:outline-none focus:ring-1 focus:ring-white/40 focus:border-white/30;
+	@apply w-full rounded-lg border-2 border-white/10 bg-black px-3 py-2 text-sm text-icyWhite;
+	@apply focus:outline-none focus:ring-0 focus:shadow-none;
+	@apply focus:border-gold-soft focus-visible:border-gold-soft;
 }
 .select-menu option {
 	@apply bg-black text-icyWhite;

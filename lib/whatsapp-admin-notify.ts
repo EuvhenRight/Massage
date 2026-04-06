@@ -5,12 +5,11 @@
  * Sandbox: each recipient must join the Twilio sandbox from WhatsApp (code 63016).
  */
 
-import {
-  parsePhoneNumberFromString,
-  type CountryCode,
-} from "libphonenumber-js";
+import { parseWhatsappE164 } from "./phone-e164";
 
 export type WhatsAppNotifyResult = "skipped" | "sent" | "failed";
+
+export { parseWhatsappE164 };
 
 const BRAND = "V2studio" as const;
 const TAGLINE = "Interné upozornenie" as const;
@@ -54,85 +53,6 @@ function ensureWhatsAppAddress(value: string): string {
   if (v.startsWith("whatsapp:")) return v.replace(/\s/g, "");
   const num = v.replace(/\s/g, "");
   return num.startsWith("+") ? `whatsapp:${num}` : `whatsapp:+${num}`;
-}
-
-/**
- * Regions to try when the number looks national (leading 0) or has no +/country code.
- * Slovakia first (salon default), then common EU/neighbour states for this audience.
- */
-const WHATSAPP_NATIONAL_DEFAULTS: CountryCode[] = [
-  "SK",
-  "CZ",
-  "PL",
-  "UA",
-  "HU",
-  "AT",
-  "DE",
-  "NL",
-  "BE",
-  "RO",
-  "IT",
-  "FR",
-  "ES",
-  "GB",
-  "CH",
-  "SE",
-  "NO",
-  "DK",
-  "IE",
-  "PT",
-  "GR",
-  "BG",
-  "HR",
-  "SI",
-  "LT",
-  "LV",
-  "EE",
-  "FI",
-  "LU",
-  "MD",
-  "RS",
-];
-
-function e164IfValid(value: string): string | null {
-  const pn = parsePhoneNumberFromString(value);
-  if (!pn?.isValid()) return null;
-  return pn.format("E.164");
-}
-
-/**
- * E.164 with leading +, or null if the value cannot be used as a WhatsApp recipient.
- * Uses libphonenumber: + / 00 international, country-code-only digit strings (380…, 31…),
- * and national formats (0…) resolved against likely regions (SK first, then EU/UA/etc.).
- */
-export function parseWhatsappE164(raw: string): string | null {
-  const trimmed = raw.trim();
-  if (!trimmed || trimmed === "—") return null;
-
-  const compactNoPlus = trimmed.replace(/[\s\-().]/g, "");
-  if (compactNoPlus.startsWith("00")) {
-    const intl = `+${compactNoPlus.slice(2)}`;
-    const from00 = e164IfValid(intl);
-    if (from00) return from00;
-  }
-
-  const direct = e164IfValid(trimmed);
-  if (direct) return direct;
-
-  for (const region of WHATSAPP_NATIONAL_DEFAULTS) {
-    const pn = parsePhoneNumberFromString(trimmed, region);
-    if (pn?.isValid()) return pn.format("E.164");
-  }
-
-  const digitsOnly = trimmed.replace(/\D/g, "");
-  if (digitsOnly.length < 8 || digitsOnly.length > 15) return null;
-
-  if (!digitsOnly.startsWith("0")) {
-    const intl = e164IfValid(`+${digitsOnly}`);
-    if (intl) return intl;
-  }
-
-  return null;
 }
 
 function firstNameGreeting(fullName: string): string {

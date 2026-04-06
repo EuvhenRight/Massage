@@ -1,12 +1,16 @@
 "use client";
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { getBookingAccent } from "@/lib/booking-accent";
 import { getBookingSchema, type BookingFormData } from "@/lib/booking-schema";
+import {
+  formatPhoneInternationalDisplay,
+  parseWhatsappE164,
+} from "@/lib/phone-e164";
 import type { Place } from "@/lib/places";
 import { useBookingFlow } from "./BookingFlowContext";
 import TbdBookingRecap from "./TbdBookingRecap";
@@ -19,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Check, MessageCircle } from "lucide-react";
 
 export interface StepCustomerInfoHandle {
   submitForSave: () => Promise<boolean>;
@@ -68,6 +73,13 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
       phone: phone || "",
     },
   });
+
+  const phoneValue = form.watch("phone");
+  const phoneParsedPreview = useMemo(() => {
+    const e164 = parseWhatsappE164(phoneValue || "");
+    if (!e164) return null;
+    return formatPhoneInternationalDisplay(e164) ?? e164;
+  }, [phoneValue]);
 
   const isValid = form.formState.isValid;
   useEffect(() => {
@@ -139,10 +151,10 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
                 </FormLabel>
                 <FormControl>
                   <Input
+                    variant="booking"
                     placeholder={t("placeholderFullName")}
                     maxLength={100}
                     autoComplete="name"
-                    className={`min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 ${accent.inputBorder} text-icyWhite placeholder:text-icyWhite/40 ${accent.inputFocus}`}
                     {...field}
                   />
                 </FormControl>
@@ -161,12 +173,12 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
                 </FormLabel>
                 <FormControl>
                   <Input
+                    variant="booking"
                     type="email"
                     inputMode="email"
                     autoComplete="email"
                     maxLength={254}
                     placeholder={t("placeholderEmail")}
-                    className={`min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 ${accent.inputBorder} text-icyWhite placeholder:text-icyWhite/40 ${accent.inputFocus}`}
                     {...field}
                   />
                 </FormControl>
@@ -179,21 +191,42 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
             control={form.control}
             name="phone"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-3">
                 <FormLabel className="text-icyWhite/90 text-sm font-medium">
                   {t("phone")}
                 </FormLabel>
+                <div
+                  className={`flex gap-3 rounded-xl p-3.5 sm:p-4 ${accent.inputBorder} bg-white/[0.04]`}
+                >
+                  <MessageCircle
+                    className="h-5 w-5 shrink-0 text-emerald-400/85 mt-0.5"
+                    aria-hidden
+                  />
+                  <p className="text-[13px] sm:text-sm text-icyWhite/65 leading-relaxed">
+                    {t("phoneWhatsAppHint")}
+                  </p>
+                </div>
                 <FormControl>
                   <Input
+                    variant="booking"
                     type="tel"
                     inputMode="tel"
                     autoComplete="tel"
-                    maxLength={20}
+                    maxLength={28}
+                    spellCheck={false}
                     placeholder={t("placeholderPhone")}
-                    className={`min-h-[48px] sm:min-h-[44px] h-auto py-3 sm:py-2.5 text-base sm:text-sm bg-white/5 ${accent.inputBorder} text-icyWhite placeholder:text-icyWhite/40 ${accent.inputFocus}`}
                     {...field}
                   />
                 </FormControl>
+                {phoneParsedPreview && !form.formState.errors.phone && (
+                  <p
+                    className="flex items-center gap-2 text-xs text-emerald-400/90"
+                    role="status"
+                  >
+                    <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    <span>{t("phoneRecognizedLabel", { number: phoneParsedPreview })}</span>
+                  </p>
+                )}
                 <FormMessage className="text-red-400 text-xs" />
               </FormItem>
             )}

@@ -49,7 +49,9 @@
 		"next": "Next",
 		"placeholderFullName": "John Smith",
 		"placeholderEmail": "john@example.com",
-		"placeholderPhone": "+1 234 567 8900",
+		"placeholderPhone": "+421 912 345 678",
+		"phoneWhatsAppHint": "Enter your mobile number with country code (e.g. +421 for Slovakia, +43 for Austria). We use it for WhatsApp booking messages when messaging is enabled, and so we can reach you if needed.",
+		"phoneRecognizedLabel": "Recognized as: {number}",
 		"noSlotsMessage": "No slots available on this day. Pick another date.",
 		"pickServiceDate": "Pick service and date",
 		"pickTime": "Pick time",
@@ -89,7 +91,7 @@
 		"showLess": "Show less",
 		"noSearchResults": "No services match your search.",
 		"noServicesInCategory": "No services in this category.",
-		"bookingInfo": "We'll send a confirmation to your email. Please arrive 5 minutes before your appointment.",
+		"bookingInfo": "We'll email you a confirmation. If WhatsApp is enabled, we may also send a short message to this number. Please arrive 5 minutes before your appointment.",
 		"scheduleTbdBookingBadge": "Date arranged with you",
 		"allDayBadge": "{count, plural, one {# day} other {# days}}",
 		"allDayLabel": "All day",
@@ -109,7 +111,7 @@
 		"fullNameMin": "Full name must be at least 3 characters",
 		"fullNameMax": "Full name must be at most 100 characters",
 		"invalidEmail": "Invalid email address",
-		"invalidPhone": "Invalid phone number (use international format, e.g. +1 234 567 8900)"
+		"invalidPhone": "Enter a valid mobile number with country code (e.g. +421 912 345 678). National numbers like 09xx work if they match a supported country."
 	},
 	"massage": {
 		"mostPopular": "Most Popular",

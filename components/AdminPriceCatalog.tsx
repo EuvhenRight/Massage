@@ -26,7 +26,9 @@ import {
 	getTitleStrictForLocale,
 	normalizeItemBookingDayCount,
 } from '@/types/price-catalog'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { useLocale, useTranslations } from 'next-intl'
 import { clsx } from 'clsx'
 import {
@@ -509,13 +511,14 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 						<label className='text-icyWhite/50 text-xs'>
 							{t(`title${lang}` as 'titleSk')}
 						</label>
-						<input
+						<Input
 							type='text'
+							variant='dense'
 							value={
 								(item[`title${lang}` as keyof typeof item] as string) ?? ''
 							}
 							onChange={e => onChange(`title${lang}`, e.target.value)}
-							className='w-full mt-0.5 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+							className='mt-0.5 w-full'
 						/>
 					</div>
 				))}
@@ -547,7 +550,8 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 					return (
 						<div key={lang}>
 							<label className='text-icyWhite/50 text-xs'>{t(key)}</label>
-							<textarea
+							<Textarea
+								variant='dense'
 								rows={3}
 								maxLength={MAX_DESCRIPTION_LENGTH}
 								value={value}
@@ -556,7 +560,7 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 									onChange(key, v)
 								}}
 								placeholder={t('priceCatalogDescriptionInputPlaceholder')}
-								className='w-full mt-0.5 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm resize-y'
+								className='mt-0.5 w-full'
 							/>
 							<p className='text-[10px] text-icyWhite/40 mt-0.5'>
 								{value.length}/{MAX_DESCRIPTION_LENGTH}
@@ -625,7 +629,8 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 							<label className='text-icyWhite/50 text-xs'>
 								{t(`title${lang}` as 'titleSk')}
 							</label>
-							<textarea
+							<Textarea
+								variant='dense'
 								rows={3}
 								maxLength={MAX_TBD_TEXT}
 								value={value}
@@ -634,7 +639,7 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 										[key]: e.target.value.slice(0, MAX_TBD_TEXT),
 									} as Partial<ZonePriceItem>)
 								}
-								className='w-full mt-0.5 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm resize-y'
+								className='mt-0.5 w-full'
 							/>
 						</div>
 					)
@@ -655,9 +660,10 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 			>
 				{t('itemTbdDayCountLabel')}
 			</Label>
-			<input
+			<Input
 				id={`day-count-${idSuffix}-${item.id}`}
 				type='number'
+				variant='dense'
 				min={1}
 				max={14}
 				value={normalizeItemBookingDayCount(item.bookingDayCount)}
@@ -668,7 +674,7 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 						),
 					})
 				}
-				className='w-16 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+				className='w-16'
 			/>
 			<p className='text-[11px] text-icyWhite/40 basis-full sm:basis-auto'>
 				{t('itemTbdDayCountHint')}
@@ -738,8 +744,9 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 		return (
 			<>
 				<span className='text-icyWhite/50 text-sm self-center'>{t('priceLabel')}</span>
-				<input
+				<Input
 					type='text'
+					variant='dense'
 					value={typeof item.price === 'number' ? item.price : item.price}
 					onChange={e => {
 						const v = sanitizePriceCatalogFieldInput(e.target.value)
@@ -749,7 +756,7 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 					}}
 					placeholder={ph}
 					aria-label={t('priceLabel')}
-					className='w-28 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+					className='w-28'
 				/>
 				<label className='flex items-center gap-2 cursor-pointer self-center shrink-0'>
 					<input
@@ -793,8 +800,9 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 						<span className='text-icyWhite/50 text-sm self-center'>
 							{t('priceCatalogSalePrice')}
 						</span>
-						<input
+						<Input
 							type='text'
+							variant='dense'
 							value={
 								item.salePrice === undefined
 									? ''
@@ -810,7 +818,7 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 							}}
 							placeholder={t('priceCatalogSalePricePlaceholder')}
 							aria-label={t('priceCatalogSalePrice')}
-							className='w-28 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/30 text-icyWhite text-sm'
+							className='w-28 border-amber-500/30 bg-amber-500/10'
 						/>
 					</>
 				)}
@@ -851,8 +859,9 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 				<div className='flex gap-2 flex-wrap'>
 					{(item.bookingGranularity ?? 'time') === 'time' && (
 						<>
-							<input
+							<Input
 								type='number'
+								variant='dense'
 								min={5}
 								max={240}
 								value={item.durationMinutes}
@@ -868,7 +877,7 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 										},
 									)
 								}
-								className='w-20 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+								className='w-20'
 							/>
 							<span className='text-icyWhite/50 text-sm self-center'>
 								{t('durationLabel')}
@@ -1043,8 +1052,9 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 				<div className='flex gap-2 flex-wrap'>
 					{(item.bookingGranularity ?? 'time') === 'time' && (
 						<>
-							<input
+							<Input
 								type='number'
+								variant='dense'
 								min={5}
 								max={240}
 								value={item.durationMinutes}
@@ -1053,7 +1063,7 @@ const AdminPriceCatalog = forwardRef<AdminPriceCatalogHandle, AdminPriceCatalogP
 										durationMinutes: parseInt(e.target.value, 10) || 15,
 									})
 								}
-								className='w-20 px-2 py-1.5 rounded bg-white/5 border border-white/10 text-icyWhite text-sm'
+								className='w-20'
 							/>
 							<span className='text-icyWhite/50 text-sm self-center'>
 								{t('durationLabel')}

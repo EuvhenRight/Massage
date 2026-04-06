@@ -141,14 +141,42 @@ function PatternWave({
 	const uid = useId().replace(/:/g, '')
 	const gradId = `sd-w-${uid}`
 
+	// Drive path/dot from the root <svg> only. iOS Safari often reports no / wrong
+	// intersection for SVG shape nodes, so whileInView on <path>/<circle> never fires.
+	const svgVariants = {
+		hidden: { opacity: 0 },
+		visible: {
+			opacity: 1,
+			transition: { duration: 0.6 },
+		},
+	}
+	const pathVariants = {
+		hidden: { pathLength: 0 },
+		visible: {
+			pathLength: 1,
+			transition: {
+				duration: reduce ? 0.4 : 1.35,
+				ease: [0.22, 1, 0.36, 1] as const,
+			},
+		},
+	}
+	const dotVariants = {
+		hidden: { opacity: 0, scale: 0 },
+		visible: {
+			opacity: 1,
+			scale: 1,
+			transition: { delay: 0.85, duration: 0.35 },
+		},
+	}
+
 	return (
 		<motion.svg
 			viewBox='0 0 480 56'
-			className='mx-auto h-14 w-full max-w-3xl overflow-visible'
-			initial={{ opacity: 0 }}
-			whileInView={{ opacity: 1 }}
-			viewport={{ once: true, margin: '-30px' }}
-			transition={{ duration: 0.6 }}
+			className='mx-auto h-14 w-full max-w-3xl overflow-visible [transform:translateZ(0)]'
+			variants={svgVariants}
+			initial='hidden'
+			whileInView='visible'
+			viewport={{ once: true, amount: 0.25, margin: '0px' }}
 		>
 			<defs>
 				<linearGradient id={gradId} x1='0%' y1='0%' x2='100%' y2='0%'>
@@ -163,23 +191,16 @@ function PatternWave({
 				stroke={`url(#${gradId})`}
 				strokeWidth='1.35'
 				strokeLinecap='round'
-				initial={{ pathLength: 0 }}
-				whileInView={{ pathLength: 1 }}
-				viewport={{ once: true, margin: '-20px' }}
-				transition={{ duration: reduce ? 0.4 : 1.35, ease: [0.22, 1, 0.36, 1] }}
+				vectorEffect='non-scaling-stroke'
+				variants={pathVariants}
 			/>
 			{!reduce && (
-				<motion.circle
-					cx='240'
-					cy='32'
-					r='3'
-					fill={a.waveMid}
-					fillOpacity={0.85}
-					initial={{ scale: 0, opacity: 0 }}
-					whileInView={{ scale: 1, opacity: 1 }}
-					viewport={{ once: true }}
-					transition={{ delay: 0.85, duration: 0.35 }}
-				/>
+				<motion.g
+					variants={dotVariants}
+					style={{ transformOrigin: '240px 32px' }}
+				>
+					<circle cx='240' cy='32' r='3' fill={a.waveMid} fillOpacity={0.85} />
+				</motion.g>
 			)}
 		</motion.svg>
 	)

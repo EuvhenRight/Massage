@@ -460,6 +460,7 @@ export default function BookingCalendar({
 													<div className='space-y-2'>
 														<Label className='text-icyWhite/80'>Name *</Label>
 														<Input
+															variant='booking'
 															required
 															value={bookingForm.customerName}
 															onChange={e =>
@@ -475,6 +476,7 @@ export default function BookingCalendar({
 													<div className='space-y-2'>
 														<Label className='text-icyWhite/80'>Email *</Label>
 														<Input
+															variant='booking'
 															type='email'
 															required
 															value={bookingForm.customerEmail}
@@ -491,6 +493,7 @@ export default function BookingCalendar({
 													<div className='space-y-2'>
 														<Label className='text-icyWhite/80'>Phone</Label>
 														<Input
+															variant='booking'
 															type='tel'
 															value={bookingForm.customerPhone}
 															onChange={e =>

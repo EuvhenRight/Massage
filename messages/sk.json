@@ -49,7 +49,9 @@
 		"next": "Ďalej",
 		"placeholderFullName": "Ján Novák",
 		"placeholderEmail": "jan@example.com",
-		"placeholderPhone": "+421 234 567 890",
+		"placeholderPhone": "+421 912 345 678",
+		"phoneWhatsAppHint": "Uveďte mobilné číslo s medzinárodnou predvoľbou (napr. +421 pre Slovensko, +420 pre Česko). Použijeme ho na WhatsApp správy o rezervácii (ak je zapnuté) a aby sme vás vedeli kontaktovať.",
+		"phoneRecognizedLabel": "Rozpoznané ako: {number}",
 		"noSlotsMessage": "V tento deň nie sú k dispozícii žiadne voľné termíny. Vyberte iný dátum.",
 		"pickServiceDate": "Vyberte službu a dátum",
 		"pickTime": "Vyberte čas",
@@ -91,7 +93,7 @@
 		"showLess": "Zobraziť menej",
 		"noSearchResults": "Žiadne služby nezodpovedajú vášmu hľadaniu.",
 		"noServicesInCategory": "V tejto kategórii nie sú žiadne služby.",
-		"bookingInfo": "Potvrdenie vám pošleme na e-mail. Prosíme, príďte 5 minút pred termínom.",
+		"bookingInfo": "Potvrdenie pošleme na e-mail. Ak je zapnuté, môžeme poslať aj krátku WhatsApp správu na toto číslo. Prosíme, príďte 5 minút pred termínom.",
 		"scheduleTbdBookingBadge": "Termín dohodneme s vami",
 		"allDayBadge": "{count, plural, one {# deň} few {# dni} other {# dní}}",
 		"allDayLabel": "Celý deň",
@@ -111,7 +113,7 @@
 		"fullNameMin": "Meno musí mať aspoň 3 znaky",
 		"fullNameMax": "Meno môže mať najviac 100 znakov",
 		"invalidEmail": "Neplatná e-mailová adresa",
-		"invalidPhone": "Neplatné telefónne číslo (použite medzinárodný formát, napr. +421 234 567 890)"
+		"invalidPhone": "Zadajte platné mobilné číslo s predvoľbou krajiny (napr. +421 912 345 678). Formáty ako 09xx akceptujeme, ak zodpovedajú podporovanej krajine."
 	},
 	"massage": {
 		"mostPopular": "Najobľúbenejšie",

@@ -20,6 +20,7 @@ import {
 import { fetchMergedPublicOccupiedSlots } from "./booking-occupied-slots";
 import { getSchedule } from "./schedule-firestore";
 import type { ScheduleData } from "./schedule-firestore";
+import { normalizeStoredPhone } from "./phone-e164";
 
 export interface AppointmentData {
   id: string;
@@ -355,7 +356,7 @@ async function bookFullDayAppointment(
       service: input.service,
       fullName: input.fullName,
       email: input.email,
-      phone: input.phone,
+      phone: normalizeStoredPhone(input.phone),
       place,
       createdAt: serverTimestamp(),
     };
@@ -404,7 +405,7 @@ async function bookFullDayAppointment(
       serviceUk: input.serviceUk,
       fullName: input.fullName,
       email: input.email,
-      phone: input.phone,
+      phone: normalizeStoredPhone(input.phone),
     } as AppointmentData;
   });
 }
@@ -473,7 +474,7 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
       service: input.service,
       fullName: input.fullName,
       email: input.email,
-      phone: input.phone,
+      phone: normalizeStoredPhone(input.phone),
       place,
       createdAt: serverTimestamp(),
     };
@@ -505,7 +506,7 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
       serviceUk: input.serviceUk,
       fullName: input.fullName,
       email: input.email,
-      phone: input.phone,
+      phone: normalizeStoredPhone(input.phone),
     } as AppointmentData;
   });
 }
@@ -535,7 +536,7 @@ export async function bookScheduleTbdAppointment(
     service: input.service,
     fullName: input.fullName,
     email: input.email,
-    phone: input.phone,
+    phone: normalizeStoredPhone(input.phone),
     place,
     scheduleTbd: true,
     createdAt: serverTimestamp(),
@@ -568,7 +569,7 @@ export async function bookScheduleTbdAppointment(
     serviceUk: input.serviceUk,
     fullName: input.fullName,
     email: input.email,
-    phone: input.phone,
+    phone: normalizeStoredPhone(input.phone),
     place,
     scheduleTbd: true,
     scheduleTbdAdminHint: input.scheduleTbdAdminHint?.trim(),
@@ -811,7 +812,7 @@ export async function bookAppointmentAdmin(input: AdminBookingInput, place: Plac
     service: input.service?.trim() || "—",
     fullName: input.fullName?.trim() || "—",
     email: input.email?.trim() || "",
-    phone: input.phone?.trim() || "—",
+    phone: input.phone?.trim() ? normalizeStoredPhone(input.phone) : "—",
   };
 
   const result = await bookAppointment(normalized, place);
@@ -917,7 +918,11 @@ export async function updateAppointment(
   if (updates.service !== undefined) fieldUpdates.service = updates.service || "—";
   if (updates.fullName !== undefined) fieldUpdates.fullName = updates.fullName || "—";
   if (updates.email !== undefined) fieldUpdates.email = updates.email || "";
-  if (updates.phone !== undefined) fieldUpdates.phone = updates.phone || "—";
+  if (updates.phone !== undefined) {
+    fieldUpdates.phone = updates.phone.trim()
+      ? normalizeStoredPhone(updates.phone)
+      : "—";
+  }
   if (updates.adminNote !== undefined) fieldUpdates.adminNote = updates.adminNote;
   if (hasScheduleChange) {
     fieldUpdates.startTime = Timestamp.fromDate(nextStart);

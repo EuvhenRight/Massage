@@ -4,6 +4,7 @@ import AdminDatePicker from '@/components/AdminDatePicker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
 	Select,
 	SelectContent,
@@ -1078,7 +1079,6 @@ export default function AdminAppointmentModal({
 										const v = Number(e.target.value)
 										setDuration(Number.isFinite(v) ? v : 60)
 									}}
-									className='bg-white/5 border-white/10 text-icyWhite'
 								/>
 							</div>
 						)}
@@ -1090,7 +1090,6 @@ export default function AdminAppointmentModal({
 								value={fullName}
 								onChange={e => setFullName(e.target.value)}
 								placeholder='—'
-								className='bg-white/5 border-white/10 text-icyWhite'
 							/>
 						</div>
 						<div className='space-y-1.5'>
@@ -1100,7 +1099,6 @@ export default function AdminAppointmentModal({
 								value={email}
 								onChange={e => setEmail(e.target.value)}
 								placeholder='—'
-								className='bg-white/5 border-white/10 text-icyWhite'
 							/>
 						</div>
 						<div className='space-y-1.5'>
@@ -1110,19 +1108,18 @@ export default function AdminAppointmentModal({
 								value={phone}
 								onChange={e => setPhone(e.target.value)}
 								placeholder='—'
-								className='bg-white/5 border-white/10 text-icyWhite'
 							/>
 						</div>
 
 						{/* ── Admin note ── */}
 						<div className='space-y-1.5'>
 							<Label className='text-icyWhite/80'>{t('adminNoteLabel')}</Label>
-							<textarea
+							<Textarea
 								value={adminNote}
 								onChange={e => setAdminNote(e.target.value)}
 								placeholder={t('adminNotePlaceholder')}
 								rows={2}
-								className='w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-icyWhite placeholder:text-icyWhite/40 focus:outline-none focus:ring-1 focus:ring-white/20 resize-none'
+								className='min-h-[4.5rem]'
 							/>
 						</div>
 
