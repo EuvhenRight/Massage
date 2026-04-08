@@ -57,7 +57,7 @@ import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 const IMG = {
 	about:
@@ -168,7 +168,18 @@ export default function DepilationPage() {
 	const testimonialRef = useRef<HTMLDivElement>(null)
 	const [contactSent, setContactSent] = useState(false)
 
+	/** Parallax + scroll-fade on the hero confuse iOS Safari (dvh jumps, scale + translate). Desktop only. */
+	const [heroParallaxDesktop, setHeroParallaxDesktop] = useState(false)
+	useEffect(() => {
+		const mq = window.matchMedia('(min-width: 1024px)')
+		const apply = () => setHeroParallaxDesktop(mq.matches)
+		apply()
+		mq.addEventListener('change', apply)
+		return () => mq.removeEventListener('change', apply)
+	}, [])
+
 	const { minimal } = useSiteMotion()
+	const heroScrollFx = !minimal && heroParallaxDesktop
 
 	const stagger = useMemo(
 		() =>
@@ -305,19 +316,19 @@ export default function DepilationPage() {
 			<section
 				ref={heroRef}
 				id='hero'
-				className='relative h-[100dvh] flex flex-col overflow-hidden noise-overlay'
+				className='relative h-[100svh] lg:h-[100dvh] flex flex-col overflow-hidden noise-overlay'
 				aria-labelledby='depilation-hero'
 			>
-				{/* Parallax background */}
+				{/* Parallax background — lg+ only; mobile uses stable svh + no motion.y */}
 				<motion.div
 					className='absolute inset-0'
-					style={minimal ? undefined : { y: heroImgY }}
+					style={heroScrollFx ? { y: heroImgY } : undefined}
 				>
 					<Image
 						src={IMG.portrait}
 						alt=''
 						fill
-						className='object-cover scale-110'
+						className='object-cover scale-100 lg:scale-110'
 						priority
 						sizes='100vw'
 					/>
@@ -340,9 +351,9 @@ export default function DepilationPage() {
 					{t.rich('heroBadge', richStudioBrand)}
 				</motion.p>
 
-				{/* Main hero content */}
+				{/* Main hero content — scroll-linked fade only with parallax (lg+). */}
 				<motion.div
-					style={{ opacity: heroOpacity }}
+					style={heroScrollFx ? { opacity: heroOpacity } : undefined}
 					className='relative z-10 flex-1 min-h-0 flex flex-col items-center justify-center px-6 overflow-hidden'
 				>
 					<motion.div
