@@ -37,7 +37,7 @@ export default function DepilationContentCard({
 			className={cn(
 				'group overflow-hidden rounded-2xl border border-white/5',
 				'bg-nearBlack/60 backdrop-blur-sm',
-				'hover:border-purple-soft/25 hover:shadow-card transition-all duration-500',
+				'hover:border-gold-soft/25 hover:shadow-card transition-all duration-500',
 				className
 			)}
 		>

@@ -887,7 +887,7 @@ export default function AdminPlacePage({
 								className={clsx(
 									'inline-flex shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors',
 									place === 'massage'
-										? 'border-purple-soft/40 bg-purple-soft/10 text-purple-soft hover:bg-purple-soft/18'
+										? 'border-gold-soft/40 bg-gold-soft/10 text-gold-soft hover:bg-gold-soft/18'
 										: 'border-gold-soft/40 bg-gold-soft/10 text-gold-soft hover:bg-gold-soft/18',
 								)}
 							>

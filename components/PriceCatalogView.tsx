@@ -87,14 +87,14 @@ function ZoneItemsList({
                   {item.durationMinutes} {t("min")}
                 </span>
               )}
-              <span className="text-purple-soft/90 font-medium">
+              <span className="text-gold-soft/90 font-medium">
                 {formatPrice(item.price)}
                 {priceShowsEuroSuffix(item.price) ? " €" : ""}
               </span>
               {showBookLink ? (
                 <Link
                   href={bookingHref}
-                  className="text-purple-soft/80 hover:text-purple-soft text-xs uppercase tracking-wider"
+                  className="text-gold-soft/80 hover:text-gold-soft text-xs uppercase tracking-wider"
                 >
                   {t("bookThis")}
                 </Link>
@@ -261,8 +261,8 @@ function ServiceBlockGlass({
     : "divide-y divide-white/[0.04]";
   const accent: AccentGlass = isMassage
     ? {
-        price: "text-purple-glow font-medium",
-        book: "inline-flex items-center gap-1 text-purple-glow/70 hover:text-purple-glow text-xs tracking-wider uppercase mt-2.5 transition-colors duration-300",
+        price: "text-gold-glow font-medium",
+        book: "inline-flex items-center gap-1 text-gold-glow/70 hover:text-gold-glow text-xs tracking-wider uppercase mt-2.5 transition-colors duration-300",
       }
     : {
         price: "text-gold-soft font-semibold",
@@ -423,7 +423,7 @@ function SectionBlock({
   if (zones.length === 0) return null;
   return (
     <div className="mb-10">
-      <h2 className="text-xl font-semibold text-purple-soft/90 mb-2">{title}</h2>
+      <h2 className="text-xl font-semibold text-gold-soft/90 mb-2">{title}</h2>
       <div className="pl-4 border-l border-white/10 space-y-6">
         {zones.map((zone) => (
           <ZoneBlock

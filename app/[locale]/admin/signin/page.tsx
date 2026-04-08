@@ -101,7 +101,7 @@ function AdminSignInForm() {
             <button
               type="submit"
               disabled={loading || !csrfToken}
-              className="w-full rounded-xl border border-purple-soft/50 bg-purple-soft/20 px-6 py-3 font-medium text-icyWhite transition-colors hover:bg-purple-soft/30 disabled:opacity-50"
+              className="w-full rounded-xl border border-gold-soft/50 bg-gold-soft/20 px-6 py-3 font-medium text-icyWhite transition-colors hover:bg-gold-soft/30 disabled:opacity-50"
             >
               {loading ? t("signingIn") : t("signIn")}
             </button>

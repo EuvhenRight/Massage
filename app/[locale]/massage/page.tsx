@@ -201,11 +201,11 @@ export default function MassagePage() {
 			{/* Mobile floating Book Now */}
 			<motion.div
 				{...heroEnter(minimal, { delay: minimal ? 0 : 0.55 })}
-				className='md:hidden fixed bottom-6 left-6 right-6 z-40'
+				className='md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]'
 			>
 				<Link
 					href={`/${locale}/massage/booking`}
-					className='flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-purple-soft/90 text-white font-medium text-sm tracking-wider uppercase shadow-glow-purple'
+					className='flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wider uppercase shadow-glow-strong backdrop-blur-sm'
 				>
 					<Calendar className='w-4 h-4' />
 					{t('bookNow')}
@@ -229,14 +229,14 @@ export default function MassagePage() {
 					/>
 					<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/80 via-nearBlack/60 to-nearBlack' />
 					<div
-						className='absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.08)_0%,transparent_70%)]'
+						className='absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(232,184,0,0.08)_0%,transparent_70%)]'
 						aria-hidden
 					/>
 				</div>
 
 				<motion.p
 					{...heroMotion}
-					className='relative z-10 w-full text-center text-purple-glow/70 text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.3em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
+					className='relative z-10 w-full text-center text-gold-glow/70 text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.3em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
 				>
 					{t('heroBadge')}
 				</motion.p>
@@ -252,28 +252,31 @@ export default function MassagePage() {
 								alt='V2studio'
 								width={180}
 								height={200}
-								className='h-20 sm:h-24 md:h-32 lg:h-36 w-auto drop-shadow-[0_0_30px_rgba(147,51,234,0.15)]'
+								className='h-20 sm:h-24 md:h-32 lg:h-36 w-auto drop-shadow-[0_0_40px_rgba(232,184,0,0.2)]'
 								priority
 							/>
 						</div>
 
-						<GlowText text={tCommon('massage')} colorScheme='purple' />
+						<GlowText
+							text={tCommon('massage')}
+							srOnlyHeadingId='massage-hero'
+						/>
 
-						<p className='-mt-1 text-purple-glow/90 text-sm tracking-wider uppercase'>
+						<p className='-mt-1 text-gold-glow/90 text-sm tracking-wider uppercase'>
 							{t('hero')}
 						</p>
 
 						<div className='mt-4 flex flex-wrap justify-center gap-3'>
 							<Link
 								href={`/${locale}/massage/booking`}
-								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-purple-soft/20 border border-purple-soft/50 text-purple-glow text-sm font-medium tracking-wider uppercase hover:bg-purple-soft/30 hover:shadow-glow-purple transition-all duration-300'
+								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-glow text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300'
 							>
 								{t('heroBookButton')}
 								<ChevronRight className='w-4 h-4' />
 							</Link>
 							<a
 								href='#services'
-								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/15 text-icyWhite/70 text-sm font-medium tracking-wider uppercase hover:border-purple-soft/40 hover:text-purple-glow transition-all duration-300'
+								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/15 text-icyWhite/70 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/40 hover:text-gold-glow transition-all duration-300'
 							>
 								{t('heroPricesButton')}
 							</a>
@@ -289,7 +292,7 @@ export default function MassagePage() {
 						{TRUST_ITEMS.map((key, i) => (
 							<span
 								key={key}
-								className='text-purple-glow/80 text-[10px] sm:text-xs lg:text-sm tracking-wider uppercase whitespace-nowrap'
+								className='text-gold-glow/80 text-[10px] sm:text-xs lg:text-sm tracking-wider uppercase whitespace-nowrap'
 							>
 								{i > 0 && (
 									<span
@@ -384,7 +387,7 @@ export default function MassagePage() {
 					</motion.h2>
 					<motion.blockquote
 						{...rf}
-						className='font-serif text-2xl md:text-3xl lg:text-4xl text-purple-glow/95 leading-relaxed'
+						className='font-serif text-2xl md:text-3xl lg:text-4xl text-gold-glow/95 leading-relaxed'
 					>
 						&ldquo;{t('philosophyQuote')}&rdquo;
 					</motion.blockquote>
@@ -420,7 +423,7 @@ export default function MassagePage() {
 								className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-8 flex items-center gap-3'
 							>
 								<Award
-									className='w-10 h-10 text-purple-soft shrink-0'
+									className='w-10 h-10 text-gold-soft shrink-0'
 									aria-hidden
 								/>
 								{t('achievementsTitle')}
@@ -433,7 +436,7 @@ export default function MassagePage() {
 								transition={staggerTransition(minimal, i, 0.03)}
 										className='flex items-start gap-3 text-icyWhite/80'
 									>
-										<span className='text-purple-soft shrink-0 mt-0.5'>
+										<span className='text-gold-soft shrink-0 mt-0.5'>
 											&#10022;
 										</span>
 										{t(key)}
@@ -473,10 +476,10 @@ export default function MassagePage() {
 								key={key}
 								{...ry}
 							transition={staggerTransition(minimal, i, 0.04)}
-								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-purple-soft/30 hover:bg-white/[0.04] transition-all duration-300'
+								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/30 hover:bg-white/[0.04] transition-all duration-300'
 							>
 								<Icon
-									className='w-8 h-8 text-purple-glow/90 mb-3'
+									className='w-8 h-8 text-gold-glow/90 mb-3'
 									aria-hidden
 								/>
 								<p className='text-icyWhite font-medium text-sm'>{t(key)}</p>
@@ -541,10 +544,10 @@ export default function MassagePage() {
 													</div>
 													<Link
 														href={`/${locale}/massage/booking?service=${encodeURIComponent(title)}&duration=${item.duration}`}
-														className='shrink-0 text-right rounded-lg px-1.5 -mx-1.5 py-1 -my-1 hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-soft/35 transition-colors'
+														className='shrink-0 text-right rounded-lg px-1.5 -mx-1.5 py-1 -my-1 hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/35 transition-colors'
 														aria-label={`${title} — ${t('serviceMenu.from')} ${item.price} €`}
 													>
-														<p className='text-purple-glow font-medium text-sm'>
+														<p className='text-gold-glow font-medium text-sm'>
 															{t('serviceMenu.from')} {item.price} &euro;
 														</p>
 														<p className='text-icyWhite/40 text-xs flex items-center justify-end gap-1 mt-0.5'>
@@ -594,7 +597,7 @@ export default function MassagePage() {
 							transition={staggerTransition(minimal, i, 0.06)}
 								className='relative p-6 rounded-2xl border border-white/10 bg-white/[0.02]'
 							>
-								<span className='text-purple-soft/30 font-serif text-5xl absolute top-4 right-5'>
+								<span className='text-gold-soft/30 font-serif text-5xl absolute top-4 right-5'>
 									{step}
 								</span>
 								<h3 className='font-serif text-xl text-icyWhite mb-3 relative'>
@@ -609,7 +612,7 @@ export default function MassagePage() {
 
 					<motion.div
 						{...rf}
-						className='mt-12 max-w-3xl mx-auto p-6 rounded-2xl border border-purple-soft/15 bg-purple-soft/[0.03]'
+						className='mt-12 max-w-3xl mx-auto p-6 rounded-2xl border border-gold-soft/15 bg-gold-soft/[0.03]'
 					>
 						<p className='text-icyWhite/70 text-sm leading-relaxed text-center'>
 							{t('process.expectation')}
@@ -664,7 +667,7 @@ export default function MassagePage() {
 										<h3 className='font-serif text-2xl text-icyWhite'>
 											{t('team.therapist1.name')}
 										</h3>
-										<p className='text-purple-glow/90 text-sm mt-1'>
+										<p className='text-gold-glow/90 text-sm mt-1'>
 											{t('team.therapist1.role')}
 										</p>
 									</div>
@@ -710,7 +713,7 @@ export default function MassagePage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(sliderRef, 'left')}
-							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors'
+							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-gold-glow transition-colors'
 							aria-label='Previous'
 						>
 							<ChevronLeft className='w-5 h-5' />
@@ -718,7 +721,7 @@ export default function MassagePage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(sliderRef, 'right')}
-							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors'
+							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-gold-glow transition-colors'
 							aria-label='Next'
 						>
 							<ChevronRight className='w-5 h-5' />
@@ -756,10 +759,10 @@ export default function MassagePage() {
 								key={key}
 								{...ry}
 							transition={staggerTransition(minimal, i, 0.05)}
-								className='p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-purple-soft/25 transition-all duration-300'
+								className='p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/25 transition-all duration-300'
 							>
 								<Icon
-									className='w-8 h-8 text-purple-glow/90 mb-4'
+									className='w-8 h-8 text-gold-glow/90 mb-4'
 									aria-hidden
 								/>
 								<h3 className='text-icyWhite font-medium text-sm mb-2'>
@@ -813,7 +816,7 @@ export default function MassagePage() {
 										{Array.from({ length: 5 }).map((_, si) => (
 											<Star
 												key={si}
-												className='w-4 h-4 text-purple-soft fill-purple-soft'
+												className='w-4 h-4 text-gold-soft fill-gold-soft'
 											/>
 										))}
 									</div>
@@ -824,7 +827,7 @@ export default function MassagePage() {
 										<span className='text-icyWhite/60 text-xs font-medium'>
 											{t(`testimonials.${key}.author`)}
 										</span>
-										<span className='text-purple-soft/50 text-xs'>
+										<span className='text-gold-soft/50 text-xs'>
 											{t(`testimonials.${key}.service`)}
 										</span>
 									</footer>
@@ -835,7 +838,7 @@ export default function MassagePage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(testimonialRef, 'left')}
-							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors'
+							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-gold-glow transition-colors'
 							aria-label='Previous'
 						>
 							<ChevronLeft className='w-5 h-5' />
@@ -843,7 +846,7 @@ export default function MassagePage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(testimonialRef, 'right')}
-							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-purple-glow transition-colors'
+							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-10 h-10 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/60 hover:text-gold-glow transition-colors'
 							aria-label='Next'
 						>
 							<ChevronRight className='w-5 h-5' />
@@ -886,7 +889,7 @@ export default function MassagePage() {
 								value={key}
 								className='rounded-xl border border-white/10 bg-white/[0.02] px-6 overflow-hidden'
 							>
-								<AccordionTrigger className='text-icyWhite text-left text-sm font-medium py-5 [&>svg]:text-purple-soft'>
+								<AccordionTrigger className='text-icyWhite text-left text-sm font-medium py-5 [&>svg]:text-gold-soft'>
 									{t(`faq.${key}.q`)}
 								</AccordionTrigger>
 								<AccordionContent className='text-icyWhite/65 text-sm leading-relaxed'>
@@ -939,7 +942,7 @@ export default function MassagePage() {
 							</div>
 							<div className='mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl bg-white/[0.03] ring-1 ring-white/10'>
 								<div className='flex items-start gap-3 min-w-0'>
-									<MapPin className='w-5 h-5 text-purple-soft shrink-0 mt-0.5' />
+									<MapPin className='w-5 h-5 text-gold-soft shrink-0 mt-0.5' />
 									<div>
 										<p className='text-icyWhite font-medium text-sm'>
 											{SITE_CONFIG.addressSubtitle}
@@ -953,7 +956,7 @@ export default function MassagePage() {
 									href={SITE_CONFIG.googleMaps}
 									target='_blank'
 									rel='noopener noreferrer'
-									className='inline-flex items-center justify-center gap-2 shrink-0 px-4 py-2.5 rounded-lg bg-purple-soft/15 text-purple-glow text-sm font-medium hover:bg-purple-soft/25 transition-colors'
+									className='inline-flex items-center justify-center gap-2 shrink-0 px-4 py-2.5 rounded-lg bg-gold-soft/15 text-gold-glow text-sm font-medium hover:bg-gold-soft/25 transition-colors'
 								>
 									<Navigation className='w-4 h-4' />
 									{tCommon('getDirections')}
@@ -968,7 +971,7 @@ export default function MassagePage() {
 						>
 							<div className='rounded-2xl bg-white/[0.04] ring-1 ring-white/10 p-6'>
 								<p className='flex items-center gap-2 text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
-									<Clock className='w-4 h-4 text-purple-soft/70' />
+									<Clock className='w-4 h-4 text-gold-soft/70' />
 									{t('contact.hours')}
 								</p>
 
@@ -977,10 +980,10 @@ export default function MassagePage() {
 										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
 										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
 									>
-										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-purple-soft/10 text-purple-glow group-hover:bg-purple-soft/20 transition-colors'>
+										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-gold-soft/10 text-gold-glow group-hover:bg-gold-soft/20 transition-colors'>
 											<Phone className='w-4 h-4' />
 										</span>
-										<span className='text-icyWhite text-sm font-medium group-hover:text-purple-glow transition-colors'>
+										<span className='text-icyWhite text-sm font-medium group-hover:text-gold-glow transition-colors'>
 											{SITE_CONFIG.phone}
 										</span>
 									</a>
@@ -1001,10 +1004,10 @@ export default function MassagePage() {
 										href={`mailto:${SITE_CONFIG.email}`}
 										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
 									>
-										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-purple-soft/10 text-purple-glow group-hover:bg-purple-soft/20 transition-colors'>
+										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-gold-soft/10 text-gold-glow group-hover:bg-gold-soft/20 transition-colors'>
 											<Mail className='w-4 h-4' />
 										</span>
-										<span className='text-icyWhite text-sm font-medium truncate group-hover:text-purple-glow transition-colors'>
+										<span className='text-icyWhite text-sm font-medium truncate group-hover:text-gold-glow transition-colors'>
 											{SITE_CONFIG.email}
 										</span>
 									</a>
@@ -1037,7 +1040,7 @@ export default function MassagePage() {
 									<DialogTrigger asChild>
 										<button
 											type='button'
-											className='w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-purple-soft text-white font-semibold text-sm tracking-wide hover:bg-purple-soft/90 focus:outline-none focus:ring-2 focus:ring-purple-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all'
+											className='w-full flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wide hover:bg-gold-soft/90 focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all duration-300'
 										>
 											<Send className='w-4 h-4' />
 											{t('contact.formTitle')}
@@ -1055,9 +1058,9 @@ export default function MassagePage() {
 												initial={minimal ? false : { opacity: 0 }}
 												animate={{ opacity: 1 }}
 												transition={{ duration: minimal ? 0 : 0.2 }}
-												className='p-8 rounded-xl border border-purple-soft/20 bg-purple-soft/[0.04] text-center'
+												className='p-8 rounded-xl border border-gold-soft/20 bg-gold-soft/[0.04] text-center'
 											>
-												<BadgeCheck className='w-12 h-12 text-purple-soft mx-auto mb-4' />
+												<BadgeCheck className='w-12 h-12 text-gold-soft mx-auto mb-4' />
 												<p className='text-icyWhite/80 text-sm'>
 													{t('contact.success')}
 												</p>
@@ -1169,14 +1172,14 @@ export default function MassagePage() {
 					<div className='grid w-full max-w-xl mx-auto grid-cols-1 sm:grid-cols-2 gap-4'>
 						<Link
 							href={`/${locale}/massage/booking`}
-							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl bg-purple-soft/20 border border-purple-soft/50 text-purple-glow text-sm font-medium tracking-wider uppercase hover:bg-purple-soft/30 hover:shadow-glow-purple transition-all duration-300'
+							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-glow text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300'
 						>
 							{t('bookNow')}
 							<ChevronRight className='w-4 h-4 shrink-0' />
 						</Link>
 						<a
 							href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
-							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl border border-white/20 text-icyWhite/80 text-sm font-medium tracking-wider uppercase hover:border-purple-soft/40 hover:text-purple-glow transition-colors'
+							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl border border-white/20 text-icyWhite/80 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/40 hover:text-gold-glow transition-colors'
 						>
 							<Phone className='w-4 h-4 shrink-0' />
 							{t('callNow')}
@@ -1186,7 +1189,7 @@ export default function MassagePage() {
 			</section>
 
 			{/* 15. FOOTER */}
-			<footer className='border-t border-white/5 py-12 px-6 lg:px-8'>
+			<footer className='border-t border-white/5 px-6 lg:px-8 py-12 max-md:pb-[calc(7rem+env(safe-area-inset-bottom,0px))]'>
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10'>
 						<div>
@@ -1220,7 +1223,7 @@ export default function MassagePage() {
 									<li key={link.href}>
 										<a
 											href={link.href}
-											className='text-icyWhite/60 hover:text-purple-glow text-sm transition-colors'
+											className='text-icyWhite/60 hover:text-gold-glow text-sm transition-colors'
 										>
 											{link.label}
 										</a>
@@ -1236,7 +1239,7 @@ export default function MassagePage() {
 								<li>
 									<a
 										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
-										className='text-icyWhite/60 hover:text-purple-glow transition-colors'
+										className='text-icyWhite/60 hover:text-gold-glow transition-colors'
 									>
 										{SITE_CONFIG.phone}
 									</a>
@@ -1244,7 +1247,7 @@ export default function MassagePage() {
 								<li>
 									<a
 										href={`mailto:${SITE_CONFIG.email}`}
-										className='text-icyWhite/60 hover:text-purple-glow transition-colors'
+										className='text-icyWhite/60 hover:text-gold-glow transition-colors'
 									>
 										{SITE_CONFIG.email}
 									</a>
@@ -1288,11 +1291,11 @@ export default function MassagePage() {
 						</div>
 					</div>
 
-					<div className='border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4'>
-						<p className='text-icyWhite/30 text-xs'>
+					<div className='border-t border-white/5 pt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4'>
+						<p className='text-icyWhite/30 text-xs max-sm:text-center max-sm:w-full'>
 							&copy; {new Date().getFullYear()} V2Studio. {t('footer.rights')}
 						</p>
-						<div className='flex flex-wrap items-center justify-center sm:justify-end gap-x-6 gap-y-2'>
+						<div className='flex flex-wrap items-center justify-center sm:justify-end gap-x-6 gap-y-2 max-sm:w-full'>
 							<Link
 								href={`/${locale}/privacy`}
 								className='text-icyWhite/30 hover:text-icyWhite/50 text-xs transition-colors'

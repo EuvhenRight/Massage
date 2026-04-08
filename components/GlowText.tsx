@@ -8,6 +8,8 @@ interface GlowTextProps {
 	text: string
 	className?: string
 	colorScheme?: ColorScheme
+	/** Must match parent section `aria-labelledby` (visible title is canvas; this is sr-only). */
+	srOnlyHeadingId?: string
 }
 
 const PALETTES: Record<
@@ -28,6 +30,7 @@ export default function GlowText({
 	text,
 	className = '',
 	colorScheme = 'gold',
+	srOnlyHeadingId = 'depilation-hero',
 }: GlowTextProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null)
 	const mouse = useRef({ x: 0.5, y: 0.5, active: false })
@@ -51,7 +54,8 @@ export default function GlowText({
 
 		const dpr = window.devicePixelRatio || 1
 		const fontSize = getFontSize()
-		const font = `${fontSize}px "Playfair Display", Georgia, serif`
+		/* Match `font-serif` / next/font DM Serif Display */
+		const font = `${fontSize}px "DM Serif Display", Georgia, serif`
 
 		ctx.font = font
 		const metrics = ctx.measureText(text)
@@ -197,7 +201,7 @@ export default function GlowText({
 				className='block'
 				aria-hidden='true'
 			/>
-			<h1 id='depilation-hero' className='sr-only'>
+			<h1 id={srOnlyHeadingId} className='sr-only'>
 				{text}
 			</h1>
 		</div>

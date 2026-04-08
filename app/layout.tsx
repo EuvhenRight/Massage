@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, Outfit } from "next/font/google";
 import { getLocale } from "next-intl/server";
 import { SocialExtraMeta } from "@/components/SocialExtraMeta";
@@ -22,6 +22,13 @@ const outfit = Outfit({
 const siteUrl = getSiteUrl();
 const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
 const facebookAppId = getFacebookAppIdFromEnv();
+
+/** Lets `env(safe-area-inset-*)` apply on notched iPhones (fixed CTAs, cookie bar). */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -60,7 +67,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${dmSerif.variable} ${outfit.variable} font-sans min-h-screen`}
+        className={`${dmSerif.variable} ${outfit.variable} font-sans min-h-[100dvh] antialiased overflow-x-clip`}
       >
         {children}
       </body>

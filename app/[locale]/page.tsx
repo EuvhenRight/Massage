@@ -22,7 +22,7 @@ export default function EntryPortal() {
 
   return (
     <main
-      className="relative min-h-screen flex flex-col md:flex-row"
+      className="relative min-h-[100dvh] flex flex-col md:flex-row"
       role="main"
       aria-label={t("chooseExperience")}
     >
@@ -32,11 +32,11 @@ export default function EntryPortal() {
       {/* Massage Option */}
       <motion.div
         {...panelL}
-        className="flex-1 min-h-[50vh] md:min-h-screen relative group overflow-hidden"
+        className="flex-1 min-h-[50vh] md:min-h-[100dvh] relative group overflow-hidden"
       >
         <Link
           href={`/${locale}/massage`}
-          className="absolute inset-0 flex flex-col items-center justify-center bg-nearBlack border-r border-white/5 hover:border-purple-soft/30 transition-colors duration-500"
+          className="absolute inset-0 flex flex-col items-center justify-center bg-nearBlack border-r border-white/5 hover:border-gold-soft/30 transition-colors duration-500"
           aria-label={t("enterMassage")}
         >
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1920')] bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity duration-700" />
@@ -53,7 +53,7 @@ export default function EntryPortal() {
           >
             {tCommon("enter")}
           </motion.span>
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-px h-12 bg-gradient-to-b from-transparent via-purple-soft/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-px h-12 bg-gradient-to-b from-transparent via-gold-soft/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </Link>
       </motion.div>
 
@@ -66,7 +66,7 @@ export default function EntryPortal() {
       {/* Depilation Option */}
       <motion.div
         {...panelR}
-        className="flex-1 min-h-[50vh] md:min-h-screen relative group overflow-hidden"
+        className="flex-1 min-h-[50vh] md:min-h-[100dvh] relative group overflow-hidden"
       >
         <Link
           href={`/${locale}/depilation`}

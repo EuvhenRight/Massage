@@ -389,7 +389,7 @@ function ServiceBlockGlassDual({
 		: 'divide-y divide-white/[0.04]'
 	const accent: AccentGlass = isMassage
 		? {
-				price: 'text-purple-glow font-medium',
+				price: 'text-gold-glow font-medium',
 			}
 		: {
 				price: 'text-gold-soft font-semibold',

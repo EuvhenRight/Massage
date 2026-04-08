@@ -89,7 +89,7 @@ export default function MyServices() {
 								delay: minimal ? 0 : i * 0.05,
 							}}
 							viewport={{ once: true, margin: '-48px' }}
-							className="group overflow-hidden rounded-2xl border border-white/5 bg-nearBlack/60 backdrop-blur-sm hover:border-purple-soft/25 hover:shadow-card transition-all duration-500"
+							className="group overflow-hidden rounded-2xl border border-white/5 bg-nearBlack/60 backdrop-blur-sm hover:border-gold-soft/25 hover:shadow-card transition-all duration-500"
 						>
 							<div className="aspect-[4/3] relative overflow-hidden">
 								<Image
@@ -104,7 +104,7 @@ export default function MyServices() {
 									<h3 className="font-serif text-2xl text-icyWhite">
 										{t(`myServices.${service.id}`)}
 									</h3>
-									<div className="flex items-center gap-3 mt-2 text-sm text-purple-soft/90">
+									<div className="flex items-center gap-3 mt-2 text-sm text-gold-soft/90">
 										<span>{t('myServices.from')} {service.durationMinutes} {tPrice('min')}</span>
 										<span>·</span>
 										<span>{t('myServices.from')} {service.price} €</span>
@@ -117,7 +117,7 @@ export default function MyServices() {
 								</p>
 								<Link
 									href={`/${locale}/depilation/booking`}
-									className="inline-flex items-center gap-2 text-purple-soft text-sm font-medium tracking-wider uppercase hover:text-purple-glow transition-colors"
+									className="inline-flex items-center gap-2 text-gold-soft text-sm font-medium tracking-wider uppercase hover:text-gold-glow transition-colors"
 								>
 									{t('bookDepilationButton')}
 									<svg

@@ -35,7 +35,7 @@ interface DroppableCellProps {
 	isPast?: boolean
 	/** Use smaller min-height for 30-min sub-cells in hourly layout */
 	compact?: boolean
-	/** When set, used instead of default purple highlight for valid drop hover */
+	/** When set, used instead of default gold highlight for valid drop hover */
 	dropOverClassName?: string
 	className?: string
 	children?: React.ReactNode
@@ -68,7 +68,7 @@ export default function DroppableCell({
 				isPast && 'bg-white/5',
 				showOver &&
 					(canDrop
-						? dropOverClassName ?? 'bg-purple-soft/20 ring-1 ring-purple-soft/50'
+						? dropOverClassName ?? 'bg-gold-soft/20 ring-1 ring-gold-soft/50'
 						: 'bg-red-500/10 ring-1 ring-red-400/60'),
 				className,
 			)}

@@ -46,7 +46,7 @@ export default function CookieConsentBanner() {
 
 	return (
 		<div
-			className='fixed inset-x-0 bottom-0 z-[100] p-4 md:p-6 pointer-events-none'
+			className='fixed inset-x-0 bottom-0 z-[100] px-4 pt-4 md:px-6 md:pt-6 pb-[max(1rem,env(safe-area-inset-bottom,0px))] md:pb-6 pointer-events-none'
 			role='region'
 			aria-labelledby={headingId}
 			aria-label={t('ariaRegion')}

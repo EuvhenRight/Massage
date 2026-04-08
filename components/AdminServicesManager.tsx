@@ -94,7 +94,7 @@ function ServiceForm({
                 "px-3 py-1.5 rounded-lg border text-sm transition-all",
                 preset.value,
                 color === preset.value
-                  ? "ring-2 ring-purple-soft ring-offset-2 ring-offset-nearBlack"
+                  ? "ring-2 ring-gold-soft ring-offset-2 ring-offset-nearBlack"
                   : "opacity-70 hover:opacity-100"
               )}
             >
@@ -127,7 +127,7 @@ function ServiceForm({
         </Button>
         <Button
           type="submit"
-          className="flex-1 bg-purple-soft/20 text-purple-soft hover:bg-purple-soft/30"
+          className="flex-1 bg-gold-soft/20 text-gold-soft hover:bg-gold-soft/30"
           disabled={loading}
         >
           {loading ? "Saving..." : service ? "Update" : "Add"}
@@ -202,7 +202,7 @@ export default function AdminServicesManager() {
             setEditService(null);
             setModalOpen("add");
           }}
-          className="rounded-lg border border-purple-soft/50 bg-purple-soft/20 px-4 py-2 text-sm font-medium text-purple-soft hover:bg-purple-soft/30 transition-colors"
+          className="rounded-lg border border-gold-soft/50 bg-gold-soft/20 px-4 py-2 text-sm font-medium text-gold-soft hover:bg-gold-soft/30 transition-colors"
         >
           + Add service
         </button>

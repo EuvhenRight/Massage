@@ -17,16 +17,17 @@ export type SectionDividerProps = {
 }
 
 const ACCENT = {
+	/** Same visual tokens as depilation — one studio palette. */
 	massage: {
-		lineL: 'bg-gradient-to-r from-transparent via-purple-glow/45 to-purple-glow/25',
-		lineR: 'bg-gradient-to-l from-transparent via-purple-glow/45 to-purple-glow/25',
-		orb: 'bg-purple-glow/30',
-		orbGlow: 'bg-purple-glow/20',
-		diamond: 'border-purple-glow/40',
-		dot: 'bg-purple-glow/55',
-		connector: 'bg-gradient-to-r from-purple-glow/25 via-purple-glow/15 to-purple-glow/25',
-		waveMid: '#c084fc',
-		ambient: 'from-purple-glow/[0.06] via-transparent to-purple-glow/[0.06]',
+		lineL: 'bg-gradient-to-r from-transparent via-gold-soft/50 to-gold-soft/25',
+		lineR: 'bg-gradient-to-l from-transparent via-gold-soft/50 to-gold-soft/25',
+		orb: 'bg-gold-soft/35',
+		orbGlow: 'bg-gold-soft/22',
+		diamond: 'border-gold-soft/45',
+		dot: 'bg-gold-soft/65',
+		connector: 'bg-gradient-to-r from-gold-soft/30 via-gold-soft/18 to-gold-soft/30',
+		waveMid: '#e8b84a',
+		ambient: 'from-gold-soft/[0.07] via-transparent to-gold-soft/[0.07]',
 	},
 	depilation: {
 		lineL: 'bg-gradient-to-r from-transparent via-gold-soft/50 to-gold-soft/25',

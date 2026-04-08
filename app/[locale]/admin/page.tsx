@@ -56,7 +56,7 @@ export default function AdminPage() {
 					</div>
 				</div>
 				{isMobileMenuOpen && (
-					<div className='absolute inset-x-0 top-full z-50 bg-nearBlack text-icyWhite border-y border-purple-soft/40 px-4 pb-4 pt-3 shadow-xl animate-in slide-in-from-top-2 fade-in-0 duration-200 sm:hidden'>
+					<div className='absolute inset-x-0 top-full z-50 bg-nearBlack text-icyWhite border-y border-gold-soft/40 px-4 pb-4 pt-3 shadow-xl animate-in slide-in-from-top-2 fade-in-0 duration-200 sm:hidden'>
 						{session?.user && (
 							<div className='mb-3 text-right'>
 								<span className='block max-w-xs ml-auto truncate text-xs text-icyWhite/80'>
@@ -96,10 +96,10 @@ export default function AdminPage() {
 					<div className='grid gap-4'>
 						<Link
 							href={`/${locale}/admin/massage/calendar`}
-							className='flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-purple-soft/30 transition-all group'
+							className='flex items-center gap-4 p-5 rounded-3xl glass-card hover:bg-white/[0.05] hover:border-gold-soft/25 transition-all group'
 						>
-							<div className='flex h-12 w-12 items-center justify-center rounded-xl bg-purple-soft/20 border border-purple-soft/40 group-hover:bg-purple-soft/30'>
-								<Hand className='h-6 w-6 text-purple-glow' />
+							<div className='flex h-12 w-12 items-center justify-center rounded-xl bg-gold-soft/15 border border-gold-soft/40 group-hover:bg-gold-soft/25'>
+								<Hand className='h-6 w-6 text-gold-glow' />
 							</div>
 							<div className='flex-1 text-left'>
 								<h2 className='font-medium text-icyWhite'>

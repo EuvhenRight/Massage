@@ -290,7 +290,7 @@ export default function DepilationPage() {
 						: { opacity: 0, y: 20, pointerEvents: 'none' as const }
 				}
 				transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-				className='md:hidden fixed bottom-6 left-6 right-6 z-40'
+				className='md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]'
 			>
 				<Link
 					href={`/${locale}/depilation/booking`}
@@ -1412,7 +1412,7 @@ export default function DepilationPage() {
 			</section>
 
 			{/* ── 14. FOOTER ── */}
-			<footer className='border-t border-white/[0.04] py-14 px-6 lg:px-8'>
+			<footer className='border-t border-white/[0.04] px-6 lg:px-8 py-14 max-md:pb-[calc(7rem+env(safe-area-inset-bottom,0px))]'>
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12'>
 						<div>
@@ -1517,11 +1517,11 @@ export default function DepilationPage() {
 						</div>
 					</div>
 
-					<div className='border-t border-white/[0.04] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4'>
-						<p className='text-icyWhite/25 text-xs'>
+					<div className='border-t border-white/[0.04] pt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4'>
+						<p className='text-icyWhite/25 text-xs max-sm:text-center max-sm:w-full'>
 							&copy; {new Date().getFullYear()} V2Studio. {t('footer.rights')}
 						</p>
-						<div className='flex flex-wrap items-center justify-center sm:justify-end gap-x-6 gap-y-2'>
+						<div className='flex flex-wrap items-center justify-center sm:justify-end gap-x-6 gap-y-2 max-sm:w-full'>
 							<Link
 								href={`/${locale}/privacy`}
 								className='text-icyWhite/25 hover:text-icyWhite/40 text-xs transition-colors duration-300'

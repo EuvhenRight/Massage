@@ -16,7 +16,7 @@ export default function FloatingCTA() {
       target="_blank"
       rel="noopener noreferrer"
       {...heroEnter(minimal, { delay: minimal ? 0 : 0.45 })}
-      className="md:hidden fixed bottom-6 left-6 right-6 z-40 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-purple-soft/20 border border-purple-soft/40 text-purple-soft font-medium text-sm tracking-wider uppercase shadow-glow"
+      className="md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gold-soft/20 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase shadow-glow"
       aria-label={`${t("getDirections")} - V2studio`}
     >
       <svg

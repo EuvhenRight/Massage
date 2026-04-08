@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 interface BookingPageLayoutProps {
 	children: React.ReactNode
 	maxWidth?: '5xl' | '7xl'
-	/** Massage booking uses purple accents on the shell; depilation stays neutral gold via inner flow only. */
+	/** Same gold shell as depilation; kept for call-site compatibility. */
 	variant?: 'default' | 'massage'
 }
 
@@ -32,7 +32,7 @@ export default function BookingPageLayout({
 				<div
 					className={
 						variant === 'massage'
-							? 'flex-1 flex flex-col min-h-0 rounded-2xl border border-purple-soft/25 bg-nearBlack/50 shadow-[0_0_48px_-16px_rgba(147,51,234,0.35)] overflow-hidden'
+							? 'flex-1 flex flex-col min-h-0 rounded-2xl border border-gold-soft/25 bg-nearBlack/50 shadow-[0_0_48px_-16px_rgba(232,184,0,0.35)] overflow-hidden'
 							: 'flex-1 flex flex-col min-h-0 rounded-2xl border border-white/10 bg-nearBlack/50 overflow-hidden'
 					}
 				>
