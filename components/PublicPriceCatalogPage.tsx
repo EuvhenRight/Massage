@@ -51,7 +51,7 @@ export default function PublicPriceCatalogPage({ place }: { place: Place }) {
 		<>
 			<Navbar />
 			<main
-				className='min-h-svh bg-nearBlack text-icyWhite pt-20 pb-8 sm:pb-10'
+				className='min-h-svh bg-nearBlack text-icyWhite pt-20 pb-[calc(8.5rem+env(safe-area-inset-bottom,0px))] sm:pb-12 md:pb-10'
 				role='main'
 			>
 				<section className='py-4 sm:py-6 px-3 sm:px-5 lg:px-6'>
