@@ -1,8 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
+import { scrollRevealY, useSiteMotion } from "@/lib/site-motion";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 
 interface MembershipCardProps {
   tier: "Silver" | "Black" | "Obsidian";
@@ -42,13 +44,17 @@ export default function MembershipCard({
 }: MembershipCardProps) {
   const t = useTranslations("massage");
   const styles = tierStyles[tier];
+  const { minimal } = useSiteMotion();
+  const reveal = useMemo(() => scrollRevealY(minimal), [minimal]);
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, delay: index * 0.15 }}
+      {...reveal}
+      transition={{
+        duration: minimal ? 0 : 0.38,
+        delay: minimal ? 0 : index * 0.08,
+      }}
+      viewport={{ once: true, margin: "-48px" }}
       className={cn(
         "relative overflow-hidden rounded-2xl border backdrop-blur-sm",
         "bg-gradient-to-b",

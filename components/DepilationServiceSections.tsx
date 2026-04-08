@@ -12,6 +12,8 @@ import {
 	DEPILATION_SERVICE_SECTION_IMAGES,
 	type DepilationServiceSectionId,
 } from '@/lib/depilation-service-section-cards'
+import { TRANSITION } from '@/lib/motion-tokens'
+import { useSiteMotion } from '@/lib/site-motion'
 import { motion, type Variants } from 'framer-motion'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -32,6 +34,7 @@ export default function DepilationServiceSections({
 }: DepilationServiceSectionsProps) {
 	const t = useTranslations('depilation')
 	const [openId, setOpenId] = useState<DepilationServiceSectionId | null>(null)
+	const { minimal } = useSiteMotion()
 
 	const cards = useMemo(
 		() => [...DEPILATION_SERVICE_SECTION_IDS],
@@ -73,14 +76,19 @@ export default function DepilationServiceSections({
 					<motion.button
 						key={id}
 						type='button'
-						initial={{ opacity: 0, y: 32 }}
+						initial={minimal ? false : { opacity: 0, y: 32 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true, margin: '-40px' }}
-						transition={{
-							delay: zi * 0.06,
-							duration: 0.55,
-							ease: [0.22, 1, 0.36, 1],
-						}}
+						transition={
+							minimal
+								? { duration: 0 }
+								: {
+										...TRANSITION.enter,
+										delay: zi * 0.1,
+										duration: 0.6,
+										ease: [0.22, 1, 0.36, 1],
+									}
+						}
 						onClick={() => setOpenId(id)}
 						className='group text-left rounded-3xl overflow-hidden border border-white/[0.08] bg-white/[0.02] hover:border-gold-soft/35 hover:bg-white/[0.04] hover:shadow-[0_0_40px_-12px_rgba(232,184,0,0.18)] transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/40'
 					>

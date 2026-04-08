@@ -1,8 +1,10 @@
 "use client";
 
+import { scrollRevealY, useSiteMotion } from "@/lib/site-motion";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
 interface ServiceCardProps {
   title: string;
@@ -19,6 +21,8 @@ export default function ServiceCard({
   image,
   index = 0,
 }: ServiceCardProps) {
+  const { minimal } = useSiteMotion();
+  const reveal = useMemo(() => scrollRevealY(minimal), [minimal]);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -36,10 +40,12 @@ export default function ServiceCard({
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
+      {...reveal}
+      transition={{
+        duration: minimal ? 0 : 0.38,
+        delay: minimal ? 0 : index * 0.06,
+      }}
+      viewport={{ once: true, margin: "-48px" }}
       onMouseMove={handleMouseMove}
       className={cn(
         "group relative overflow-hidden rounded-2xl border border-white/5",

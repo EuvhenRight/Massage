@@ -1244,48 +1244,48 @@
 		"updatesBody": "Tieto zásady môžeme aktualizovať pri zmene postupov alebo právnych predpisov. Posledná aktualizácia: marec 2026."
 	},
 	"metadata": {
-		"title": "V2studio | Luxusný salón masáží a depilácie",
-		"description": "Tmavý, kinematografický a útulný. Zažite ultra-luxusnú masáž a depiláciu v intímnej oáze.",
+		"title": "Masáž a depilácia Bratislava | V2studio",
+		"description": "Terapeutická masáž a profesionálna depilácia vo V2studio, Križná 22, Bratislava. Online rezervácia, diskrétne priestory, certifikovaní terapeuti a prémiová starostlivosť.",
 		"siteName": "V2studio",
-		"keywords": "V2studio, masáž Bratislava, depilácia Bratislava, kozmetický salón Bratislava, epilácia Slovensko, Križná 22",
+		"keywords": "V2studio, masáž Bratislava, depilácia Bratislava, epilácia Bratislava, kozmetický salón Bratislava, Križná 22, online rezervácia, terapeutická masáž Slovensko, wellness Bratislava",
 		"adminTitle": "Administrácia | V2studio",
 		"adminDescription": "Prihlásenie pre personál a správa salónu. Nie je indexované vyhľadávačmi.",
 		"pages": {
 			"massage": {
-				"title": "Masáž a starostlivosť o telo v Bratislave | V2studio",
-				"description": "Profesionálna masáž a regeneračná starostlivosť vo V2studio na Križnej 22 v Bratislave. Tím, služby a jednoduchá online rezervácia."
+				"title": "Masáž Bratislava | Terapeutická a relaxačná | V2studio",
+				"description": "Športová, hĺbková a relaxačná masáž na Križnej 22 v Bratislave. Tím, techniky, ceny a online rezervácia vo V2studio."
 			},
 			"depilation": {
-				"title": "Depilácia a odstraňovanie chĺpkov v Bratislave | V2studio",
-				"description": "Odborná depilácia v pokojnom, diskrétnom prostredí. V2studio na Križnej 22—služby, FAQ a online objednávka."
+				"title": "Depilácia a epilácia Bratislava | Tvár a telo | V2studio",
+				"description": "Profesionálna depilácia v pokojnom, súkromnom štúdiu. Služby, FAQ a online objednávka vo V2studio, Križná 22, Bratislava."
 			},
 			"booking": {
-				"title": "Online rezervácia | V2studio",
-				"description": "Vyberte službu, termín a potvrďte návštevu vo V2studio Bratislava v niekoľkých krokoch."
+				"title": "Online rezervácia | Masáž a depilácia | V2studio Bratislava",
+				"description": "Rezervujte masáž alebo depiláciu vo V2studio v niekoľkých krokoch. Vyberte službu, voľný termín a potvrďte návštevu—Križná 22, Bratislava."
 			},
 			"massageBooking": {
-				"title": "Rezervácia masáže | V2studio",
-				"description": "Objednajte si masáž online vo V2studio—aktuálna dostupnosť a možnosť okamžitého potvrdenia."
+				"title": "Rezervácia masáže online | V2studio Bratislava",
+				"description": "Objednajte si masáž online vo V2studio: aktuálna dostupnosť, dĺžky sedení a rýchle potvrdenie na Križnej 22 v Bratislave."
 			},
 			"depilationBooking": {
-				"title": "Rezervácia depilácie | V2studio",
-				"description": "Naplánujte depiláciu online vo V2studio Bratislava. Vyberte zákrok a čas, ktorý vám vyhovuje."
+				"title": "Rezervácia depilácie online | V2studio",
+				"description": "Naplánujte depiláciu tváre alebo tela online vo V2studio Bratislava. Vyberte zákrok a čas—diskrétna starostlivosť, Križná 22."
 			},
 			"massagePrice": {
-				"title": "Cenník masáží | V2studio",
-				"description": "Prehľadné ceny masáží vo V2studio Bratislava—dĺžky, doplnky a balíčky na jednom mieste."
+				"title": "Cenník masáží Bratislava | V2studio",
+				"description": "Aktuálne ceny masáží vo V2studio: dĺžky, techniky a doplnky na Križnej 22 v Bratislave—prehľadné sadzby pred rezerváciou."
 			},
 			"depilationPrice": {
-				"title": "Cenník depilácie | V2studio",
-				"description": "Ceny depilácie a epilácie vo V2studio—jasné sadzby pre tvár a telo v Bratislave."
+				"title": "Cenník depilácie a epilácie | V2studio Bratislava",
+				"description": "Jasné ceny depilácie pre tvár a telo vo V2studio. Porovnajte zóny a balíčky pred objednávkou v Bratislave."
 			},
 			"cookies": {
-				"title": "Zásady používania cookies | V2studio",
-				"description": "Ako V2studio používa cookies, analytiku a marketing—s možnosťou súhlasu v súlade s GDPR."
+				"title": "Zásady cookies | V2studio Bratislava",
+				"description": "Ako V2studio používa cookies a podobné technológie na webe, s nastavením súhlasu v súlade s GDPR a ePrivacy v EÚ."
 			},
 			"privacy": {
-				"title": "Zásady ochrany osobných údajov | V2studio",
-				"description": "Ako spracúvame a chránime osobné údaje pri rezervácii a prezeraní webu V2studio."
+				"title": "Ochrana osobných údajov | V2studio Bratislava",
+				"description": "Ako V2studio spracúva a chráni osobné údaje pri online rezervácii, kontakte alebo prezeraní webu na Slovensku."
 			}
 		}
 	},

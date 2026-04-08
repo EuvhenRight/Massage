@@ -1,5 +1,6 @@
 'use client'
 
+import { useSiteMotion } from '@/lib/site-motion'
 import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -48,6 +49,8 @@ export default function SectionDivider({
 	className,
 }: SectionDividerProps) {
 	const reduce = useReducedMotion()
+	const { minimal: minimalDevice } = useSiteMotion()
+	const calm = Boolean(reduce || minimalDevice)
 	const a = ACCENT[variant]
 	const p = ((pattern % 3) + 3) % 3
 
@@ -68,11 +71,11 @@ export default function SectionDivider({
 			/>
 			<div className='relative mx-auto max-w-5xl px-6'>
 				{p === 0 && (
-					<PatternBeam a={a} reduce={!!reduce} />
+					<PatternBeam a={a} reduce={calm} />
 				)}
-				{p === 1 && <PatternWave a={a} reduce={!!reduce} />}
+				{p === 1 && <PatternWave a={a} reduce={calm} />}
 				{p === 2 && (
-					<PatternConstellation a={a} reduce={!!reduce} />
+					<PatternConstellation a={a} reduce={calm} />
 				)}
 			</div>
 		</div>
@@ -138,12 +141,6 @@ function PatternBeam({
 /** Fallback length when `getTotalLength()` is 0 (rare WebKit timing). Matches `WAVE_PATH_D`. */
 const WAVE_PATH_LEN_FALLBACK = 575
 
-/**
- * Wave stroke animation: CSS `@keyframes` (default) or imperative `requestAnimationFrame`.
- * Switch to `'raf'` if stroke-dashoffset keyframes stall on a specific browser.
- */
-const WAVE_STROKE_DRIVER: 'css' | 'raf' = 'css'
-
 function PatternWave({
 	a,
 	reduce,
@@ -155,15 +152,25 @@ function PatternWave({
 	const gradId = `sd-w-${uid}`
 	const wrapRef = useRef<HTMLDivElement>(null)
 	const pathRef = useRef<SVGPathElement>(null)
+	const [strokeDriver, setStrokeDriver] = useState<'css' | 'raf'>('css')
 	const isInView = useInView(wrapRef, {
 		once: true,
 		/** Thin row: any pixel visible is enough (ratio thresholds can miss on mobile). */
 		amount: 'some',
-		margin: '0px',
+		/** Start draw slightly before the row enters (avoids stuck state below the fold on phones). */
+		margin: '120px 0px 120px 0px',
 	})
 
 	const [dashLen, setDashLen] = useState(0)
 	const [drawReady, setDrawReady] = useState(false)
+
+	useLayoutEffect(() => {
+		const mq = window.matchMedia('(max-width: 768px)')
+		const apply = () => setStrokeDriver(mq.matches ? 'raf' : 'css')
+		apply()
+		mq.addEventListener('change', apply)
+		return () => mq.removeEventListener('change', apply)
+	}, [])
 
 	useLayoutEffect(() => {
 		let cancelled = false
@@ -208,9 +215,9 @@ function PatternWave({
 		}
 	}, [dashLen, isInView])
 
-	// Imperative stroke draw (optional alternative to CSS keyframes).
+	// Imperative stroke draw on narrow viewports (see strokeDriver).
 	useEffect(() => {
-		if (WAVE_STROKE_DRIVER !== 'raf') return
+		if (strokeDriver !== 'raf') return
 		if (!drawReady || !dashLen || !pathRef.current) return
 		const path = pathRef.current
 		const L = dashLen
@@ -236,23 +243,21 @@ function PatternWave({
 			cancelled = true
 			cancelAnimationFrame(rafId)
 		}
-	}, [drawReady, dashLen, reduce])
+	}, [drawReady, dashLen, reduce, strokeDriver])
 
-	const useCssStroke = WAVE_STROKE_DRIVER === 'css'
+	const useCssStroke = strokeDriver === 'css'
 	const pathClassName = cn(
 		useCssStroke && 'sd-wave-path',
 		useCssStroke && drawReady && 'sd-wave-path--play',
 	)
-	const dotClassName = cn(
-		'sd-wave-dot',
-		drawReady && 'sd-wave-dot--play',
-	)
-
 	return (
-		<div ref={wrapRef} className='mx-auto w-full max-w-3xl'>
+		<div
+			ref={wrapRef}
+			className='relative mx-auto w-full max-w-3xl min-h-[3.5rem]'
+		>
 			<svg
 				viewBox='0 0 480 56'
-				className='h-14 w-full overflow-visible [transform:translateZ(0)]'
+				className='relative z-0 block h-14 w-full overflow-visible [transform:translateZ(0)]'
 				aria-hidden
 			>
 				<defs>
@@ -275,22 +280,27 @@ function PatternWave({
 						opacity: dashLen > 0 ? 1 : 0,
 						['--sd-wave-len' as string]: useCssStroke ? dashLen : undefined,
 						strokeDasharray: dashLen,
-						...(WAVE_STROKE_DRIVER === 'raf' && !drawReady
+						...(strokeDriver === 'raf' && !drawReady
 							? { strokeDashoffset: dashLen }
 							: {}),
 					}}
 				/>
-				{!reduce && (
-					<circle
-						cx='240'
-						cy='32'
-						r='3'
-						fill={a.waveMid}
-						fillOpacity={0.85}
-						className={dotClassName}
-					/>
-				)}
 			</svg>
+			{/*
+			  Center dot as HTML (not SVG). iOS Safari often fails to paint SVG circle opacity/filters;
+			  this overlay matches viewBox (240,32) in a 480×56 box → 50% × (32/56) from top.
+			*/}
+			<div
+				aria-hidden
+				className='pointer-events-none absolute left-1/2 z-[2] size-[11px] rounded-full sm:size-[13px]'
+				style={{
+					top: '57.1429%',
+					transform: 'translate(-50%, -50%)',
+					backgroundColor: a.waveMid,
+					boxShadow: `0 0 12px 2px ${a.waveMid}`,
+					opacity: 0.95,
+				}}
+			/>
 		</div>
 	)
 }

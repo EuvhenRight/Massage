@@ -21,6 +21,15 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SITE_CONFIG } from '@/lib/site-config'
+import {
+	enterDelay,
+	heroEnter,
+	scrollFade,
+	scrollRevealX,
+	scrollRevealY,
+	staggerTransition,
+	useSiteMotion,
+} from '@/lib/site-motion'
 import { motion } from 'framer-motion'
 import {
 	Award,
@@ -48,7 +57,7 @@ import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 const TRUST_ITEMS = [
 	'trustYears',
@@ -149,6 +158,17 @@ export default function MassagePage() {
 	const testimonialRef = useRef<HTMLDivElement>(null)
 	const [contactSent, setContactSent] = useState(false)
 
+	const { minimal } = useSiteMotion()
+	const ry = useMemo(() => scrollRevealY(minimal), [minimal])
+	const rxLeft = useMemo(() => scrollRevealX(minimal, 'left'), [minimal])
+	const rxRight = useMemo(() => scrollRevealX(minimal, 'right'), [minimal])
+	const rf = useMemo(() => scrollFade(minimal), [minimal])
+	const heroMotion = useMemo(() => heroEnter(minimal), [minimal])
+	const heroMotionDelayed = useMemo(
+		() => heroEnter(minimal, { delay: minimal ? 0 : 0.06 }),
+		[minimal],
+	)
+
 	const scrollSlider = (
 		ref: React.RefObject<HTMLDivElement | null>,
 		dir: 'left' | 'right',
@@ -180,9 +200,7 @@ export default function MassagePage() {
 
 			{/* Mobile floating Book Now */}
 			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ delay: 1 }}
+				{...heroEnter(minimal, { delay: minimal ? 0 : 0.55 })}
 				className='md:hidden fixed bottom-6 left-6 right-6 z-40'
 			>
 				<Link
@@ -217,9 +235,7 @@ export default function MassagePage() {
 				</div>
 
 				<motion.p
-					initial={{ opacity: 0, y: -8 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5 }}
+					{...heroMotion}
 					className='relative z-10 w-full text-center text-purple-glow/70 text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.3em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
 				>
 					{t('heroBadge')}
@@ -227,9 +243,7 @@ export default function MassagePage() {
 
 				<div className='relative z-10 flex-1 flex flex-col items-center justify-center px-6 min-h-0'>
 					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.7 }}
+						{...heroMotionDelayed}
 						className='text-center'
 					>
 						<div className='flex justify-center mb-0'>
@@ -303,9 +317,7 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid lg:grid-cols-2 gap-12 lg:gap-16 items-center'>
 						<motion.div
-							initial={{ opacity: 0, x: -24 }}
-							whileInView={{ opacity: 1, x: 0 }}
-							viewport={{ once: true }}
+							{...rxLeft}
 							className='relative aspect-[4/3] rounded-2xl overflow-hidden border border-white/10'
 						>
 							<Image
@@ -320,41 +332,31 @@ export default function MassagePage() {
 						<div>
 							<motion.h2
 								id='about-heading'
-								initial={{ opacity: 0, y: 16 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
+								{...ry}
 								className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-6'
 							>
 								{t('aboutTitle')}
 							</motion.h2>
 							<motion.p
-								initial={{ opacity: 0 }}
-								whileInView={{ opacity: 1 }}
-								viewport={{ once: true }}
+								{...rf}
 								className='text-icyWhite/80 leading-relaxed mb-4'
 							>
 								{t('aboutIntro')}
 							</motion.p>
 							<motion.p
-								initial={{ opacity: 0 }}
-								whileInView={{ opacity: 1 }}
-								viewport={{ once: true }}
+								{...rf}
 								className='text-icyWhite/70 leading-relaxed mb-4'
 							>
 								{t('aboutJourney')}
 							</motion.p>
 							<motion.p
-								initial={{ opacity: 0 }}
-								whileInView={{ opacity: 1 }}
-								viewport={{ once: true }}
+								{...rf}
 								className='text-icyWhite/70 leading-relaxed mb-4'
 							>
 								{t('aboutExpertise')}
 							</motion.p>
 							<motion.p
-								initial={{ opacity: 0 }}
-								whileInView={{ opacity: 1 }}
-								viewport={{ once: true }}
+								{...rf}
 								className='text-icyWhite/70 leading-relaxed'
 							>
 								{t('aboutMedical')} {t('aboutContinuous')}
@@ -375,17 +377,13 @@ export default function MassagePage() {
 				<div className='max-w-4xl mx-auto text-center'>
 					<motion.h2
 						id='philosophy-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='font-serif text-3xl md:text-4xl text-icyWhite mb-8'
 					>
 						{t('philosophyTitle')}
 					</motion.h2>
 					<motion.blockquote
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='font-serif text-2xl md:text-3xl lg:text-4xl text-purple-glow/95 leading-relaxed'
 					>
 						&ldquo;{t('philosophyQuote')}&rdquo;
@@ -404,9 +402,7 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid lg:grid-cols-2 gap-12 lg:gap-16 items-center'>
 						<motion.div
-							initial={{ opacity: 0, x: -24 }}
-							whileInView={{ opacity: 1, x: 0 }}
-							viewport={{ once: true }}
+							{...rxLeft}
 							className='relative aspect-[4/3] rounded-2xl overflow-hidden border border-white/10 order-2 lg:order-1'
 						>
 							<Image
@@ -420,9 +416,7 @@ export default function MassagePage() {
 						<div className='order-1 lg:order-2'>
 							<motion.h2
 								id='achievements-heading'
-								initial={{ opacity: 0, y: 16 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
+								{...ry}
 								className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-8 flex items-center gap-3'
 							>
 								<Award
@@ -435,10 +429,8 @@ export default function MassagePage() {
 								{ACHIEVEMENTS.map((key, i) => (
 									<motion.li
 										key={key}
-										initial={{ opacity: 0, x: 16 }}
-										whileInView={{ opacity: 1, x: 0 }}
-										viewport={{ once: true }}
-										transition={{ delay: i * 0.05 }}
+										{...rxRight}
+								transition={staggerTransition(minimal, i, 0.03)}
 										className='flex items-start gap-3 text-icyWhite/80'
 									>
 										<span className='text-purple-soft shrink-0 mt-0.5'>
@@ -464,17 +456,13 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<motion.h2
 						id='how-we-help-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
 					>
 						{t('howIHelpTitle')}
 					</motion.h2>
 					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='text-icyWhite/60 text-center mb-12'
 					>
 						{t('howIHelpIntro')}
@@ -483,10 +471,8 @@ export default function MassagePage() {
 						{VALUES.map(({ key, icon: Icon }, i) => (
 							<motion.div
 								key={key}
-								initial={{ opacity: 0, y: 24 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: i * 0.06 }}
+								{...ry}
+							transition={staggerTransition(minimal, i, 0.04)}
 								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-purple-soft/30 hover:bg-white/[0.04] transition-all duration-300'
 							>
 								<Icon
@@ -511,17 +497,13 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<motion.h2
 						id='services-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
 					>
 						{t('serviceMenu.title')}
 					</motion.h2>
 					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'
 					>
 						{t('serviceMenu.subtitle')}
@@ -531,10 +513,8 @@ export default function MassagePage() {
 						{SERVICE_ZONES.map(({ key: zoneKey, items }, zi) => (
 							<motion.div
 								key={zoneKey}
-								initial={{ opacity: 0, y: 32 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: zi * 0.1 }}
+								{...ry}
+								transition={staggerTransition(minimal, zi, 0.06)}
 								className='rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden'
 							>
 								<div className='px-6 py-5 border-b border-white/10'>
@@ -594,17 +574,13 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<motion.h2
 						id='process-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
 					>
 						{t('process.title')}
 					</motion.h2>
 					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'
 					>
 						{t('process.subtitle')}
@@ -614,10 +590,8 @@ export default function MassagePage() {
 						{PROCESS_STEPS.map(({ key, step }, i) => (
 							<motion.div
 								key={key}
-								initial={{ opacity: 0, y: 24 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: i * 0.1 }}
+								{...ry}
+							transition={staggerTransition(minimal, i, 0.06)}
 								className='relative p-6 rounded-2xl border border-white/10 bg-white/[0.02]'
 							>
 								<span className='text-purple-soft/30 font-serif text-5xl absolute top-4 right-5'>
@@ -634,9 +608,7 @@ export default function MassagePage() {
 					</div>
 
 					<motion.div
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='mt-12 max-w-3xl mx-auto p-6 rounded-2xl border border-purple-soft/15 bg-purple-soft/[0.03]'
 					>
 						<p className='text-icyWhite/70 text-sm leading-relaxed text-center'>
@@ -657,17 +629,13 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<motion.h2
 						id='team-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
 					>
 						{t('team.title')}
 					</motion.h2>
 					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='text-icyWhite/60 text-center mb-12'
 					>
 						{t('team.subtitle')}
@@ -680,9 +648,7 @@ export default function MassagePage() {
 							style={{ scrollbarWidth: 'none' }}
 						>
 							<motion.article
-								initial={{ opacity: 0, y: 24 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
+								{...ry}
 								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
 							>
 								<div className='relative aspect-[3/4]'>
@@ -714,10 +680,8 @@ export default function MassagePage() {
 							</motion.article>
 
 							<motion.article
-								initial={{ opacity: 0, y: 24 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: 0.1 }}
+								{...ry}
+								transition={enterDelay(minimal, 0.08)}
 								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
 							>
 								<div className='relative aspect-[3/4]'>
@@ -774,17 +738,13 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<motion.h2
 						id='hygiene-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
 					>
 						{t('hygiene.title')}
 					</motion.h2>
 					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='text-icyWhite/60 text-center mb-12'
 					>
 						{t('hygiene.subtitle')}
@@ -794,10 +754,8 @@ export default function MassagePage() {
 						{HYGIENE_ITEMS.map(({ key, icon: Icon }, i) => (
 							<motion.div
 								key={key}
-								initial={{ opacity: 0, y: 24 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: i * 0.08 }}
+								{...ry}
+							transition={staggerTransition(minimal, i, 0.05)}
 								className='p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-purple-soft/25 transition-all duration-300'
 							>
 								<Icon
@@ -827,17 +785,13 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<motion.h2
 						id='testimonials-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
 					>
 						{t('testimonials.title')}
 					</motion.h2>
 					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='text-icyWhite/60 text-center mb-12'
 					>
 						{t('testimonials.subtitle')}
@@ -851,10 +805,8 @@ export default function MassagePage() {
 							{TESTIMONIALS.map((key, i) => (
 								<motion.blockquote
 									key={key}
-									initial={{ opacity: 0, y: 24 }}
-									whileInView={{ opacity: 1, y: 0 }}
-									viewport={{ once: true }}
-									transition={{ delay: i * 0.06 }}
+									{...ry}
+							transition={staggerTransition(minimal, i, 0.04)}
 									className='shrink-0 w-[300px] sm:w-[340px] snap-center p-6 rounded-2xl border border-white/10 bg-white/[0.02]'
 								>
 									<div className='flex gap-1 mb-4'>
@@ -915,17 +867,13 @@ export default function MassagePage() {
 				<div className='max-w-3xl mx-auto'>
 					<motion.h2
 						id='faq-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
 					>
 						{t('faq.title')}
 					</motion.h2>
 					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='text-icyWhite/60 text-center mb-12'
 					>
 						{t('faq.subtitle')}
@@ -960,9 +908,7 @@ export default function MassagePage() {
 			>
 				<div className='max-w-5xl mx-auto'>
 					<motion.header
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='text-center mb-12'
 					>
 						<h2
@@ -978,9 +924,7 @@ export default function MassagePage() {
 
 					<div className='grid lg:grid-cols-[1fr_340px] gap-8 lg:gap-12 items-start'>
 						<motion.div
-							initial={{ opacity: 0, y: 16 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
+							{...ry}
 							className='space-y-0'
 						>
 							<div className='rounded-2xl overflow-hidden ring-1 ring-white/10'>
@@ -1018,10 +962,8 @@ export default function MassagePage() {
 						</motion.div>
 
 						<motion.div
-							initial={{ opacity: 0, y: 16 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ delay: 0.05 }}
+							{...ry}
+							transition={enterDelay(minimal, 0.05)}
 							className='lg:sticky lg:top-24'
 						>
 							<div className='rounded-2xl bg-white/[0.04] ring-1 ring-white/10 p-6'>
@@ -1110,8 +1052,9 @@ export default function MassagePage() {
 										</DialogHeader>
 										{contactSent ? (
 											<motion.div
-												initial={{ opacity: 0, scale: 0.95 }}
-												animate={{ opacity: 1, scale: 1 }}
+												initial={minimal ? false : { opacity: 0 }}
+												animate={{ opacity: 1 }}
+												transition={{ duration: minimal ? 0 : 0.2 }}
 												className='p-8 rounded-xl border border-purple-soft/20 bg-purple-soft/[0.04] text-center'
 											>
 												<BadgeCheck className='w-12 h-12 text-purple-soft mx-auto mb-4' />
@@ -1212,17 +1155,13 @@ export default function MassagePage() {
 				<div className='max-w-3xl mx-auto text-center'>
 					<motion.h2
 						id='booking-heading'
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
+						{...ry}
 						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-6'
 					>
 						{t('reserveTitle')}
 					</motion.h2>
 					<motion.p
-						initial={{ opacity: 0 }}
-						whileInView={{ opacity: 1 }}
-						viewport={{ once: true }}
+						{...rf}
 						className='text-icyWhite/70 mb-10 leading-relaxed'
 					>
 						{t('reserveDesc')}

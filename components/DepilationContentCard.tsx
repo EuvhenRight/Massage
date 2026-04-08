@@ -1,8 +1,10 @@
 'use client'
 
-import Image from 'next/image'
-import { motion } from 'framer-motion'
+import { scrollRevealY, useSiteMotion } from '@/lib/site-motion'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
+import Image from 'next/image'
+import { useMemo } from 'react'
 
 interface DepilationContentCardProps {
 	image: string
@@ -21,12 +23,17 @@ export default function DepilationContentCard({
 	index = 0,
 	className,
 }: DepilationContentCardProps) {
+	const { minimal } = useSiteMotion()
+	const reveal = useMemo(() => scrollRevealY(minimal), [minimal])
+
 	return (
 		<motion.article
-			initial={{ opacity: 0, y: 32 }}
-			whileInView={{ opacity: 1, y: 0 }}
-			viewport={{ once: true, margin: '-40px' }}
-			transition={{ duration: 0.5, delay: index * 0.08 }}
+			{...reveal}
+			transition={{
+				duration: minimal ? 0 : 0.36,
+				delay: minimal ? 0 : index * 0.05,
+			}}
+			viewport={{ once: true, margin: '-48px' }}
 			className={cn(
 				'group overflow-hidden rounded-2xl border border-white/5',
 				'bg-nearBlack/60 backdrop-blur-sm',

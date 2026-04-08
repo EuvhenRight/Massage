@@ -22,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SITE_CONFIG } from '@/lib/site-config'
+import { useSiteMotion } from '@/lib/site-motion'
 import {
 	motion,
 	useMotionValueEvent,
@@ -146,31 +147,6 @@ const FAQ_ITEMS = [
 	'sensitive',
 ] as const
 
-const stagger = {
-	hidden: {},
-	show: { transition: { staggerChildren: 0.08 } },
-}
-const fadeUp = {
-	hidden: { opacity: 0, y: 28 },
-	show: {
-		opacity: 1,
-		y: 0,
-		transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-	},
-}
-const fadeIn = {
-	hidden: { opacity: 0 },
-	show: { opacity: 1, transition: { duration: 0.7 } },
-}
-const scaleUp = {
-	hidden: { opacity: 0, scale: 0.92 },
-	show: {
-		opacity: 1,
-		scale: 1,
-		transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-	},
-}
-
 export default function DepilationPage() {
 	const t = useTranslations('depilation')
 	const tCommon = useTranslations('common')
@@ -191,6 +167,67 @@ export default function DepilationPage() {
 	const sliderRef = useRef<HTMLDivElement>(null)
 	const testimonialRef = useRef<HTMLDivElement>(null)
 	const [contactSent, setContactSent] = useState(false)
+
+	const { minimal } = useSiteMotion()
+
+	const stagger = useMemo(
+		() =>
+			minimal
+				? { hidden: {}, show: { transition: { staggerChildren: 0 } } }
+				: { hidden: {}, show: { transition: { staggerChildren: 0.04 } } },
+		[minimal],
+	)
+	const fadeUp = useMemo(
+		() =>
+			minimal
+				? {
+						hidden: { opacity: 1, y: 0 },
+						show: {
+							opacity: 1,
+							y: 0,
+							transition: { duration: 0 },
+						},
+					}
+				: {
+						hidden: { opacity: 0, y: 12 },
+						show: {
+							opacity: 1,
+							y: 0,
+							transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+						},
+					},
+		[minimal],
+	)
+	const fadeIn = useMemo(
+		() =>
+			minimal
+				? {
+						hidden: { opacity: 1 },
+						show: { opacity: 1, transition: { duration: 0 } },
+					}
+				: {
+						hidden: { opacity: 0 },
+						show: { opacity: 1, transition: { duration: 0.4 } },
+					},
+		[minimal],
+	)
+	const scaleUp = useMemo(
+		() =>
+			minimal
+				? {
+						hidden: { opacity: 1, scale: 1 },
+						show: { opacity: 1, scale: 1, transition: { duration: 0 } },
+					}
+				: {
+						hidden: { opacity: 0, scale: 0.96 },
+						show: {
+							opacity: 1,
+							scale: 1,
+							transition: { duration: 0.36, ease: [0.25, 0.1, 0.25, 1] },
+						},
+					},
+		[minimal],
+	)
 
 	const heroRef = useRef<HTMLElement>(null)
 	const { scrollYProgress } = useScroll({
@@ -272,7 +309,10 @@ export default function DepilationPage() {
 				aria-labelledby='depilation-hero'
 			>
 				{/* Parallax background */}
-				<motion.div className='absolute inset-0' style={{ y: heroImgY }}>
+				<motion.div
+					className='absolute inset-0'
+					style={minimal ? undefined : { y: heroImgY }}
+				>
 					<Image
 						src={IMG.portrait}
 						alt=''
@@ -365,8 +405,14 @@ export default function DepilationPage() {
 						className='absolute bottom-6 sm:bottom-6 left-1/2 -translate-x-1/2'
 					>
 						<motion.div
-							animate={{ y: [0, 8, 0] }}
-							transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+							animate={
+								minimal ? undefined : { y: [0, 6, 0] }
+							}
+							transition={
+								minimal
+									? undefined
+									: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }
+							}
 						>
 							<ArrowDown className='w-5 h-5 text-gold-soft/40' />
 						</motion.div>
@@ -667,12 +713,12 @@ export default function DepilationPage() {
 						{PROCESS_STEPS.map(({ key, step }, i) => (
 							<motion.div
 								key={key}
-								initial={{ opacity: 0, y: 32 }}
+								initial={minimal ? false : { opacity: 0, y: 32 }}
 								whileInView={{ opacity: 1, y: 0 }}
 								viewport={{ once: true, margin: '-40px' }}
 								transition={{
-									delay: i * 0.1,
-									duration: 0.6,
+									delay: minimal ? 0 : i * 0.1,
+									duration: minimal ? 0 : 0.6,
 									ease: [0.22, 1, 0.36, 1],
 								}}
 								className='relative p-7 rounded-3xl glass-card group'

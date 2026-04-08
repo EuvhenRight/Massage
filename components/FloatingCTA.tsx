@@ -1,21 +1,21 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { heroEnter, useSiteMotion } from "@/lib/site-motion";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 const MAPS_URL = "https://maps.google.com/?q=spa+salon";
 
 export default function FloatingCTA() {
   const t = useTranslations("common");
+  const { minimal } = useSiteMotion();
 
   return (
     <motion.a
       href={MAPS_URL}
       target="_blank"
       rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 1 }}
+      {...heroEnter(minimal, { delay: minimal ? 0 : 0.45 })}
       className="md:hidden fixed bottom-6 left-6 right-6 z-40 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-purple-soft/20 border border-purple-soft/40 text-purple-soft font-medium text-sm tracking-wider uppercase shadow-glow"
       aria-label={`${t("getDirections")} - V2studio`}
     >

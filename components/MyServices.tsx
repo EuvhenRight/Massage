@@ -1,10 +1,12 @@
 'use client'
 
-import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import { scrollFade, scrollRevealY, useSiteMotion } from '@/lib/site-motion'
 import { motion } from 'framer-motion'
-import { useParams } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useMemo } from 'react'
 
 /** Stock photos from Unsplash - beauty salon, depilation, spa (free to use) */
 const SERVICE_IMAGES: Record<string, string> = {
@@ -52,6 +54,9 @@ export default function MyServices() {
 	const tPrice = useTranslations('price')
 	const params = useParams()
 	const locale = (params?.locale as string) ?? 'sk'
+	const { minimal } = useSiteMotion()
+	const ry = useMemo(() => scrollRevealY(minimal), [minimal])
+	const rf = useMemo(() => scrollFade(minimal), [minimal])
 
 	return (
 		<section
@@ -62,17 +67,13 @@ export default function MyServices() {
 			<div className="max-w-6xl mx-auto">
 				<motion.h2
 					id="my-services-heading"
-					initial={{ opacity: 0, y: 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
+					{...ry}
 					className="font-serif text-4xl md:text-5xl text-icyWhite text-center mb-4"
 				>
 					{t('myServices.title')}
 				</motion.h2>
 				<motion.p
-					initial={{ opacity: 0 }}
-					whileInView={{ opacity: 1 }}
-					viewport={{ once: true }}
+					{...rf}
 					className="text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto"
 				>
 					{t('myServices.subtitle')}
@@ -82,10 +83,12 @@ export default function MyServices() {
 					{SERVICES.map((service, i) => (
 						<motion.article
 							key={service.id}
-							initial={{ opacity: 0, y: 32 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true, margin: '-40px' }}
-							transition={{ duration: 0.5, delay: i * 0.08 }}
+							{...ry}
+							transition={{
+								duration: minimal ? 0 : 0.36,
+								delay: minimal ? 0 : i * 0.05,
+							}}
+							viewport={{ once: true, margin: '-48px' }}
 							className="group overflow-hidden rounded-2xl border border-white/5 bg-nearBlack/60 backdrop-blur-sm hover:border-purple-soft/25 hover:shadow-card transition-all duration-500"
 						>
 							<div className="aspect-[4/3] relative overflow-hidden">

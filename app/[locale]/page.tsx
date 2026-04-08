@@ -1,16 +1,24 @@
 "use client";
 
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { heroEnter, useSiteMotion } from "@/lib/site-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useMemo } from "react";
 
 export default function EntryPortal() {
   const t = useTranslations("home");
   const tCommon = useTranslations("common");
   const params = useParams();
   const locale = (params?.locale as string) ?? "sk";
+  const { minimal } = useSiteMotion();
+  const panelL = useMemo(() => heroEnter(minimal), [minimal]);
+  const panelR = useMemo(
+    () => heroEnter(minimal, { delay: minimal ? 0 : 0.06 }),
+    [minimal],
+  );
 
   return (
     <main
@@ -23,9 +31,7 @@ export default function EntryPortal() {
       </div>
       {/* Massage Option */}
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        {...panelL}
         className="flex-1 min-h-[50vh] md:min-h-screen relative group overflow-hidden"
       >
         <Link
@@ -43,9 +49,7 @@ export default function EntryPortal() {
           </motion.h1>
           <motion.span
             className="relative z-10 mt-4 text-icyWhite/70 text-sm tracking-[0.3em] uppercase"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            {...heroEnter(minimal, { delay: minimal ? 0 : 0.12 })}
           >
             {tCommon("enter")}
           </motion.span>
@@ -61,9 +65,7 @@ export default function EntryPortal() {
 
       {/* Depilation Option */}
       <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+        {...panelR}
         className="flex-1 min-h-[50vh] md:min-h-screen relative group overflow-hidden"
       >
         <Link
@@ -81,9 +83,7 @@ export default function EntryPortal() {
           </motion.h1>
           <motion.span
             className="relative z-10 mt-4 text-icyWhite/70 text-sm tracking-[0.3em] uppercase"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
+            {...heroEnter(minimal, { delay: minimal ? 0 : 0.14 })}
           >
             {tCommon("enter")}
           </motion.span>

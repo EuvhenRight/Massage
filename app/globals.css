@@ -94,7 +94,14 @@
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
-	animation: aurora-shift 6s ease-in-out infinite;
+	animation: aurora-shift 10s ease-in-out infinite;
+}
+
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+	.aurora-text {
+		animation: none;
+		background-position: 50% 50%;
+	}
 }
 
 @keyframes aurora-shift {
@@ -138,7 +145,8 @@
 	flex-flow: row nowrap;
 	width: max-content;
 	flex-shrink: 0;
-	animation: marquee-trust-seamless 52s linear infinite;
+	/* Slower on narrow viewports — less visual noise on phones */
+	animation: marquee-trust-seamless 72s linear infinite;
 	will-change: transform;
 	-webkit-backface-visibility: hidden;
 	backface-visibility: hidden;
@@ -148,16 +156,15 @@
 	animation-play-state: paused;
 }
 
-/* Slightly slower on small screens so copy stays readable */
 @media (min-width: 640px) {
 	.marquee-track-trust {
-		animation-duration: 46s;
+		animation-duration: 54s;
 	}
 }
 
 @media (min-width: 1024px) {
 	.marquee-track-trust {
-		animation-duration: 40s;
+		animation-duration: 44s;
 	}
 }
 
@@ -168,15 +175,13 @@
 	}
 }
 
-/* Hero trust bars — CSS-only entrance (avoids Framer stalling on iOS / WebKit). */
+/* Hero trust bars — opacity-only entrance (transform + backdrop-blur + overflow-hidden breaks keyframes on iOS). */
 @keyframes hero-trust-bar-massage-in {
 	from {
 		opacity: 0;
-		transform: translate3d(0, 10px, 0);
 	}
 	to {
 		opacity: 1;
-		transform: translate3d(0, 0, 0);
 	}
 }
 
@@ -199,6 +204,18 @@
 	animation: hero-trust-bar-depilation-in 0.6s ease 1.2s both;
 }
 
+/*
+ * Touch / narrow viewports: CSS entrance often never completes (opacity stays 0) when
+ * backdrop-filter sits under overflow-hidden. Show trust content immediately.
+ */
+@media (max-width: 1023px), (pointer: coarse) {
+	.hero-trust-bar-massage,
+	.hero-trust-bar-depilation {
+		animation: none;
+		opacity: 1;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.hero-trust-bar-massage,
 	.hero-trust-bar-depilation {
@@ -218,15 +235,6 @@
 	}
 }
 
-@keyframes sd-wave-dot-fade {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 0.85;
-	}
-}
-
 .sd-wave-path {
 	stroke-dashoffset: var(--sd-wave-len, 575);
 }
@@ -235,23 +243,10 @@
 	animation: sd-wave-stroke-draw 1.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.sd-wave-dot {
-	opacity: 0;
-}
-
-.sd-wave-dot--play {
-	animation: sd-wave-dot-fade 0.35s cubic-bezier(0.22, 1, 0.36, 1) 0.85s both;
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.sd-wave-path--play {
 		animation-duration: 0.4s;
 		animation-timing-function: ease-out;
-	}
-
-	.sd-wave-dot--play {
-		animation-delay: 0.15s;
-		animation-duration: 0.2s;
 	}
 }
 
@@ -291,6 +286,14 @@
 	.trust-marquee-viewport {
 		-webkit-mask-image: none;
 		mask-image: none;
+	}
+}
+
+/* Calmer decorative motion on small screens */
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+	.animate-float,
+	.animate-float-delayed {
+		animation: none;
 	}
 }
 
