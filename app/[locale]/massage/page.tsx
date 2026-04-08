@@ -214,7 +214,7 @@ export default function MassagePage() {
 			{/* 1. HERO */}
 			<section
 				id='hero'
-				className='relative h-[100svh] lg:h-[100dvh] flex flex-col overflow-hidden noise-overlay'
+				className='relative h-svh flex flex-col overflow-hidden noise-overlay'
 				aria-labelledby='massage-hero'
 			>
 				<div className='absolute inset-0'>

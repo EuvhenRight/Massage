@@ -45,7 +45,7 @@ export default async function CookiePolicyPage({
 		<>
 			<Navbar />
 			<main
-				className='min-h-screen bg-nearBlack text-icyWhite pt-24 pb-20 px-6 md:px-10'
+				className='min-h-svh bg-nearBlack text-icyWhite pt-24 pb-20 px-6 md:px-10'
 				role='main'
 			>
 				<div className='mx-auto max-w-2xl'>

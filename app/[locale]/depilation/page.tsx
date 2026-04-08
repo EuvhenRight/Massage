@@ -322,7 +322,7 @@ export default function DepilationPage() {
 			<section
 				ref={heroRef}
 				id='hero'
-				className='relative h-[100svh] lg:h-[100dvh] flex flex-col overflow-hidden noise-overlay'
+				className='relative h-svh flex flex-col overflow-hidden noise-overlay'
 				aria-labelledby='depilation-hero'
 			>
 				{/* Parallax background — lg+ only; mobile uses stable svh + no motion.y */}

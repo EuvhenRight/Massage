@@ -22,7 +22,7 @@ export default function BookingPageLayout({
 	}, [])
 
 	return (
-		<main className='fixed inset-0 z-0 h-[100dvh] max-h-[100dvh] bg-nearBlack text-icyWhite flex flex-col overflow-hidden overscroll-none'>
+		<main className='fixed inset-0 z-0 h-svh max-h-svh bg-nearBlack text-icyWhite flex flex-col overflow-hidden overscroll-none'>
 			<Navbar />
 			<div
 				className={`flex-1 flex flex-col min-h-0 overflow-hidden pt-16 md:pt-20 pb-4 md:pb-6 px-4 sm:px-6 lg:px-8 ${

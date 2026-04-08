@@ -22,7 +22,7 @@ export default function EntryPortal() {
 
   return (
     <main
-      className="relative min-h-[100dvh] flex flex-col md:flex-row"
+      className="relative min-h-svh flex flex-col md:flex-row"
       role="main"
       aria-label={t("chooseExperience")}
     >
@@ -32,7 +32,7 @@ export default function EntryPortal() {
       {/* Massage Option */}
       <motion.div
         {...panelL}
-        className="flex-1 min-h-[50vh] md:min-h-[100dvh] relative group overflow-hidden"
+        className="flex-1 min-h-[50svh] md:min-h-svh relative group overflow-hidden"
       >
         <Link
           href={`/${locale}/massage`}
@@ -66,7 +66,7 @@ export default function EntryPortal() {
       {/* Depilation Option */}
       <motion.div
         {...panelR}
-        className="flex-1 min-h-[50vh] md:min-h-[100dvh] relative group overflow-hidden"
+        className="flex-1 min-h-[50svh] md:min-h-svh relative group overflow-hidden"
       >
         <Link
           href={`/${locale}/depilation`}
