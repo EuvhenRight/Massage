@@ -67,7 +67,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${dmSerif.variable} ${outfit.variable} font-sans min-h-[100dvh] antialiased overflow-x-clip`}
+        className={`${dmSerif.variable} ${outfit.variable} font-sans antialiased overflow-x-clip`}
       >
         {children}
       </body>

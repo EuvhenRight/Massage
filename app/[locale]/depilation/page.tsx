@@ -1423,7 +1423,7 @@ export default function DepilationPage() {
 			</section>
 
 			{/* ── 14. FOOTER ── */}
-			<footer className='border-t border-white/[0.04] px-6 lg:px-8 py-14 max-md:pb-[calc(7rem+env(safe-area-inset-bottom,0px))]'>
+			<footer className='border-t border-white/[0.04] px-6 lg:px-8 py-14 max-md:pb-24'>
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12'>
 						<div>

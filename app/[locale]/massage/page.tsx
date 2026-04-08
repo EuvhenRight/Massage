@@ -1189,7 +1189,7 @@ export default function MassagePage() {
 			</section>
 
 			{/* 15. FOOTER */}
-			<footer className='border-t border-white/5 px-6 lg:px-8 py-12 max-md:pb-[calc(7rem+env(safe-area-inset-bottom,0px))]'>
+			<footer className='border-t border-white/5 px-6 lg:px-8 py-12 max-md:pb-24'>
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10'>
 						<div>
