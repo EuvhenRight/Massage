@@ -198,24 +198,23 @@ export default function MassagePage() {
 		<>
 			<Navbar />
 
-			{/* Mobile floating Book Now */}
-			<motion.div
-				{...heroEnter(minimal, { delay: minimal ? 0 : 0.55 })}
-				className='md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]'
-			>
-				<Link
-					href={`/${locale}/massage/booking`}
-					className='flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wider uppercase shadow-glow-strong backdrop-blur-sm'
-				>
-					<Calendar className='w-4 h-4' />
-					{t('bookNow')}
-				</Link>
-			</motion.div>
+			{/* Mobile BOOK: fixed wrapper must not use Framer transform (Safari fixed-position bug). */}
+			<div className='md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]'>
+				<motion.div {...heroEnter(minimal, { delay: minimal ? 0 : 0.55 })}>
+					<Link
+						href={`/${locale}/massage/booking`}
+						className='flex w-full items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wider uppercase shadow-glow-strong backdrop-blur-sm'
+					>
+						<Calendar className='w-4 h-4' />
+						{t('bookNow')}
+					</Link>
+				</motion.div>
+			</div>
 
 			{/* 1. HERO */}
 			<section
 				id='hero'
-				className='relative h-screen flex flex-col overflow-hidden noise-overlay'
+				className='relative h-[100svh] lg:h-[100dvh] flex flex-col overflow-hidden noise-overlay'
 				aria-labelledby='massage-hero'
 			>
 				<div className='absolute inset-0'>
@@ -1189,7 +1188,7 @@ export default function MassagePage() {
 			</section>
 
 			{/* 15. FOOTER */}
-			<footer className='border-t border-white/5 px-6 lg:px-8 py-12 max-md:pb-24'>
+			<footer className='border-t border-white/5 px-6 lg:px-8 py-12 max-md:pb-20'>
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10'>
 						<div>

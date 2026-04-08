@@ -292,25 +292,31 @@ export default function DepilationPage() {
 		<>
 			<Navbar />
 
-			{/* Mobile floating Book Now — appears after scrolling past hero */}
-			<motion.div
-				initial={{ opacity: 0, y: 20 }}
-				animate={
-					showFloatingCTA
-						? { opacity: 1, y: 0 }
-						: { opacity: 0, y: 20, pointerEvents: 'none' as const }
-				}
-				transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-				className='md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]'
+			{/*
+			  Mobile BOOK: outer node must stay `fixed` without transform.
+			  Framer `y` on the same element breaks `position:fixed` in Safari (fixed behaves like scroll content).
+			*/}
+			<div
+				className={`md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] ${showFloatingCTA ? '' : 'pointer-events-none'}`}
 			>
-				<Link
-					href={`/${locale}/depilation/booking`}
-					className='flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wider uppercase shadow-glow-strong backdrop-blur-sm'
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={
+						showFloatingCTA
+							? { opacity: 1, y: 0 }
+							: { opacity: 0, y: 20, pointerEvents: 'none' as const }
+					}
+					transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
 				>
-					<Calendar className='w-4 h-4' />
-					{t('bookNow')}
-				</Link>
-			</motion.div>
+					<Link
+						href={`/${locale}/depilation/booking`}
+						className='flex w-full items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wider uppercase shadow-glow-strong backdrop-blur-sm'
+					>
+						<Calendar className='w-4 h-4' />
+						{t('bookNow')}
+					</Link>
+				</motion.div>
+			</div>
 
 			{/* ── 1. HERO — cinematic fullscreen with parallax ── */}
 			<section
@@ -1423,7 +1429,7 @@ export default function DepilationPage() {
 			</section>
 
 			{/* ── 14. FOOTER ── */}
-			<footer className='border-t border-white/[0.04] px-6 lg:px-8 py-14 max-md:pb-24'>
+			<footer className='border-t border-white/[0.04] px-6 lg:px-8 py-14 max-md:pb-20'>
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12'>
 						<div>
