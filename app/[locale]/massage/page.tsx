@@ -267,11 +267,8 @@ export default function MassagePage() {
 					</motion.div>
 				</div>
 
-				<motion.div
-					initial={{ opacity: 0, y: 10 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.6, duration: 0.5 }}
-					className='relative z-10 py-3 border-t border-white/5 bg-nearBlack/60 backdrop-blur-sm'
+				<div
+					className='hero-trust-bar-massage relative z-10 py-3 border-t border-white/5 bg-nearBlack/60 backdrop-blur-sm'
 					aria-label={t('trustBarLabel')}
 				>
 					<div className='max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-8 gap-y-1.5'>
@@ -292,7 +289,7 @@ export default function MassagePage() {
 							</span>
 						))}
 					</div>
-				</motion.div>
+				</div>
 			</section>
 
 			<SectionDivider variant='massage' pattern={0} />

@@ -376,11 +376,8 @@ export default function DepilationPage() {
 				{/* Trust bar — seamless 4-segment loop + soft edges on mobile/tablet.
 				    Do not wrap the CSS-animated track in a Framer transform parent: iOS Safari
 				    often fails to run nested transform animations. */}
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ delay: 1.2, duration: 0.6 }}
-					className='relative z-10 mt-auto shrink-0 py-3.5 sm:py-4 border-t border-white/[0.06] bg-nearBlack/70 backdrop-blur-md overflow-hidden trust-marquee-viewport'
+				<div
+					className='hero-trust-bar-depilation relative z-10 mt-auto shrink-0 py-3.5 sm:py-4 border-t border-white/[0.06] bg-nearBlack/70 backdrop-blur-md overflow-hidden trust-marquee-viewport'
 					aria-label={t('trustBarLabel')}
 				>
 					<div className='marquee-track-trust' aria-hidden>
@@ -399,7 +396,7 @@ export default function DepilationPage() {
 							</span>
 						))}
 					</div>
-				</motion.div>
+				</div>
 			</section>
 
 			<SectionDivider variant='depilation' pattern={0} />

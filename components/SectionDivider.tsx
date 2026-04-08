@@ -135,6 +135,15 @@ function PatternBeam({
 	)
 }
 
+/** Fallback length when `getTotalLength()` is 0 (rare WebKit timing). Matches `WAVE_PATH_D`. */
+const WAVE_PATH_LEN_FALLBACK = 575
+
+/**
+ * Wave stroke animation: CSS `@keyframes` (default) or imperative `requestAnimationFrame`.
+ * Switch to `'raf'` if stroke-dashoffset keyframes stall on a specific browser.
+ */
+const WAVE_STROKE_DRIVER: 'css' | 'raf' = 'css'
+
 function PatternWave({
 	a,
 	reduce,
@@ -154,26 +163,44 @@ function PatternWave({
 	})
 
 	const [dashLen, setDashLen] = useState(0)
-	const [runDraw, setRunDraw] = useState(false)
+	const [drawReady, setDrawReady] = useState(false)
 
 	useLayoutEffect(() => {
-		const el = pathRef.current
-		if (!el) return
-		try {
-			const L = el.getTotalLength()
-			if (L > 0) setDashLen(L)
-		} catch {
-			/* Safari / older engines */
+		let cancelled = false
+		let attempts = 0
+		const maxAttempts = 32
+
+		const measure = () => {
+			if (cancelled || !pathRef.current) return
+			try {
+				const L = pathRef.current.getTotalLength()
+				if (L > 0) {
+					setDashLen(L)
+					return
+				}
+			} catch {
+				/* Safari / older engines */
+			}
+			attempts += 1
+			if (attempts < maxAttempts) {
+				requestAnimationFrame(measure)
+			} else {
+				setDashLen(WAVE_PATH_LEN_FALLBACK)
+			}
+		}
+
+		measure()
+		return () => {
+			cancelled = true
 		}
 	}, [])
 
-	// Double rAF: first paint must use full dash offset, then transition to 0 (Framer
-	// pathLength + whileInView is unreliable on iOS; native stroke-dashoffset is).
+	// Start draw after in-view + layout (double rAF).
 	useEffect(() => {
 		if (!dashLen || !isInView) return
 		let raf2: number | undefined
 		const raf1 = requestAnimationFrame(() => {
-			raf2 = requestAnimationFrame(() => setRunDraw(true))
+			raf2 = requestAnimationFrame(() => setDrawReady(true))
 		})
 		return () => {
 			cancelAnimationFrame(raf1)
@@ -181,8 +208,45 @@ function PatternWave({
 		}
 	}, [dashLen, isInView])
 
-	const drawMs = reduce ? 400 : 1350
-	const ease = 'cubic-bezier(0.22, 1, 0.36, 1)'
+	// Imperative stroke draw (optional alternative to CSS keyframes).
+	useEffect(() => {
+		if (WAVE_STROKE_DRIVER !== 'raf') return
+		if (!drawReady || !dashLen || !pathRef.current) return
+		const path = pathRef.current
+		const L = dashLen
+		const drawMs = reduce ? 400 : 1350
+		const easeOut = (t: number) => 1 - (1 - t) ** 3
+		let cancelled = false
+		const t0 = performance.now()
+
+		let rafId = 0
+		const tick = (now: number) => {
+			if (cancelled || !pathRef.current) return
+			const t = Math.min(1, (now - t0) / drawMs)
+			const e = easeOut(t)
+			pathRef.current.style.strokeDasharray = `${L}`
+			pathRef.current.style.strokeDashoffset = `${L * (1 - e)}`
+			if (t < 1) rafId = requestAnimationFrame(tick)
+			else pathRef.current.style.strokeDashoffset = '0'
+		}
+		path.style.strokeDasharray = `${L}`
+		path.style.strokeDashoffset = `${L}`
+		rafId = requestAnimationFrame(tick)
+		return () => {
+			cancelled = true
+			cancelAnimationFrame(rafId)
+		}
+	}, [drawReady, dashLen, reduce])
+
+	const useCssStroke = WAVE_STROKE_DRIVER === 'css'
+	const pathClassName = cn(
+		useCssStroke && 'sd-wave-path',
+		useCssStroke && drawReady && 'sd-wave-path--play',
+	)
+	const dotClassName = cn(
+		'sd-wave-dot',
+		drawReady && 'sd-wave-dot--play',
+	)
 
 	return (
 		<div ref={wrapRef} className='mx-auto w-full max-w-3xl'>
@@ -206,14 +270,14 @@ function PatternWave({
 					strokeWidth='1.35'
 					strokeLinecap='round'
 					vectorEffect='non-scaling-stroke'
+					className={pathClassName || undefined}
 					style={{
 						opacity: dashLen > 0 ? 1 : 0,
+						['--sd-wave-len' as string]: useCssStroke ? dashLen : undefined,
 						strokeDasharray: dashLen,
-						strokeDashoffset: runDraw ? 0 : dashLen,
-						transition: dashLen
-							? `stroke-dashoffset ${drawMs}ms ${ease}`
-							: undefined,
-						willChange: runDraw ? undefined : 'stroke-dashoffset',
+						...(WAVE_STROKE_DRIVER === 'raf' && !drawReady
+							? { strokeDashoffset: dashLen }
+							: {}),
 					}}
 				/>
 				{!reduce && (
@@ -223,12 +287,7 @@ function PatternWave({
 						r='3'
 						fill={a.waveMid}
 						fillOpacity={0.85}
-						style={{
-							opacity: runDraw ? 1 : 0,
-							transition: runDraw
-								? `opacity ${reduce ? 200 : 350}ms ${ease} ${reduce ? 0 : 850}ms`
-								: undefined,
-						}}
+						className={dotClassName}
 					/>
 				)}
 			</svg>

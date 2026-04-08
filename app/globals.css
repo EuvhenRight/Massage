@@ -168,6 +168,93 @@
 	}
 }
 
+/* Hero trust bars — CSS-only entrance (avoids Framer stalling on iOS / WebKit). */
+@keyframes hero-trust-bar-massage-in {
+	from {
+		opacity: 0;
+		transform: translate3d(0, 10px, 0);
+	}
+	to {
+		opacity: 1;
+		transform: translate3d(0, 0, 0);
+	}
+}
+
+@keyframes hero-trust-bar-depilation-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.hero-trust-bar-massage {
+	opacity: 0;
+	animation: hero-trust-bar-massage-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both;
+}
+
+.hero-trust-bar-depilation {
+	opacity: 0;
+	animation: hero-trust-bar-depilation-in 0.6s ease 1.2s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hero-trust-bar-massage,
+	.hero-trust-bar-depilation {
+		animation: none;
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* SectionDivider PatternWave — stroke draw via keyframes (variable path length). */
+@keyframes sd-wave-stroke-draw {
+	from {
+		stroke-dashoffset: var(--sd-wave-len, 575);
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+@keyframes sd-wave-dot-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 0.85;
+	}
+}
+
+.sd-wave-path {
+	stroke-dashoffset: var(--sd-wave-len, 575);
+}
+
+.sd-wave-path--play {
+	animation: sd-wave-stroke-draw 1.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sd-wave-dot {
+	opacity: 0;
+}
+
+.sd-wave-dot--play {
+	animation: sd-wave-dot-fade 0.35s cubic-bezier(0.22, 1, 0.36, 1) 0.85s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sd-wave-path--play {
+		animation-duration: 0.4s;
+		animation-timing-function: ease-out;
+	}
+
+	.sd-wave-dot--play {
+		animation-delay: 0.15s;
+		animation-duration: 0.2s;
+	}
+}
+
 /* Soft fade at left/right on phones/tablets — avoids hard clipping */
 .trust-marquee-viewport {
 	-webkit-mask-image: linear-gradient(
