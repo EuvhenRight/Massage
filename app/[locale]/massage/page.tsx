@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { useIntersectionVisible } from '@/lib/use-intersection-visible'
 import { SITE_CONFIG } from '@/lib/site-config'
 import {
 	enterDelay,
@@ -30,7 +31,7 @@ import {
 	staggerTransition,
 	useSiteMotion,
 } from '@/lib/site-motion'
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
 	Award,
 	BadgeCheck,
@@ -156,8 +157,7 @@ export default function MassagePage() {
 	const locale = (params?.locale as string) ?? 'sk'
 	const sliderRef = useRef<HTMLDivElement>(null)
 	const testimonialRef = useRef<HTMLDivElement>(null)
-	const footerRef = useRef<HTMLElement>(null)
-	const footerInView = useInView(footerRef, { amount: 'some' })
+	const [footerRef, footerInView] = useIntersectionVisible()
 	const showMobileBook = !footerInView
 	const [contactSent, setContactSent] = useState(false)
 

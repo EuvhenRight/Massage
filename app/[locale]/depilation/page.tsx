@@ -21,11 +21,11 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { useIntersectionVisible } from '@/lib/use-intersection-visible'
 import { SITE_CONFIG } from '@/lib/site-config'
 import { useSiteMotion } from '@/lib/site-motion'
 import {
 	motion,
-	useInView,
 	useMotionValueEvent,
 	useScroll,
 	useTransform,
@@ -280,8 +280,7 @@ export default function DepilationPage() {
 
 	const [heroScrolled, setHeroScrolled] = useState(false)
 	const [showFloatingCTA, setShowFloatingCTA] = useState(false)
-	const footerRef = useRef<HTMLElement>(null)
-	const footerInView = useInView(footerRef, { amount: 'some' })
+	const [footerRef, footerInView] = useIntersectionVisible()
 	useMotionValueEvent(scrollYProgress, 'change', v => {
 		setHeroScrolled(v > 0.1)
 		setShowFloatingCTA(v > 0.85)
