@@ -13,11 +13,11 @@ export default function EntryPortal() {
   const tCommon = useTranslations("common");
   const params = useParams();
   const locale = (params?.locale as string) ?? "sk";
-  const { minimal } = useSiteMotion();
-  const panelL = useMemo(() => heroEnter(minimal), [minimal]);
+  const { prefersReducedMotion: reduced } = useSiteMotion();
+  const panelL = useMemo(() => heroEnter(reduced), [reduced]);
   const panelR = useMemo(
-    () => heroEnter(minimal, { delay: minimal ? 0 : 0.06 }),
-    [minimal],
+    () => heroEnter(reduced, { delay: reduced ? 0 : 0.06 }),
+    [reduced],
   );
 
   return (
@@ -49,7 +49,7 @@ export default function EntryPortal() {
           </motion.h1>
           <motion.span
             className="relative z-10 mt-4 text-icyWhite/70 text-sm tracking-[0.3em] uppercase"
-            {...heroEnter(minimal, { delay: minimal ? 0 : 0.12 })}
+            {...heroEnter(reduced, { delay: reduced ? 0 : 0.12 })}
           >
             {tCommon("enter")}
           </motion.span>
@@ -83,7 +83,7 @@ export default function EntryPortal() {
           </motion.h1>
           <motion.span
             className="relative z-10 mt-4 text-icyWhite/70 text-sm tracking-[0.3em] uppercase"
-            {...heroEnter(minimal, { delay: minimal ? 0 : 0.14 })}
+            {...heroEnter(reduced, { delay: reduced ? 0 : 0.14 })}
           >
             {tCommon("enter")}
           </motion.span>

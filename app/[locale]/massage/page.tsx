@@ -30,7 +30,7 @@ import {
 	staggerTransition,
 	useSiteMotion,
 } from '@/lib/site-motion'
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import {
 	Award,
 	BadgeCheck,
@@ -156,17 +156,24 @@ export default function MassagePage() {
 	const locale = (params?.locale as string) ?? 'sk'
 	const sliderRef = useRef<HTMLDivElement>(null)
 	const testimonialRef = useRef<HTMLDivElement>(null)
+	const footerRef = useRef<HTMLElement>(null)
+	const footerInView = useInView(footerRef, { amount: 'some' })
+	const showMobileBook = !footerInView
 	const [contactSent, setContactSent] = useState(false)
 
-	const { minimal } = useSiteMotion()
+	const { minimal, prefersReducedMotion } = useSiteMotion()
+	const reduced = prefersReducedMotion
 	const ry = useMemo(() => scrollRevealY(minimal), [minimal])
 	const rxLeft = useMemo(() => scrollRevealX(minimal, 'left'), [minimal])
 	const rxRight = useMemo(() => scrollRevealX(minimal, 'right'), [minimal])
 	const rf = useMemo(() => scrollFade(minimal), [minimal])
-	const heroMotion = useMemo(() => heroEnter(minimal), [minimal])
+	const ryAbout = useMemo(() => scrollRevealY(reduced), [reduced])
+	const rxAbout = useMemo(() => scrollRevealX(reduced, 'left'), [reduced])
+	const rfAbout = useMemo(() => scrollFade(reduced), [reduced])
+	const heroMotion = useMemo(() => heroEnter(reduced), [reduced])
 	const heroMotionDelayed = useMemo(
-		() => heroEnter(minimal, { delay: minimal ? 0 : 0.06 }),
-		[minimal],
+		() => heroEnter(reduced, { delay: reduced ? 0 : 0.06 }),
+		[reduced],
 	)
 
 	const scrollSlider = (
@@ -198,9 +205,23 @@ export default function MassagePage() {
 		<>
 			<Navbar />
 
-			{/* Mobile BOOK: fixed wrapper must not use Framer transform (Safari fixed-position bug). */}
-			<div className='md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]'>
-				<motion.div {...heroEnter(minimal, { delay: minimal ? 0 : 0.55 })}>
+			{/*
+			  Mobile BOOK: outer node must stay `fixed` without transform.
+			  Framer `y` on the same element breaks `position:fixed` in Safari (fixed behaves like scroll content).
+			  Hide when footer is in view so it does not cover footer content.
+			*/}
+			<div
+				className={`md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] ${showMobileBook ? '' : 'pointer-events-none'}`}
+			>
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={
+						showMobileBook
+							? { opacity: 1, y: 0 }
+							: { opacity: 0, y: 20, pointerEvents: 'none' as const }
+					}
+					transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+				>
 					<Link
 						href={`/${locale}/massage/booking`}
 						className='flex w-full items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wider uppercase shadow-glow-strong backdrop-blur-sm'
@@ -319,7 +340,7 @@ export default function MassagePage() {
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid lg:grid-cols-2 gap-12 lg:gap-16 items-center'>
 						<motion.div
-							{...rxLeft}
+							{...rxAbout}
 							className='relative aspect-[4/3] rounded-2xl overflow-hidden border border-white/10'
 						>
 							<Image
@@ -334,31 +355,31 @@ export default function MassagePage() {
 						<div>
 							<motion.h2
 								id='about-heading'
-								{...ry}
+								{...ryAbout}
 								className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-6'
 							>
 								{t('aboutTitle')}
 							</motion.h2>
 							<motion.p
-								{...rf}
+								{...rfAbout}
 								className='text-icyWhite/80 leading-relaxed mb-4'
 							>
 								{t('aboutIntro')}
 							</motion.p>
 							<motion.p
-								{...rf}
+								{...rfAbout}
 								className='text-icyWhite/70 leading-relaxed mb-4'
 							>
 								{t('aboutJourney')}
 							</motion.p>
 							<motion.p
-								{...rf}
+								{...rfAbout}
 								className='text-icyWhite/70 leading-relaxed mb-4'
 							>
 								{t('aboutExpertise')}
 							</motion.p>
 							<motion.p
-								{...rf}
+								{...rfAbout}
 								className='text-icyWhite/70 leading-relaxed'
 							>
 								{t('aboutMedical')} {t('aboutContinuous')}
@@ -1188,7 +1209,10 @@ export default function MassagePage() {
 			</section>
 
 			{/* 15. FOOTER */}
-			<footer className='border-t border-white/5 px-6 lg:px-8 py-12 max-md:pb-20'>
+			<footer
+				ref={footerRef}
+				className='border-t border-white/5 px-6 lg:px-8 py-12 max-md:pb-20'
+			>
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10'>
 						<div>

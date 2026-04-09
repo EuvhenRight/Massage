@@ -30,7 +30,12 @@ export function useSiteMotion() {
 	}, [])
 
 	const minimal = Boolean(reduced || narrowPhone)
-	return { minimal }
+	return {
+		minimal,
+		/** Use for hero / about: full motion on phones unless the user prefers reduced motion. */
+		prefersReducedMotion: Boolean(reduced),
+		narrowPhone,
+	}
 }
 
 /** Merge scroll-reveal timing with a stagger delay (avoids wiping `duration` / `ease`). */

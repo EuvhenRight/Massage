@@ -8,7 +8,7 @@ const MAPS_URL = "https://maps.google.com/?q=spa+salon";
 
 export default function FloatingCTA() {
   const t = useTranslations("common");
-  const { minimal } = useSiteMotion();
+  const { prefersReducedMotion: reduced } = useSiteMotion();
 
   return (
     <div className="md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
@@ -16,7 +16,7 @@ export default function FloatingCTA() {
         href={MAPS_URL}
         target="_blank"
         rel="noopener noreferrer"
-        {...heroEnter(minimal, { delay: minimal ? 0 : 0.45 })}
+        {...heroEnter(reduced, { delay: reduced ? 0 : 0.45 })}
         className="flex w-full items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gold-soft/20 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase shadow-glow"
         aria-label={`${t("getDirections")} - V2studio`}
       >

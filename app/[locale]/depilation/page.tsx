@@ -25,6 +25,7 @@ import { SITE_CONFIG } from '@/lib/site-config'
 import { useSiteMotion } from '@/lib/site-motion'
 import {
 	motion,
+	useInView,
 	useMotionValueEvent,
 	useScroll,
 	useTransform,
@@ -178,8 +179,37 @@ export default function DepilationPage() {
 		return () => mq.removeEventListener('change', apply)
 	}, [])
 
-	const { minimal } = useSiteMotion()
+	const { minimal, prefersReducedMotion, narrowPhone } = useSiteMotion()
 	const heroScrollFx = !minimal && heroParallaxDesktop
+
+	const aboutStagger = useMemo(
+		() =>
+			prefersReducedMotion
+				? { hidden: {}, show: { transition: { staggerChildren: 0 } } }
+				: { hidden: {}, show: { transition: { staggerChildren: 0.04 } } },
+		[prefersReducedMotion],
+	)
+	const aboutFadeUp = useMemo(
+		() =>
+			prefersReducedMotion
+				? {
+						hidden: { opacity: 1, y: 0 },
+						show: {
+							opacity: 1,
+							y: 0,
+							transition: { duration: 0 },
+						},
+					}
+				: {
+						hidden: { opacity: 0, y: 12 },
+						show: {
+							opacity: 1,
+							y: 0,
+							transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
+						},
+					},
+		[prefersReducedMotion],
+	)
 
 	const stagger = useMemo(
 		() =>
@@ -250,10 +280,13 @@ export default function DepilationPage() {
 
 	const [heroScrolled, setHeroScrolled] = useState(false)
 	const [showFloatingCTA, setShowFloatingCTA] = useState(false)
+	const footerRef = useRef<HTMLElement>(null)
+	const footerInView = useInView(footerRef, { amount: 'some' })
 	useMotionValueEvent(scrollYProgress, 'change', v => {
 		setHeroScrolled(v > 0.1)
 		setShowFloatingCTA(v > 0.85)
 	})
+	const visibleMobileBook = showFloatingCTA && !footerInView
 
 	const scrollSlider = (
 		ref: React.RefObject<HTMLDivElement | null>,
@@ -297,12 +330,12 @@ export default function DepilationPage() {
 			  Framer `y` on the same element breaks `position:fixed` in Safari (fixed behaves like scroll content).
 			*/}
 			<div
-				className={`md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] ${showFloatingCTA ? '' : 'pointer-events-none'}`}
+				className={`md:hidden fixed left-6 right-6 z-40 bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] ${visibleMobileBook ? '' : 'pointer-events-none'}`}
 			>
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					animate={
-						showFloatingCTA
+						visibleMobileBook
 							? { opacity: 1, y: 0 }
 							: { opacity: 0, y: 20, pointerEvents: 'none' as const }
 					}
@@ -476,10 +509,18 @@ export default function DepilationPage() {
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-stretch'>
 						<motion.div
-							initial={{ opacity: 0, x: -40, scale: 0.96 }}
+							initial={
+								prefersReducedMotion
+									? { opacity: 1, x: 0, scale: 1 }
+									: { opacity: 0, x: -40, scale: 0.96 }
+							}
 							whileInView={{ opacity: 1, x: 0, scale: 1 }}
 							viewport={{ once: true, margin: '-80px' }}
-							transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+							transition={
+								prefersReducedMotion
+									? { duration: 0 }
+									: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
+							}
 							className='relative order-1 md:h-full md:min-h-0'
 						>
 							<div className='relative w-full aspect-[3/4] rounded-3xl overflow-hidden md:aspect-auto md:h-full md:min-h-0'>
@@ -497,13 +538,13 @@ export default function DepilationPage() {
 						</motion.div>
 
 						<motion.div
-							variants={stagger}
+							variants={aboutStagger}
 							initial='hidden'
 							whileInView='show'
 							viewport={{ once: true, margin: '-80px' }}
 							className='flex flex-col md:h-full md:min-h-0 order-2 lg:pl-2 max-w-[40rem] md:max-w-none gap-5 sm:gap-6'
 						>
-							<motion.div variants={fadeUp} className='space-y-3'>
+							<motion.div variants={aboutFadeUp} className='space-y-3'>
 								<h2
 									id='about-heading'
 									className='font-serif text-3xl sm:text-4xl md:text-[2.125rem] lg:text-[2.375rem] text-icyWhite tracking-tight leading-[1.15]'
@@ -516,19 +557,19 @@ export default function DepilationPage() {
 								/>
 							</motion.div>
 							<motion.p
-								variants={fadeUp}
+								variants={aboutFadeUp}
 								className='text-base sm:text-[1.0625rem] text-gold-soft/88 font-medium leading-[1.65]'
 							>
 								{t.rich('aboutIntro', richStudioBrand)}
 							</motion.p>
 							<motion.p
-								variants={fadeUp}
+								variants={aboutFadeUp}
 								className='text-base sm:text-[1.0625rem] text-icyWhite/72 leading-[1.65]'
 							>
 								{t('aboutJourney')}
 							</motion.p>
 							<motion.div
-								variants={fadeUp}
+								variants={aboutFadeUp}
 								className='border-l-2 border-gold-soft/45 pl-4 sm:pl-5 py-0.5'
 							>
 								<p className='text-base sm:text-[1.0625rem] text-icyWhite/78 leading-[1.65] font-medium'>
@@ -536,13 +577,13 @@ export default function DepilationPage() {
 								</p>
 							</motion.div>
 							<motion.p
-								variants={fadeUp}
+								variants={aboutFadeUp}
 								className='text-base sm:text-[1.0625rem] text-icyWhite/72 leading-[1.65]'
 							>
 								{t('aboutMedical')}
 							</motion.p>
 							<motion.p
-								variants={fadeUp}
+								variants={aboutFadeUp}
 								className='text-base sm:text-[1.0625rem] text-icyWhite/62 leading-[1.65] italic pt-5 sm:pt-6 mt-1 border-t border-white/[0.08] md:mt-auto'
 							>
 								{t('aboutContinuous')}
@@ -925,30 +966,46 @@ export default function DepilationPage() {
 					</motion.div>
 
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-5'>
-						{HYGIENE_ITEMS.map(({ key, icon: Icon }, i) => (
-							<motion.div
-								key={key}
-								initial={{ opacity: 0, y: 28 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true, margin: '-40px' }}
-								transition={{
-									delay: i * 0.08,
-									duration: 0.6,
-									ease: [0.22, 1, 0.36, 1],
-								}}
-								className='relative p-7 rounded-3xl glass-card group hover:shadow-card-hover transition-all duration-500'
-							>
-								<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-5 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-all duration-500'>
-									<Icon className='w-6 h-6 text-gold-soft/80' aria-hidden />
-								</div>
-								<h3 className='text-icyWhite font-semibold text-sm mb-2'>
-									{t(`hygiene.${key}.title`)}
-								</h3>
-								<p className='text-icyWhite/45 text-xs leading-relaxed'>
-									{t(`hygiene.${key}.desc`)}
-								</p>
-							</motion.div>
-						))}
+						{HYGIENE_ITEMS.map(({ key, icon: Icon }, i) => {
+							const cardClass =
+								'relative p-7 rounded-3xl glass-card group hover:shadow-card-hover transition-all duration-500'
+							const inner = (
+								<>
+									<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-5 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-all duration-500'>
+										<Icon className='w-6 h-6 text-gold-soft/80' aria-hidden />
+									</div>
+									<h3 className='text-icyWhite font-semibold text-sm mb-2'>
+										{t(`hygiene.${key}.title`)}
+									</h3>
+									<p className='text-icyWhite/45 text-xs leading-relaxed'>
+										{t(`hygiene.${key}.desc`)}
+									</p>
+								</>
+							)
+							if (narrowPhone) {
+								return (
+									<div key={key} className={cardClass}>
+										{inner}
+									</div>
+								)
+							}
+							return (
+								<motion.div
+									key={key}
+									initial={{ opacity: 0, y: 28 }}
+									whileInView={{ opacity: 1, y: 0 }}
+									viewport={{ once: true, margin: '-40px' }}
+									transition={{
+										delay: i * 0.08,
+										duration: 0.6,
+										ease: [0.22, 1, 0.36, 1],
+									}}
+									className={cardClass}
+								>
+									{inner}
+								</motion.div>
+							)
+						})}
 					</div>
 				</div>
 			</section>
@@ -1429,7 +1486,10 @@ export default function DepilationPage() {
 			</section>
 
 			{/* ── 14. FOOTER ── */}
-			<footer className='border-t border-white/[0.04] px-6 lg:px-8 py-14 max-md:pb-20'>
+			<footer
+				ref={footerRef}
+				className='border-t border-white/[0.04] px-6 lg:px-8 py-14 max-md:pb-20'
+			>
 				<div className='max-w-6xl mx-auto'>
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12'>
 						<div>
