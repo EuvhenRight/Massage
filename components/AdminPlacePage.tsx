@@ -19,7 +19,10 @@ import {
 import { db } from '@/lib/firebase'
 import { formatDate, formatTime } from '@/lib/format-date'
 import type { Place } from '@/lib/places'
-import { subscribeSchedule } from '@/lib/schedule-firestore'
+import {
+	subscribeSchedule,
+	type ScheduleData,
+} from '@/lib/schedule-firestore'
 import {
 	ADMIN_APPOINTMENT_FALLBACK_COLOR,
 	findServiceDataForAppointment,
@@ -230,9 +233,7 @@ export default function AdminPlacePage({
 		place === 'massage'
 			? `/${locale}/massage/booking`
 			: `/${locale}/depilation/booking`
-	const [schedule, setSchedule] = useState<Awaited<
-		ReturnType<typeof getSchedule>
-	> | null>(null)
+	const [schedule, setSchedule] = useState<ScheduleData | null>(null)
 	const [agendaAppointments, setAgendaAppointments] = useState<
 		AppointmentData[]
 	>([])
