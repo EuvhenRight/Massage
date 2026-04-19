@@ -35,6 +35,7 @@ export const metadata: Metadata = {
   applicationName: "V2studio",
   creator: SITE_CONFIG.name,
   publisher: SITE_CONFIG.name,
+  authors: [{ name: SITE_CONFIG.name, url: siteUrl }],
   referrer: "strict-origin-when-cross-origin",
   icons: {
     icon: "/images/logo-v.svg",

@@ -27,6 +27,7 @@
 	},
 	"home": {
 		"chooseExperience": "Vyberte svoju skúsenosť",
+		"portalH1": "V2studio — luxusná masáž a profesionálna depilácia v Bratislave, Križná 22",
 		"enterMassage": "Vstúpiť do Masáže",
 		"enterDepilation": "Vstúpiť do Depilácie"
 	},
@@ -37,8 +38,8 @@
 		"confirmBooking": "Potvrdiť rezerváciu",
 		"bookingInProgress": "Rezervujem…",
 		"selectService": "Vyberte službu",
-		"selectDate": "Vyberte dátum",
-		"selectTime": "Vyberte čas",
+		"selectDate": "Vyberte dátum →",
+		"selectTime": "Vyberte čas →",
 		"availableTime": "Dostupný čas",
 		"chooseTime": "Vyberte čas",
 		"loadingTimes": "Načítavam časy…",
@@ -62,8 +63,6 @@
 		"choicesAppearHere": "Vaše voľby sa zobrazia tu",
 		"chooseService": "Vyberte službu →",
 		"chooseServiceLabel": "Vyberte službu",
-		"selectDate": "Vyberte dátum →",
-		"selectTime": "Vyberte čas →",
 		"contact": "Kontakt",
 		"contactUs": "Kontaktujte nás",
 		"serviceDateTime": "Služba, dátum a čas",
@@ -79,8 +78,6 @@
 		"step1Desc": "Vyberte si ošetrenie.",
 		"step2Desc": "Vyberte dátum a čas, ktorý vám vyhovuje.",
 		"step3Desc": "Použijeme ich na potvrdenie vašej rezervácie.",
-		"confirmBooking": "Potvrdiť rezerváciu",
-		"cancel": "Zrušiť",
 		"bookingConfirmed": "Rezervácia potvrdená.",
 		"emailNotSent": "Rezervácia potvrdená, ale {error}",
 		"backToWebsite": "Späť na web",
@@ -121,6 +118,7 @@
 		"selectMembership": "Vybrať členstvo {tier}",
 		"hero": "Relaxácia. Obnova. Hlboké uzdravenie.",
 		"heroBadge": "V2Studio — Prémiová Masáž, Bratislava",
+		"heroSeoHeading": "Terapeutická, športová a relaxačná masáž v Bratislave — V2studio, Križná 22",
 		"heroBookButton": "Rezervovať",
 		"heroPricesButton": "Zobraziť Ceny",
 		"destinations": "Destinácie",
@@ -412,6 +410,7 @@
 		"reserveDesc": "Budem úprimne rada, keď vás uvidím vo <brand>V2Studio</brand>. Som si istá, že budete spokojní nielen s výsledkom, ale aj s atmosférou, starostlivosťou a tým pocitom ľahkosti, s ktorým odídete po procedúrach.",
 		"bookNow": "Rezervovať",
 		"heroBadge": "<brand>V2Studio</brand> — Prémiová Depilácia, Bratislava",
+		"heroSeoHeading": "Profesionálna depilácia a epilácia tváre a tela v Bratislave — V2studio / Epilroom, Križná 22",
 		"heroBookButton": "Rezervovať",
 		"heroPricesButton": "Zobraziť Ceny",
 		"trustBarLabel": "Referencie",
@@ -1026,7 +1025,7 @@
 		"adminTimeSlotsLoading": "Kontrolujem voľné časy…",
 		"adminAvailabilityLoading": "Načítavam obsadené časy v tomto mesiaci…",
 		"fullDayClosed": "Jeden z vybraných dní je v pracovnom čase zatvorený.",
-		"saveFailed": "Nepodarilo sa uložiť. Skúste to znova.",
+		"saveFailed": "Nepodarilo sa uložiť.",
 		"copyDetails": "Detail rezervácie skopírovaný",
 		"copyFailed": "Kopírovanie zlyhalo",
 		"copyAria": "Skopírovať detail rezervácie",
@@ -1074,7 +1073,6 @@
 		"loadScheduleFailed": "Nepodarilo sa načítať rozvrh",
 		"copiedToMonth": "Predvolený rozvrh skopírovaný do {month}.",
 		"availabilitySaved": "Dostupnosť uložená.",
-		"saveFailed": "Nepodarilo sa uložiť.",
 		"prepTimeUpdated": "Čas prípravy aktualizovaný.",
 		"prepBufferTitle": "Minúty vyhradené po každej rezervácii na prípravu. Tento čas nie je možné rezervovať.",
 		"prepBufferAria": "Info o čase prípravy",
@@ -1122,7 +1120,6 @@
 		"nextWeek": "Ďalší týždeň →",
 		"loadingSchedule": "Načítavam rozvrh…",
 		"couldNotLoadSchedule": "Nepodarilo sa načítať rozvrh.",
-		"loadScheduleFailed": "Nepodarilo sa načítať rozvrh",
 		"prepTimeBetween": "Čas prípravy medzi rezerváciami:",
 		"dayToggleInfo": "Kliknite na ľubovoľný deň pre zapnutie alebo vypnutie. Zlatá = otvorené, sivá = zatvorené.",
 		"dayToggleLegendOpen": "Otvorené",
@@ -1244,40 +1241,40 @@
 		"updatesBody": "Tieto zásady môžeme aktualizovať pri zmene postupov alebo právnych predpisov. Posledná aktualizácia: marec 2026."
 	},
 	"metadata": {
-		"title": "Masáž a depilácia Bratislava | V2studio",
-		"description": "Terapeutická masáž a profesionálna depilácia vo V2studio, Križná 22, Bratislava. Online rezervácia, diskrétne priestory, certifikovaní terapeuti a prémiová starostlivosť.",
+		"title": "Masáž a depilácia Bratislava | Online rezervácia | V2studio",
+		"description": "Terapeutická masáž a depilácia vo V2studio, Križná 22, Bratislava (Epilroom). Súkromné štúdio, certifikovaní terapeuti, online rezervácia a prehľadný cenník.",
 		"siteName": "V2studio",
-		"keywords": "V2studio, masáž Bratislava, depilácia Bratislava, epilácia Bratislava, kozmetický salón Bratislava, Križná 22, online rezervácia, terapeutická masáž Slovensko, wellness Bratislava",
+		"keywords": "V2studio, Epilroom Bratislava, masáž Bratislava, depilácia Bratislava, epilácia Bratislava, vosková depilácia, kozmetický salón Križná, online rezervácia masáž, wellness Bratislava, Stred mesta",
 		"adminTitle": "Administrácia | V2studio",
 		"adminDescription": "Prihlásenie pre personál a správa salónu. Nie je indexované vyhľadávačmi.",
 		"pages": {
 			"massage": {
-				"title": "Masáž Bratislava | Terapeutická a relaxačná | V2studio",
-				"description": "Športová, hĺbková a relaxačná masáž na Križnej 22 v Bratislave. Tím, techniky, ceny a online rezervácia vo V2studio."
+				"title": "Masáž Bratislava | Športová, hĺbková a relaxačná | V2studio",
+				"description": "Športová, hĺbková a relaxačná masáž v centre Bratislavy (Križná 22). Certifikovaný tím, 8+ techník, členstvá—ceny a online rezervácia."
 			},
 			"depilation": {
-				"title": "Depilácia a epilácia Bratislava | Tvár a telo | V2studio",
-				"description": "Profesionálna depilácia v pokojnom, súkromnom štúdiu. Služby, FAQ a online objednávka vo V2studio, Križná 22, Bratislava."
+				"title": "Depilácia Bratislava | Tvár a telo | Epilroom / V2studio",
+				"description": "Depilácia a epilácia u špecialistky s medicínskym vzdelaním. Diskrétne štúdio na Križnej 22, 14+ rokov praxe—služby, FAQ a online objednávka."
 			},
 			"booking": {
-				"title": "Online rezervácia | Masáž a depilácia | V2studio Bratislava",
-				"description": "Rezervujte masáž alebo depiláciu vo V2studio v niekoľkých krokoch. Vyberte službu, voľný termín a potvrďte návštevu—Križná 22, Bratislava."
+				"title": "Rezervácia masáže alebo depilácie online | V2studio",
+				"description": "Zarezervujte masáž alebo depiláciu za pár krokov: služba, termín, potvrdenie e-mailom. V2studio, Križná 22—SK, EN, RU, UK."
 			},
 			"massageBooking": {
-				"title": "Rezervácia masáže online | V2studio Bratislava",
-				"description": "Objednajte si masáž online vo V2studio: aktuálna dostupnosť, dĺžky sedení a rýchle potvrdenie na Križnej 22 v Bratislave."
+				"title": "Objednať masáž online | Dostupnosť v reálnom čase | V2studio",
+				"description": "Online rezervácia masáže vo V2studio Bratislava: voľné termíny, dĺžky sedení, okamžité potvrdenie—Križná 22."
 			},
 			"depilationBooking": {
-				"title": "Rezervácia depilácie online | V2studio",
-				"description": "Naplánujte depiláciu tváre alebo tela online vo V2studio Bratislava. Vyberte zákrok a čas—diskrétna starostlivosť, Križná 22."
+				"title": "Objednať depiláciu online | V2studio / Epilroom",
+				"description": "Naplánujte depiláciu tváre alebo tela online. Vyberte zónu a čas, dostanete potvrdenie—súkromné Epilroom štúdio, Križná 22."
 			},
 			"massagePrice": {
 				"title": "Cenník masáží Bratislava | V2studio",
-				"description": "Aktuálne ceny masáží vo V2studio: dĺžky, techniky a doplnky na Križnej 22 v Bratislave—prehľadné sadzby pred rezerváciou."
+				"description": "Aktuálne ceny masáží vo V2studio: dĺžky, techniky a doplnky na Križnej 22. Porovnajte ponuku a potom si rezervujte termín."
 			},
 			"depilationPrice": {
-				"title": "Cenník depilácie a epilácie | V2studio Bratislava",
-				"description": "Jasné ceny depilácie pre tvár a telo vo V2studio. Porovnajte zóny a balíčky pred objednávkou v Bratislave."
+				"title": "Cenník depilácie Bratislava | Epilácia | V2studio",
+				"description": "Transparentné ceny depilácie—tvár, telo, balíčky. Naplánujte návštevu vo V2studio / Epilroom v Bratislave pred online rezerváciou."
 			},
 			"cookies": {
 				"title": "Zásady cookies | V2studio Bratislava",

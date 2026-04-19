@@ -26,6 +26,7 @@ export default function EntryPortal() {
       role="main"
       aria-label={t("chooseExperience")}
     >
+      <h1 className="sr-only">{t("portalH1")}</h1>
       <div className="absolute top-4 right-4 z-20">
         <LanguageSwitcher variant="site" />
       </div>
@@ -41,12 +42,12 @@ export default function EntryPortal() {
         >
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1920')] bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity duration-700" />
           <div className="absolute inset-0 bg-gradient-to-b from-nearBlack/60 via-nearBlack/40 to-nearBlack" />
-          <motion.h1
+          <motion.h2
             className="relative z-10 font-serif text-5xl md:text-7xl lg:text-8xl font-normal text-icyWhite tracking-tight"
             whileHover={{ scale: 1.02 }}
           >
             {tCommon("massage")}
-          </motion.h1>
+          </motion.h2>
           <motion.span
             className="relative z-10 mt-4 text-icyWhite/70 text-sm tracking-[0.3em] uppercase"
             {...heroEnter(reduced, { delay: reduced ? 0 : 0.12 })}
@@ -75,12 +76,12 @@ export default function EntryPortal() {
         >
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1519824145371-296894a0daa9?w=1920')] bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity duration-700" />
           <div className="absolute inset-0 bg-gradient-to-b from-nearBlack/60 via-nearBlack/40 to-nearBlack" />
-          <motion.h1
+          <motion.h2
             className="relative z-10 font-serif text-5xl md:text-7xl lg:text-8xl font-normal text-icyWhite tracking-tight"
             whileHover={{ scale: 1.02 }}
           >
             {tCommon("depilation")}
-          </motion.h1>
+          </motion.h2>
           <motion.span
             className="relative z-10 mt-4 text-icyWhite/70 text-sm tracking-[0.3em] uppercase"
             {...heroEnter(reduced, { delay: reduced ? 0 : 0.14 })}

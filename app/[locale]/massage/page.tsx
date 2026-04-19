@@ -279,6 +279,7 @@ export default function MassagePage() {
 
 						<GlowText
 							text={tCommon('massage')}
+							accessibleHeading={t('heroSeoHeading')}
 							srOnlyHeadingId='massage-hero'
 						/>
 

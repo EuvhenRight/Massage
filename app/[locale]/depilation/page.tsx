@@ -411,7 +411,11 @@ export default function DepilationPage() {
 							/>
 						</div>
 
-						<GlowText text={tCommon('depilation')} />
+						<GlowText
+							text={tCommon('depilation')}
+							accessibleHeading={t('heroSeoHeading')}
+							srOnlyHeadingId='depilation-hero'
+						/>
 
 						<motion.p
 							initial={{ opacity: 0 }}

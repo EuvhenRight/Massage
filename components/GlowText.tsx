@@ -6,6 +6,8 @@ type ColorScheme = 'gold' | 'purple'
 
 interface GlowTextProps {
 	text: string
+	/** Richer screen-reader / SEO heading; canvas still shows `text`. */
+	accessibleHeading?: string
 	className?: string
 	colorScheme?: ColorScheme
 	/** Must match parent section `aria-labelledby` (visible title is canvas; this is sr-only). */
@@ -28,6 +30,7 @@ const PALETTES: Record<
 
 export default function GlowText({
 	text,
+	accessibleHeading,
 	className = '',
 	colorScheme = 'gold',
 	srOnlyHeadingId = 'depilation-hero',
@@ -202,7 +205,7 @@ export default function GlowText({
 				aria-hidden='true'
 			/>
 			<h1 id={srOnlyHeadingId} className='sr-only'>
-				{text}
+				{accessibleHeading ?? text}
 			</h1>
 		</div>
 	)

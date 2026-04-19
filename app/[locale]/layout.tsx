@@ -36,7 +36,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <JsonLd />
+      <JsonLd locale={locale} />
       <Providers>
         {children}
         <Toaster theme="dark" position="bottom-center" />
