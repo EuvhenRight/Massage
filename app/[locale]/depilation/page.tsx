@@ -36,7 +36,6 @@ import {
 	Calendar,
 	ChevronLeft,
 	ChevronRight,
-	Clock,
 	Facebook,
 	Feather,
 	FingerprintPattern,
@@ -423,8 +422,6 @@ export default function DepilationPage() {
 							transition={{ delay: 0.8, duration: 0.8 }}
 							className='-mt-1 text-gold-soft/80 text-xs sm:text-sm tracking-wider uppercase max-w-lg mx-auto leading-relaxed'
 						>
-							{t('heroLine1')}
-							<br />
 							{t('heroLine2')}
 						</motion.p>
 
@@ -485,10 +482,6 @@ export default function DepilationPage() {
 								key={`trust-marquee-${i}`}
 								className='flex items-center gap-2 sm:gap-3 md:gap-4 pl-3 pr-2.5 sm:pl-4 sm:pr-3 md:px-5 shrink-0'
 							>
-								<span
-									className='w-1 h-1 rounded-full bg-gold-soft/50 shrink-0'
-									aria-hidden
-								/>
 								<span className='text-gold-soft/70 text-[10px] sm:text-xs tracking-[0.12em] sm:tracking-[0.2em] uppercase whitespace-nowrap font-medium'>
 									{text}
 								</span>
@@ -498,7 +491,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={0} />
+			<SectionDivider />
 
 			{/* ── 2. ABOUT ME — editorial split layout ── */}
 			<section
@@ -547,17 +540,13 @@ export default function DepilationPage() {
 							viewport={{ once: true, margin: '-80px' }}
 							className='flex flex-col md:h-full md:min-h-0 order-2 lg:pl-2 max-w-[40rem] md:max-w-none gap-5 sm:gap-6'
 						>
-							<motion.div variants={aboutFadeUp} className='space-y-3'>
+							<motion.div variants={aboutFadeUp}>
 								<h2
 									id='about-heading'
 									className='font-serif text-3xl sm:text-4xl md:text-[2.125rem] lg:text-[2.375rem] text-icyWhite tracking-tight leading-[1.15]'
 								>
 									{t('aboutTitle')}
 								</h2>
-								<div
-									className='h-px w-12 bg-gold-soft/45 rounded-full'
-									aria-hidden
-								/>
 							</motion.div>
 							<motion.p
 								variants={aboutFadeUp}
@@ -596,7 +585,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={1} />
+			<SectionDivider />
 
 			{/* ── 3. ACHIEVEMENTS — horizontal scroll cards ── */}
 			<section
@@ -634,18 +623,10 @@ export default function DepilationPage() {
 								whileInView='show'
 								viewport={{ once: true, margin: '-60px' }}
 								id='achievements-heading'
-								className='font-serif text-3xl sm:text-4xl md:text-[2.125rem] text-icyWhite tracking-tight mb-2'
+								className='font-serif text-3xl sm:text-4xl md:text-[2.125rem] text-icyWhite tracking-tight mb-8'
 							>
 								{t('achievementsTitle')}
 							</motion.h2>
-							<motion.div
-								variants={fadeUp}
-								initial='hidden'
-								whileInView='show'
-								viewport={{ once: true, margin: '-60px' }}
-								className='h-px w-12 bg-gold-soft/45 rounded-full mb-8'
-								aria-hidden
-							/>
 							<motion.ul
 								variants={stagger}
 								initial='hidden'
@@ -677,7 +658,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={2} />
+			<SectionDivider />
 
 			{/* ── 4. WHAT YOU GET — value cards with glass effect ── */}
 			<section
@@ -726,7 +707,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={0} />
+			<SectionDivider />
 
 			{/* ── 5. SERVICE MENU — premium card grid ── */}
 			<section
@@ -743,7 +724,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={1} />
+			<SectionDivider />
 
 			{/* ── 7. PROCESS — connected timeline ── */}
 			<section
@@ -814,7 +795,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={2} />
+			<SectionDivider />
 
 			{/* ── 8. TEAM SPOTLIGHT — cinematic cards ── */}
 			<section
@@ -938,7 +919,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={0} />
+			<SectionDivider />
 
 			{/* ── 9. HYGIENE & SAFETY — bento grid ── */}
 			<section
@@ -1013,7 +994,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={1} />
+			<SectionDivider />
 
 			{/* ── 10. TESTIMONIALS — elegant scroll ── */}
 			<section
@@ -1109,7 +1090,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={2} />
+			<SectionDivider />
 
 			{/* ── 11. FAQ ── */}
 			<section
@@ -1168,7 +1149,7 @@ export default function DepilationPage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={0} />
+			<SectionDivider />
 
 			{/* ── 12. CONTACT ── */}
 			<section
@@ -1199,25 +1180,25 @@ export default function DepilationPage() {
 						</motion.p>
 					</motion.header>
 
-					<div className='grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12 items-start'>
+					<div className='grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12 lg:items-stretch'>
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ duration: 0.6 }}
-							className='space-y-0'
+							className='flex min-h-0 flex-col lg:h-full'
 						>
-							<div className='rounded-3xl overflow-hidden ring-1 ring-white/[0.06]'>
+							<div className='relative min-h-[260px] flex-1 overflow-hidden rounded-3xl ring-1 ring-white/[0.06] sm:min-h-[280px] lg:min-h-0'>
 								<iframe
 									src={SITE_CONFIG.googleMapsEmbed}
-									className='w-full aspect-[4/3] sm:aspect-[16/10] border-0'
+									className='absolute inset-0 h-full w-full border-0'
 									allowFullScreen
 									loading='lazy'
 									referrerPolicy='no-referrer-when-downgrade'
 									title={t('contact.mapTitle')}
 								/>
 							</div>
-							<div className='mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 rounded-2xl glass-card'>
+							<div className='mt-4 flex shrink-0 flex-col gap-3 rounded-2xl glass-card p-5 sm:flex-row sm:items-center sm:justify-between'>
 								<div className='flex items-start gap-3 min-w-0'>
 									<MapPin className='w-5 h-5 text-gold-soft shrink-0 mt-0.5' />
 									<div>
@@ -1246,14 +1227,9 @@ export default function DepilationPage() {
 							whileInView={{ opacity: 1, y: 0 }}
 							viewport={{ once: true }}
 							transition={{ delay: 0.1, duration: 0.6 }}
-							className='lg:sticky lg:top-24'
+							className='flex min-h-0 flex-col lg:h-full'
 						>
-							<div className='rounded-3xl glass-card p-7'>
-								<p className='flex items-center gap-2 text-icyWhite/40 text-xs uppercase tracking-[0.15em] mb-5'>
-									<Clock className='w-4 h-4 text-gold-soft/60' />
-									{t('contact.hours')}
-								</p>
-
+							<div className='flex h-full min-h-0 flex-col rounded-3xl glass-card p-7'>
 								<div className='space-y-2 mb-6'>
 									<a
 										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
@@ -1313,8 +1289,7 @@ export default function DepilationPage() {
 									</a>
 								</div>
 
-								<div className='h-px bg-white/[0.06] my-5' />
-
+								<div className='mt-5'>
 								<Dialog>
 									<DialogTrigger asChild>
 										<button
@@ -1419,13 +1394,14 @@ export default function DepilationPage() {
 										)}
 									</DialogContent>
 								</Dialog>
+								</div>
 							</div>
 						</motion.div>
 					</div>
 				</div>
 			</section>
 
-			<SectionDivider variant='depilation' pattern={1} />
+			<SectionDivider />
 
 			{/* ── 13. FINAL BOOKING CTA — dramatic ── */}
 			<section
@@ -1445,13 +1421,6 @@ export default function DepilationPage() {
 						whileInView='show'
 						viewport={{ once: true }}
 					>
-						<motion.span
-							initial={{ width: 0 }}
-							whileInView={{ width: 48 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.6 }}
-							className='block h-px bg-gold-soft/40 mx-auto mb-10'
-						/>
 						<motion.h2
 							variants={fadeUp}
 							id='booking-heading'

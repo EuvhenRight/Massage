@@ -8,9 +8,22 @@ import {
   getTwitterSiteHandle,
 } from "@/lib/social-seo";
 
-/** Default share image (absolute URL; SVG is weak for some social crawlers). */
-export const DEFAULT_OG_IMAGE =
-  "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1200&h=630&fit=crop&q=80";
+/** 1200×630 crops for Open Graph / Twitter / link previews (JPEG). */
+function ogUnsplash(photoId: string): string {
+  return `https://images.unsplash.com/${photoId}?w=1200&h=630&fit=crop&q=80`;
+}
+
+/** Home: neutral wellness / spa — works for massage + depilation portal. */
+export const OG_IMAGE_HOME = ogUnsplash("photo-1519494026892-80bbd2d6fd0d");
+
+/** Massage landing, massage booking & price. */
+export const OG_IMAGE_MASSAGE = ogUnsplash("photo-1544161515-4ab6ce6db874");
+
+/** Depilation landing, booking & price — matches portal / depilation mood. */
+export const OG_IMAGE_DEPILATION = ogUnsplash("photo-1519824145371-296894a0daa9");
+
+/** @deprecated Use OG_IMAGE_HOME — kept for JSON-LD and imports. */
+export const DEFAULT_OG_IMAGE = OG_IMAGE_HOME;
 
 export type SeoPageKey =
   | "home"
@@ -93,6 +106,21 @@ export function buildAlternateLanguages(pathAfterLocale: string): Record<string,
   return languages;
 }
 
+export function ogImageUrlForPageKey(pageKey: SeoPageKey): string {
+  switch (pageKey) {
+    case "massage":
+    case "massageBooking":
+    case "massagePrice":
+      return OG_IMAGE_MASSAGE;
+    case "depilation":
+    case "depilationBooking":
+    case "depilationPrice":
+      return OG_IMAGE_DEPILATION;
+    default:
+      return OG_IMAGE_HOME;
+  }
+}
+
 export async function buildPageMetadata(
   locale: string,
   pageKey: SeoPageKey
@@ -118,6 +146,7 @@ export async function buildPageMetadata(
 
   const twitterSite = getTwitterSiteHandle();
   const twitterCreator = getTwitterCreatorHandle();
+  const ogImage = ogImageUrlForPageKey(pageKey);
 
   return {
     title,
@@ -139,8 +168,8 @@ export async function buildPageMetadata(
       phoneNumbers: SITE_CONFIG.phone,
       images: [
         {
-          url: DEFAULT_OG_IMAGE,
-          secureUrl: DEFAULT_OG_IMAGE,
+          url: ogImage,
+          secureUrl: ogImage,
           width: 1200,
           height: 630,
           alt: title,
@@ -156,7 +185,7 @@ export async function buildPageMetadata(
       description,
       images: [
         {
-          url: DEFAULT_OG_IMAGE,
+          url: ogImage,
           alt: title,
         },
       ],

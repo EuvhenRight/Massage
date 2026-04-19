@@ -1,153 +1,102 @@
 'use client'
 
 import { useSiteMotion } from '@/lib/site-motion'
-import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { useInView, useReducedMotion } from 'framer-motion'
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
+
+/** Studio divider — metallic wave line + centered gold orb (single unit). */
+const LINE_GOLD = '#a68b4d'
+const ORB_GOLD = '#d4af37'
 
 /** Wave path shared for measurement + render (must match `d`). */
 const WAVE_PATH_D =
 	'M0 32 C 60 12, 100 12, 160 32 S 280 52, 320 32 S 420 12, 480 32'
 
 export type SectionDividerProps = {
-	variant: 'massage' | 'depilation'
-	/** Cycles three decorative layouts (0, 1, 2, …) */
-	pattern?: number
 	className?: string
+	/** Full-width between sections (default). `inline` fits under headings; `vertical` is the entry-portal column. */
+	size?: 'full' | 'inline'
+	orientation?: 'horizontal' | 'vertical'
 }
 
-const ACCENT = {
-	/** Same visual tokens as depilation — one studio palette. */
-	massage: {
-		lineL: 'bg-gradient-to-r from-transparent via-gold-soft/50 to-gold-soft/25',
-		lineR: 'bg-gradient-to-l from-transparent via-gold-soft/50 to-gold-soft/25',
-		orb: 'bg-gold-soft/35',
-		orbGlow: 'bg-gold-soft/22',
-		diamond: 'border-gold-soft/45',
-		dot: 'bg-gold-soft/65',
-		connector: 'bg-gradient-to-r from-gold-soft/30 via-gold-soft/18 to-gold-soft/30',
-		waveMid: '#e8b84a',
-		ambient: 'from-gold-soft/[0.07] via-transparent to-gold-soft/[0.07]',
-	},
-	depilation: {
-		lineL: 'bg-gradient-to-r from-transparent via-gold-soft/50 to-gold-soft/25',
-		lineR: 'bg-gradient-to-l from-transparent via-gold-soft/50 to-gold-soft/25',
-		orb: 'bg-gold-soft/35',
-		orbGlow: 'bg-gold-soft/22',
-		diamond: 'border-gold-soft/45',
-		dot: 'bg-gold-soft/65',
-		connector: 'bg-gradient-to-r from-gold-soft/30 via-gold-soft/18 to-gold-soft/30',
-		waveMid: '#e8b84a',
-		ambient: 'from-gold-soft/[0.07] via-transparent to-gold-soft/[0.07]',
-	},
-} as const
-
-type AccentTokens = (typeof ACCENT)[keyof typeof ACCENT]
+/** Fallback length when `getTotalLength()` is 0 (rare WebKit timing). Matches `WAVE_PATH_D`. */
+const WAVE_PATH_LEN_FALLBACK = 575
 
 export default function SectionDivider({
-	variant,
-	pattern = 0,
 	className,
+	size = 'full',
+	orientation = 'horizontal',
 }: SectionDividerProps) {
 	const reduce = useReducedMotion()
 	const { minimal: minimalDevice } = useSiteMotion()
 	const calm = Boolean(reduce || minimalDevice)
-	const a = ACCENT[variant]
-	const p = ((pattern % 3) + 3) % 3
+
+	if (orientation === 'vertical') {
+		return <VerticalRail className={className} />
+	}
+
+	const isInline = size === 'inline'
 
 	return (
 		<div
 			className={cn(
-				'relative pointer-events-none select-none py-5 sm:py-7',
+				'relative pointer-events-none select-none',
+				isInline ? 'py-2' : 'py-5 sm:py-7',
 				className,
 			)}
 			aria-hidden
 		>
 			<div
 				className={cn(
-					'pointer-events-none absolute inset-x-0 top-1/2 h-20 -translate-y-1/2 sm:h-24',
-					'bg-gradient-to-r opacity-90',
-					a.ambient,
+					'relative mx-auto px-6',
+					isInline ? 'max-w-[4.5rem]' : 'max-w-5xl',
 				)}
-			/>
-			<div className='relative mx-auto max-w-5xl px-6'>
-				{p === 0 && (
-					<PatternBeam a={a} reduce={calm} />
-				)}
-				{p === 1 && <PatternWave a={a} reduce={calm} />}
-				{p === 2 && (
-					<PatternConstellation a={a} reduce={calm} />
-				)}
+			>
+				<WaveStroke
+					reduce={calm}
+					compact={isInline}
+				/>
 			</div>
 		</div>
 	)
 }
 
-function PatternBeam({
-	a,
-	reduce,
-}: {
-	a: AccentTokens
-	reduce: boolean
-}) {
+function VerticalRail({ className }: { className?: string }) {
 	return (
-		<div className='flex items-center justify-center gap-3 sm:gap-5'>
-			<motion.div
-				className={cn('h-px flex-1 max-w-[min(180px,28vw)] rounded-full', a.lineL)}
-				animate={
-					reduce
-						? undefined
-						: { opacity: [0.55, 1, 0.55], scaleX: [0.92, 1, 0.92] }
-				}
-				transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
-			/>
-			<div className='relative flex h-11 w-11 shrink-0 items-center justify-center'>
+		<div
+			className={cn(
+				'relative hidden min-h-0 w-[11px] shrink-0 select-none self-stretch overflow-hidden md:block',
+				className,
+			)}
+			aria-hidden
+		>
+			<div className='relative h-full min-h-[50svh] w-full'>
 				<div
-					className={cn(
-						'absolute inset-0 rounded-full blur-xl',
-						a.orbGlow,
-					)}
+					className='pointer-events-none absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d4af37]/18 blur-2xl'
+					aria-hidden
 				/>
-				<motion.div
-					className={cn(
-						'relative h-2.5 w-2.5 rotate-45 rounded-[3px] border bg-nearBlack/40',
-						a.diamond,
-					)}
-					animate={
-						reduce
-							? undefined
-							: { rotate: [45, 52, 45], scale: [1, 1.06, 1] }
-					}
-					transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+				<div
+					className='absolute inset-y-0 left-1/2 w-[1.5px] -translate-x-1/2 bg-gradient-to-b from-transparent via-[#a68b4d]/90 to-transparent'
+					aria-hidden
+				/>
+				<div
+					className='absolute left-1/2 top-1/2 z-[2] size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d4af37]'
+					style={{
+						boxShadow: `0 0 20px 6px ${ORB_GOLD}55, 0 0 36px 12px ${ORB_GOLD}33`,
+					}}
 				/>
 			</div>
-			<motion.div
-				className={cn('h-px flex-1 max-w-[min(180px,28vw)] rounded-full', a.lineR)}
-				animate={
-					reduce
-						? undefined
-						: { opacity: [0.55, 1, 0.55], scaleX: [0.92, 1, 0.92] }
-				}
-				transition={{
-					duration: 4.5,
-					repeat: Infinity,
-					ease: 'easeInOut',
-					delay: 0.4,
-				}}
-			/>
 		</div>
 	)
 }
 
-/** Fallback length when `getTotalLength()` is 0 (rare WebKit timing). Matches `WAVE_PATH_D`. */
-const WAVE_PATH_LEN_FALLBACK = 575
-
-function PatternWave({
-	a,
+function WaveStroke({
 	reduce,
+	compact,
 }: {
-	a: AccentTokens
 	reduce: boolean
+	compact: boolean
 }) {
 	const uid = useId().replace(/:/g, '')
 	const gradId = `sd-w-${uid}`
@@ -156,9 +105,7 @@ function PatternWave({
 	const [strokeDriver, setStrokeDriver] = useState<'css' | 'raf'>('css')
 	const isInView = useInView(wrapRef, {
 		once: true,
-		/** Thin row: any pixel visible is enough (ratio thresholds can miss on mobile). */
 		amount: 'some',
-		/** Start draw slightly before the row enters (avoids stuck state below the fold on phones). */
 		margin: '120px 0px 120px 0px',
 	})
 
@@ -203,7 +150,6 @@ function PatternWave({
 		}
 	}, [])
 
-	// Start draw after in-view + layout (double rAF).
 	useEffect(() => {
 		if (!dashLen || !isInView) return
 		let raf2: number | undefined
@@ -216,7 +162,6 @@ function PatternWave({
 		}
 	}, [dashLen, isInView])
 
-	// Imperative stroke draw on narrow viewports (see strokeDriver).
 	useEffect(() => {
 		if (strokeDriver !== 'raf') return
 		if (!drawReady || !dashLen || !pathRef.current) return
@@ -251,20 +196,27 @@ function PatternWave({
 		useCssStroke && 'sd-wave-path',
 		useCssStroke && drawReady && 'sd-wave-path--play',
 	)
+
 	return (
 		<div
 			ref={wrapRef}
-			className='relative mx-auto w-full max-w-3xl min-h-[3.5rem]'
+			className={cn(
+				'relative mx-auto w-full min-h-[3.5rem]',
+				compact && 'min-h-[2.75rem]',
+			)}
 		>
 			<svg
 				viewBox='0 0 480 56'
-				className='relative z-0 block h-14 w-full overflow-visible [transform:translateZ(0)]'
+				className={cn(
+					'relative z-0 block w-full overflow-visible [transform:translateZ(0)]',
+					compact ? 'h-11' : 'h-14',
+				)}
 				aria-hidden
 			>
 				<defs>
 					<linearGradient id={gradId} x1='0%' y1='0%' x2='100%' y2='0%'>
 						<stop offset='0%' stopColor='transparent' />
-						<stop offset='50%' stopColor={a.waveMid} stopOpacity={0.55} />
+						<stop offset='50%' stopColor={LINE_GOLD} stopOpacity={0.92} />
 						<stop offset='100%' stopColor='transparent' />
 					</linearGradient>
 				</defs>
@@ -273,7 +225,7 @@ function PatternWave({
 					d={WAVE_PATH_D}
 					fill='none'
 					stroke={`url(#${gradId})`}
-					strokeWidth='1.35'
+					strokeWidth={compact ? 1.15 : 1.35}
 					strokeLinecap='round'
 					vectorEffect='non-scaling-stroke'
 					className={pathClassName || undefined}
@@ -287,67 +239,21 @@ function PatternWave({
 					}}
 				/>
 			</svg>
-			{/*
-			  Center dot as HTML (not SVG). iOS Safari often fails to paint SVG circle opacity/filters;
-			  this overlay matches viewBox (240,32) in a 480×56 box → 50% × (32/56) from top.
-			*/}
+			{/* Center orb (HTML, not SVG) — pairs with the wave line above. */}
 			<div
 				aria-hidden
 				className='pointer-events-none absolute left-1/2 z-[2] size-[11px] rounded-full sm:size-[13px]'
 				style={{
 					top: '57.1429%',
 					transform: 'translate(-50%, -50%)',
-					backgroundColor: a.waveMid,
-					boxShadow: `0 0 12px 2px ${a.waveMid}`,
-					opacity: 0.95,
+					backgroundColor: ORB_GOLD,
+					boxShadow: `0 0 18px 5px ${ORB_GOLD}66, 0 0 42px 14px ${ORB_GOLD}22`,
 				}}
 			/>
-		</div>
-	)
-}
-
-function PatternConstellation({
-	a,
-	reduce,
-}: {
-	a: AccentTokens
-	reduce: boolean
-}) {
-	const dots = [0, 1, 2, 3, 4]
-	return (
-		<div className='flex items-center justify-center gap-0 sm:gap-1'>
-			{dots.map((i, idx) => (
-				<div key={i} className='flex items-center'>
-					{idx > 0 && (
-						<div
-							className={cn(
-								'mx-1 h-px w-6 sm:w-10 rounded-full opacity-80',
-								a.connector,
-							)}
-						/>
-					)}
-					<motion.span
-						className={cn(
-							'block h-1.5 w-1.5 rounded-full shadow-[0_0_12px_currentColor]',
-							a.dot,
-						)}
-						animate={
-							reduce
-								? undefined
-								: {
-										opacity: [0.45, 1, 0.45],
-										scale: [0.92, 1.08, 0.92],
-									}
-						}
-						transition={{
-							duration: 2.8,
-							repeat: Infinity,
-							ease: 'easeInOut',
-							delay: i * 0.22,
-						}}
-					/>
-				</div>
-			))}
+			<div
+				aria-hidden
+				className='pointer-events-none absolute left-1/2 top-[57.1429%] z-[1] size-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d4af37]/15 blur-xl'
+			/>
 		</div>
 	)
 }

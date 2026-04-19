@@ -1,6 +1,7 @@
 "use client";
 
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import SectionDivider from "@/components/SectionDivider";
 import { heroEnter, useSiteMotion } from "@/lib/site-motion";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -58,10 +59,9 @@ export default function EntryPortal() {
         </Link>
       </motion.div>
 
-      {/* Divider - Visible on desktop */}
-      <div
-        className="hidden md:block w-px bg-gradient-to-b from-transparent via-white/10 to-transparent"
-        aria-hidden
+      <SectionDivider
+        orientation="vertical"
+        className="min-h-0"
       />
 
       {/* Depilation Option */}

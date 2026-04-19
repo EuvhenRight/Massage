@@ -330,7 +330,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={0} />
+			<SectionDivider />
 
 			{/* 3. ABOUT */}
 			<section
@@ -390,7 +390,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={1} />
+			<SectionDivider />
 
 			{/* 4. PHILOSOPHY */}
 			<section
@@ -415,7 +415,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={2} />
+			<SectionDivider />
 
 			{/* 5. ACHIEVEMENTS */}
 			<section
@@ -469,7 +469,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={0} />
+			<SectionDivider />
 
 			{/* 6. WHAT WE OFFER */}
 			<section
@@ -510,7 +510,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={1} />
+			<SectionDivider />
 
 			{/* 7. SERVICE MENU */}
 			<section
@@ -587,7 +587,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={2} />
+			<SectionDivider />
 
 			{/* 8. PROCESS */}
 			<section
@@ -642,7 +642,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={0} />
+			<SectionDivider />
 
 			{/* 9. TEAM */}
 			<section
@@ -751,7 +751,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={1} />
+			<SectionDivider />
 
 			{/* 10. HYGIENE */}
 			<section
@@ -798,7 +798,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={2} />
+			<SectionDivider />
 
 			{/* 11. TESTIMONIALS */}
 			<section
@@ -876,7 +876,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={0} />
+			<SectionDivider />
 
 			{/* 12. FAQ */}
 			<section
@@ -922,7 +922,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={1} />
+			<SectionDivider />
 
 			{/* 13. CONTACT */}
 			<section
@@ -946,22 +946,22 @@ export default function MassagePage() {
 						</p>
 					</motion.header>
 
-					<div className='grid lg:grid-cols-[1fr_340px] gap-8 lg:gap-12 items-start'>
+					<div className='grid lg:grid-cols-[1fr_340px] gap-8 lg:gap-12 lg:items-stretch'>
 						<motion.div
 							{...ry}
-							className='space-y-0'
+							className='flex min-h-0 flex-col lg:h-full'
 						>
-							<div className='rounded-2xl overflow-hidden ring-1 ring-white/10'>
+							<div className='relative min-h-[260px] flex-1 overflow-hidden rounded-2xl ring-1 ring-white/10 sm:min-h-[280px] lg:min-h-0'>
 								<iframe
 									src={SITE_CONFIG.googleMapsEmbed}
-									className='w-full aspect-[4/3] sm:aspect-[16/10] border-0'
+									className='absolute inset-0 h-full w-full border-0'
 									allowFullScreen
 									loading='lazy'
 									referrerPolicy='no-referrer-when-downgrade'
 									title={t('contact.mapTitle')}
 								/>
 							</div>
-							<div className='mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl bg-white/[0.03] ring-1 ring-white/10'>
+							<div className='mt-4 flex shrink-0 flex-col gap-3 rounded-xl bg-white/[0.03] p-4 ring-1 ring-white/10 sm:flex-row sm:items-center sm:justify-between'>
 								<div className='flex items-start gap-3 min-w-0'>
 									<MapPin className='w-5 h-5 text-gold-soft shrink-0 mt-0.5' />
 									<div>
@@ -988,14 +988,9 @@ export default function MassagePage() {
 						<motion.div
 							{...ry}
 							transition={enterDelay(minimal, 0.05)}
-							className='lg:sticky lg:top-24'
+							className='flex min-h-0 flex-col lg:h-full'
 						>
-							<div className='rounded-2xl bg-white/[0.04] ring-1 ring-white/10 p-6'>
-								<p className='flex items-center gap-2 text-icyWhite/50 text-xs uppercase tracking-wider mb-4'>
-									<Clock className='w-4 h-4 text-gold-soft/70' />
-									{t('contact.hours')}
-								</p>
-
+							<div className='flex h-full min-h-0 flex-col rounded-2xl bg-white/[0.04] p-6 ring-1 ring-white/10'>
 								<div className='space-y-2 mb-6'>
 									<a
 										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
@@ -1055,8 +1050,7 @@ export default function MassagePage() {
 									</a>
 								</div>
 
-								<div className='h-px bg-white/10 my-5' />
-
+								<div className='mt-5'>
 								<Dialog>
 									<DialogTrigger asChild>
 										<button
@@ -1162,13 +1156,14 @@ export default function MassagePage() {
 										)}
 									</DialogContent>
 								</Dialog>
+								</div>
 							</div>
 						</motion.div>
 					</div>
 				</div>
 			</section>
 
-			<SectionDivider variant='massage' pattern={2} />
+			<SectionDivider />
 
 			{/* 14. FINAL BOOKING CTA */}
 			<section
