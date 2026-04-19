@@ -19,7 +19,7 @@ import {
 import { db } from '@/lib/firebase'
 import { formatDate, formatTime } from '@/lib/format-date'
 import type { Place } from '@/lib/places'
-import { getSchedule } from '@/lib/schedule-firestore'
+import { subscribeSchedule } from '@/lib/schedule-firestore'
 import {
 	ADMIN_APPOINTMENT_FALLBACK_COLOR,
 	findServiceDataForAppointment,
@@ -416,9 +416,7 @@ export default function AdminPlacePage({
 	])
 
 	useEffect(() => {
-		getSchedule(place)
-			.then(setSchedule)
-			.catch(() => setSchedule(null))
+		return subscribeSchedule(place, setSchedule)
 	}, [place])
 
 	useEffect(() => {

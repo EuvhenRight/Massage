@@ -310,7 +310,7 @@ const AdminAvailabilityManager = forwardRef<
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {[5, 10, 15, 20, 25, 30].map((m) => (
+            {[0, 5, 10, 15, 20, 25, 30].map((m) => (
               <SelectItem key={m} value={String(m)}>
                 {m} min
               </SelectItem>
