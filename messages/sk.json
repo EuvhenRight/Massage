@@ -27,7 +27,7 @@
 	},
 	"home": {
 		"chooseExperience": "Vyberte svoju skúsenosť",
-		"portalH1": "V2studio — luxusná masáž a profesionálna depilácia v Bratislave, Križná 22",
+		"portalH1": "V2studio / Epilroom — prémiový salón masáže a depilácie v Bratislave, Križná 22",
 		"enterMassage": "Vstúpiť do Masáže",
 		"enterDepilation": "Vstúpiť do Depilácie"
 	},
@@ -496,8 +496,6 @@
 			}
 		},
 		"serviceSections": {
-			"kicker": "Naše metódy",
-			"subtitle": "Rovnaké oblasti ako v cenníku — kliknite na kartu pre detaily. Kurzy: ukážkové termíny do potvrdenia ďalšej skupiny.",
 			"tapHint": "Služby",
 			"learnMore": "Viac info",
 			"viewPrices": "Celý cenník",
@@ -514,7 +512,7 @@
 					]
 				},
 				"wax": {
-					"title": "Vosková depilácia",
+					"title": "Vosková epilácia",
 					"teaser": "Teplý profesionálny vosk — rýchle a dôkladné odstránenie chĺpkov.",
 					"body": "Klasické vosky na tvár, telo a intím. Očistíme pokožku, pracujeme po častiach a ukončíme upokojujúcou starostlivosťou.",
 					"bullets": [
@@ -524,13 +522,33 @@
 					]
 				},
 				"sugar": {
-					"title": "Cukrová depilácia (shugaring)",
+					"title": "Shugaring",
 					"teaser": "Prírodná cukrová pasta — šetrná k pokožke, účinná na chĺpky.",
 					"body": "Pasta v tele teplote, smer odstraňovania s rastom — často menej podráždenia ako pri klasickej depilácii voskom.",
 					"bullets": [
 						"Bez fólií a pásov.",
 						"Vhodné pri sklone k zarastaniu.",
 						"Dá sa kombinovať s inými metódami."
+					]
+				},
+				"electro": {
+					"title": "Elektroepilácia",
+					"teaser": "Trvalé odstránenie chĺpkov jemnou sondou — kontúry tváre, svetlé alebo tvrdohlavé chĺpky.",
+					"body": "Každý chĺpok ošetrujeme individuálne; plán prispôsobíme reakcii pokožky. Často v kombinácii s laserom alebo voskom.",
+					"bullets": [
+						"Presná práca na hornej pere, brade a líniách.",
+						"Vhodné pri veľmi jemných či svetlých chĺpkoch, keď laser nestačí.",
+						"Test a konzultácia pri citlivej pokožke."
+					]
+				},
+				"piercing": {
+					"title": "Piercing",
+					"teaser": "Ucho a chrupavka — sterilné šperky a jasná pooperačná starostlivosť.",
+					"body": "Materiály vhodné do tela, čas hojenia vopred. Výber miesta a šperku spolu; maloletí len so zákonným zástupcom.",
+					"bullets": [
+						"Sterilné pole, jednorazové ihly kde treba.",
+						"Písomné pooperačné pokyny.",
+						"Helix, conch, lobe a ďalšie — podľa dostupnosti."
 					]
 				},
 				"cosmetology": {
@@ -544,7 +562,7 @@
 					]
 				},
 				"courses": {
-					"title": "Kurzy a školenia",
+					"title": "Vzdelávacie kurzy",
 					"teaser": "Odborné vzdelávanie pre špecialistov — vosk, cukor, hygiena (ukážkové info nižšie).",
 					"body": "Malé skupiny alebo individuálne. Obsah sa mení sezónne; termín nižšie je ukážkový do zverejnenia.",
 					"bullets": [
@@ -558,23 +576,13 @@
 					"topicsText": "Hygiena salónu, posúdenie pokožky, aplikácia vosku a cukru, citlivá pokožka, konzultácie, základy podnikania."
 				},
 				"additional": {
-					"title": "Doplnkové služby",
-					"teaser": "Elektroepilácia, bio depilácia, bielenie a ďalšie — cena a čas individuálne.",
-					"body": "Často krátka konzultácia alebo test. Presný čas a cena podľa zóny — kompletný zoznam v cenníku.",
+					"title": "Doplnkové",
+					"teaser": "Intímne bielenie a anticelulitídne zábaly — a ďalšie procedúry na vyžiadanie.",
+					"body": "Protokol prispôsobíme diskrétnosti a komfortu. Čas a cena podľa zóny — v cenníku a pri rezervácii.",
 					"bullets": [
-						"Elektroepilácia na trvalé odstránenie jemných chĺpkov.",
-						"Špeciálne vosky a prípravky na požiadanie.",
-						"Balíčky podľa vášho kalendára."
-					]
-				},
-				"piercing": {
-					"title": "Piercing",
-					"teaser": "Ucho a chrupavka — sterilné šperky a jasná pooperačná starostlivosť.",
-					"body": "Materiály vhodné do tela, čas hojenia vopred. Výber miesta a šperku spolu; maloletí len so zákonným zástupcom.",
-					"bullets": [
-						"Sterilné pole, jednorazové ihly kde treba.",
-						"Písomné pooperačné pokyny.",
-						"Helix, conch, lobe a ďalšie — podľa dostupnosti."
+						"Intímne bielenie šetrnými profesionálnymi prípravkami.",
+						"Anticelulitídne zábaly pre tónus a mikrocirkuláciu.",
+						"Ďalšie doplnkové služby — doplňte pri rezervácii."
 					]
 				}
 			}
@@ -1240,10 +1248,10 @@
 		"updatesBody": "Tieto zásady môžeme aktualizovať pri zmene postupov alebo právnych predpisov. Posledná aktualizácia: marec 2026."
 	},
 	"metadata": {
-		"title": "Masáž a depilácia Bratislava | Online rezervácia | V2studio",
-		"description": "Terapeutická masáž a depilácia vo V2studio, Križná 22, Bratislava (Epilroom). Súkromné štúdio, certifikovaní terapeuti, online rezervácia a prehľadný cenník.",
-		"siteName": "V2studio",
-		"keywords": "V2studio, Epilroom Bratislava, masáž Bratislava, depilácia Bratislava, epilácia Bratislava, vosková depilácia, kozmetický salón Križná, online rezervácia masáž, wellness Bratislava, Stred mesta",
+		"title": "V2studio Bratislava | Salón masáže a depilácie | Online rezervácia",
+		"description": "Prémiový salón masáže a depilácie na Križnej 22 v Bratislave. V2studio / Epilroom: certifikovaní maséri, súkromné miestnosti, depilácia tváre a tela u špecialistky s medicínskym vzdelaním. Rezervujte online.",
+		"siteName": "V2studio · Bratislava",
+		"keywords": "V2studio, Epilroom Bratislava, salón masáže Bratislava, salón depilácie Bratislava, masáž Križná, depilácia Bratislava, epilácia, vosková depilácia, Staré Mesto, online rezervácia, wellness, Natali Volik",
 		"adminTitle": "Administrácia | V2studio",
 		"adminDescription": "Prihlásenie pre personál a správa salónu. Nie je indexované vyhľadávačmi.",
 		"pages": {

@@ -1,6 +1,6 @@
-# V2studio — Luxury Massage & Depilation Salon
+# V2studio / Epilroom — Premium massage & waxing, Bratislava
 
-A production-ready, ultra-luxury salon website with a **dark, cinematic, and cozy** aesthetic. Built with Next.js and Framer Motion.
+**Brand-new** flagship site for the studio at **Križna 22, Bratislava**: therapeutic massage, professional depilation, and **best-in-class** online booking—the **first** digital touchpoint built to match an in-studio visit.
 
 ![V2studio](https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1200)
 

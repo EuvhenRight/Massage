@@ -50,25 +50,13 @@ export default function DepilationServiceSections({
 				viewport={{ once: true, margin: '-60px' }}
 				className='text-center mb-12 sm:mb-16'
 			>
-				<motion.p
-					variants={fadeUp}
-					className='text-gold-soft/80 text-[11px] sm:text-xs tracking-[0.28em] uppercase mb-3'
-				>
-					{t('serviceSections.kicker')}
-				</motion.p>
 				<motion.h2
 					variants={fadeUp}
 					id='services-heading'
-					className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-4'
+					className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite'
 				>
 					{t('serviceMenu.title')}
 				</motion.h2>
-				<motion.p
-					variants={fadeUp}
-					className='text-icyWhite/50 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed'
-				>
-					{t('serviceSections.subtitle')}
-				</motion.p>
 			</motion.div>
 
 			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7'>

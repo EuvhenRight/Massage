@@ -27,7 +27,7 @@
 	},
 	"home": {
 		"chooseExperience": "Choose your experience",
-		"portalH1": "V2studio — luxury massage and professional waxing in Bratislava, Križna 22",
+		"portalH1": "V2studio / Epilroom — premium massage and waxing salon in Bratislava, Križna 22",
 		"enterMassage": "Enter Massage experience",
 		"enterDepilation": "Enter Depilation experience"
 	},
@@ -486,8 +486,6 @@
 			}
 		},
 		"serviceSections": {
-			"kicker": "Our methods",
-			"subtitle": "The same areas as on our price list — open a card for details. Training & courses include placeholder dates until the next group is confirmed.",
 			"tapHint": "Services",
 			"learnMore": "Details",
 			"viewPrices": "Full price list",
@@ -495,7 +493,7 @@
 			"cards": {
 				"laser": {
 					"title": "Laser epilation",
-					"teaser": "Long-term hair reduction with professional diode laser — calibrated for your skin and hair type.",
+					"teaser": "Long-term hair reduction with a professional diode laser — calibrated for your skin and hair type.",
 					"body": "We plan sessions according to growth cycles and monitor skin reaction after each visit. Ideal for larger areas and for clients who want lasting reduction without daily upkeep.",
 					"bullets": [
 						"Suitable for legs, bikini line, underarms, and more — after consultation.",
@@ -504,8 +502,8 @@
 					]
 				},
 				"wax": {
-					"title": "Wax depilation",
-					"teaser": "Warm professional wax for fast, thorough removal — perfect when you want smooth skin for weeks.",
+					"title": "Wax epilation",
+					"teaser": "Warm professional wax for fast, thorough removal — smooth skin for weeks.",
 					"body": "Classic strip and film waxes for face, body, and intimate areas. We pre-cleanse, work in small sections, and finish with soothing care so redness calms quickly.",
 					"bullets": [
 						"Premium waxes for fine and coarse hair.",
@@ -515,12 +513,32 @@
 				},
 				"sugar": {
 					"title": "Sugaring",
-					"teaser": "Natural sugar paste — gentle on skin, effective on hair, loved for sensitive clients.",
+					"teaser": "Natural sugar paste — gentle on skin, effective on hair; ideal for sensitive clients.",
 					"body": "Paste is applied at body temperature and removes hair in the direction of growth, which often means less irritation than traditional wax. Great for face, arms, legs, and bikini.",
 					"bullets": [
 						"Hypoallergenic paste — no plastic strips.",
 						"Ideal if you are prone to ingrown hairs.",
 						"Can be combined with other methods in a long-term plan."
+					]
+				},
+				"electro": {
+					"title": "Electroepilation",
+					"teaser": "Permanent hair removal with a fine probe — ideal for facial contours, fair or stubborn hairs.",
+					"body": "Each hair is treated individually; we plan sessions around your skin reaction and goals. Often combined with laser or wax in a long-term plan.",
+					"bullets": [
+						"Precision work on upper lip, chin, and shaping lines.",
+						"Suited when hair is very fine, light, or not responsive to laser alone.",
+						"Patch test and consultation for sensitive or reactive skin."
+					]
+				},
+				"piercing": {
+					"title": "Piercing",
+					"teaser": "Ear and cartilage work with sterile jewellery and clear aftercare — calm, precise, by appointment.",
+					"body": "We use implant-grade materials and explain healing timelines before we start. Placement and jewellery are chosen together; minors only with legal guardian present.",
+					"bullets": [
+						"Sterile field and single-use needles where applicable.",
+						"Aftercare sheet + follow-up tips in writing.",
+						"Popular for helix, conch, lobe, and more — ask for availability."
 					]
 				},
 				"cosmetology": {
@@ -534,7 +552,7 @@
 					]
 				},
 				"courses": {
-					"title": "Courses & training",
+					"title": "Training courses",
 					"teaser": "Professional education for specialists — waxing, sugaring, hygiene, and client consultation (example info below).",
 					"body": "Small-group and one-to-one formats. Content is updated each season; the schedule below is placeholder text until the next public dates are published.",
 					"bullets": [
@@ -548,23 +566,13 @@
 					"topicsText": "Salon hygiene, skin assessment, wax & sugar application, troubleshooting sensitive skin, consultation scripts, and business basics for solo practitioners."
 				},
 				"additional": {
-					"title": "Additional services",
-					"teaser": "Electroepilation, bio depilation, whitening, and other add-ons — priced and booked individually.",
-					"body": "These services often require a patch test or a short planning chat. We quote time and price after we see the area and your goals — see the full list on the price page.",
+					"title": "Additional",
+					"teaser": "Intimate whitening and anti-cellulite wraps — plus other body treatments on request.",
+					"body": "We customise protocols for comfort and discretion. Duration and pricing depend on the zone; details are on the price list and confirmed before booking.",
 					"bullets": [
-						"Electroepilation for permanent removal of fine or light hairs.",
-						"Specialty waxes and care products on request.",
-						"Combined packages built around your calendar."
-					]
-				},
-				"piercing": {
-					"title": "Piercing",
-					"teaser": "Ear and cartilage work with sterile jewellery and clear aftercare — calm, precise, by appointment.",
-					"body": "We use implant-grade materials and explain healing timelines before we start. Placement and jewellery are chosen together; minors only with legal guardian present.",
-					"bullets": [
-						"Sterile field and single-use needles where applicable.",
-						"Aftercare sheet + follow-up tips in writing.",
-						"Popular for helix, conch, lobe, and more — ask for availability."
+						"Intimate zone whitening with professional, gentle formulations.",
+						"Anti-cellulite wraps to support tone and circulation.",
+						"Other add-ons — ask us when you book."
 					]
 				}
 			}
@@ -1243,10 +1251,10 @@
 		"updatesBody": "We may update this Cookie Policy when our practices or the law change. Last updated: March 2026."
 	},
 	"metadata": {
-		"title": "Massage & Waxing Bratislava | Book Online | V2studio",
-		"description": "Therapeutic massage and professional waxing at V2studio, Križna 22, Bratislava (Epilroom). Private studio, certified therapists, online booking and clear pricing.",
-		"siteName": "V2studio",
-		"keywords": "V2studio, Epilroom Bratislava, massage Bratislava, waxing Bratislava, Brazilian wax Bratislava, depilation Bratislava, beauty salon Križna, online booking massage, therapeutic massage Stare Mesto, spa Bratislava Slovakia",
+		"title": "V2studio Bratislava | Massage & Waxing Salon | Book Online",
+		"description": "Premium massage and waxing salon on Križna 22, Bratislava. V2studio / Epilroom: certified massage therapists, private rooms, face & body waxing by a medically trained specialist. Book online.",
+		"siteName": "V2studio · Bratislava",
+		"keywords": "V2studio, Epilroom Bratislava, massage salon Bratislava, waxing salon Bratislava, Brazilian wax Bratislava, depilation Bratislava, beauty salon Križna 22, Staré Mesto, online booking, therapeutic massage Slovakia, Natali Volik",
 		"adminTitle": "Admin | V2studio",
 		"adminDescription": "Staff sign-in and salon administration. Not indexed by search engines.",
 		"pages": {
