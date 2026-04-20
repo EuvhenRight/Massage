@@ -103,5 +103,11 @@ export function matchPresetToCatalogTitle(
 		const last = s.title.split(' › ').pop()?.trim()
 		return last === p
 	})
-	return byLast?.title
+	if (byLast) return byLast.title
+	/** Marketing titles often match the top-level service name (first segment of catalog path). */
+	const byFirst = flat.find(s => {
+		const first = s.title.split(' › ')[0]?.trim()
+		return first === p
+	})
+	return byFirst?.title
 }

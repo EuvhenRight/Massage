@@ -24,7 +24,9 @@ export default function DepilationBookingPage() {
 
 	const presetService = searchParams.get('service')
 	const presetDuration = searchParams.get('duration')
-	const fromPriceList = searchParams.get('from') === 'price'
+	const skipDraftRestore =
+		searchParams.get('from') === 'price' ||
+		searchParams.get('from') === 'services'
 
 	useEffect(() => {
 		fetch(`/api/services?place=depilation&locale=${locale}`)
@@ -161,7 +163,7 @@ export default function DepilationBookingPage() {
 					defaultService={defaultService}
 					priceCatalog={priceCatalog}
 					place='depilation'
-					skipDraftRestore={fromPriceList}
+					skipDraftRestore={skipDraftRestore}
 				/>
 			)}
 		</BookingPageLayout>

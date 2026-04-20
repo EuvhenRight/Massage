@@ -38,8 +38,8 @@
 		"confirmBooking": "Confirm booking",
 		"bookingInProgress": "Booking…",
 		"selectService": "Select a service",
-		"selectDate": "Select date",
-		"selectTime": "Select time",
+		"selectDate": "Select date →",
+		"selectTime": "Select time →",
 		"availableTime": "Available time",
 		"chooseTime": "Choose time",
 		"loadingTimes": "Loading times…",
@@ -63,8 +63,6 @@
 		"choicesAppearHere": "Your choices will appear here",
 		"chooseService": "Choose service →",
 		"chooseServiceLabel": "Choose service",
-		"selectDate": "Select date →",
-		"selectTime": "Select time →",
 		"contact": "Contact",
 		"contactUs": "Contact us",
 		"serviceDateTime": "Service, date & time",
@@ -488,91 +486,86 @@
 		"serviceSections": {
 			"tapHint": "Services",
 			"learnMore": "Details",
+			"closeModal": "Close",
 			"viewPrices": "Full price list",
 			"book": "Book",
 			"cards": {
 				"laser": {
 					"title": "Laser epilation",
-					"teaser": "Long-term hair reduction with a professional diode laser — calibrated for your skin and hair type.",
-					"body": "We plan sessions according to growth cycles and monitor skin reaction after each visit. Ideal for larger areas and for clients who want lasting reduction without daily upkeep.",
+					"body": "We work with a diode laser. The treatment suits all areas—from face to deep bikini.",
 					"bullets": [
-						"Suitable for legs, bikini line, underarms, and more — after consultation.",
-						"Cooling and settings adjusted for comfort; we never rush sensitive zones.",
-						"Course-based approach: we explain realistic expectations up front."
+						"After the first session you’ll usually notice softer hair and slower regrowth.",
+						"Safe when protocol is followed and after a consultation.",
+						"For maximum results, a course of about 10–15 sessions is usually recommended."
 					]
 				},
 				"wax": {
 					"title": "Wax epilation",
-					"teaser": "Warm professional wax for fast, thorough removal — smooth skin for weeks.",
-					"body": "Classic strip and film waxes for face, body, and intimate areas. We pre-cleanse, work in small sections, and finish with soothing care so redness calms quickly.",
+					"body": "A fast, effective way to remove hair from the root.",
 					"bullets": [
-						"Premium waxes for fine and coarse hair.",
-						"Intimate zones in a private, calm setting.",
-						"Aftercare tips tailored to your skin."
+						"Skin stays smooth for up to 3–4 weeks.",
+						"Suits all areas: legs, arms, bikini, underarms, and face.",
+						"With each visit hair tends to grow finer; results are visible right after the session."
 					]
 				},
 				"sugar": {
 					"title": "Sugaring",
-					"teaser": "Natural sugar paste — gentle on skin, effective on hair; ideal for sensitive clients.",
-					"body": "Paste is applied at body temperature and removes hair in the direction of growth, which often means less irritation than traditional wax. Great for face, arms, legs, and bikini.",
+					"body": "Gentle sugar-paste removal from the root. Hair is taken in the direction of growth—less irritation and fewer ingrowns.",
 					"bullets": [
-						"Hypoallergenic paste — no plastic strips.",
-						"Ideal if you are prone to ingrown hairs.",
-						"Can be combined with other methods in a long-term plan."
+						"Suits all areas, including sensitive skin.",
+						"Smooth skin for up to 3–4 weeks.",
+						"Over time hair can become finer and sparser."
 					]
 				},
 				"electro": {
 					"title": "Electroepilation",
-					"teaser": "Permanent hair removal with a fine probe — ideal for facial contours, fair or stubborn hairs.",
-					"body": "Each hair is treated individually; we plan sessions around your skin reaction and goals. Often combined with laser or wax in a long-term plan.",
+					"body": "A lasting solution for unwanted hair: each hair is treated individually, the follicle is disabled, and regrowth is prevented. Ideal for face, bikini, underarms, and small hard-to-reach spots where other methods fall short.",
 					"bullets": [
-						"Precision work on upper lip, chin, and shaping lines.",
-						"Suited when hair is very fine, light, or not responsive to laser alone.",
-						"Patch test and consultation for sensitive or reactive skin."
+						"Most people need about 6–12 sessions for complete removal of the treated hair."
 					]
 				},
 				"piercing": {
 					"title": "Piercing",
-					"teaser": "Ear and cartilage work with sterile jewellery and clear aftercare — calm, precise, by appointment.",
-					"body": "We use implant-grade materials and explain healing timelines before we start. Placement and jewellery are chosen together; minors only with legal guardian present.",
+					"body": "We pierce the whole ear—lobe and cartilage. Needle or gun; a wide choice of jewellery.",
 					"bullets": [
-						"Sterile field and single-use needles where applicable.",
-						"Aftercare sheet + follow-up tips in writing.",
-						"Popular for helix, conch, lobe, and more — ask for availability."
+						"Adults and children from four months—with parental consent and our safety rules.",
+						"Jewellery and aftercare are chosen together with you."
 					]
 				},
 				"cosmetology": {
 					"title": "Cosmetology",
-					"teaser": "Facial care, massage, peelings — support your skin between depilation visits.",
-					"body": "Manual cleansing, massage, and peels help keep pores clear and skin resilient. We recommend routines that match your depilation schedule so treatments complement each other.",
+					"body": "Holistic care with attention to every client’s skin.",
 					"bullets": [
-						"Consultation-first — we adapt to sensitivity and goals.",
-						"Medical-grade hygiene for every procedure.",
-						"Home-care guidance so results last longer."
+						"Facial massage—for tone, lift, and glow.",
+						"Cleansing treatments—for deep cleansing and freshness.",
+						"Peels—for renewal and smoother, more even skin.",
+						"Therapeutic and maintenance treatments tailored to your skin.",
+						"Most importantly—we build a home-care plan so results last and improve every day."
 					]
 				},
 				"courses": {
 					"title": "Training courses",
-					"teaser": "Professional education for specialists — waxing, sugaring, hygiene, and client consultation (example info below).",
-					"body": "Small-group and one-to-one formats. Content is updated each season; the schedule below is placeholder text until the next public dates are published.",
+					"body": "Professional waxing and sugaring courses. Groups of up to two or one-to-one sessions.",
 					"bullets": [
-						"Hands-on practice with feedback from an experienced technologist.",
-						"Certificates and product knowledge aligned with brands we work with.",
-						"Optional shadowing blocks for advanced students."
+						"Beginner training from scratch.",
+						"Advanced skills and upskilling.",
+						"Practice on tricky areas where you need more confidence.",
+						"Preparation for depilation championships."
 					],
-					"scheduleLabel": "Example schedule (placeholder)",
-					"scheduleText": "Spring intensive • March 2026 — exact dates and capacity TBC. Email us to join the waitlist; we will confirm the final week at least 30 days in advance.",
-					"topicsLabel": "Sample curriculum (placeholder)",
-					"topicsText": "Salon hygiene, skin assessment, wax & sugar application, troubleshooting sensitive skin, consultation scripts, and business basics for solo practitioners."
+					"scheduleLabel": "Dates & booking",
+					"scheduleText": "Contact us by phone, WhatsApp, or email for the next intake—we will agree format, level, and schedule.",
+					"topicsLabel": "Curriculum highlights",
+					"topicsText": "Salon hygiene, skin and hair assessment, waxing and sugaring technique, sensitive zones, client consultation, and competition-focused practice where needed."
 				},
 				"additional": {
 					"title": "Additional",
-					"teaser": "Intimate whitening and anti-cellulite wraps — plus other body treatments on request.",
-					"body": "We customise protocols for comfort and discretion. Duration and pricing depend on the zone; details are on the price list and confirmed before booking.",
+					"body": "Intimate whitening is a discreet aesthetic treatment for women: professional brightening products gently even out tone, address melanin, and leave the area looking neat and cared for.\n\nAnti-cellulite wraps are an intensive option without aggressive devices—for clients who want visible change. We use the Austrian professional line STYX Naturcosmetic.",
 					"bullets": [
-						"Intimate zone whitening with professional, gentle formulations.",
-						"Anti-cellulite wraps to support tone and circulation.",
-						"Other add-ons — ask us when you book."
+						"Whitening: gentle professional formulas; women only.",
+						"Wraps: many clients notice less puffiness after the first session.",
+						"Strong lymphatic support and help flushing excess fluid.",
+						"Smoother-looking cellulite texture; firmer, more elastic skin.",
+						"Detox effect; STYX Naturcosmetic."
 					]
 				}
 			}
@@ -1129,7 +1122,6 @@
 		"nextWeek": "Next week →",
 		"loadingSchedule": "Loading schedule…",
 		"couldNotLoadSchedule": "Could not load schedule.",
-		"loadScheduleFailed": "Failed to load schedule",
 		"prepTimeBetween": "Prep time between appointments:",
 		"dayToggleInfo": "Click any day to switch it on or off. Gold = open, gray = closed.",
 		"dayToggleLegendOpen": "Open",

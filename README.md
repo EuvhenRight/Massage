@@ -36,6 +36,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Production & Google (SEO)
+
+1. Set **`NEXT_PUBLIC_SITE_URL`** in the host env to your live site (e.g. `https://v2studio.sk`). Without it, builds fall back to `VERCEL_URL` (often `*.vercel.app`), which is the wrong canonical for a custom domain and hurts indexing.
+2. In [Google Search Console](https://search.google.com/search-console), add the property, verify (optional: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` in `.env`), then submit **`https://your-domain/sitemap.xml`**.
+3. New sites take time to rank; ensure **Google Business Profile** and NAP (name, address, phone) match `SITE_CONFIG` / JSON-LD.
+
 ### WhatsApp (optional, Twilio)
 
 Booking uses **Resend** for email. Optionally, **Twilio WhatsApp** sends:

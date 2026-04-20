@@ -1,9 +1,10 @@
 'use client'
 
+import { ServiceSectionCard } from '@/components/ServiceSectionCard'
 import {
 	Dialog,
+	DialogClose,
 	DialogContent,
-	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
@@ -12,10 +13,8 @@ import {
 	DEPILATION_SERVICE_SECTION_IMAGES,
 	type DepilationServiceSectionId,
 } from '@/lib/depilation-service-section-cards'
-import { TRANSITION } from '@/lib/motion-tokens'
-import { useSiteMotion } from '@/lib/site-motion'
 import { motion, type Variants } from 'framer-motion'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -34,12 +33,8 @@ export default function DepilationServiceSections({
 }: DepilationServiceSectionsProps) {
 	const t = useTranslations('depilation')
 	const [openId, setOpenId] = useState<DepilationServiceSectionId | null>(null)
-	const { minimal } = useSiteMotion()
 
-	const cards = useMemo(
-		() => [...DEPILATION_SERVICE_SECTION_IDS],
-		[],
-	)
+	const cards = useMemo(() => [...DEPILATION_SERVICE_SECTION_IDS], [])
 
 	return (
 		<>
@@ -61,96 +56,87 @@ export default function DepilationServiceSections({
 
 			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7'>
 				{cards.map((id, zi) => (
-					<motion.button
+					<ServiceSectionCard
 						key={id}
-						type='button'
-						initial={minimal ? false : { opacity: 0, y: 32 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true, margin: '-40px' }}
-						transition={
-							minimal
-								? { duration: 0 }
-								: {
-										...TRANSITION.enter,
-										delay: zi * 0.1,
-										duration: 0.6,
-										ease: [0.22, 1, 0.36, 1],
-									}
-						}
+						imageSrc={DEPILATION_SERVICE_SECTION_IMAGES[id]}
+						imageAlt={t(`serviceSections.cards.${id}.title`)}
+						title={t(`serviceSections.cards.${id}.title`)}
+						badgeLabel={t('serviceSections.tapHint')}
+						ctaLabel={t('serviceSections.learnMore')}
 						onClick={() => setOpenId(id)}
-						className='group text-left rounded-3xl overflow-hidden border border-white/[0.08] bg-white/[0.02] hover:border-gold-soft/35 hover:bg-white/[0.04] hover:shadow-[0_0_40px_-12px_rgba(232,184,0,0.18)] transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/40'
-					>
-						<div className='relative aspect-[4/3] overflow-hidden'>
-							<Image
-								src={DEPILATION_SERVICE_SECTION_IMAGES[id]}
-								alt=''
-								fill
-								className='object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]'
-								sizes='(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
-							/>
-							<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/40 to-transparent opacity-90' />
-							<div className='absolute bottom-0 left-0 right-0 p-5 sm:p-6'>
-								<span className='inline-flex items-center gap-1.5 text-gold-soft/90 text-[10px] sm:text-[11px] tracking-[0.2em] uppercase font-medium mb-2'>
-									<Sparkles className='w-3.5 h-3.5 opacity-80' aria-hidden />
-									{t('serviceSections.tapHint')}
-								</span>
-								<h3 className='font-serif text-xl sm:text-2xl text-icyWhite leading-snug pr-6'>
-									{t(`serviceSections.cards.${id}.title`)}
-								</h3>
-							</div>
-						</div>
-						<div className='px-5 sm:px-6 py-4 sm:py-5 border-t border-white/[0.06]'>
-							<p className='text-icyWhite/65 text-sm leading-relaxed line-clamp-3'>
-								{t(`serviceSections.cards.${id}.teaser`)}
-							</p>
-							<span className='mt-3 inline-flex items-center gap-1 text-gold-soft/90 text-xs font-medium tracking-wide group-hover:gap-2 transition-all'>
-								{t('serviceSections.learnMore')}
-								<ArrowRight className='w-3.5 h-3.5' aria-hidden />
-							</span>
-						</div>
-					</motion.button>
+						animationIndex={zi}
+					/>
 				))}
 			</div>
 
 			<Dialog open={openId !== null} onOpenChange={o => !o && setOpenId(null)}>
 				{openId && (
-					<DialogContent className='max-w-lg max-h-[min(88vh,720px)] overflow-y-auto border-white/10 bg-nearBlack/95 text-icyWhite backdrop-blur-xl sm:rounded-2xl'>
-						<div className='relative -mx-6 -mt-6 mb-4 aspect-[21/9] sm:aspect-[2/1] overflow-hidden rounded-t-lg'>
-							<Image
-								src={DEPILATION_SERVICE_SECTION_IMAGES[openId]}
-								alt=''
-								fill
-								className='object-cover'
-								sizes='(max-width: 512px) 100vw, 512px'
-							/>
-							<div className='absolute inset-0 bg-gradient-to-t from-nearBlack/90 to-transparent' />
-						</div>
-						<DialogHeader>
-							<DialogTitle className='font-serif text-2xl text-icyWhite text-left pr-8'>
-								{t(`serviceSections.cards.${openId}.title`)}
-							</DialogTitle>
-							<DialogDescription className='text-icyWhite/60 text-left text-sm leading-relaxed'>
-								{t(`serviceSections.cards.${openId}.teaser`)}
-							</DialogDescription>
-						</DialogHeader>
-						<div className='space-y-4 text-sm text-icyWhite/78 leading-relaxed'>
-							<p>{t(`serviceSections.cards.${openId}.body`)}</p>
-							<ServiceBullets id={openId} t={t} />
-							{openId === 'courses' && <CoursesExtra t={t} />}
-						</div>
-						<div className='flex flex-col sm:flex-row gap-3 pt-2'>
-							<Link
-								href={`/${locale}/depilation/price`}
-								className='inline-flex justify-center items-center rounded-xl border border-gold-soft/35 bg-gold-soft/10 px-4 py-3 text-sm font-medium text-gold-soft hover:bg-gold-soft/15 transition-colors'
-							>
-								{t('serviceSections.viewPrices')}
-							</Link>
-							<Link
-								href={`/${locale}/depilation/booking`}
-								className='inline-flex justify-center items-center rounded-xl bg-gold-soft text-nearBlack px-4 py-3 text-sm font-semibold tracking-wide hover:bg-gold-soft/90 transition-colors'
-							>
-								{t('serviceSections.book')}
-							</Link>
+					<DialogContent
+						hideClose
+						className='max-w-lg overflow-visible border-0 bg-transparent p-0 shadow-none text-icyWhite'
+					>
+						{/* Mobile: close centered above the card. md+: outside past the right edge (laptop). */}
+						<div className='relative pt-2 md:pt-4'>
+							<DialogClose asChild>
+								<button
+									type='button'
+									aria-label={t('serviceSections.closeModal')}
+									className='absolute left-1/2 top-0 z-[60] inline-flex h-11 w-11 -translate-x-1/2 -translate-y-[calc(100%+10px)] items-center justify-center rounded-md text-icyWhite/75 transition-colors hover:text-gold-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent md:left-auto md:right-[-34px] md:translate-x-0 md:translate-y-0'
+								>
+									<X className='h-6 w-6' strokeWidth={2} aria-hidden />
+								</button>
+							</DialogClose>
+							<div className='flex max-h-[min(90vh,760px)] flex-col overflow-hidden rounded-2xl border border-white/12 bg-nearBlack/95 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.75)] ring-1 ring-white/[0.04] backdrop-blur-xl'>
+								<div className='relative isolate aspect-[20/9] min-h-[140px] w-full shrink-0 overflow-hidden sm:aspect-[2/1] sm:min-h-[160px]'>
+									<Image
+										src={DEPILATION_SERVICE_SECTION_IMAGES[openId]}
+										alt={t(`serviceSections.cards.${openId}.title`)}
+										fill
+										className='object-cover'
+										sizes='(max-width: 512px) 100vw, 512px'
+									/>
+									<div
+										className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/55 to-nearBlack/15'
+										aria-hidden
+									/>
+								</div>
+								<div className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6'>
+									<DialogHeader className='mb-0 space-y-0 text-left'>
+										<DialogTitle className='font-serif text-2xl leading-[1.15] tracking-tight text-icyWhite sm:text-[1.65rem] md:text-3xl md:leading-tight'>
+											{t(`serviceSections.cards.${openId}.title`)}
+										</DialogTitle>
+									</DialogHeader>
+									<div className='mt-5 space-y-5 text-base leading-[1.65] text-icyWhite/82 sm:text-[1.0625rem] sm:leading-relaxed md:text-lg md:leading-[1.6]'>
+										<p className='text-pretty'>
+											{t(`serviceSections.cards.${openId}.body`)}
+										</p>
+										<ServiceBullets id={openId} t={t} />
+										{openId === 'courses' && <CoursesExtra t={t} />}
+									</div>
+								</div>
+								<div className='shrink-0 border-t border-white/[0.08] bg-nearBlack/90 px-5 py-4 sm:px-6'>
+									<div className='flex flex-col-reverse gap-3 sm:flex-row sm:items-stretch'>
+										<Link
+											href={`/${locale}/depilation/price`}
+											className='inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-gold-soft/40 bg-gold-soft/[0.08] px-4 py-3 text-center text-sm font-medium text-gold-soft transition-colors hover:bg-gold-soft/15'
+										>
+											{t('serviceSections.viewPrices')}
+										</Link>
+										<Link
+											href={`/${locale}/depilation/booking?${new URLSearchParams(
+												{
+													from: 'services',
+													category: openId,
+													service: t(`serviceSections.cards.${openId}.title`),
+												},
+											).toString()}`}
+											className='inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-gold-soft px-4 py-3 text-center text-sm font-semibold tracking-wide text-nearBlack shadow-[0_2px_16px_-4px_rgba(232,184,0,0.45)] transition-colors hover:bg-gold-soft/92'
+										>
+											{t('serviceSections.book')}
+										</Link>
+									</div>
+								</div>
+							</div>
 						</div>
 					</DialogContent>
 				)}
@@ -171,14 +157,17 @@ function ServiceBullets({
 	const bullets = raw.filter((x): x is string => typeof x === 'string')
 	if (bullets.length === 0) return null
 	return (
-		<ul className='list-none space-y-2.5 m-0 p-0' role='list'>
+		<ul
+			className='m-0 list-none space-y-3.5 p-0 text-base leading-[1.65] sm:space-y-4 sm:text-[1.0625rem] sm:leading-relaxed md:text-lg md:leading-[1.6]'
+			role='list'
+		>
 			{bullets.map((line, i) => (
-				<li key={i} className='flex gap-3'>
+				<li key={i} className='flex gap-3.5'>
 					<span
-						className='mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-soft/70'
+						className='mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold-soft shadow-[0_0_0_3px_rgba(232,184,0,0.12)]'
 						aria-hidden
 					/>
-					<span>{line}</span>
+					<span className='text-pretty'>{line}</span>
 				</li>
 			))}
 		</ul>
@@ -191,19 +180,23 @@ function CoursesExtra({
 	t: ReturnType<typeof useTranslations<'depilation'>>
 }) {
 	return (
-		<div className='rounded-2xl border border-gold-soft/25 bg-gold-soft/[0.06] px-4 py-3.5 space-y-2'>
-			<p className='text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-soft/90'>
-				{t('serviceSections.cards.courses.scheduleLabel')}
-			</p>
-			<p className='text-icyWhite/85 text-sm'>
-				{t('serviceSections.cards.courses.scheduleText')}
-			</p>
-			<p className='text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-soft/90 pt-1'>
-				{t('serviceSections.cards.courses.topicsLabel')}
-			</p>
-			<p className='text-icyWhite/80 text-sm'>
-				{t('serviceSections.cards.courses.topicsText')}
-			</p>
+		<div className='space-y-4 rounded-2xl border border-gold-soft/30 bg-gold-soft/[0.07] px-4 py-4 sm:px-5 sm:py-5'>
+			<div>
+				<p className='text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-soft sm:text-xs'>
+					{t('serviceSections.cards.courses.scheduleLabel')}
+				</p>
+				<p className='mt-2 text-[15px] leading-relaxed text-icyWhite/86 sm:text-base'>
+					{t('serviceSections.cards.courses.scheduleText')}
+				</p>
+			</div>
+			<div className='border-t border-gold-soft/15 pt-4'>
+				<p className='text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-soft sm:text-xs'>
+					{t('serviceSections.cards.courses.topicsLabel')}
+				</p>
+				<p className='mt-2 text-[15px] leading-relaxed text-icyWhite/84 sm:text-base'>
+					{t('serviceSections.cards.courses.topicsText')}
+				</p>
+			</div>
 		</div>
 	)
 }

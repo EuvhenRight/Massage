@@ -498,91 +498,86 @@
 		"serviceSections": {
 			"tapHint": "Služby",
 			"learnMore": "Viac info",
+			"closeModal": "Zavrieť",
 			"viewPrices": "Celý cenník",
 			"book": "Rezervovať",
 			"cards": {
 				"laser": {
 					"title": "Laserová epilácia",
-					"teaser": "Dlhodobé zníženie ochlpenia profesionálnym diódovým laserom — podľa typu pokožky a chĺpkov.",
-					"body": "Plánujeme cykly rastu a sledujeme reakciu pokožky po každej návšteve. Vhodné na väčšie plochy a pre klientov, ktorí chcú menej každodennej starostlivosti.",
+					"body": "Pracujeme na diódom laseri. Zákrok je vhodný pre všetky zóny — od tváre po hlboké bikiny.",
 					"bullets": [
-						"Nohy, bikiní, podpazušia a ďalšie zóny po konzultácii.",
-						"Chladenie a výkon nastavený na komfort — citlivé miesta neuponáhľame.",
-						"Realistické očakávania vysvetlíme vopred."
+						"Už po prvom sedení býva viditeľný efekt — chĺpky jemnejšie a rast spomaľuje.",
+						"Pri dodržaní protokolu a po konzultácii je výkon bezpečný.",
+						"Pre maximálny výsledok zvyčajne odporúčame kurz 10–15 ošetrení."
 					]
 				},
 				"wax": {
 					"title": "Vosková epilácia",
-					"teaser": "Teplý profesionálny vosk — rýchle a dôkladné odstránenie chĺpkov.",
-					"body": "Klasické vosky na tvár, telo a intím. Očistíme pokožku, pracujeme po častiach a ukončíme upokojujúcou starostlivosťou.",
+					"body": "Rýchly a účinný spôsob odstránenia chĺpkov s korienkom.",
 					"bullets": [
-						"Prémiové vosky na jemné aj hrubé chĺpky.",
-						"Intím v súkromí a pokoji.",
-						"Tipy na domácu starostlivosť podľa vašej pokožky."
+						"Pokožka zostáva hladká 3–4 týždne.",
+						"Vhodné na všetky zóny: nohy, ruky, bikiny, podpazušia a tvár.",
+						"S každým sedením môžu byť chĺpky jemnejšie; výsledok hneď po zákroku."
 					]
 				},
 				"sugar": {
-					"title": "Shugaring",
-					"teaser": "Prírodná cukrová pasta — šetrná k pokožke, účinná na chĺpky.",
-					"body": "Pasta v tele teplote, smer odstraňovania s rastom — často menej podráždenia ako pri klasickej depilácii voskom.",
+					"title": "Sugaring",
+					"body": "Jemné odstránenie cukrovou pastou s korienkom. Odstraňovanie v smere rastu — menej podráždenia a zarastania.",
 					"bullets": [
-						"Bez fólií a pásov.",
-						"Vhodné pri sklone k zarastaniu.",
-						"Dá sa kombinovať s inými metódami."
+						"Vhodné pre všetky zóny vrátane citlivej pokožky.",
+						"Hladkosť približne 3–4 týždne.",
+						"Postupom času môžu chĺpky rednúť a zjemňovať sa."
 					]
 				},
 				"electro": {
 					"title": "Elektroepilácia",
-					"teaser": "Trvalé odstránenie chĺpkov jemnou sondou — kontúry tváre, svetlé alebo tvrdohlavé chĺpky.",
-					"body": "Každý chĺpok ošetrujeme individuálne; plán prispôsobíme reakcii pokožky. Často v kombinácii s laserom alebo voskom.",
+					"body": "Ideálne riešenie na trvalé odstránenie chĺpkov: každý chĺpok sa ošetruje jednotlivo, folikul sa deaktivuje a rast sa zastaví. Vhodné na tvár, bikiny, podpazušia a malé ťažko dostupné miesta, kde iné metódy nestačia.",
 					"bullets": [
-						"Presná práca na hornej pere, brade a líniách.",
-						"Vhodné pri veľmi jemných či svetlých chĺpkoch, keď laser nestačí.",
-						"Test a konzultácia pri citlivej pokožke."
+						"Bežne treba 6–12 sedení na úplné odstránenie ošetrených chĺpkov."
 					]
 				},
 				"piercing": {
 					"title": "Piercing",
-					"teaser": "Ucho a chrupavka — sterilné šperky a jasná pooperačná starostlivosť.",
-					"body": "Materiály vhodné do tela, čas hojenia vopred. Výber miesta a šperku spolu; maloletí len so zákonným zástupcom.",
+					"body": "V štúdiu piercing celého ucha: lalok aj všetky typy na chrupavke. Pracujeme ihlou aj pištoľou; veľký výber šperkov.",
 					"bullets": [
-						"Sterilné pole, jednorazové ihly kde treba.",
-						"Písomné pooperačné pokyny.",
-						"Helix, conch, lobe a ďalšie — podľa dostupnosti."
+						"Dospelí a deti od štyroch mesiacov — so súhlasom rodiča a pravidlami bezpečnosti.",
+						"Šperk a starostlivosť doladíme spolu s vami."
 					]
 				},
 				"cosmetology": {
 					"title": "Kozmetológia",
-					"teaser": "Starostlivosť o tvár, masáž, peeling — medzi depiláciami.",
-					"body": "Mechanické čistenie, masáž a peeling podporujú čisté póry a pružnú pokožku. Odporúčame režim v súlade s depiláciou.",
+					"body": "Komplexný prístup a starostlivosť o každého klienta.",
 					"bullets": [
-						"Najprv konzultácia podľa citlivosti a cieľov.",
-						"Lekárska hygiena pri každom výkone.",
-						"Domáca starostlivosť pre dlhší efekt."
+						"Masáže tváre — tonus, lifting a rozjasnenie pokožky.",
+						"Čistenia — hĺbkové očistenie a sviežosť.",
+						"Peelingy — obnova a vyrovnanie pokožky.",
+						"Liečebné a udržiavacie ošetrenia podľa stavu pokožky.",
+						"Najdôležitejšie — domáca starostlivosť, aby výsledok vydržal a každý deň sa zlepšoval."
 					]
 				},
 				"courses": {
 					"title": "Vzdelávacie kurzy",
-					"teaser": "Odborné vzdelávanie pre špecialistov — vosk, cukor, hygiena (ukážkové info nižšie).",
-					"body": "Malé skupiny alebo individuálne. Obsah sa mení sezónne; termín nižšie je ukážkový do zverejnenia.",
+					"body": "Vzdelávacie kurzy vosku a sugaringu. Skupina max. 2 osoby alebo individuálne.",
 					"bullets": [
-						"Praktické cvičenia s spätnou väzbou.",
-						"Certifikáty a produktové znalosti.",
-						"Možnosť shadowing pre pokročilých."
+						"Kurz od úplných začiatočníkov.",
+						"Zvýšenie kvalifikácie.",
+						"Precvičenie náročných zón, kde máte medzery.",
+						"Príprava na majstrovstvá v depilácii."
 					],
-					"scheduleLabel": "Ukážkový termín (placeholder)",
-					"scheduleText": "Jarný intenzív • marec 2026 — presný dátum a kapacita po potvrdení. Napíšte nám o záujem; týždeň vopred potvrdíme.",
-					"topicsLabel": "Ukážková osnova (placeholder)",
-					"topicsText": "Hygiena salónu, posúdenie pokožky, aplikácia vosku a cukru, citlivá pokožka, konzultácie, základy podnikania."
+					"scheduleLabel": "Termíny a prihlásenie",
+					"scheduleText": "Presné dátumy a kapacitu dohodneme telefonicky, cez WhatsApp alebo e-mail — prispôsobíme formát a úroveň.",
+					"topicsLabel": "Obsah",
+					"topicsText": "Hygiena, posúdenie pokožky a chĺpkov, technika vosku a pasty, citlivé zóny, konzultácia klienta, podľa potreby príprava na súťaže."
 				},
 				"additional": {
-					"title": "Doplnkové",
-					"teaser": "Intímne bielenie a anticelulitídne zábaly — a ďalšie procedúry na vyžiadanie.",
-					"body": "Protokol prispôsobíme diskrétnosti a komfortu. Čas a cena podľa zóny — v cenníku a pri rezervácii.",
+					"title": "Doplnkové služby",
+					"body": "Intímne zosvetlenie — diskrétna estetická procedúra pre ženy: zosvetľujúce prípravky jemne upravujú tón, pôsobia na melanín a dodajú zóne upravený vzhľad.\n\nAnticelulitídne zábaly — intenzívna starostlivosť bez agresívnych prístrojov pre tých, ktorí chcú viditeľný výsledok. Profesionálna kozmetika STYX Naturcosmetic (Rakúsko).",
 					"bullets": [
-						"Intímne bielenie šetrnými profesionálnymi prípravkami.",
-						"Anticelulitídne zábaly pre tónus a mikrocirkuláciu.",
-						"Ďalšie doplnkové služby — doplňte pri rezervácii."
+						"Zosvetlenie: jemné profesionálne prípravky; len pre ženy.",
+						"Zábaly: u mnohých menší objem už po prvom sedení.",
+						"Výrazný lymfodrenážny efekt a odvod prebytočnej tekutiny.",
+						"Viditeľne jemnejšia textúra pokožky; pevnejšia a pružnejšia pokožka.",
+						"Detox efekt; rad STYX Naturcosmetic."
 					]
 				}
 			}

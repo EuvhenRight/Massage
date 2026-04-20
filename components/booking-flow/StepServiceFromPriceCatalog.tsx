@@ -166,13 +166,17 @@ export default function StepServiceFromPriceCatalog({
 	const priceLocale = (useLocale() || 'en') as PriceLocale
 
 	const searchParams = useSearchParams()
-	const fromPrice = searchParams.get('from') === 'price'
+	const fromServicesGrid = searchParams.get('from') === 'services'
+	const fromPresetDeepLink =
+		searchParams.get('from') === 'price' || fromServicesGrid
+	const categoryParam = searchParams.get('category')
+	const serviceTitleParam = searchParams.get('service')
 	const sexParam = searchParams.get('sex') as SexKey | null
-	const autoAdvancedFromPriceRef = useRef(false)
+	const autoAdvancedFromPresetRef = useRef(false)
 
 	useEffect(() => {
-		if (!fromPrice) autoAdvancedFromPriceRef.current = false
-	}, [fromPrice])
+		if (!fromPresetDeepLink) autoAdvancedFromPresetRef.current = false
+	}, [fromPresetDeepLink])
 
 	const {
 		step,
@@ -362,9 +366,38 @@ export default function StepServiceFromPriceCatalog({
 		})
 	}, [catalog, sexParam])
 
-	/** Deep link from price list: jump to date / time (or TBD) once service + sex are ready. */
+	/** Service cards on landing: expand the matching top-level catalog service (by id or title). */
 	useEffect(() => {
-		if (autoAdvancedFromPriceRef.current || !fromPrice) return
+		if (!fromServicesGrid) return
+		if (!catalog || selectedSex == null) return
+		const branch = catalog[selectedSex]
+		if (!branch?.services?.length) return
+		if (categoryParam) {
+			const byId = branch.services.find(s => s.id === categoryParam)
+			if (byId) {
+				setActiveServiceId(byId.id)
+				return
+			}
+		}
+		const st = serviceTitleParam?.trim()
+		if (st) {
+			const byTitle = branch.services.find(
+				s => getTitleForLocale(s, priceLocale).trim() === st,
+			)
+			if (byTitle) setActiveServiceId(byTitle.id)
+		}
+	}, [
+		fromServicesGrid,
+		catalog,
+		selectedSex,
+		categoryParam,
+		serviceTitleParam,
+		priceLocale,
+	])
+
+	/** Deep link from price list or service cards: jump to date / time (or TBD) once service + sex are ready. */
+	useEffect(() => {
+		if (autoAdvancedFromPresetRef.current || !fromPresetDeepLink) return
 		if (step !== 1) return
 		if (!catalog) return
 		const hasW = (catalog.woman.services?.length ?? 0) > 0
@@ -374,10 +407,10 @@ export default function StepServiceFromPriceCatalog({
 		const s = service.trim()
 		if (!s) return
 		if (!findBookableServiceForSelection(s, services)) return
-		autoAdvancedFromPriceRef.current = true
+		autoAdvancedFromPresetRef.current = true
 		queueMicrotask(() => setStep(2))
 	}, [
-		fromPrice,
+		fromPresetDeepLink,
 		step,
 		service,
 		services,
