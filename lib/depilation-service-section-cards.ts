@@ -26,12 +26,20 @@ export const DEPILATION_SERVICE_SECTION_IMAGES: Record<
 	DepilationServiceSectionId,
 	string
 > = {
+	/** Laser epilation — treatment / handpiece, clinical aesthetic (Unsplash). */
 	laser: unsplash('photo-1582719478250-c89cae4dc85b'),
+	/** Body waxing / depilation (Unsplash). */
 	wax: unsplash('photo-1519824145371-296894a0daa9'),
-	sugar: unsplash('photo-1600334129128-685c5582fd35'),
-	electro: unsplash('photo-1522335789203-aabd1fc54bc9'),
-	piercing: pexels(3785147),
-	cosmetology: unsplash('photo-1512496015851-a90fb38ba796'),
-	courses: pexels(3762800),
-	additional: unsplash('photo-1544161515-4ab6ce6db874'),
+	/** Sugaring — soft hands-on skin care, natural feel (Unsplash). */
+	sugar: unsplash('photo-1515377905703-c4788e51af15'),
+	/** Electro / precision — close aesthetic treatment (Unsplash). */
+	electro: unsplash('photo-1522337360788-8b13dee7a37e'),
+	/** Ear piercing / jewellery (Pexels). */
+	piercing: pexels(1027131),
+	/** Cosmetology — facial treatment (Unsplash). */
+	cosmetology: unsplash('photo-1570172619644-dfd03ed5d881'),
+	/** Training — desk, notes, learning (Unsplash). */
+	courses: unsplash('photo-1516975080664-ed2fc6a32937'),
+	/** Wraps / spa wellness — calm body care (Unsplash). */
+	additional: unsplash('photo-1540555700478-4be289fbecef'),
 }
