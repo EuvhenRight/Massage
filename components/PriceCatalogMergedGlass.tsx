@@ -333,7 +333,7 @@ function ZoneCardGlassDual({
 				duration: 0.45,
 				ease: [0.22, 1, 0.36, 1],
 			}}
-			className={cardClass}
+			className={cn(cardClass, 'min-w-0')}
 		>
 			<div
 				className={cn(
@@ -410,7 +410,7 @@ function ServiceBlockGlassDual({
 	const mergedDirectItems = mergeItemPairs(directW, directM)
 
 	return (
-		<div className='space-y-3 sm:space-y-4'>
+		<div className='space-y-8 sm:space-y-10 md:space-y-12'>
 			{mergedSections.map(pair => {
 				const section = pair.w ?? pair.m
 				if (!section) return null
@@ -421,7 +421,7 @@ function ServiceBlockGlassDual({
 				const sectionTitle = getTitleForLocale(section, locale)
 				return (
 					<div key={section.id}>
-						<h3 className='font-serif text-sm sm:text-base text-icyWhite text-center mb-1 px-1 leading-tight'>
+						<h3 className='font-serif text-sm sm:text-base text-icyWhite text-center mb-3 sm:mb-4 px-1 leading-tight'>
 							{sectionTitle}
 						</h3>
 						<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5'>
@@ -467,13 +467,13 @@ function ServiceBlockGlassDual({
 			)}
 
 			{mergedDirectItems.length > 0 && (sw ?? sm) && (
-				<div className='max-w-3xl mx-auto w-full'>
+				<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5'>
 					<motion.div
 						initial={{ opacity: 0, y: 12 }}
 						whileInView={{ opacity: 1, y: 0 }}
 						viewport={{ once: true, margin: '-40px' }}
 						transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-						className={cardClass}
+						className={cn(cardClass, 'min-w-0')}
 					>
 						<div
 							className={cn(
@@ -538,7 +538,7 @@ export default function PriceCatalogMergedGlass({
 	if (merged.length === 0) return null
 
 	return (
-		<div className='space-y-3 sm:space-y-4'>
+		<div className='space-y-8 sm:space-y-10 md:space-y-12'>
 			{merged.map(pair => (
 				<ServiceBlockGlassDual
 					key={pair.w?.id ?? pair.m?.id ?? 'svc'}

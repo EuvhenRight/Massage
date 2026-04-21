@@ -677,7 +677,7 @@ export default function MassagePage() {
 							>
 								<div className='relative aspect-[3/4]'>
 									<Image
-										src='https://images.unsplash.com/photo-1519824145371-296894a0daa9?w=800&q=80'
+										src='/images/massage/serhiy-volyk.png'
 										alt={t('team.therapist1.name')}
 										fill
 										className='object-cover'

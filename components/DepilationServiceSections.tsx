@@ -107,9 +107,9 @@ export default function DepilationServiceSections({
 										</DialogTitle>
 									</DialogHeader>
 									<div className='mt-5 space-y-5 text-base leading-[1.65] text-icyWhite/82 sm:text-[1.0625rem] sm:leading-relaxed md:text-lg md:leading-[1.6]'>
-										<p className='text-pretty'>
-											{t(`serviceSections.cards.${openId}.body`)}
-										</p>
+										<ServiceModalBody
+											text={t(`serviceSections.cards.${openId}.body`)}
+										/>
 										<ServiceBullets id={openId} t={t} />
 										{openId === 'courses' && <CoursesExtra t={t} />}
 									</div>
@@ -142,6 +142,26 @@ export default function DepilationServiceSections({
 				)}
 			</Dialog>
 		</>
+	)
+}
+
+/** Renders `body` strings that use blank lines (\\n\\n) as separate paragraphs — HTML ignores raw newlines inside one <p>. */
+function ServiceModalBody({ text }: { text: string }) {
+	const paragraphs = text
+		.split(/\n\n+/)
+		.map(p => p.trim())
+		.filter(Boolean)
+	if (paragraphs.length <= 1) {
+		return <p className='text-pretty'>{text.trim()}</p>
+	}
+	return (
+		<div className='space-y-4 sm:space-y-5'>
+			{paragraphs.map((para, i) => (
+				<p key={i} className='text-pretty m-0'>
+					{para}
+				</p>
+			))}
+		</div>
 	)
 }
 

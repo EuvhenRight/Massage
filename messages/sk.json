@@ -239,13 +239,13 @@
 			"expectation": "Väčšina klientov pociťuje okamžitú úľavu a hlbokú relaxáciu. Pri chronických problémoch odporúčame kurz 4–6 sedení. Poskytujeme personalizované rady pre udržanie výsledkov."
 		},
 		"team": {
-			"title": "Naši Terapeuti",
+			"title": "Váš špecialista",
 			"subtitle": "Každé sedenie vykonáva certifikovaný profesionál.",
 			"therapist1": {
-				"name": "Anna Kovalová",
-				"role": "Hlavná Masážna Terapeutka",
-				"specialty": "Švédska · Hlboké Tkanivo · Horúce Kamene",
-				"bio": "10 rokov skúseností. Certifikácia v terapeutickej a športovej masáži. Špecializácia na manažment chronickej bolesti."
+				"name": "Serhij Volik",
+				"role": "Zakladateľ a hlavný špecialista na masáž",
+				"specialty": "Klasická · Športová · Anticelulitídna · Lymfodrenáž · Prístrojová · Gua sha",
+				"bio": "Skúsenosti od roku 2022. Medzinárodné certifikáty škôl na Ukrajine a na Slovensku. Všetky masážne techniky."
 			},
 			"workspace": {
 				"title": "Náš Priestor",
@@ -594,7 +594,7 @@
 			},
 			"procedure": {
 				"title": "Procedúra",
-				"desc": "Technika sa vykonáva s presnosťou a starostlivosťou. Pracujeme tempom, ktoré vám vyhovuje."
+				"desc": "Technika sa vykonáva s presnosťou a starostlivosťou, s dodržiavaním protokolov a individuálnych potrieb klienta."
 			},
 			"aftercare": {
 				"title": "Následná Starostlivosť",
@@ -603,13 +603,19 @@
 			"expectation": "Pocit z prvej návštevy väčšina klientov opisuje ako krátke, znesiteľné teplo. Prvé sedenia môžu byť citlivejšie — s každou ďalšou návštevou je to jednoduchšie. Ako dlho výsledok vydrží, závisí od typu procedúry: zvyčajne 3–5 týždňov, alebo natrvalo pri elektroepilácii."
 		},
 		"team": {
-			"title": "Vaša Špecialistka",
-			"subtitle": "Každý zákrok vykonáva osobne certifikovaná profesionálka.",
+			"title": "Vaši špecialisti",
+			"subtitle": "Zákroky vykonávajú certifikovaní odborníci štúdia.",
 			"natalie": {
 				"name": "Natálie Volik",
 				"role": "Zakladateľka a Hlavná Špecialistka na Depiláciu",
-				"specialty": "Sugaring · Vosk · Bio · Laser · Elektroepilácia",
+				"specialty": "Laserová epilácia · Vosková epilácia · Sugaring · Elektroepilácia · Piercing · Kozmetológia · Vzdelávacie kurzy · Doplnkové služby",
 				"bio": "14 rokov skúseností. Medicínske vzdelanie. Šampiónka Ukrajiny v depilácii. Certifikovaná technologička Terra, Enova, Biolaif."
+			},
+			"serhiy": {
+				"name": "Serhij Volik",
+				"role": "Zakladateľ a hlavný špecialista na masáž",
+				"specialty": "Klasická · Športová · Anticelulitídna · Lymfodrenáž · Prístrojová · Gua sha",
+				"bio": "Skúsenosti od roku 2022. Medzinárodné certifikáty škôl na Ukrajine a na Slovensku. Všetky masážne techniky."
 			},
 			"workspace": {
 				"title": "Naše Štúdio",
@@ -625,11 +631,11 @@
 			},
 			"sanitization": {
 				"title": "Sanitácia Medicínskej Kvality",
-				"desc": "Povrchy a zariadenia dezinfikujeme nemocničnými antiseptikami medzi každým klientom."
+				"desc": "Povrchy a zariadenia dezinfikujeme špeciálnymi antiseptikami po každom klientovi."
 			},
 			"sterilization": {
 				"title": "Autokláv Sterilizácia",
-				"desc": "Všetky opakovane použiteľné nástroje prechádzajú sterilizáciou autoklávu pri 134°C."
+				"desc": "Všetky opakovane použiteľné nástroje prechádzajú sterilizáciou v autokláve pri 180–200°C."
 			},
 			"certified": {
 				"title": "Certifikované Materiály",
@@ -788,6 +794,14 @@
 			"men": {
 				"q": "Pracujete aj s mužmi?",
 				"a": "Určite. Pracujem so ženami aj mužmi s plnou taktnosťou, diskrétnosťou a profesionalitou."
+			},
+			"pregnancy": {
+				"q": "Je depilácia možná počas tehotenstva?",
+				"a": "Áno — vo všetkých troch trimestroch."
+			},
+			"teens": {
+				"q": "Je depilácia možná pre tínedžerov?",
+				"a": "Áno — od 8 rokov."
 			},
 			"aftercare": {
 				"q": "Akú následnú starostlivosť odporúčate?",

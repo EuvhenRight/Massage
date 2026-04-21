@@ -142,6 +142,8 @@ const FAQ_ITEMS = [
 	'results',
 	'technique',
 	'men',
+	'pregnancy',
+	'teens',
 	'aftercare',
 	'booking',
 	'sensitive',
@@ -860,6 +862,46 @@ export default function DepilationPage() {
 									</p>
 									<p className='text-icyWhite/65 text-sm leading-relaxed'>
 										{t('team.natalie.bio')}
+									</p>
+								</div>
+							</motion.article>
+
+							{/* Massage specialist — same studio */}
+							<motion.article
+								initial={{ opacity: 0, y: 32 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{
+									delay: 0.08,
+									duration: 0.7,
+									ease: [0.22, 1, 0.36, 1],
+								}}
+								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
+							>
+								<div className='relative aspect-[3/4] overflow-hidden'>
+									<Image
+										src='/images/massage/serhiy-volyk.png'
+										alt={t('team.serhiy.name')}
+										fill
+										className='object-cover group-hover:scale-105 transition-transform duration-700'
+										sizes='380px'
+									/>
+									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/30 to-transparent' />
+									<div className='absolute bottom-0 left-0 right-0 p-7'>
+										<h3 className='font-serif text-2xl text-icyWhite'>
+											{t('team.serhiy.name')}
+										</h3>
+										<p className='text-gold-soft/80 text-sm mt-1'>
+											{t('team.serhiy.role')}
+										</p>
+									</div>
+								</div>
+								<div className='p-7'>
+									<p className='text-icyWhite/40 text-xs tracking-[0.15em] uppercase mb-3'>
+										{t('team.serhiy.specialty')}
+									</p>
+									<p className='text-icyWhite/65 text-sm leading-relaxed'>
+										{t('team.serhiy.bio')}
 									</p>
 								</div>
 							</motion.article>

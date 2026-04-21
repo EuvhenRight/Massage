@@ -239,13 +239,13 @@
 			"expectation": "Most clients feel immediate relief and deep relaxation. For chronic issues, a course of 4-6 sessions is recommended. We provide personalized aftercare advice to maintain results between visits."
 		},
 		"team": {
-			"title": "Our Therapists",
+			"title": "Your specialist",
 			"subtitle": "Every session is performed by a certified professional.",
 			"therapist1": {
-				"name": "Anna Kovalova",
-				"role": "Lead Massage Therapist",
-				"specialty": "Swedish · Deep Tissue · Hot Stone",
-				"bio": "10 years of experience. Certified in therapeutic and sports massage. Specializes in chronic pain management and stress relief."
+				"name": "Serhiy Volyk",
+				"role": "Founder & lead massage specialist",
+				"specialty": "Classic · Sports · Anti-cellulite · Lymphatic drainage · Device-assisted · Gua sha",
+				"bio": "Practicing since 2022. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
 			},
 			"workspace": {
 				"title": "Our Space",
@@ -582,7 +582,7 @@
 			},
 			"procedure": {
 				"title": "Procedure",
-				"desc": "The technique is performed with precision and care. We work at your comfortable pace."
+				"desc": "The technique is performed with precision and care, following protocols and each client's individual needs."
 			},
 			"aftercare": {
 				"title": "Aftercare",
@@ -591,13 +591,19 @@
 			"expectation": "Most clients describe the sensation from their first visit as brief, tolerable warmth. First sessions may be more sensitive — each visit gets easier. How long results last depends on the procedure type: typically 3–5 weeks, or permanently with electroepilation."
 		},
 		"team": {
-			"title": "Your Specialist",
-			"subtitle": "Every procedure is performed personally by a certified professional.",
+			"title": "Your specialists",
+			"subtitle": "Certified studio professionals perform every treatment.",
 			"natalie": {
 				"name": "Natalie Volik",
 				"role": "Founder & Lead Depilation Specialist",
-				"specialty": "Sugaring · Wax · Bio · Laser · Electroepilation",
+				"specialty": "Laser epilation · Wax epilation · Sugaring · Electroepilation · Piercing · Cosmetology · Training courses · Additional",
 				"bio": "14 years of experience. Medical education. Champion of Ukraine in depilation. Certified technologist for Terra, Enova, and Biolaif. I treat every client as the only one."
+			},
+			"serhiy": {
+				"name": "Serhiy Volyk",
+				"role": "Founder & lead massage specialist",
+				"specialty": "Classic · Sports · Anti-cellulite · Lymphatic drainage · Device-assisted · Gua sha",
+				"bio": "Practicing since 2022. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
 			},
 			"workspace": {
 				"title": "Our Studio",
@@ -613,11 +619,11 @@
 			},
 			"sanitization": {
 				"title": "Medical-Grade Sanitization",
-				"desc": "Surfaces and equipment are disinfected with hospital-grade antiseptics between every client. No exceptions."
+				"desc": "Surfaces and equipment are disinfected with professional antiseptics after each client."
 			},
 			"sterilization": {
 				"title": "Autoclave Sterilization",
-				"desc": "All reusable instruments undergo autoclave sterilization at 134°C — the same standard used in medical facilities."
+				"desc": "All reusable instruments undergo autoclave sterilization at 180–200°C."
 			},
 			"certified": {
 				"title": "Certified Materials",
@@ -776,6 +782,14 @@
 			"men": {
 				"q": "Do you work with men?",
 				"a": "Absolutely. I work with both women and men, ensuring full tact, confidentiality, and professionalism. All services are available regardless of gender."
+			},
+			"pregnancy": {
+				"q": "Can I have depilation while pregnant?",
+				"a": "Yes — in all three trimesters."
+			},
+			"teens": {
+				"q": "Can teenagers have depilation?",
+				"a": "Yes — from age 8."
 			},
 			"aftercare": {
 				"q": "What aftercare do you recommend?",
