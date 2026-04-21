@@ -14,6 +14,7 @@ import {
   notifyCustomerWhatsAppCancelled,
   type WhatsAppNotifyResult,
 } from "@/lib/whatsapp-admin-notify";
+import { parseWhatsappE164 } from "@/lib/phone-e164";
 
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -85,12 +86,35 @@ export async function POST(request: Request) {
           ? dayCountNum
           : undefined;
 
-      const customerResult = await resend.emails.send({
-        from: `${FROM_NAME} <${FROM_EMAIL}>`,
-        to: [toStr],
-        subject: SUBJECTS.new(dateStr, timeStr),
-        html: buildConfirmationEmail(nameStr, dateStr, timeStr, serviceStr, fullDayCount),
-      });
+      const notifyByEmail =
+        body.notifyByEmail !== false && body.notifyByEmail !== "false";
+      const notifyByWhatsApp =
+        body.notifyByWhatsApp !== false && body.notifyByWhatsApp !== "false";
+
+      if (!notifyByEmail && !notifyByWhatsApp) {
+        return NextResponse.json(
+          { error: "Select at least one notification channel" },
+          { status: 400 }
+        );
+      }
+      if (notifyByWhatsApp && !parseWhatsappE164(customerPhoneRaw)) {
+        return NextResponse.json(
+          { error: "Invalid phone for WhatsApp notifications" },
+          { status: 400 }
+        );
+      }
+
+      let customerResult: { error?: { message?: string } | null };
+      if (notifyByEmail) {
+        customerResult = await resend.emails.send({
+          from: `${FROM_NAME} <${FROM_EMAIL}>`,
+          to: [toStr],
+          subject: SUBJECTS.new(dateStr, timeStr),
+          html: buildConfirmationEmail(nameStr, dateStr, timeStr, serviceStr, fullDayCount),
+        });
+      } else {
+        customerResult = { error: null };
+      }
 
       let errMsg = customerResult.error?.message;
       if (!isAdminCreated && !errMsg) {
@@ -120,14 +144,16 @@ export async function POST(request: Request) {
               fullCalendarDayCount: fullDayCount,
             })
           : Promise.resolve("skipped" as WhatsAppNotifyResult),
-        notifyCustomerWhatsAppNew({
-          customerPhone: customerPhoneRaw,
-          customerName: nameStr,
-          date: dateStr,
-          time: timeStr,
-          service: serviceStr,
-          fullCalendarDayCount: fullDayCount,
-        }),
+        notifyByWhatsApp
+          ? notifyCustomerWhatsAppNew({
+              customerPhone: customerPhoneRaw,
+              customerName: nameStr,
+              date: dateStr,
+              time: timeStr,
+              service: serviceStr,
+              fullCalendarDayCount: fullDayCount,
+            })
+          : Promise.resolve("skipped" as WhatsAppNotifyResult),
       ]);
       whatsappAdmin = waAdmin;
       whatsappCustomer = waCust;

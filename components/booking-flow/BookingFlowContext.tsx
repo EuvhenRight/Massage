@@ -66,6 +66,8 @@ export interface BookingFlowState {
   fullName: string;
   email: string;
   phone: string;
+  notifyByEmail: boolean;
+  notifyByWhatsApp: boolean;
   /** Woman / man branch when booking from the price catalog (depilation). */
   catalogSex: SexKey | null;
 }
@@ -83,6 +85,8 @@ const initialState: BookingFlowState = {
   fullName: "",
   email: "",
   phone: "",
+  notifyByEmail: true,
+  notifyByWhatsApp: true,
   catalogSex: null,
 };
 
@@ -118,6 +122,8 @@ interface BookingFlowContextValue extends BookingFlowState {
   setTime: (v: string | null) => void;
   setStep: (s: BookingStep) => void;
   setCustomerInfo: (info: { fullName: string; email: string; phone: string }) => void;
+  setNotifyByEmail: (v: boolean) => void;
+  setNotifyByWhatsApp: (v: boolean) => void;
   nextStep: () => void;
   prevStep: () => void;
   reset: () => void;
@@ -198,6 +204,8 @@ export function BookingFlowProvider({
         fullName: parsed.fullName,
         email: parsed.email,
         phone: parsed.phone,
+        notifyByEmail: parsed.notifyByEmail,
+        notifyByWhatsApp: parsed.notifyByWhatsApp,
         catalogSex: parsed.catalogSex ?? null,
       };
     }
@@ -253,6 +261,8 @@ export function BookingFlowProvider({
             ? (first?.scheduleTbdAdminNote ?? "")
             : "",
         catalogSex: null,
+        notifyByEmail: true,
+        notifyByWhatsApp: true,
       };
     });
   }, [services, place, defaultDuration, defaultService]);
@@ -308,6 +318,8 @@ export function BookingFlowProvider({
       email: state.email,
       phone: state.phone,
       catalogSex: state.catalogSex,
+      notifyByEmail: state.notifyByEmail,
+      notifyByWhatsApp: state.notifyByWhatsApp,
     });
   }, [
     place,
@@ -324,6 +336,8 @@ export function BookingFlowProvider({
     state.email,
     state.phone,
     state.catalogSex,
+    state.notifyByEmail,
+    state.notifyByWhatsApp,
   ]);
 
   const clearDraft = useCallback(() => {
@@ -402,6 +416,26 @@ export function BookingFlowProvider({
     []
   );
 
+  const setNotifyByEmail = useCallback((notifyByEmail: boolean) => {
+    setState((s) => {
+      const next = { ...s, notifyByEmail };
+      if (!next.notifyByEmail && !next.notifyByWhatsApp) {
+        next.notifyByWhatsApp = true;
+      }
+      return next;
+    });
+  }, []);
+
+  const setNotifyByWhatsApp = useCallback((notifyByWhatsApp: boolean) => {
+    setState((s) => {
+      const next = { ...s, notifyByWhatsApp };
+      if (!next.notifyByEmail && !next.notifyByWhatsApp) {
+        next.notifyByEmail = true;
+      }
+      return next;
+    });
+  }, []);
+
   const nextStep = useCallback(() => {
     setState((s) => ({
       ...s,
@@ -433,6 +467,8 @@ export function BookingFlowProvider({
           ? (first?.scheduleTbdAdminNote ?? "")
           : "",
       catalogSex: null,
+      notifyByEmail: true,
+      notifyByWhatsApp: true,
     });
   }, [defaultDuration, services]);
 
@@ -444,6 +480,8 @@ export function BookingFlowProvider({
     setCatalogSex,
     setStep,
     setCustomerInfo,
+    setNotifyByEmail,
+    setNotifyByWhatsApp,
     nextStep,
     prevStep,
     reset,

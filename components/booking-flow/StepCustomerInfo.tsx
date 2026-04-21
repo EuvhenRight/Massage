@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { getBookingAccent } from "@/lib/booking-accent";
 import { getBookingSchema, type BookingFormData } from "@/lib/booking-schema";
 import {
@@ -23,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Check, MessageCircle } from "lucide-react";
 
 export interface StepCustomerInfoHandle {
@@ -52,6 +54,10 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
     email,
     phone,
     setCustomerInfo,
+    notifyByEmail,
+    notifyByWhatsApp,
+    setNotifyByEmail,
+    setNotifyByWhatsApp,
     bookingGranularity,
     service,
     bookingDayCount,
@@ -75,16 +81,24 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
   });
 
   const phoneValue = form.watch("phone");
+  const phoneE164Ok = useMemo(
+    () => !!parseWhatsappE164(phoneValue || ""),
+    [phoneValue]
+  );
   const phoneParsedPreview = useMemo(() => {
     const e164 = parseWhatsappE164(phoneValue || "");
     if (!e164) return null;
     return formatPhoneInternationalDisplay(e164) ?? e164;
   }, [phoneValue]);
 
+  const notifySelectionOk =
+    (notifyByEmail || notifyByWhatsApp) &&
+    (!notifyByWhatsApp || phoneE164Ok);
+
   const isValid = form.formState.isValid;
   useEffect(() => {
-    onValidityChange?.(isValid);
-  }, [isValid, onValidityChange]);
+    onValidityChange?.(isValid && notifySelectionOk);
+  }, [isValid, notifySelectionOk, onValidityChange]);
 
   const submitForSave = useCallback(async () => {
     const ok = await form.trigger();
@@ -103,6 +117,14 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
       const values = form.getValues();
       const ok = await form.trigger();
       if (!ok) return;
+      if (!notifyByEmail && !notifyByWhatsApp) {
+        toast.error(t("notifyChannelsRequired"));
+        return;
+      }
+      if (notifyByWhatsApp && !parseWhatsappE164(values.phone || "")) {
+        toast.error(tValidation("invalidPhone"));
+        return;
+      }
       setCustomerInfo({
         fullName: values.fullName,
         email: values.email,
@@ -110,7 +132,7 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
       });
       await onConfirm(values);
     },
-    [form, setCustomerInfo],
+    [form, setCustomerInfo, notifyByEmail, notifyByWhatsApp, t, tValidation],
   );
 
   useImperativeHandle(
@@ -231,6 +253,41 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
               </FormItem>
             )}
           />
+
+          <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <p className="text-sm font-medium text-icyWhite/90">{t("notifyTitle")}</p>
+            <label className="flex cursor-pointer items-start gap-3">
+              <Checkbox
+                checked={notifyByEmail}
+                onCheckedChange={(c) => setNotifyByEmail(c === true)}
+                className="mt-0.5"
+                aria-label={t("notifyEmailLabel")}
+              />
+              <span className="text-sm text-icyWhite/80 leading-snug">{t("notifyEmailLabel")}</span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-3">
+              <Checkbox
+                checked={notifyByWhatsApp}
+                onCheckedChange={(c) => setNotifyByWhatsApp(c === true)}
+                className="mt-0.5"
+                aria-label={t("notifyWhatsAppLabel")}
+              />
+              <span className="text-sm text-icyWhite/80 leading-snug">
+                {t("notifyWhatsAppLabel")}
+                {notifyByWhatsApp && !phoneE164Ok && (
+                  <span className="mt-1 block text-xs text-amber-200/90">
+                    {t("notifyWhatsAppMustFixPhone")}
+                  </span>
+                )}
+                {!notifyByWhatsApp && !phoneE164Ok && (
+                  <span className="mt-1 block text-xs text-icyWhite/45">
+                    {t("notifyWhatsAppNeedsPhone")}
+                  </span>
+                )}
+              </span>
+            </label>
+            <p className="text-xs text-icyWhite/45 leading-relaxed">{t("notifyHint")}</p>
+          </div>
 
           <p className="text-xs text-icyWhite/50 leading-relaxed">{t("bookingInfo")}</p>
         </form>

@@ -9,6 +9,7 @@ import { getBookingAccent } from '@/lib/booking-accent'
 import type { BookingFormData } from '@/lib/booking-schema'
 import { formatDateForEmail, formatTimeForEmail } from '@/lib/format-date'
 import { findBookableServiceForSelection } from '@/lib/services'
+import { parseWhatsappE164 } from '@/lib/phone-e164'
 import type { Place } from '@/lib/places'
 import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -61,6 +62,7 @@ function BookingFlowInner({
 }: BookingFlowProps) {
 	const accent = useMemo(() => getBookingAccent(place), [place])
 	const t = useTranslations('booking')
+	const tValidation = useTranslations('validation')
 	const locale = useLocale()
 	const router = useRouter()
 	const {
@@ -76,6 +78,8 @@ function BookingFlowInner({
 		fullName,
 		email,
 		phone,
+		notifyByEmail,
+		notifyByWhatsApp,
 		nextStep,
 		prevStep,
 		clearDraft,
@@ -93,8 +97,14 @@ function BookingFlowInner({
 				(bookingGranularity === 'time' && !!date && !!time)))
 	const canNextStep3 = step === 3 && formValid
 	const isMobileReview = step === 4
-	const canConfirm =
-		formValid || (isMobileReview && !!(fullName && email && phone))
+	/** Context phone lags behind the step-3 form until Next/confirm syncs — do not use for desktop step 3. */
+	const notifyOk =
+		(notifyByEmail || notifyByWhatsApp) &&
+		(!notifyByWhatsApp || !!parseWhatsappE164(phone || ''))
+	const hasContactBasics = !!(fullName?.trim() && email?.trim() && phone?.trim())
+	const canConfirm = isMobileReview
+		? hasContactBasics && notifyOk
+		: formValid
 
 	const handleBack = useCallback(() => {
 		if (step > 1) prevStep()
@@ -103,6 +113,14 @@ function BookingFlowInner({
 
 	const handleConfirm = useCallback(
 		async (formData?: BookingFormData) => {
+			if (!notifyByEmail && !notifyByWhatsApp) {
+				toast.error(t('notifyChannelsRequired'))
+				return
+			}
+			if (notifyByWhatsApp && !parseWhatsappE164((formData?.phone ?? phone) || '')) {
+				toast.error(tValidation('invalidPhone'))
+				return
+			}
 			if (bookingGranularity !== 'tbd' && !date) return
 			if (bookingGranularity === 'tbd') {
 				const dataTbd: BookingFormData = formData ?? {
@@ -147,6 +165,8 @@ function BookingFlowInner({
 							time: t('emailScheduleTbdTimeLine'),
 							service: finalService,
 							fullCalendarDayCount: bookingDayCount,
+							notifyByEmail,
+							notifyByWhatsApp,
 						}),
 					})
 
@@ -231,6 +251,8 @@ function BookingFlowInner({
 						date: formatDateForEmail(slotDate),
 						time: formatTimeForEmail(slotDate),
 						service: finalService,
+						notifyByEmail,
+						notifyByWhatsApp,
 					}),
 				})
 
@@ -274,9 +296,12 @@ function BookingFlowInner({
 			fullName,
 			email,
 			phone,
+			notifyByEmail,
+			notifyByWhatsApp,
 			onSuccess,
 			place,
 			t,
+			tValidation,
 			clearDraft,
 		],
 	)
@@ -308,7 +333,7 @@ function BookingFlowInner({
 	const getMobileCanProceed = () => {
 		if (step <= 2) return !!canNextStep12
 		if (step === 3) return !!canNextStep3
-		return true
+		return hasContactBasics && notifyOk
 	}
 	const handleMobileButtonClick = useCallback(async () => {
 		if (step <= 2) {

@@ -24,8 +24,19 @@ export default function BookingSidebar() {
 		fullName,
 		email,
 		phone,
+		notifyByEmail,
+		notifyByWhatsApp,
 		step,
 	} = useBookingFlow()
+
+	const notifySummary =
+		(notifyByEmail || notifyByWhatsApp) &&
+		[
+			notifyByEmail ? t('notifyShortEmail') : '',
+			notifyByWhatsApp ? t('notifyShortWhatsApp') : '',
+		]
+			.filter(Boolean)
+			.join(t('notifyShortJoin'))
 
 	return (
 		<div className="flex flex-col h-full p-5">
@@ -108,6 +119,13 @@ export default function BookingSidebar() {
 				</div>
 
 				{/* Your Details — customer's name, email, phone */}
+				{(step === 3 || step === 4) && notifySummary && (
+					<div className="pt-5 border-t border-white/10 space-y-1.5">
+						<span className={sectionLabelClass}>{t('notifySummaryTitle')}</span>
+						<p className="text-sm text-icyWhite/85">{notifySummary}</p>
+					</div>
+				)}
+
 				{((step === 3 || step === 4) && (fullName || email || phone)) && (
 					<div className="pt-5 border-t border-white/10 min-w-0 space-y-2">
 						<span className={sectionLabelClass}>{t('yourDetails')}</span>

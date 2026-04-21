@@ -5,7 +5,7 @@ const STORAGE_PREFIX = "booking-draft-";
 const TTL_MS = 60 * 60 * 1000; // 1 hour
 
 /** Bump when on-disk shape or rules change so we can invalidate bad drafts. */
-export const BOOKING_DRAFT_FORMAT_VERSION = 2;
+export const BOOKING_DRAFT_FORMAT_VERSION = 3;
 
 const MAX_BOOKING_DURATION_MINUTES = 24 * 60;
 
@@ -29,6 +29,9 @@ export interface BookingDraft {
   fullName: string;
   email: string;
   phone: string;
+  /** v3+: customer notification preferences (default true when missing). */
+  notifyByEmail?: boolean;
+  notifyByWhatsApp?: boolean;
   /** Price-catalog woman/man branch (optional). */
   catalogSex?: "woman" | "man" | null;
   savedAt: number;
@@ -140,6 +143,14 @@ function sanitizeBookingDraft(draft: BookingDraft): BookingDraft {
     out.time = null;
   }
 
+  out.notifyByEmail =
+    typeof draft.notifyByEmail === "boolean" ? draft.notifyByEmail : true;
+  out.notifyByWhatsApp =
+    typeof draft.notifyByWhatsApp === "boolean" ? draft.notifyByWhatsApp : true;
+  if (!out.notifyByEmail && !out.notifyByWhatsApp) {
+    out.notifyByEmail = true;
+  }
+
   return out;
 }
 
@@ -186,6 +197,8 @@ export interface BookingDraftInput {
   fullName: string;
   email: string;
   phone: string;
+  notifyByEmail?: boolean;
+  notifyByWhatsApp?: boolean;
   catalogSex?: "woman" | "man" | null;
 }
 
@@ -204,6 +217,8 @@ export function saveBookingDraft(place: string, state: BookingDraftInput): void 
       scheduleTbdCustomerMessage: state.scheduleTbdCustomerMessage,
       scheduleTbdAdminHint: state.scheduleTbdAdminHint,
       catalogSex: state.catalogSex ?? null,
+      notifyByEmail: state.notifyByEmail !== false,
+      notifyByWhatsApp: state.notifyByWhatsApp !== false,
       savedAt: Date.now(),
     };
     localStorage.setItem(storageKey(place), JSON.stringify(draft));
@@ -225,12 +240,23 @@ export function parseDraftToState(draft: BookingDraft): {
   fullName: string;
   email: string;
   phone: string;
+  notifyByEmail: boolean;
+  notifyByWhatsApp: boolean;
   catalogSex: "woman" | "man" | null;
 } {
   const granTbd =
     draft.bookingGranularity === "day" || draft.bookingGranularity === "tbd";
   const cal = granTbd ? null : calendarDateFromDraft(draft);
   const timeNorm = granTbd ? null : normalizeDraftTime(draft.time);
+  let notifyByEmail =
+    typeof draft.notifyByEmail === "boolean" ? draft.notifyByEmail : true;
+  let notifyByWhatsApp =
+    typeof draft.notifyByWhatsApp === "boolean"
+      ? draft.notifyByWhatsApp
+      : true;
+  if (!notifyByEmail && !notifyByWhatsApp) {
+    notifyByEmail = true;
+  }
   return {
     step: draft.step,
     service: draft.service,
@@ -253,6 +279,8 @@ export function parseDraftToState(draft: BookingDraft): {
     fullName: draft.fullName,
     email: draft.email,
     phone: draft.phone,
+    notifyByEmail,
+    notifyByWhatsApp,
     catalogSex:
       draft.catalogSex === "woman" || draft.catalogSex === "man"
         ? draft.catalogSex
