@@ -157,6 +157,13 @@ export async function POST(request: Request) {
       ]);
       whatsappAdmin = waAdmin;
       whatsappCustomer = waCust;
+      if (notifyByWhatsApp && whatsappCustomer !== "sent") {
+        console.warn(
+          "[send-confirmation] Customer WhatsApp was not delivered (result:",
+          whatsappCustomer,
+          "). Check TWILIO_* env and Twilio sandbox (code 63016) if using test mode."
+        );
+      }
     } else if (type === "rescheduled") {
       const { to, customerName, service, oldDate, oldTime, newDate, newTime } = body;
       if (!to || !customerName || !oldDate || !oldTime || !newDate || !newTime) {

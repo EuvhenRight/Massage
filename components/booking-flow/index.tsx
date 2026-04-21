@@ -178,6 +178,19 @@ function BookingFlowInner({
 							}),
 						)
 					} else {
+						const okBody = (await res.json().catch(() => ({}))) as {
+							whatsapp?: { customer?: string }
+						}
+						if (
+							notifyByWhatsApp &&
+							okBody.whatsapp?.customer !== 'sent'
+						) {
+							toast.warning(
+								notifyByEmail
+									? t('whatsappNotDeliveredWithEmail')
+									: t('whatsappNotDeliveredNoEmail'),
+							)
+						}
 						clearDraft()
 						const itemName = finalService.includes(' › ')
 							? (finalService.split(' › ').pop() ?? finalService)
@@ -264,6 +277,19 @@ function BookingFlowInner({
 						}),
 					)
 				} else {
+					const okBody = (await res.json().catch(() => ({}))) as {
+						whatsapp?: { customer?: string }
+					}
+					if (
+						notifyByWhatsApp &&
+						okBody.whatsapp?.customer !== 'sent'
+					) {
+						toast.warning(
+							notifyByEmail
+								? t('whatsappNotDeliveredWithEmail')
+								: t('whatsappNotDeliveredNoEmail'),
+						)
+					}
 					clearDraft()
 					const itemName = finalService.includes(' › ')
 						? (finalService.split(' › ').pop() ?? finalService)

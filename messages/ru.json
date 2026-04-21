@@ -102,6 +102,8 @@
 		"notifyShortEmail": "Email",
 		"notifyShortWhatsApp": "WhatsApp",
 		"notifyShortJoin": " · ",
+		"whatsappNotDeliveredWithEmail": "Запись сохранена. Подтверждение в WhatsApp не отправилось — проверьте почту.",
+		"whatsappNotDeliveredNoEmail": "Запись сохранена, но WhatsApp не отправлен. Свяжитесь с салоном, если нужно подтверждение.",
 		"scheduleTbdBookingBadge": "Дата с вами",
 		"allDayBadge": "{count, plural, one {# день} few {# дня} other {# дней}}",
 		"allDayLabel": "Весь день",

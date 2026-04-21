@@ -102,6 +102,8 @@
 		"notifyShortEmail": "Email",
 		"notifyShortWhatsApp": "WhatsApp",
 		"notifyShortJoin": " · ",
+		"whatsappNotDeliveredWithEmail": "Бронь збережено. Підтвердження в WhatsApp не надійшло — перевірте пошту.",
+		"whatsappNotDeliveredNoEmail": "Бронь збережено, але WhatsApp не надіслано. Зв’яжіться з салоном, якщо потрібне підтвердження.",
 		"scheduleTbdBookingBadge": "Дату погодимо з вами",
 		"allDayBadge": "{count, plural, one {# день} few {# дні} other {# днів}}",
 		"allDayLabel": "Весь день",

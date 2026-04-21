@@ -102,6 +102,8 @@
 		"notifyShortEmail": "E-mail",
 		"notifyShortWhatsApp": "WhatsApp",
 		"notifyShortJoin": " · ",
+		"whatsappNotDeliveredWithEmail": "Rezervácia je uložená. WhatsApp potvrdenie sa neodoslalo — skontrolujte e-mail.",
+		"whatsappNotDeliveredNoEmail": "Rezervácia je uložená, ale WhatsApp sa neodoslal. Kontaktujte salón, ak potrebujete písomné potvrdenie.",
 		"scheduleTbdBookingBadge": "Termín dohodneme s vami",
 		"allDayBadge": "{count, plural, one {# deň} few {# dni} other {# dní}}",
 		"allDayLabel": "Celý deň",

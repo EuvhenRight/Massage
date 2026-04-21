@@ -102,6 +102,8 @@
 		"notifyShortEmail": "Email",
 		"notifyShortWhatsApp": "WhatsApp",
 		"notifyShortJoin": " · ",
+		"whatsappNotDeliveredWithEmail": "Booking saved. We could not deliver the WhatsApp confirmation — please check your email for details.",
+		"whatsappNotDeliveredNoEmail": "Booking saved, but we could not send WhatsApp. Please contact the salon if you need written confirmation.",
 		"scheduleTbdBookingBadge": "Date arranged with you",
 		"allDayBadge": "{count, plural, one {# day} other {# days}}",
 		"allDayLabel": "All day",
