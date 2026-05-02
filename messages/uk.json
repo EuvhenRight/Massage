@@ -104,6 +104,8 @@
 		"notifyShortJoin": " · ",
 		"whatsappNotDeliveredWithEmail": "Бронь збережено. Підтвердження в WhatsApp не надійшло — перевірте пошту.",
 		"whatsappNotDeliveredNoEmail": "Бронь збережено, але WhatsApp не надіслано. Зв’яжіться з салоном, якщо потрібне підтвердження.",
+		"whatsappError63016": "WhatsApp не надіслано: цей номер має підключитися до тестової пісочниці Twilio (у WhatsApp з цього телефону надішліть «join …» на номер пісочниці з консолі Twilio).",
+		"whatsappErrorEnvMissing": "WhatsApp не надіслано: на сервері не налаштовано змінні TWILIO_* (додайте їх у хостингу). Деталі броні — у листі на пошті.",
 		"scheduleTbdBookingBadge": "Дату погодимо з вами",
 		"allDayBadge": "{count, plural, one {# день} few {# дні} other {# днів}}",
 		"allDayLabel": "Весь день",

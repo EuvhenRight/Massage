@@ -104,6 +104,8 @@
 		"notifyShortJoin": " · ",
 		"whatsappNotDeliveredWithEmail": "Rezervácia je uložená. WhatsApp potvrdenie sa neodoslalo — skontrolujte e-mail.",
 		"whatsappNotDeliveredNoEmail": "Rezervácia je uložená, ale WhatsApp sa neodoslal. Kontaktujte salón, ak potrebujete písomné potvrdenie.",
+		"whatsappError63016": "WhatsApp nebol doručený: toto číslo sa musí najprv pripojiť k Twilio test sandboxu (v WhatsApp z tohto telefónu pošlite „join …“ na sandbox číslo z Twilio konzoly).",
+		"whatsappErrorEnvMissing": "WhatsApp nebol doručený: na serveri chýbajú premenné TWILIO_* (doplňte ich u hostingu). Podrobnosti rezervácie nájdete v e-maile.",
 		"scheduleTbdBookingBadge": "Termín dohodneme s vami",
 		"allDayBadge": "{count, plural, one {# deň} few {# dni} other {# dní}}",
 		"allDayLabel": "Celý deň",

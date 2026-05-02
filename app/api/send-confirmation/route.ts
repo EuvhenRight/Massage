@@ -8,11 +8,12 @@ import {
   buildAdminCancelled,
 } from "@/lib/email-templates";
 import {
-  notifyAdminWhatsAppNew,
-  notifyAdminWhatsAppCancelled,
+  notifyStaffWhatsAppNew,
+  notifyStaffWhatsAppCancelled,
   notifyCustomerWhatsAppNew,
   notifyCustomerWhatsAppCancelled,
   type WhatsAppNotifyResult,
+  type BookingPlace,
 } from "@/lib/whatsapp-admin-notify";
 import { parseWhatsappE164 } from "@/lib/phone-e164";
 
@@ -36,6 +37,10 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "admin@aurorasalon.com";
 
 type EmailType = "new" | "rescheduled" | "cancelled";
 
+function parseBookingPlace(body: Record<string, unknown>): BookingPlace {
+  return body.bookingPlace === "depilation" ? "depilation" : "massage";
+}
+
 export async function POST(request: Request) {
   try {
     let body: Record<string, unknown>;
@@ -47,8 +52,11 @@ export async function POST(request: Request) {
     const type: EmailType =
       body.type === "rescheduled" || body.type === "cancelled" ? body.type : "new";
 
-    let whatsappAdmin: WhatsAppNotifyResult = "skipped";
+    let whatsappStaff: WhatsAppNotifyResult = "skipped";
     let whatsappCustomer: WhatsAppNotifyResult = "skipped";
+    let whatsappCustomerMeta:
+      | { twilioCode?: number; skipReason?: string }
+      | undefined;
 
     const customerPhoneRaw =
       body.customerPhone != null && String(body.customerPhone).trim() !== ""
@@ -61,6 +69,7 @@ export async function POST(request: Request) {
     }
 
     if (type === "new") {
+      const bookingPlace = parseBookingPlace(body);
       const { to, customerName, date, time, service, source, fullCalendarDayCount } = body;
       if (!to || !customerName || !date || !time) {
         return NextResponse.json(
@@ -133,17 +142,22 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
-      const [waAdmin, waCust] = await Promise.all([
+      const [waStaff, waCustResult] = await Promise.all([
         !isAdminCreated
-          ? notifyAdminWhatsAppNew({
-              customerName: nameStr,
-              email: toStr,
-              date: dateStr,
-              time: timeStr,
-              service: serviceStr,
-              fullCalendarDayCount: fullDayCount,
-            })
-          : Promise.resolve("skipped" as WhatsAppNotifyResult),
+          ? notifyStaffWhatsAppNew(
+              {
+                customerName: nameStr,
+                email: toStr,
+                date: dateStr,
+                time: timeStr,
+                service: serviceStr,
+                fullCalendarDayCount: fullDayCount,
+              },
+              { bookingPlace }
+            )
+          : Promise.resolve({
+              staff: "skipped" as WhatsAppNotifyResult,
+            }),
         notifyByWhatsApp
           ? notifyCustomerWhatsAppNew({
               customerPhone: customerPhoneRaw,
@@ -153,15 +167,27 @@ export async function POST(request: Request) {
               service: serviceStr,
               fullCalendarDayCount: fullDayCount,
             })
-          : Promise.resolve("skipped" as WhatsAppNotifyResult),
+          : Promise.resolve({
+              status: "skipped" as WhatsAppNotifyResult,
+              twilioCode: undefined,
+              skipReason: undefined,
+            }),
       ]);
-      whatsappAdmin = waAdmin;
-      whatsappCustomer = waCust;
+      whatsappStaff = waStaff.staff;
+      whatsappCustomer = waCustResult.status;
+      if (notifyByWhatsApp) {
+        whatsappCustomerMeta = {
+          twilioCode: waCustResult.twilioCode,
+          skipReason: waCustResult.skipReason,
+        };
+      }
       if (notifyByWhatsApp && whatsappCustomer !== "sent") {
         console.warn(
-          "[send-confirmation] Customer WhatsApp was not delivered (result:",
+          "[send-confirmation] Customer WhatsApp not delivered:",
           whatsappCustomer,
-          "). Check TWILIO_* env and Twilio sandbox (code 63016) if using test mode."
+          whatsappCustomerMeta?.twilioCode != null
+            ? `Twilio code ${whatsappCustomerMeta.twilioCode}`
+            : whatsappCustomerMeta?.skipReason ?? ""
         );
       }
     } else if (type === "rescheduled") {
@@ -192,6 +218,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: customerResult.error.message }, { status: 500 });
       }
     } else if (type === "cancelled") {
+      const bookingPlace = parseBookingPlace(body);
       const { to, customerName, date, time, service } = body;
       if (!to || !customerName || !date || !time) {
         return NextResponse.json(
@@ -228,14 +255,17 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
-      const [waAdmin, waCust] = await Promise.all([
-        notifyAdminWhatsAppCancelled({
-          customerName: nameStr,
-          email: toStr,
-          date: dateStr,
-          time: timeStr,
-          service: serviceStr,
-        }),
+      const [waStaff, waCust] = await Promise.all([
+        notifyStaffWhatsAppCancelled(
+          {
+            customerName: nameStr,
+            email: toStr,
+            date: dateStr,
+            time: timeStr,
+            service: serviceStr,
+          },
+          { bookingPlace }
+        ),
         notifyCustomerWhatsAppCancelled({
           customerPhone: customerPhoneRaw,
           customerName: nameStr,
@@ -244,7 +274,7 @@ export async function POST(request: Request) {
           service: serviceStr,
         }),
       ]);
-      whatsappAdmin = waAdmin;
+      whatsappStaff = waStaff.staff;
       whatsappCustomer = waCust;
     } else {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
@@ -252,7 +282,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      whatsapp: { admin: whatsappAdmin, customer: whatsappCustomer },
+      whatsapp: {
+        staff: whatsappStaff,
+        customer: whatsappCustomer,
+      },
+      ...(whatsappCustomerMeta != null
+        ? { whatsappCustomerMeta }
+        : {}),
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed to send email";

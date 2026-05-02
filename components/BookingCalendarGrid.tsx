@@ -684,6 +684,7 @@ export default function BookingCalendarGrid({
 				)
 
 				const wasTbd = appointment.scheduleTbd === true
+				const bookingPlace = appointment.place ?? place
 				try {
 					if (wasTbd) {
 						await fetch('/api/send-confirmation', {
@@ -696,6 +697,7 @@ export default function BookingCalendarGrid({
 								date: formatDateForEmail(newStartEmail),
 								time: allDayLabel,
 								service: appointment.service,
+								bookingPlace,
 							}),
 						})
 					} else {
@@ -712,6 +714,7 @@ export default function BookingCalendarGrid({
 								oldTime: allDayLabel,
 								newDate: formatDateForEmail(newStartEmail),
 								newTime: allDayLabel,
+								bookingPlace,
 							}),
 						})
 					}
@@ -752,6 +755,7 @@ export default function BookingCalendarGrid({
 			await updateAppointmentTime(appointment.id, newStart, durationMinutes)
 
 			const wasTbd = appointment.scheduleTbd === true
+			const bookingPlace = appointment.place ?? place
 			try {
 				if (wasTbd) {
 					await fetch('/api/send-confirmation', {
@@ -764,6 +768,7 @@ export default function BookingCalendarGrid({
 							date: formatDateForEmail(newStart),
 							time: formatTimeForEmail(newStart),
 							service: appointment.service,
+							bookingPlace,
 						}),
 					})
 				} else {
@@ -780,6 +785,7 @@ export default function BookingCalendarGrid({
 							oldTime: formatTimeForEmail(oldStart),
 							newDate: formatDateForEmail(newStart),
 							newTime: formatTimeForEmail(newStart),
+							bookingPlace,
 						}),
 					})
 				}
@@ -846,6 +852,7 @@ export default function BookingCalendarGrid({
 		try {
 			await deleteAppointment(appointment.id)
 			try {
+				const bookingPlace = appointment.place ?? place
 				await fetch('/api/send-confirmation', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -860,6 +867,7 @@ export default function BookingCalendarGrid({
 								? t('allDayNoClockTime')
 								: formatTimeForEmail(start),
 						service: appointment.service,
+						bookingPlace,
 					}),
 				})
 			} catch {
@@ -869,7 +877,7 @@ export default function BookingCalendarGrid({
 		} catch (err) {
 			toast.error(t('cancelFailed'))
 		}
-	}, [pendingCancel, t])
+	}, [pendingCancel, place, t])
 
 	const handleDismissCancel = useCallback(() => setPendingCancel(null), [])
 

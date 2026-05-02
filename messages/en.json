@@ -104,6 +104,8 @@
 		"notifyShortJoin": " · ",
 		"whatsappNotDeliveredWithEmail": "Booking saved. We could not deliver the WhatsApp confirmation — please check your email for details.",
 		"whatsappNotDeliveredNoEmail": "Booking saved, but we could not send WhatsApp. Please contact the salon if you need written confirmation.",
+		"whatsappError63016": "WhatsApp was not delivered: this number must join the Twilio test sandbox first (open WhatsApp on that phone and send the “join …” code to the Twilio sandbox number from your Twilio Console).",
+		"whatsappErrorEnvMissing": "WhatsApp was not delivered: messaging is not configured on the server (add TWILIO_* variables where the site is hosted). Check your email for booking details.",
 		"scheduleTbdBookingBadge": "Date arranged with you",
 		"allDayBadge": "{count, plural, one {# day} other {# days}}",
 		"allDayLabel": "All day",

@@ -104,6 +104,8 @@
 		"notifyShortJoin": " · ",
 		"whatsappNotDeliveredWithEmail": "Запись сохранена. Подтверждение в WhatsApp не отправилось — проверьте почту.",
 		"whatsappNotDeliveredNoEmail": "Запись сохранена, но WhatsApp не отправлен. Свяжитесь с салоном, если нужно подтверждение.",
+		"whatsappError63016": "WhatsApp не доставлен: этот номер должен подключиться к тестовой песочнице Twilio (в WhatsApp с этого телефона отправьте код «join …» на номер песочницы из консоли Twilio).",
+		"whatsappErrorEnvMissing": "WhatsApp не доставлен: на сервере не настроены переменные TWILIO_* (добавьте их в хостинге). Детали записи — в письме на почту.",
 		"scheduleTbdBookingBadge": "Дата с вами",
 		"allDayBadge": "{count, plural, one {# день} few {# дня} other {# дней}}",
 		"allDayLabel": "Весь день",

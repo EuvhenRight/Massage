@@ -747,6 +747,7 @@ export default function AdminAppointmentModal({
 									? t('allDayNoClockTime')
 									: formatTimeForEmail(slotDate),
 								service: service || undefined,
+								bookingPlace: place,
 							}),
 						})
 						if (!res.ok) {

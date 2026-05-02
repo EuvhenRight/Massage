@@ -165,6 +165,7 @@ function BookingFlowInner({
 							time: t('emailScheduleTbdTimeLine'),
 							service: finalService,
 							fullCalendarDayCount: bookingDayCount,
+							bookingPlace: place,
 							notifyByEmail,
 							notifyByWhatsApp,
 						}),
@@ -180,16 +181,27 @@ function BookingFlowInner({
 					} else {
 						const okBody = (await res.json().catch(() => ({}))) as {
 							whatsapp?: { customer?: string }
+							whatsappCustomerMeta?: {
+								twilioCode?: number
+								skipReason?: string
+							}
 						}
 						if (
 							notifyByWhatsApp &&
 							okBody.whatsapp?.customer !== 'sent'
 						) {
-							toast.warning(
-								notifyByEmail
-									? t('whatsappNotDeliveredWithEmail')
-									: t('whatsappNotDeliveredNoEmail'),
-							)
+							const meta = okBody.whatsappCustomerMeta
+							if (meta?.twilioCode === 63016) {
+								toast.warning(t('whatsappError63016'))
+							} else if (meta?.skipReason === 'twilio_env') {
+								toast.warning(t('whatsappErrorEnvMissing'))
+							} else {
+								toast.warning(
+									notifyByEmail
+										? t('whatsappNotDeliveredWithEmail')
+										: t('whatsappNotDeliveredNoEmail'),
+								)
+							}
 						}
 						clearDraft()
 						const itemName = finalService.includes(' › ')
@@ -264,6 +276,7 @@ function BookingFlowInner({
 						date: formatDateForEmail(slotDate),
 						time: formatTimeForEmail(slotDate),
 						service: finalService,
+						bookingPlace: place,
 						notifyByEmail,
 						notifyByWhatsApp,
 					}),
@@ -279,16 +292,27 @@ function BookingFlowInner({
 				} else {
 					const okBody = (await res.json().catch(() => ({}))) as {
 						whatsapp?: { customer?: string }
+						whatsappCustomerMeta?: {
+							twilioCode?: number
+							skipReason?: string
+						}
 					}
 					if (
 						notifyByWhatsApp &&
 						okBody.whatsapp?.customer !== 'sent'
 					) {
-						toast.warning(
-							notifyByEmail
-								? t('whatsappNotDeliveredWithEmail')
-								: t('whatsappNotDeliveredNoEmail'),
-						)
+						const meta = okBody.whatsappCustomerMeta
+						if (meta?.twilioCode === 63016) {
+							toast.warning(t('whatsappError63016'))
+						} else if (meta?.skipReason === 'twilio_env') {
+							toast.warning(t('whatsappErrorEnvMissing'))
+						} else {
+							toast.warning(
+								notifyByEmail
+									? t('whatsappNotDeliveredWithEmail')
+									: t('whatsappNotDeliveredNoEmail'),
+							)
+						}
 					}
 					clearDraft()
 					const itemName = finalService.includes(' › ')
