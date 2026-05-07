@@ -111,3 +111,18 @@ export function matchPresetToCatalogTitle(
 	})
 	return byFirst?.title
 }
+
+/**
+ * Stable `id` for a price row (`<li>`) from its English catalog title (fallback: Slovak).
+ * Must stay in sync with {@link DEPILATION_SERVICE_PRICE_ROW_ID} for depilation service cards.
+ */
+export function priceCatalogRowAnchorId(item: ZonePriceItem): string {
+	const raw = (item.titleEn ?? item.titleSk).trim()
+	const slug = raw
+		.toLowerCase()
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+	return `price-${slug}`
+}

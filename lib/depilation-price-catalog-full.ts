@@ -810,10 +810,10 @@ function womanAdditionalSection(): PriceSection {
 				uk: "Інтимне відбілювання",
 			}),
 			lineTbd({
-				sk: "Zábaly",
-				en: "Body wraps",
-				ru: "Обёртывания",
-				uk: "Обгортання",
+				sk: "Anticelulitídne zábaly",
+				en: "Anti-cellulite wraps",
+				ru: "Антицеллюлитные обёртывания",
+				uk: "Антицелюлітні обгортання",
 			}),
 		],
 	);

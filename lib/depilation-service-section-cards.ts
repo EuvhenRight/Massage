@@ -1,6 +1,6 @@
 /**
  * Image cards for the depilation landing “Послуги / Services” block — order matches studio menu.
- * Each service uses a distinct remote image (verified CDN) so categories are visually different.
+ * Mix of local assets and remote images so categories stay visually distinct.
  */
 export const DEPILATION_SERVICE_SECTION_IDS = [
 	'laser',
@@ -10,36 +10,41 @@ export const DEPILATION_SERVICE_SECTION_IDS = [
 	'piercing',
 	'cosmetology',
 	'courses',
-	'additional',
+	'intimateWhitening',
+	'antiCelluliteWraps',
 ] as const
 
 export type DepilationServiceSectionId =
 	(typeof DEPILATION_SERVICE_SECTION_IDS)[number]
 
-const unsplash = (id: string, w = 1400, h = 1050) =>
-	`https://images.unsplash.com/${id}?w=${w}&h=${h}&fit=crop&q=85`
-
-const pexels = (photoId: number, w = 1200) =>
-	`https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=tinysrgb&w=${w}`
+/** Public price list `<li id>` for deep links (slug of English catalog line title). */
+export const DEPILATION_SERVICE_PRICE_ROW_ID: Partial<
+	Record<DepilationServiceSectionId, string>
+> = {
+	intimateWhitening: 'price-intimate-whitening',
+	antiCelluliteWraps: 'price-anti-cellulite-wraps',
+}
 
 export const DEPILATION_SERVICE_SECTION_IMAGES: Record<
 	DepilationServiceSectionId,
 	string
 > = {
-	/** Laser epilation — treatment / handpiece, clinical aesthetic (Unsplash). */
-	laser: unsplash('photo-1582719478250-c89cae4dc85b'),
-	/** Body waxing / depilation (Unsplash). */
-	wax: unsplash('photo-1519824145371-296894a0daa9'),
-	/** Sugaring — soft hands-on skin care, natural feel (Unsplash). */
-	sugar: unsplash('photo-1515377905703-c4788e51af15'),
-	/** Electro / precision — close aesthetic treatment (Unsplash). */
-	electro: unsplash('photo-1522337360788-8b13dee7a37e'),
-	/** Ear piercing / jewellery (Pexels). */
-	piercing: pexels(1027131),
-	/** Cosmetology — facial treatment (Unsplash). */
-	cosmetology: unsplash('photo-1570172619644-dfd03ed5d881'),
-	/** Training — desk, notes, learning (Unsplash). */
-	courses: unsplash('photo-1516975080664-ed2fc6a32937'),
-	/** Wraps / spa wellness — calm body care (Unsplash). */
-	additional: unsplash('photo-1540555700478-4be289fbecef'),
+	/** Laser epilation — studio photo (skin diagram). */
+	laser: '/images/depilation/laser_epilation.png',
+	/** Wax epilation — studio photo (wax product). */
+	wax: '/images/depilation/Wax_epilation.jpeg',
+	/** Sugaring — studio photo (TERRA product). */
+	sugar: '/images/depilation/Shugaring.jpeg',
+	/** Electroepilation — studio photo (equipment). */
+	electro: '/images/depilation/Electro_epilation.jpeg',
+	/** Piercing — studio photo. */
+	piercing: '/images/depilation/Piersing.jpeg',
+	/** Cosmetology — studio photo. */
+	cosmetology: '/images/depilation/Cosmetology.jpeg',
+	/** Training courses — studio photo. */
+	courses: '/images/depilation/Cursus.png',
+	/** Intimate whitening — studio photo. */
+	intimateWhitening: '/images/depilation/Intimate_whitening.png',
+	/** Anti-cellulite wraps — studio photo. */
+	antiCelluliteWraps: '/images/depilation/Anti-cellulite_wraps.jpeg',
 }

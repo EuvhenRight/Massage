@@ -15,6 +15,7 @@ import {
 	isPriceSaleActive,
 	isPriceUnsetForDisplay,
 } from '@/lib/price-catalog-price-display'
+import { priceCatalogRowAnchorId } from '@/lib/price-catalog-utils'
 import { cn } from '@/lib/utils'
 import {
 	getTitleForLocale,
@@ -234,6 +235,7 @@ function ZoneItemsListGlassDual({
 
 				return (
 					<li
+						id={priceCatalogRowAnchorId(primary)}
 						key={row.w?.id ?? row.m?.id ?? primary.titleSk}
 						className={cn(
 							'transition-colors',

@@ -572,12 +572,19 @@
 					"topicsLabel": "Curriculum highlights",
 					"topicsText": "Salon hygiene, skin and hair assessment, waxing and sugaring technique, sensitive zones, client consultation, and competition-focused practice where needed."
 				},
-				"additional": {
-					"title": "Additional",
-					"body": "Intimate whitening is a discreet aesthetic treatment for women: professional brightening products gently even out tone, address melanin, and leave the area looking neat and cared for.\n\nAnti-cellulite wraps are an intensive option without aggressive devices—for clients who want visible change. We use the Austrian professional line STYX Naturcosmetic.",
+				"intimateWhitening": {
+					"title": "Intimate whitening",
+					"body": "Intimate whitening is a discreet aesthetic treatment for women: professional brightening products gently even out tone, address melanin, and leave the area looking neat and cared for.",
 					"bullets": [
-						"Whitening: gentle professional formulas; women only.",
-						"Wraps: many clients notice less puffiness after the first session.",
+						"Gentle professional formulas; women only.",
+						"Even tone and a neat, cared-for look."
+					]
+				},
+				"antiCelluliteWraps": {
+					"title": "Anti-cellulite wraps",
+					"body": "Anti-cellulite wraps are an intensive option without aggressive devices—for clients who want visible change. We use the Austrian professional line STYX Naturcosmetic.",
+					"bullets": [
+						"Many clients notice less puffiness after the first session.",
 						"Strong lymphatic support and help flushing excess fluid.",
 						"Smoother-looking cellulite texture; firmer, more elastic skin.",
 						"Detox effect; STYX Naturcosmetic."
@@ -611,7 +618,7 @@
 			"natalie": {
 				"name": "Natalie Volik",
 				"role": "Founder & Lead Depilation Specialist",
-				"specialty": "Laser epilation · Wax epilation · Sugaring · Electroepilation · Piercing · Cosmetology · Training courses · Additional",
+				"specialty": "Laser epilation · Wax epilation · Sugaring · Electroepilation · Piercing · Cosmetology · Training courses · Intimate whitening · Anti-cellulite wraps",
 				"bio": "14 years of experience. Medical education. Champion of Ukraine in depilation. Certified technologist for Terra, Enova, and Biolaif. I treat every client as the only one."
 			},
 			"serhiy": {

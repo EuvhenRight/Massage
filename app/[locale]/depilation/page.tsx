@@ -21,9 +21,9 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useIntersectionVisible } from '@/lib/use-intersection-visible'
 import { SITE_CONFIG } from '@/lib/site-config'
 import { useSiteMotion } from '@/lib/site-motion'
+import { useIntersectionVisible } from '@/lib/use-intersection-visible'
 import {
 	motion,
 	useMotionValueEvent,
@@ -60,8 +60,7 @@ import { useParams } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 const IMG = {
-	about:
-		'/images/depilation/AB678F7C-B5F1-468E-B739-4B8720842F20_1_105_c-d333239b-5b90-40a1-b3f3-bdb92ec4ba15.png',
+	about: '/images/depilation/V2_about.jpeg',
 	terra:
 		'/images/depilation/FD5A90EF-7384-410B-B069-880FF57AD64E_1_105_c-e553e146-de2e-455a-8edc-21ec8e423efb.png',
 	portrait:
@@ -457,9 +456,7 @@ export default function DepilationPage() {
 						className='absolute bottom-6 sm:bottom-6 left-1/2 -translate-x-1/2'
 					>
 						<motion.div
-							animate={
-								minimal ? undefined : { y: [0, 6, 0] }
-							}
+							animate={minimal ? undefined : { y: [0, 6, 0] }}
 							transition={
 								minimal
 									? undefined
@@ -1332,110 +1329,110 @@ export default function DepilationPage() {
 								</div>
 
 								<div className='mt-5'>
-								<Dialog>
-									<DialogTrigger asChild>
-										<button
-											type='button'
-											className='w-full flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wide hover:bg-gold-soft/90 focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all duration-300'
-										>
-											<Send className='w-4 h-4' />
-											{t('contact.formTitle')}
-										</button>
-									</DialogTrigger>
-									<DialogContent>
-										<DialogHeader>
-											<DialogTitle>{t('contact.formTitle')}</DialogTitle>
-											<DialogDescription>
-												{t('contact.subtitle')}
-											</DialogDescription>
-										</DialogHeader>
-										{contactSent ? (
-											<motion.div
-												initial={{ opacity: 0, scale: 0.95 }}
-												animate={{ opacity: 1, scale: 1 }}
-												className='p-8 rounded-2xl border border-gold-soft/20 bg-gold-soft/[0.04] text-center'
+									<Dialog>
+										<DialogTrigger asChild>
+											<button
+												type='button'
+												className='w-full flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wide hover:bg-gold-soft/90 focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all duration-300'
 											>
-												<BadgeCheck className='w-12 h-12 text-gold-soft mx-auto mb-4' />
-												<p className='text-icyWhite/80 text-sm'>
-													{t('contact.success')}
-												</p>
-											</motion.div>
-										) : (
-											<form
-												onSubmit={e => {
-													e.preventDefault()
-													setContactSent(true)
-												}}
-												className='space-y-4'
-											>
-												<div>
-													<label
-														htmlFor='dlg-name'
-														className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
-													>
-														{t('contact.nameLabel')}
-													</label>
-													<Input
-														id='dlg-name'
-														type='text'
-														required
-														placeholder={t('contact.namePlaceholder')}
-													/>
-												</div>
-												<div className='grid sm:grid-cols-2 gap-3'>
-													<div>
-														<label
-															htmlFor='dlg-email'
-															className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
-														>
-															{t('contact.emailLabel')}
-														</label>
-														<Input
-															id='dlg-email'
-															type='email'
-															required
-															placeholder={t('contact.emailPlaceholder')}
-														/>
-													</div>
-													<div>
-														<label
-															htmlFor='dlg-phone'
-															className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
-														>
-															{t('contact.phoneLabel')}
-														</label>
-														<Input
-															id='dlg-phone'
-															type='tel'
-															placeholder={t('contact.phonePlaceholder')}
-														/>
-													</div>
-												</div>
-												<div>
-													<label
-														htmlFor='dlg-msg'
-														className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
-													>
-														{t('contact.messageLabel')}
-													</label>
-													<Textarea
-														id='dlg-msg'
-														rows={4}
-														required
-														placeholder={t('contact.messagePlaceholder')}
-													/>
-												</div>
-												<button
-													type='submit'
-													className='w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-all duration-300'
+												<Send className='w-4 h-4' />
+												{t('contact.formTitle')}
+											</button>
+										</DialogTrigger>
+										<DialogContent>
+											<DialogHeader>
+												<DialogTitle>{t('contact.formTitle')}</DialogTitle>
+												<DialogDescription>
+													{t('contact.subtitle')}
+												</DialogDescription>
+											</DialogHeader>
+											{contactSent ? (
+												<motion.div
+													initial={{ opacity: 0, scale: 0.95 }}
+													animate={{ opacity: 1, scale: 1 }}
+													className='p-8 rounded-2xl border border-gold-soft/20 bg-gold-soft/[0.04] text-center'
 												>
-													<Send className='w-4 h-4' />
-													{t('contact.submit')}
-												</button>
-											</form>
-										)}
-									</DialogContent>
-								</Dialog>
+													<BadgeCheck className='w-12 h-12 text-gold-soft mx-auto mb-4' />
+													<p className='text-icyWhite/80 text-sm'>
+														{t('contact.success')}
+													</p>
+												</motion.div>
+											) : (
+												<form
+													onSubmit={e => {
+														e.preventDefault()
+														setContactSent(true)
+													}}
+													className='space-y-4'
+												>
+													<div>
+														<label
+															htmlFor='dlg-name'
+															className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+														>
+															{t('contact.nameLabel')}
+														</label>
+														<Input
+															id='dlg-name'
+															type='text'
+															required
+															placeholder={t('contact.namePlaceholder')}
+														/>
+													</div>
+													<div className='grid sm:grid-cols-2 gap-3'>
+														<div>
+															<label
+																htmlFor='dlg-email'
+																className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+															>
+																{t('contact.emailLabel')}
+															</label>
+															<Input
+																id='dlg-email'
+																type='email'
+																required
+																placeholder={t('contact.emailPlaceholder')}
+															/>
+														</div>
+														<div>
+															<label
+																htmlFor='dlg-phone'
+																className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+															>
+																{t('contact.phoneLabel')}
+															</label>
+															<Input
+																id='dlg-phone'
+																type='tel'
+																placeholder={t('contact.phonePlaceholder')}
+															/>
+														</div>
+													</div>
+													<div>
+														<label
+															htmlFor='dlg-msg'
+															className='text-icyWhite/50 text-xs uppercase tracking-wider mb-1.5 block'
+														>
+															{t('contact.messageLabel')}
+														</label>
+														<Textarea
+															id='dlg-msg'
+															rows={4}
+															required
+															placeholder={t('contact.messagePlaceholder')}
+														/>
+													</div>
+													<button
+														type='submit'
+														className='w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-all duration-300'
+													>
+														<Send className='w-4 h-4' />
+														{t('contact.submit')}
+													</button>
+												</form>
+											)}
+										</DialogContent>
+									</Dialog>
 								</div>
 							</div>
 						</motion.div>

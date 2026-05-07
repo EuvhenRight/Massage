@@ -9,6 +9,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog'
 import {
+	DEPILATION_SERVICE_PRICE_ROW_ID,
 	DEPILATION_SERVICE_SECTION_IDS,
 	DEPILATION_SERVICE_SECTION_IMAGES,
 	type DepilationServiceSectionId,
@@ -117,7 +118,12 @@ export default function DepilationServiceSections({
 								<div className='shrink-0 border-t border-white/[0.08] bg-nearBlack/90 px-5 py-4 sm:px-6'>
 									<div className='flex flex-col-reverse gap-3 sm:flex-row sm:items-stretch'>
 										<Link
-											href={`/${locale}/depilation/price`}
+											href={(() => {
+												const frag =
+													DEPILATION_SERVICE_PRICE_ROW_ID[openId] ?? ''
+												const base = `/${locale}/depilation/price`
+												return frag ? `${base}#${frag}` : base
+											})()}
 											className='inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-gold-soft/40 bg-gold-soft/[0.08] px-4 py-3 text-center text-sm font-medium text-gold-soft transition-colors hover:bg-gold-soft/15'
 										>
 											{t('serviceSections.viewPrices')}

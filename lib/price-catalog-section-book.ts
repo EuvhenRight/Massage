@@ -2,7 +2,7 @@ import type { PriceSection } from "@/types/price-catalog";
 
 /**
  * Depilation only: show one «Забронировать» under section titles for sugaring, training/courses,
- * wax, cosmetology, piercing, additional, etc. — not for Laser / Electro epilation sections.
+ * wax, cosmetology, piercing, whitening, wraps, etc. — not for Laser / Electro epilation sections.
  */
 export function shouldShowSectionBookLink(
   place: string,
@@ -25,7 +25,7 @@ export function shouldShowSectionBookLink(
   ) {
     return false;
   }
-  return /шугаринг|sugaring|shugar|cukrová|сахарн|сахар|обуч|training|školenie|курс|course|навчання|воск|wax|vosk|voskov|doplnkov|дополн|косметолог|cosmet|пирсинг|piercing|пірсинг|dopln|additional/i.test(
+  return /шугаринг|sugaring|shugar|cukrová|сахарн|сахар|обуч|training|školenie|курс|course|навчання|воск|wax|vosk|voskov|doplnkov|дополн|косметолог|cosmet|пирсинг|piercing|пірсинг|dopln|additional|whitening|відбіл|отбел|bielenie|zosvet|intimate|wrap|zábal|обгорт|обёрты|styx|celulit|целлюл|целюл|anticelulit/i.test(
     blob
   );
 }

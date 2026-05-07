@@ -584,14 +584,21 @@
 					"topicsLabel": "Obsah",
 					"topicsText": "Hygiena, posúdenie pokožky a chĺpkov, technika vosku a pasty, citlivé zóny, konzultácia klienta, podľa potreby príprava na súťaže."
 				},
-				"additional": {
-					"title": "Doplnkové služby",
-					"body": "Intímne zosvetlenie — diskrétna estetická procedúra pre ženy: zosvetľujúce prípravky jemne upravujú tón, pôsobia na melanín a dodajú zóne upravený vzhľad.\n\nAnticelulitídne zábaly — intenzívna starostlivosť bez agresívnych prístrojov pre tých, ktorí chcú viditeľný výsledok. Profesionálna kozmetika STYX Naturcosmetic (Rakúsko).",
+				"intimateWhitening": {
+					"title": "Intímne bielenie",
+					"body": "Intímne bielenie — diskrétna estetická procedúra pre ženy: profesionálne zosvetľujúce prípravky jemne upravujú tón, pôsobia na melanín a dodajú zóne upravený vzhľad.",
 					"bullets": [
-						"Zosvetlenie: jemné profesionálne prípravky; len pre ženy.",
-						"Zábaly: u mnohých menší objem už po prvom sedení.",
-						"Výrazný lymfodrenážny efekt a odvod prebytočnej tekutiny.",
-						"Viditeľne jemnejšia textúra pokožky; pevnejšia a pružnejšia pokožka.",
+						"Jemné profesionálne prípravky; len pre ženy.",
+						"Vyrovnaný tón a upravený vzhľad zóny."
+					]
+				},
+				"antiCelluliteWraps": {
+					"title": "Anticelulitídne zábaly",
+					"body": "Anticelulitídne zábaly — intenzívna starostlivosť bez agresívnych prístrojov pre klientov, ktorí chcú viditeľný výsledok. Používame rakúsku profesionálnu rad STYX Naturcosmetic.",
+					"bullets": [
+						"U mnohých klientov menší opuch už po prvom sedení.",
+						"Výrazná lymfodrenáž a odvod prebytočnej tekutiny.",
+						"Jemnejšia textúra celulitidu; pevnejšia a pružnejšia pokožka.",
 						"Detox efekt; rad STYX Naturcosmetic."
 					]
 				}
@@ -623,7 +630,7 @@
 			"natalie": {
 				"name": "Natálie Volik",
 				"role": "Zakladateľka a Hlavná Špecialistka na Depiláciu",
-				"specialty": "Laserová epilácia · Vosková epilácia · Sugaring · Elektroepilácia · Piercing · Kozmetológia · Vzdelávacie kurzy · Doplnkové služby",
+				"specialty": "Laserová epilácia · Vosková epilácia · Sugaring · Elektroepilácia · Piercing · Kozmetológia · Vzdelávacie kurzy · Intímne bielenie · Anticelulitídne zábaly",
 				"bio": "14 rokov skúseností. Medicínske vzdelanie. Šampiónka Ukrajiny v depilácii. Certifikovaná technologička Terra, Enova, Biolaif."
 			},
 			"serhiy": {

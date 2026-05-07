@@ -7,6 +7,7 @@ import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { motion, useReducedMotion } from 'framer-motion'
 import { MousePointerClick } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useEffect } from 'react'
 
 type PublicPriceCatalogBodyProps = {
 	catalog: PriceCatalogStructure | null
@@ -29,6 +30,18 @@ export default function PublicPriceCatalogBody({
 	const hasWoman = (catalog?.woman.services?.length ?? 0) > 0
 	const hasMan = (catalog?.man.services?.length ?? 0) > 0
 	const hasAny = hasWoman || hasMan
+
+	useEffect(() => {
+		if (loading || !catalog || !hasAny) return
+		const hash = window.location.hash.replace(/^#/, '')
+		if (!hash) return
+		const timer = window.setTimeout(() => {
+			document
+				.getElementById(hash)
+				?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+		}, 80)
+		return () => window.clearTimeout(timer)
+	}, [loading, catalog, hasAny])
 
 	if (loading) {
 		return (
