@@ -780,17 +780,6 @@ export default function DepilationPage() {
 						))}
 					</div>
 
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						transition={{ delay: 0.4, duration: 0.6 }}
-						className='mt-14 max-w-3xl mx-auto p-7 rounded-3xl border border-gold-soft/10 bg-gold-soft/[0.02] backdrop-blur-sm'
-					>
-						<p className='text-icyWhite/65 text-sm leading-relaxed text-center'>
-							{t('process.expectation')}
-						</p>
-					</motion.div>
 				</div>
 			</section>
 

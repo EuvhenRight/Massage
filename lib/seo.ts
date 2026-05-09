@@ -13,14 +13,17 @@ function ogUnsplash(photoId: string): string {
   return `https://images.unsplash.com/${photoId}?w=1200&h=630&fit=crop&q=80`;
 }
 
+/** Shared branded social image for massage / depilation previews. */
+const BRANDED_SOCIAL_IMAGE = "/images/Gemini_yellow.png";
+
 /** Home: neutral wellness / spa — works for massage + depilation portal. */
 export const OG_IMAGE_HOME = ogUnsplash("photo-1519494026892-80bbd2d6fd0d");
 
 /** Massage landing, massage booking & price. */
-export const OG_IMAGE_MASSAGE = ogUnsplash("photo-1544161515-4ab6ce6db874");
+export const OG_IMAGE_MASSAGE = BRANDED_SOCIAL_IMAGE;
 
 /** Depilation landing, booking & price — matches portal / depilation mood. */
-export const OG_IMAGE_DEPILATION = ogUnsplash("photo-1519824145371-296894a0daa9");
+export const OG_IMAGE_DEPILATION = BRANDED_SOCIAL_IMAGE;
 
 /** @deprecated Use OG_IMAGE_HOME — kept for JSON-LD and imports. */
 export const DEFAULT_OG_IMAGE = OG_IMAGE_HOME;
@@ -173,7 +176,7 @@ export async function buildPageMetadata(
           width: 1200,
           height: 630,
           alt: title,
-          type: "image/jpeg",
+          type: ogImage.endsWith(".png") ? "image/png" : "image/jpeg",
         },
       ],
     },

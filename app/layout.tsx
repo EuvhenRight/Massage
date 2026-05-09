@@ -38,8 +38,12 @@ export const metadata: Metadata = {
   authors: [{ name: SITE_CONFIG.name, url: siteUrl }],
   referrer: "strict-origin-when-cross-origin",
   icons: {
-    icon: "/images/logo-v.svg",
-    apple: "/images/logo-v.svg",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/images/Gemini_yellow.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
   ...(facebookAppId ? { facebook: { appId: facebookAppId } } : {}),
   ...(googleVerification

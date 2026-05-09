@@ -1,1332 +1,1333 @@
 {
-	"common": {
-		"mainNav": "Main navigation",
-		"calendar": "Calendar",
-		"available": "available",
-		"unavailable": "unavailable",
-		"services": "Services",
-		"book": "Book",
-		"enter": "Enter",
-		"admin": "Admin",
-		"massage": "Massage",
-		"depilation": "Depilation",
-		"membership": "Membership",
-		"aurora": "V2studio",
-		"auroraHome": "V2studio - Home",
-		"openMenu": "Open menu",
-		"closeMenu": "Close menu",
-		"getDirections": "Get directions",
-		"date": "Date",
-		"time": "Time",
-		"loading": "Loading...",
-		"about": "About",
-		"team": "Team",
-		"faq": "FAQ",
-		"contact": "Contact",
-		"prices": "Prices"
-	},
-	"home": {
-		"chooseExperience": "Choose your experience",
-		"portalH1": "V2studio / Epilroom — premium massage and waxing salon in Bratislava, Križna 22",
-		"enterMassage": "Enter Massage experience",
-		"enterDepilation": "Enter Depilation experience"
-	},
-	"booking": {
-		"fullName": "Full name *",
-		"email": "Email *",
-		"phone": "Phone *",
-		"confirmBooking": "Confirm booking",
-		"bookingInProgress": "Booking…",
-		"selectService": "Select a service",
-		"selectDate": "Select date →",
-		"selectTime": "Select time →",
-		"availableTime": "Available time",
-		"chooseTime": "Choose time",
-		"loadingTimes": "Loading times…",
-		"availableTimesFor": "Available times for",
-		"loadingAvailability": "Loading availability…",
-		"back": "Back",
-		"cancel": "Cancel",
-		"next": "Next",
-		"placeholderFullName": "John Smith",
-		"placeholderEmail": "john@example.com",
-		"placeholderPhone": "+421 912 345 678",
-		"phoneWhatsAppHint": "Enter your mobile number with country code (e.g. +421 for Slovakia, +43 for Austria). We use it for WhatsApp booking messages when messaging is enabled, and so we can reach you if needed.",
-		"phoneRecognizedLabel": "Recognized as: {number}",
-		"noSlotsMessage": "No slots available on this day. Pick another date.",
-		"pickServiceDate": "Pick service and date",
-		"pickTime": "Pick time",
-		"yourDetails": "Your details",
-		"pickService": "Pick service",
-		"bookingSummary": "Booking summary",
-		"reviewSelection": "Review your selection",
-		"choicesAppearHere": "Your choices will appear here",
-		"chooseService": "Choose service →",
-		"chooseServiceLabel": "Choose service",
-		"contact": "Contact",
-		"contactUs": "Contact us",
-		"serviceDateTime": "Service, date & time",
-		"bookingProgress": "Booking progress",
-		"appointmentFallback": "Appointment",
-		"step1Label": "Choose service",
-		"step2Label": "Date and time",
-		"step2LabelTbd": "Arrange date",
-		"step3Label": "Your details",
-		"step1Title": "Choose service",
-		"step2Title": "Date and time",
-		"step3Title": "Your details",
-		"step1Desc": "Select your treatment.",
-		"step2Desc": "Pick a date and time that works for you.",
-		"step3Desc": "We'll use this to confirm your booking.",
-		"slotUnavailable": "This time slot is no longer available. Please choose another.",
-		"bookingFailed": "Booking failed. Please try again.",
-		"bookingConfirmed": "Booking confirmed.",
-		"emailNotSent": "Booking confirmed, but {error}",
-		"backToWebsite": "Back to website",
-		"searchServicePlaceholder": "Search for a service",
-		"clearSearch": "Clear search",
-		"categoryLabel": "Category",
-		"showMore": "Show more",
-		"showLess": "Show less",
-		"noSearchResults": "No services match your search.",
-		"noServicesInCategory": "No services in this category.",
-		"bookingInfo": "Choose below how we should send your confirmation. Please arrive 5 minutes before your appointment.",
-		"notifyTitle": "Confirmation messages",
-		"notifyEmailLabel": "Send confirmation by email",
-		"notifyWhatsAppLabel": "Send confirmation via WhatsApp",
-		"notifyWhatsAppNeedsPhone": "Use a valid mobile number with country code (e.g. +380…) if you want WhatsApp confirmations.",
-		"notifyWhatsAppMustFixPhone": "Fix or complete your number above — we can only send WhatsApp after it is recognized.",
-		"notifyHint": "You can select one or both. We still need your email and phone to complete the booking.",
-		"notifyChannelsRequired": "Choose email and/or WhatsApp for your confirmation.",
-		"notifySummaryTitle": "Confirmations",
-		"notifyShortEmail": "Email",
-		"notifyShortWhatsApp": "WhatsApp",
-		"notifyShortJoin": " · ",
-		"whatsappNotDeliveredWithEmail": "Booking saved. We could not deliver the WhatsApp confirmation — please check your email for details.",
-		"whatsappNotDeliveredNoEmail": "Booking saved, but we could not send WhatsApp. Please contact the salon if you need written confirmation.",
-		"whatsappError63016": "WhatsApp was not delivered: this number must join the Twilio test sandbox first (open WhatsApp on that phone and send the “join …” code to the Twilio sandbox number from your Twilio Console).",
-		"whatsappErrorEnvMissing": "WhatsApp was not delivered: messaging is not configured on the server (add TWILIO_* variables where the site is hosted). Check your email for booking details.",
-		"scheduleTbdBookingBadge": "Date arranged with you",
-		"allDayBadge": "{count, plural, one {# day} other {# days}}",
-		"allDayLabel": "All day",
-		"allDayBookingHint": "This service requires {count, plural, one {# full day} other {# full days}}. Choose a start date.",
-		"scheduleTbdCustomerHeading": "Scheduling details",
-		"scheduleTbdEmptyMessage": "We will contact you to agree a date and time that suits you.",
-		"emailScheduleTbdDateLine": "To be agreed with you",
-		"emailScheduleTbdTimeLine": "We will confirm by message or phone",
-		"sidebarScheduleTbdDate": "Not fixed yet — we’ll agree together",
-		"sidebarScheduleTbdTime": "After we contact you",
-		"tbdYourSelectionTitle": "Your selection",
-		"tbdYourSelectionDays": "{count, plural, one {# full calendar day} other {# full calendar days}}",
-		"tbdSidebarMetaTitle": "Booking type",
-		"successFullDayScope": "{count, plural, one {You requested # full calendar day for this service.} other {You requested # full calendar days for this service.}}"
-	},
-	"validation": {
-		"fullNameMin": "Full name must be at least 3 characters",
-		"fullNameMax": "Full name must be at most 100 characters",
-		"invalidEmail": "Invalid email address",
-		"invalidPhone": "Enter a valid mobile number with country code (e.g. +421 912 345 678). National numbers like 09xx work if they match a supported country."
-	},
-	"massage": {
-		"mostPopular": "Most Popular",
-		"select": "Select",
-		"selectMembership": "Select {tier} membership",
-		"hero": "Relaxation. Renewal. Deep healing.",
-		"heroBadge": "V2Studio — Premium Massage, Bratislava",
-		"heroSeoHeading": "Therapeutic, sports and relaxation massage in Bratislava — V2studio, Križna 22",
-		"heroBookButton": "Book",
-		"heroPricesButton": "View Prices",
-		"destinations": "Destinations",
-		"destinationsDesc": "Each journey is unique. Choose yours.",
-		"membershipDesc": "Elevate your ritual. Unlock more.",
-		"reserveTime": "Reserve Your Time",
-		"bookNow": "Book",
-		"trustBarLabel": "Credentials",
-		"trust": {
-			"trustYears": "10+ Years of Experience",
-			"trustCertified": "Certified Therapists",
-			"trustMedical": "Medical Approach",
-			"trustTechniques": "8 Massage Techniques",
-			"trustClients": "2000+ Happy Clients"
-		},
-		"aboutTitle": "About Our Studio",
-		"aboutIntro": "Welcome to V Studio Massage — your sanctuary of relaxation in the heart of Bratislava. We combine traditional massage techniques with modern therapeutic approaches.",
-		"aboutJourney": "Our team of certified therapists brings years of experience in sports, therapeutic, and relaxation massage. Every session is tailored to your individual needs.",
-		"aboutExpertise": "We specialize in deep tissue, Swedish, Thai, and hot stone massage techniques. Each therapist is trained and certified in multiple modalities.",
-		"aboutMedical": "With a focus on therapeutic outcomes, our sessions address chronic pain, stress relief, and rehabilitation with clinical precision.",
-		"aboutContinuous": "Our team regularly participates in advanced training programs and international wellness conferences to bring you the latest techniques.",
-		"philosophyTitle": "Philosophy",
-		"philosophyQuote": "Massage is not a luxury — it is a path to balance, health, and inner harmony.",
-		"howIHelpTitle": "What We Offer",
-		"howIHelpIntro": "In our studio you receive",
-		"valueRelaxation": "Deep relaxation and stress relief",
-		"valueProfessional": "Certified professional therapists",
-		"valueIndividual": "Personalized treatment plans",
-		"valueAmbiance": "Premium spa atmosphere",
-		"valueProducts": "Organic oils and premium products",
-		"achievementsTitle": "Professional Recognition",
-		"achievement1": "Certified by the International Spa Association",
-		"achievement2": "Trained in Thai, Swedish, and deep tissue modalities",
-		"achievement3": "Featured in Bratislava's Top Wellness Guide",
-		"achievement4": "Partnerships with sports teams and rehabilitation centers",
-		"achievement5": "Over 2,000 satisfied clients across Europe",
-		"serviceMenu": {
-			"title": "Massage Menu",
-			"subtitle": "All techniques. Tailored for you. Transparent pricing.",
-			"from": "from",
-			"min": "min",
-			"book": "Book",
-			"zone": {
-				"relaxation": "Relaxation",
-				"therapeutic": "Therapeutic",
-				"specialty": "Specialty"
-			},
-			"items": {
-				"swedishClassic": {
-					"name": "Swedish — Classic",
-					"desc": "Full-body relaxation massage with long flowing strokes."
-				},
-				"swedishDeep": {
-					"name": "Swedish — Deep Pressure",
-					"desc": "Deeper pressure for chronic tension and muscle recovery."
-				},
-				"hotStone": {
-					"name": "Hot Stone Massage",
-					"desc": "Heated basalt stones melt away stress and muscle tightness."
-				},
-				"aromatherapy": {
-					"name": "Aromatherapy Massage",
-					"desc": "Essential oils combined with gentle strokes for total relaxation."
-				},
-				"deepTissue": {
-					"name": "Deep Tissue — Full Body",
-					"desc": "Targets deep muscle layers. Ideal for chronic pain and stiffness."
-				},
-				"sportsMassage": {
-					"name": "Sports Massage",
-					"desc": "Pre and post-event recovery. Injury prevention and flexibility."
-				},
-				"backNeck": {
-					"name": "Back & Neck Focus",
-					"desc": "Concentrated work on upper body tension and office-related pain."
-				},
-				"thaiTraditional": {
-					"name": "Thai Traditional",
-					"desc": "Ancient stretching and acupressure on a floor mat. Clothed session."
-				},
-				"lymphatic": {
-					"name": "Lymphatic Drainage",
-					"desc": "Gentle rhythmic strokes to stimulate lymph flow and reduce swelling."
-				},
-				"headScalp": {
-					"name": "Head & Scalp Massage",
-					"desc": "Relieves headaches, eye strain, and mental fatigue."
-				},
-				"footReflexology": {
-					"name": "Foot Reflexology",
-					"desc": "Pressure points on feet connected to organs. Deep relaxation."
-				},
-				"couplesRetreat": {
-					"name": "Couples Retreat",
-					"desc": "Side-by-side massage for two. The ultimate shared relaxation."
-				}
-			}
-		},
-		"process": {
-			"title": "How Your Visit Works",
-			"subtitle": "From arrival to total relaxation — simple, comfortable, and professional.",
-			"consultation": {
-				"title": "Welcome",
-				"desc": "We discuss your goals, tension areas, and select the ideal technique together."
-			},
-			"preparation": {
-				"title": "Preparation",
-				"desc": "The room is prepared with your preferred temperature, music, and aroma."
-			},
-			"procedure": {
-				"title": "Session",
-				"desc": "Your therapist works with precision, adjusting pressure and technique to your comfort."
-			},
-			"aftercare": {
-				"title": "Aftercare",
-				"desc": "Herbal tea and personalized recommendations for continued wellness at home."
-			},
-			"expectation": "Most clients feel immediate relief and deep relaxation. For chronic issues, a course of 4-6 sessions is recommended. We provide personalized aftercare advice to maintain results between visits."
-		},
-		"team": {
-			"title": "Your specialist",
-			"subtitle": "Every session is performed by a certified professional.",
-			"therapist1": {
-				"name": "Serhiy Volyk",
-				"role": "Founder & lead massage specialist",
-				"specialty": "Classic · Sports · Anti-cellulite · Lymphatic drainage · Device-assisted · Gua sha",
-				"bio": "Practicing since 2022. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
-			},
-			"workspace": {
-				"title": "Our Space",
-				"desc": "A tranquil, private environment designed for complete relaxation. Ambient lighting, soothing music, and premium organic products."
-			}
-		},
-		"hygiene": {
-			"title": "Standards & Quality",
-			"subtitle": "Your comfort and safety are our top priority.",
-			"freshLinens": {
-				"title": "Fresh Linens",
-				"desc": "Clean, premium linens for every session. Laundered at high temperature with hypoallergenic detergent."
-			},
-			"sanitization": {
-				"title": "Room Sanitization",
-				"desc": "Each treatment room is fully sanitized between sessions. Hospital-grade disinfectants."
-			},
-			"organicProducts": {
-				"title": "Organic Products",
-				"desc": "We use only certified organic massage oils and creams. Free from parabens and artificial fragrances."
-			},
-			"certified": {
-				"title": "Certified Therapists",
-				"desc": "All therapists hold international certifications and undergo regular continuing education."
-			}
-		},
-		"testimonials": {
-			"title": "What Clients Say",
-			"subtitle": "Real experiences from real people.",
-			"review1": {
-				"text": "The best massage I've ever had. Anna found every knot and worked through it with incredible skill. I left feeling like a new person.",
-				"author": "David R.",
-				"service": "Deep Tissue"
-			},
-			"review2": {
-				"text": "The hot stone massage was pure heaven. The room, the music, the technique — everything was perfect. Already booked my next session.",
-				"author": "Jana M.",
-				"service": "Hot Stone"
-			},
-			"review3": {
-				"text": "I've been dealing with chronic back pain for years. After 4 sessions here, the improvement is remarkable. Truly professional.",
-				"author": "Martin K.",
-				"service": "Therapeutic"
-			},
-			"review4": {
-				"text": "My partner and I did the couples retreat for our anniversary. It was an unforgettable experience. Highly recommend!",
-				"author": "Sofia & Tomas",
-				"service": "Couples"
-			},
-			"review5": {
-				"text": "The Thai massage was authentic and amazing. I could feel the difference from other places immediately. Expert hands.",
-				"author": "Peter L.",
-				"service": "Thai"
-			},
-			"review6": {
-				"text": "Online booking was easy, the studio is beautiful, and the massage exceeded expectations. Five stars without hesitation.",
-				"author": "Monika S.",
-				"service": "Swedish"
-			}
-		},
-		"faq": {
-			"title": "Frequently Asked Questions",
-			"subtitle": "Everything you need to know before your first visit.",
-			"duration": {
-				"q": "How long is a session?",
-				"a": "Sessions range from 30 to 90 minutes depending on the technique. We recommend 60 minutes for a full-body treatment and 90 minutes for deep tissue or therapeutic work."
-			},
-			"prepare": {
-				"q": "How should I prepare?",
-				"a": "Arrive 10 minutes early. Avoid heavy meals 2 hours before. Wear comfortable clothing — for Thai massage, loose-fitting clothes are provided. Shower before the session if possible."
-			},
-			"pressure": {
-				"q": "Can I choose the pressure level?",
-				"a": "Absolutely. Your therapist will check in during the session and adjust pressure to your preference. Communication is key to the best experience."
-			},
-			"frequency": {
-				"q": "How often should I get a massage?",
-				"a": "For maintenance, once or twice a month is ideal. For chronic pain or recovery, we may recommend weekly sessions initially, then gradually spacing them out."
-			},
-			"medical": {
-				"q": "Is massage safe if I have medical conditions?",
-				"a": "We always do a brief health consultation before your first session. Certain conditions may require a doctor's clearance. Please inform us of any conditions when booking."
-			},
-			"aftercare": {
-				"q": "What should I do after a massage?",
-				"a": "Drink plenty of water, avoid intense exercise for 24 hours, and take a warm (not hot) bath if desired. Some mild soreness is normal after deep tissue work."
-			},
-			"booking": {
-				"q": "How do I book and can I cancel?",
-				"a": "Book online through this website. You'll receive instant confirmation by email. Cancellations or changes should be made at least 24 hours in advance."
-			},
-			"couples": {
-				"q": "How does the couples massage work?",
-				"a": "You and your partner are in the same room on adjacent tables, each with your own therapist. You can choose different techniques if preferred."
-			}
-		},
-		"contact": {
-			"title": "Get in Touch",
-			"subtitle": "Questions? Prefer to talk? We're here for you.",
-			"mapTitle": "V Studio location",
-			"hours": "Mon–Fri: 9:00–20:00 · Sat: 10:00–18:00",
-			"formTitle": "Send a Message",
-			"nameLabel": "Your name",
-			"namePlaceholder": "Jane Smith",
-			"emailLabel": "Email",
-			"emailPlaceholder": "jane@example.com",
-			"phoneLabel": "Phone (optional)",
-			"phonePlaceholder": "+421 ...",
-			"messageLabel": "Your message",
-			"messagePlaceholder": "Tell us about your needs or ask any question...",
-			"submit": "Send Message",
-			"success": "Thank you! We'll get back to you within 24 hours."
-		},
-		"reserveTitle": "Your Relaxation Starts Today",
-		"reserveDesc": "We look forward to welcoming you. Book your session now and discover the healing power of professional massage.",
-		"callNow": "Call Now",
-		"footer": {
-			"tagline": "Premium massage studio in Bratislava. Expert therapists, organic products, total relaxation.",
-			"navTitle": "Navigation",
-			"socialTitle": "Follow Us",
-			"rights": "All rights reserved.",
-			"privacy": "Privacy Policy",
-			"cookies": "Cookie Policy"
-		}
-	},
-	"depilation": {
-		"heroLine2": "Smoothness you'll want to come back for.",
-		"heroSubtitle": "Premium depilation with 14 years of expertise. Medical precision meets comfort.",
-		"heroBadge": "<brand>V2Studio</brand> — Premium Depilation, Bratislava",
-		"heroSeoHeading": "Professional waxing and depilation for face and body in Bratislava — V2studio / Epilroom, Križna 22",
-		"heroBookButton": "Book",
-		"heroPricesButton": "View Prices",
-		"exploreMassage": "← Explore Massage",
-		"bookDepilation": "Book your depilation appointment.",
-		"bookDepilationButton": "Book Depilation",
-		"viewPricesAndBook": "View full price list and book your appointment.",
-		"pricePageButton": "Prices & Book",
-		"trustBarLabel": "Credentials",
-		"trust": {
-			"trustYears": "14+ Years of Experience",
-			"trustMedical": "Medical Education",
-			"trustChampion": "Ukraine Championship Winner",
-			"trustTechniques": "All Types of Depilation",
-			"trustClients": "1000+ Happy Clients"
-		},
-		"aboutTitle": "About Me",
-		"aboutIntro": "My name is Natalie Volik — I'm a premium-class depilation specialist with 14 years of experience and a medical education. I'm delighted to welcome you to <brand>V2Studio</brand>.",
-		"aboutJourney": "My path began in Kyiv, where I worked as a specialist at a renowned depilation salon, before opening my own studio. Today I continue my work in Bratislava with the same professionalism and attention to each of you.",
-		"aboutExpertise": "I master a wide range of depilation techniques and choose the method individually — based on skin type, hair structure, and sensitivity.",
-		"aboutMedical": "I continually improve my skills through training, forums, and professional events. Throughout my career I've upheld high standards of quality, safety, and service. That allows me to use modern techniques, the finest materials, and offer clients a truly premium result.",
-		"aboutContinuous": "I work with both women and men, offering discretion and professionalism in every detail.",
-		"howIHelpTitle": "At <brand>V2Studio</brand> you receive",
-		"valueHygiene": "Impeccable hygiene and sterility",
-		"valueDelicacy": "Delicacy and comfort",
-		"valueIndividual": "Individual approach",
-		"valueService": "High level of service",
-		"valueAtmosphere": "Calm, trusting atmosphere",
-		"achievementsTitle": "Professional Recognition",
-		"achievement1": "Winner of the Ukraine Depilation Championship, «Professional» category",
-		"achievement2": "Technologist-educator for brands Terra, Enova, Biolaif",
-		"achievement3": "Judge at international depilation championships",
-		"achievement4": "Speaker at professional conferences and marathons",
-		"achievement5": "Participant in international beauty industry trade shows",
-		"serviceMenu": {
-			"title": "Services",
-			"subtitle": "We'll choose the optimal method individually for your skin.",
-			"from": "from",
-			"min": "min",
-			"book": "Book",
-			"zone": {
-				"face": "Face",
-				"body": "Body",
-				"intimate": "Intimate Zone"
-			},
-			"items": {
-				"sugaringUpperLip": {
-					"name": "Sugaring — Upper Lip",
-					"desc": "Gentle sugar paste, no redness. Done in minutes."
-				},
-				"sugaringFullFace": {
-					"name": "Sugaring — Full Face",
-					"desc": "Forehead, cheeks, chin, upper lip — complete treatment."
-				},
-				"waxUpperLip": {
-					"name": "Wax — Upper Lip",
-					"desc": "Classic warm wax for fast, precise removal."
-				},
-				"waxEyebrow": {
-					"name": "Wax — Eyebrow Shaping",
-					"desc": "Clean, defined brow line. Pain-minimized technique."
-				},
-				"electroFace": {
-					"name": "Electroepilation — Face",
-					"desc": "Permanent removal of fine and ingrown hairs. Precision work."
-				},
-				"sugaringUnderarms": {
-					"name": "Sugaring — Underarms",
-					"desc": "Smooth, irritation-free underarms. Natural paste, minimal discomfort."
-				},
-				"sugaringFullArms": {
-					"name": "Sugaring — Full Arms",
-					"desc": "Complete arm treatment from wrist to shoulder."
-				},
-				"sugaringFullLegs": {
-					"name": "Sugaring — Full Legs",
-					"desc": "Silky legs from ankle to hip. Lasts 3–4 weeks."
-				},
-				"waxFullLegs": {
-					"name": "Wax — Full Legs",
-					"desc": "Classic warm wax for longer-lasting smoothness."
-				},
-				"bioFullBody": {
-					"name": "Bio Depilation — Full Body",
-					"desc": "Premium Biolaif formula. Maximum skin care during removal."
-				},
-				"laserFullLegs": {
-					"name": "Laser — Full Legs",
-					"desc": "Long-term hair reduction. Professional diode laser."
-				},
-				"sugaringClassicBikini": {
-					"name": "Sugaring — Classic Bikini",
-					"desc": "Bikini line — gentle and precise. Minimal irritation."
-				},
-				"sugaringDeepBikini": {
-					"name": "Sugaring — Deep Bikini",
-					"desc": "Complete intimate zone. Maximum comfort, absolute privacy."
-				},
-				"waxClassicBikini": {
-					"name": "Wax — Classic Bikini",
-					"desc": "Fast bikini line treatment with warm wax."
-				},
-				"waxDeepBikini": {
-					"name": "Wax — Deep Bikini",
-					"desc": "Full intimate depilation. Discreet, professional, painless."
-				}
-			}
-		},
-		"serviceSections": {
-			"tapHint": "Services",
-			"learnMore": "Details",
-			"closeModal": "Close",
-			"viewPrices": "Full price list",
-			"book": "Book",
-			"cards": {
-				"laser": {
-					"title": "Laser epilation",
-					"body": "We work with a diode laser. The treatment suits all areas—from face to deep bikini.",
-					"bullets": [
-						"After the first session you’ll usually notice softer hair and slower regrowth.",
-						"Safe when protocol is followed and after a consultation.",
-						"For maximum results, a course of about 10–15 sessions is usually recommended."
-					]
-				},
-				"wax": {
-					"title": "Wax epilation",
-					"body": "A fast, effective way to remove hair from the root.",
-					"bullets": [
-						"Skin stays smooth for up to 3–4 weeks.",
-						"Suits all areas: legs, arms, bikini, underarms, and face.",
-						"With each visit hair tends to grow finer; results are visible right after the session."
-					]
-				},
-				"sugar": {
-					"title": "Sugaring",
-					"body": "Gentle sugar-paste removal from the root. Hair is taken in the direction of growth—less irritation and fewer ingrowns.",
-					"bullets": [
-						"Suits all areas, including sensitive skin.",
-						"Smooth skin for up to 3–4 weeks.",
-						"Over time hair can become finer and sparser."
-					]
-				},
-				"electro": {
-					"title": "Electroepilation",
-					"body": "A lasting solution for unwanted hair: each hair is treated individually, the follicle is disabled, and regrowth is prevented. Ideal for face, bikini, underarms, and small hard-to-reach spots where other methods fall short.",
-					"bullets": [
-						"Most people need about 6–12 sessions for complete removal of the treated hair."
-					]
-				},
-				"piercing": {
-					"title": "Piercing",
-					"body": "We pierce the whole ear—lobe and cartilage. Needle or gun; a wide choice of jewellery.",
-					"bullets": [
-						"Adults and children from four months—with parental consent and our safety rules.",
-						"Jewellery and aftercare are chosen together with you."
-					]
-				},
-				"cosmetology": {
-					"title": "Cosmetology",
-					"body": "Holistic care with attention to every client’s skin.",
-					"bullets": [
-						"Facial massage—for tone, lift, and glow.",
-						"Cleansing treatments—for deep cleansing and freshness.",
-						"Peels—for renewal and smoother, more even skin.",
-						"Therapeutic and maintenance treatments tailored to your skin.",
-						"Most importantly—we build a home-care plan so results last and improve every day."
-					]
-				},
-				"courses": {
-					"title": "Training courses",
-					"body": "Professional waxing and sugaring courses. Groups of up to two or one-to-one sessions.",
-					"bullets": [
-						"Beginner training from scratch.",
-						"Advanced skills and upskilling.",
-						"Practice on tricky areas where you need more confidence.",
-						"Preparation for depilation championships."
-					],
-					"scheduleLabel": "Dates & booking",
-					"scheduleText": "Contact us by phone, WhatsApp, or email for the next intake—we will agree format, level, and schedule.",
-					"topicsLabel": "Curriculum highlights",
-					"topicsText": "Salon hygiene, skin and hair assessment, waxing and sugaring technique, sensitive zones, client consultation, and competition-focused practice where needed."
-				},
-				"intimateWhitening": {
-					"title": "Intimate whitening",
-					"body": "Intimate whitening is a discreet aesthetic treatment for women: professional brightening products gently even out tone, address melanin, and leave the area looking neat and cared for.",
-					"bullets": [
-						"Gentle professional formulas; women only.",
-						"Even tone and a neat, cared-for look."
-					]
-				},
-				"antiCelluliteWraps": {
-					"title": "Anti-cellulite wraps",
-					"body": "Anti-cellulite wraps are an intensive option without aggressive devices—for clients who want visible change. We use the Austrian professional line STYX Naturcosmetic.",
-					"bullets": [
-						"Many clients notice less puffiness after the first session.",
-						"Strong lymphatic support and help flushing excess fluid.",
-						"Smoother-looking cellulite texture; firmer, more elastic skin.",
-						"Detox effect; STYX Naturcosmetic."
-					]
-				}
-			}
-		},
-		"process": {
-			"title": "How Your Visit Works",
-			"consultation": {
-				"title": "Consultation",
-				"desc": "We discuss your goals, skin type, and together we choose the ideal technique."
-			},
-			"preparation": {
-				"title": "Preparation",
-				"desc": "We gently cleanse and prepare the skin. Sterile single-use instruments are opened in front of you."
-			},
-			"procedure": {
-				"title": "Procedure",
-				"desc": "The technique is performed with precision and care, following protocols and each client's individual needs."
-			},
-			"aftercare": {
-				"title": "Aftercare",
-				"desc": "You receive personalized recommendations for the best and longest-lasting results."
-			},
-			"expectation": "Most clients describe the sensation from their first visit as brief, tolerable warmth. First sessions may be more sensitive — each visit gets easier. How long results last depends on the procedure type: typically 3–5 weeks, or permanently with electroepilation."
-		},
-		"team": {
-			"title": "Your specialists",
-			"subtitle": "Certified studio professionals perform every treatment.",
-			"natalie": {
-				"name": "Natalie Volik",
-				"role": "Founder & Lead Depilation Specialist",
-				"specialty": "Laser epilation · Wax epilation · Sugaring · Electroepilation · Piercing · Cosmetology · Training courses · Intimate whitening · Anti-cellulite wraps",
-				"bio": "14 years of experience. Medical education. Champion of Ukraine in depilation. Certified technologist for Terra, Enova, and Biolaif. I treat every client as the only one."
-			},
-			"serhiy": {
-				"name": "Serhiy Volyk",
-				"role": "Founder & lead massage specialist",
-				"specialty": "Classic · Sports · Anti-cellulite · Lymphatic drainage · Device-assisted · Gua sha",
-				"bio": "Practicing since 2022. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
-			},
-			"workspace": {
-				"title": "Our Studio",
-				"desc": "A calm, private space designed for your comfort. Every detail — from lighting to temperature — is carefully considered to make your experience as relaxing as possible."
-			}
-		},
-		"hygiene": {
-			"title": "Safety & Hygiene",
-			"subtitle": "Your health is non-negotiable. Every detail is controlled.",
-			"singleUse": {
-				"title": "Single-Use Tools",
-				"desc": "All applicators, spatulas, and contact materials are opened from sealed packaging in front of you and disposed of immediately after use."
-			},
-			"sanitization": {
-				"title": "Medical-Grade Sanitization",
-				"desc": "Surfaces and equipment are disinfected with professional antiseptics after each client."
-			},
-			"sterilization": {
-				"title": "Autoclave Sterilization",
-				"desc": "All reusable instruments undergo autoclave sterilization at 180–200°C."
-			},
-			"certified": {
-				"title": "Certified Materials",
-				"desc": "We work exclusively with certified professional brands: Terra, Enova, Biolaif. All products are dermatologically tested and hypoallergenic."
-			}
-		},
-		"testimonials": {
-			"title": "What Clients Say",
-			"subtitle": "Real experiences from real people.",
-			"review1": {
-				"text": "I had laser epilation with master Natasha and I'm very happy. The session was as comfortable as possible and almost painless. I'd been to another specialist before — it hurt much more, so I can compare. Natasha is very careful and attentive. I'll definitely come again! Thank you.",
-				"author": "Alena Kotova",
-				"meta": "2 weeks ago · New",
-				"service": "Laser"
-			},
-			"review2": {
-				"text": "I had my cartilage pierced and I'm thrilled ❤️ A very attentive, calm, and careful specialist. She explained everything in detail beforehand, answered all my questions, and helped me choose jewellery. The process was quick and almost painless; sterility was top level. I especially want to mention her light hand and caring approach 🙌 Healing is going great, with no issues, thanks to clear aftercare advice. If you've been thinking about a cartilage piercing but feel nervous — book with confidence. You're in safe hands! 🥰",
-				"author": "Kristina Sanduliak",
-				"meta": "1 month ago",
-				"service": "Piercing"
-			},
-			"review3": {
-				"text": "Huge thanks to Natali for professionalism and tact! 🌸 From the first minutes you feel at ease; the atmosphere is welcoming, everything is gentle and calm. My waxing flew by unnoticed: Natali is a true pro — confident and caring. My skin felt perfect, no discomfort, just lightness and a great mood! Rare to meet such an attentive specialist. This is my place now — 100% recommend! ❤️",
-				"author": "Artem",
-				"meta": "1 month ago",
-				"service": "Waxing"
-			},
-			"review4": {
-				"text": "I had my cartilage pierced with Natali Volik — everything was neat and calm. She's very attentive, explained everything in detail and answered my questions. It was quick and almost painless, everything clean and professional. I'm delighted with the result.",
-				"author": "Viktoriia Lomeiko",
-				"meta": "1 month ago",
-				"service": "Piercing"
-			},
-			"review5": {
-				"text": "Huge thanks to Natasha. A wonderful specialist — delicate and attentive to detail. I got not only the treatment but also care advice, and I had a lovely time at the salon. I recommend her to everyone.",
-				"author": "Svitlana Sapehina",
-				"meta": "3 weeks ago · New",
-				"service": "Depilation"
-			},
-			"review6": {
-				"text": "I highly recommend master Natali! My bikini is always perfect thanks to her — neat, clean, and above all quick! Friendly atmosphere and great chats; I genuinely look forward to every beauty appointment ❤️‍🔥",
-				"author": "Alena Fitsoni",
-				"meta": "2 weeks ago · New",
-				"service": "Bikini"
-			},
-			"review7": {
-				"text": "I chose Epilroom_Bratislava three years ago and I only go there. Great place, professional masters, quality products, and always a cosy atmosphere 💛 solid five stars.",
-				"author": "Mariia Kononova",
-				"meta": "2 weeks ago · New",
-				"service": "Studio"
-			},
-			"review8": {
-				"text": "You're simply amazing! The whole treatment was so quick and comfortable I didn't notice the time. Your skilled hands and light conversation made it as painless as possible. My skin is perfectly smooth and soft now! The result exceeded my expectations — I'm so glad I can forget the razor for weeks. A true professional — I recommend you to everyone and I'll definitely be back!",
-				"author": "Lol Juj",
-				"meta": "4 months ago",
-				"service": "Depilation"
-			},
-			"review9": {
-				"text": "I'm very happy with Natalia! She does depilation professionally, quickly, and to a high standard — and she's polite, tactful, and lovely.",
-				"author": "Yelena Volosozhar",
-				"meta": "4 months ago",
-				"service": "Depilation"
-			},
-			"review10": {
-				"text": "Natali is simply a MEGA master and person 💯 In Ukraine I went to the same master for over 5 years; finding \"your\" master abroad is hard, but I was incredibly lucky to find Natali here — from the first visit I knew she was my MEGA master. Thank you for quality, humanity, and the cosy vibe 😘",
-				"author": "Of fridom",
-				"meta": "4 months ago",
-				"service": "Depilation"
-			},
-			"review11": {
-				"text": "Such a pleasant salon atmosphere — you're always greeted with a smile, your mood lifts, and the work is 100%! I love how sterile everything is, how clearly they explain and show everything, and the sweet treats 😉 10/10 🙏",
-				"author": "Alena Barantseva",
-				"meta": "6 months ago",
-				"service": "Studio"
-			},
-			"review12": {
-				"text": "I had cartilage piercing with master Natalia — loved it. She's very communicative, helped choose the best spot, and I'll definitely come again ✨💗",
-				"author": "Valeriia Khmilenko",
-				"meta": "1 month ago",
-				"service": "Piercing"
-			},
-			"review13": {
-				"text": "I've been for depilation several times and I always love it — great quality and a nice atmosphere. I'll keep coming back ❤️",
-				"author": "Alena Postolnik",
-				"meta": "1 month ago",
-				"service": "Depilation"
-			},
-			"review14": {
-				"text": "With Natalia everything is always professional — she really listens and works quickly. Lovely atmosphere too!",
-				"author": "Lida Privezentseva",
-				"meta": "4 months ago",
-				"service": "Depilation"
-			},
-			"review15": {
-				"text": "The best laser epilation specialist in the world. After the first visit about 40% of hair was gone. Most importantly — Natalia's incredible energy. For us women, feeling comfortable during these treatments matters so much… With Natalia it's like an old friend — so comfortable. Fast, painless. We even had a good laugh. I only go to her now.",
-				"author": "Tetiana Kosarieva (Kosarieva.cosmetolog)",
-				"meta": "1 year ago",
-				"service": "Laser"
-			},
-			"review16": {
-				"text": "Hello. Natalia, thank you for your work — I loved how you do it: quality, clean, painless, and comfortable. You're a master of your craft. Thank you ☺️",
-				"author": "Viktoria Ganzienko",
-				"meta": "6 months ago",
-				"service": "Depilation"
-			},
-			"review17": {
-				"text": "The master is great! We chatted through the whole session.",
-				"author": "Ann",
-				"meta": "1 month ago",
-				"service": "Depilation"
-			},
-			"review18": {
-				"text": "Beautiful work! Very happy with the result — recommend!",
-				"author": "July Bel",
-				"meta": "1 year ago",
-				"service": "Depilation"
-			},
-			"review19": {
-				"text": "I'd like to leave a great review for master Natalia. I came to her for piercing — you can choose needle or gun. On the spot she suggests jewellery options and advises what works best. She stays in touch, checks how you're doing, and answers questions. She provides aftercare product and instructions. I had no issues with my piercings.",
-				"author": "Yeva Yachmenova",
-				"meta": "1 week ago · New",
-				"service": "Piercing"
-			},
-			"review20": {
-				"text": "Excellent master!) Recommend to everyone.",
-				"author": "Angelina",
-				"meta": "2 weeks ago · New",
-				"service": "Depilation"
-			},
-			"review21": {
-				"text": "Everything was wonderful — pleasant atmosphere, cleanliness, and comfort. The team is lovely and attentive; I felt relaxed. I also loved the little touches: sometimes cute gifts like gingerbread, fun collaborations, and a choice of products such as deodorants from trusted pros. Only positive impressions — I'll definitely return. Highly recommend!",
-				"author": "Polina",
-				"meta": "2 weeks ago · New",
-				"service": "Studio"
-			}
-		},
-		"faq": {
-			"title": "Frequently Asked Questions",
-			"subtitle": "Everything you need to know before your first visit.",
-			"painful": {
-				"q": "Is depilation painful?",
-				"a": "Most clients describe it as a brief, tolerable warmth. I use techniques that minimize discomfort, and the sensation decreases with each subsequent session as hair becomes finer. If you're sensitive, I'll adapt the approach specifically for you."
-			},
-			"prepare": {
-				"q": "How should I prepare for my appointment?",
-				"a": "Hair should be 3–5 mm long (about 10–14 days of growth). Avoid sunbathing, tanning beds, and exfoliating 24 hours before. No creams or lotions on the day of the procedure. That's it — I'll take care of the rest."
-			},
-			"results": {
-				"q": "How long do results last?",
-				"a": "Depending on the technique and body zone, results last 3–5 weeks. With regular sessions, hair grows thinner and slower over time. Laser epilation provides long-term reduction after a course of sessions."
-			},
-			"technique": {
-				"q": "Which technique is best for me?",
-				"a": "It depends on your skin type, hair structure, and sensitivity. During the first visit, I'll assess your needs and recommend the most effective method. I'm certified in all five techniques — sugaring, wax, bio, laser, and electroepilation."
-			},
-			"men": {
-				"q": "Do you work with men?",
-				"a": "Absolutely. I work with both women and men, ensuring full tact, confidentiality, and professionalism. All services are available regardless of gender."
-			},
-			"pregnancy": {
-				"q": "Can I have depilation while pregnant?",
-				"a": "Yes — in all three trimesters."
-			},
-			"teens": {
-				"q": "Can teenagers have depilation?",
-				"a": "Yes — from age 8."
-			},
-			"aftercare": {
-				"q": "What aftercare do you recommend?",
-				"a": "Avoid hot baths, saunas, direct sun, and tight clothing for 24–48 hours. I'll give you a personalized aftercare card after every session with specific recommendations for your skin type."
-			},
-			"booking": {
-				"q": "How do I book and can I cancel?",
-				"a": "Book online through this website — select a service, date, and time. You'll receive an instant email confirmation. Need to reschedule? Just contact me at least 24 hours in advance."
-			},
-			"sensitive": {
-				"q": "Is it safe for sensitive skin or allergies?",
-				"a": "Yes. My medical education allows me to work safely with all skin types, including sensitive and allergy-prone skin. All materials are dermatologically tested and hypoallergenic. I always do a patch test if there's any concern."
-			}
-		},
-		"contact": {
-			"title": "Get in Touch",
-			"subtitle": "Questions? Prefer to talk? I'm here for you.",
-			"mapTitle": "V Studio location",
-			"hours": "Mon–Fri: 9:00–19:00 · Sat: 10:00–16:00",
-			"formTitle": "Send a Message",
-			"nameLabel": "Your name",
-			"namePlaceholder": "Jane Smith",
-			"emailLabel": "Email",
-			"emailPlaceholder": "jane@example.com",
-			"phoneLabel": "Phone (optional)",
-			"phonePlaceholder": "+421 ...",
-			"messageLabel": "Your message",
-			"messagePlaceholder": "Tell me about your needs or ask any question...",
-			"submit": "Send Message",
-			"success": "Thank you! I'll get back to you within 24 hours."
-		},
-		"reserveTitle": "Your Smoothness Starts Today",
-		"reserveDesc": "I sincerely look forward to welcoming you to <brand>V2Studio</brand>. I'm confident you'll be delighted not only with the result, but also with the atmosphere, care, and that feeling of lightness you'll have after your procedure.",
-		"bookNow": "Book",
-		"callNow": "Call Now",
-		"servicesTitle": "Services",
-		"servicesDesc": "I work with both women and men, ensuring tact and professionalism in every detail.",
-		"serviceSugaring": "Sugaring",
-		"serviceSugaringDesc": "Natural paste removes hair gently with the grain. Ideal for sensitive skin and fine hair.",
-		"serviceWax": "Wax Depilation",
-		"serviceWaxDesc": "Classic warm or hot wax for longer-lasting smoothness. Suitable for all skin types.",
-		"serviceBio": "Bio Depilation",
-		"serviceBioDesc": "Premium natural formulas. Maximum care for your skin with professional brands.",
-		"footer": {
-			"tagline": "Premium depilation studio in Bratislava. 14 years of expertise, medical precision, absolute care.",
-			"navTitle": "Navigation",
-			"socialTitle": "Follow Us",
-			"rights": "All rights reserved.",
-			"privacy": "Privacy Policy",
-			"cookies": "Cookie Policy"
-		},
-		"myServices": {
-			"title": "My Services",
-			"subtitle": "Professional depilation techniques. I choose the method individually — for your skin type, hair structure, and sensitivity.",
-			"from": "from",
-			"sugaring": "Sugaring",
-			"sugaringDesc": "Natural sugar paste removes hair gently with the grain. Ideal for sensitive skin. Works with Terra, Enova.",
-			"wax": "Wax Depilation",
-			"waxDesc": "Classic warm or hot wax for longer-lasting smoothness. Suitable for all skin types and body zones.",
-			"bio": "Bio Depilation",
-			"bioDesc": "Premium natural formulas from Biolaif. Maximum care for your skin with professional brands.",
-			"laser": "Laser Epilation",
-			"laserDesc": "Long-term hair reduction with laser technology. Face, body, bikini, legs — professional equipment.",
-			"electro": "Electroepilation",
-			"electroDesc": "Permanent hair removal for face. Precision work with fine and ingrown hairs.",
-			"zoneFace": "Face",
-			"zoneBody": "Hands & Body",
-			"zoneBikini": "Bikini",
-			"zoneLegs": "Legs"
-		}
-	},
-	"price": {
-		"pageMetaTitle": "Price list",
-		"pageMetaDescription": "Full list of services and prices. Book your appointment online.",
-		"backLink": "Back to {name}",
-		"title": "Price",
-		"subtitle": "Find your service by section and body zone. All prices and durations are listed.",
-		"clickPriceToBookHint": "Click a price (woman or man column) to open booking with that line preset.",
-		"sex": "Booking for",
-		"woman": "Woman",
-		"man": "Man",
-		"min": "min",
-		"bookThis": "Book",
-		"noPricesYet": "Price list is being updated. Please contact us or book a general appointment.",
-		"noPricesForGender": "No prices listed for this category.",
-		"tbdPriceLineDays": "{count, plural, one {# full day (we set dates with you)} other {# full days (we set dates with you)}}",
-		"saleBadge": "SALE!"
-	},
-	"admin": {
-		"signIn": "Sign in",
-		"admin": "Admin",
-		"chooseBookingSystem": "Choose which booking system to manage",
-		"backToCabinet": "Back to cabinet",
-		"signOut": "Sign out",
-		"backToAurora": "← Back to V2studio",
-		"calendar": "Calendar",
-		"agenda": "Agenda",
-		"agendaSubtitle": "Full schedule of upcoming appointments.",
-		"agendaSearchPlaceholder": "Search by name, phone, email, or service…",
-		"agendaStatScheduled": "Scheduled",
-		"agendaStatAwaiting": "Awaiting date",
-		"agendaStatTotal": "Total",
-		"agendaOpenCalendar": "Calendar view",
-		"agendaNoMatches": "No appointments match your search.",
-		"agendaRowHint": "Tap or click a row to edit the appointment.",
-		"analytics": "Analytics",
-		"analyticsSubtitle": "All customers and appointments. Search by name or phone.",
-		"searchByNameOrPhone": "Search by name or phone…",
-		"exportPdf": "Export PDF",
-		"noSearchResults": "No matches found.",
-		"noCustomersYet": "No customers yet.",
-		"emailHeader": "Email",
-		"phoneHeader": "Phone",
-		"noUpcomingAppointments": "No upcoming appointments.",
-		"settings": "Settings",
-		"servicesCalendarAppointments": "Services, calendar, appointments",
-		"manageWorkingHours": "Manage working hours and services",
-		"openMenuAria": "Open admin menu",
-		"closeMenuAria": "Close admin menu",
-		"signOutAria": "Sign out",
-		"publicBooking": "Public booking",
-		"helpManual": "Help",
-		"helpManualAria": "Open admin user guide",
-		"helpPageTitle": "Admin guide",
-		"helpPageLead": "How to use the calendar, agenda, price catalog, and settings. For staff and administrators.",
-		"helpBackAria": "Back to admin",
-		"helpBackPlaceHint": "Tip: you opened this from {place}. Use the back arrow to return there.",
-		"helpDocNote": "A Markdown copy of this guide for editors lives in the project at docs/ADMIN_MANUAL.md.",
-		"helpSectionIntroTitle": "Signing in and choosing a business",
-		"helpSectionIntroBody": "Sign in from Admin with your work email (or Google, if enabled). Massage and Depilation are two public entry points to the same studio — each has its own calendar, services, and price list for that context.\n\nUse the language switcher in the header to change the interface (SK, EN, RU, UK).",
-		"helpSectionNavTitle": "Top navigation",
-		"helpSectionNavBody": "Calendar — week/month schedule, drag appointments, and the “waiting for date” list.\nAgenda — upcoming appointments in time order.\nAnalytics — search by name or phone; export PDF.\nPrice catalog — structure, prices, multilingual text; bookable lines sync to booking.\nSettings — working hours, closed days, preparation time between appointments.\n\n“Public booking” opens the customer site in a new tab.",
-		"helpSectionCalendarTitle": "Calendar",
-		"helpSectionCalendarBody": "Drag a timed booking to another day or slot. You cannot move into the past.\n\nSmall badges on the Calendar tab: red counts bookings that still need a real date and time; amber counts full-day bookings that still need every required calendar day chosen.\n\nCustomers who booked “we’ll arrange the date with you” appear in the unscheduled list until you assign slots.\n\nUse “Add appointment” to create a booking manually. Choose date + time, or “Day only” for full working days (multi-day services get one date row per day).",
-		"helpSectionEditTitle": "Editing appointments",
-		"helpSectionEditBody": "Open a block or row, then Edit. Update name, phone, email, internal notes, and schedule where the form allows.\n\nFor TBD (no slot yet) records, set date/time or each required full day in the modal, or use the calendar list actions your workspace provides.\n\nPast appointments are view-only.",
-		"helpSectionPriceTitle": "Price catalog",
-		"helpSectionPriceBody": "Organise services, sections, zones, and price lines. Set how each line is booked: time slot vs “arrange with client”, and how many full days when needed.\n\nSave the catalog so bookable lines appear in public booking and get colours in the admin calendar (by section or zone).",
-		"helpSectionSettingsTitle": "Settings",
-		"helpSectionSettingsBody": "Turn individual days on or off for the month you see, then save. Closed days are hidden from public booking; existing appointments stay.\n\nPreparation buffer: minutes automatically kept free after each appointment so clients do not overlap.",
-		"helpSectionPublicTitle": "Public booking link",
-		"helpSectionPublicBody": "Use “Public booking” in the header to preview exactly what customers see. Test a flow after you change the price catalog or working hours.",
-		"helpSectionTipsTitle": "Tips",
-		"helpSectionTipsBody": "Treat the price catalog as the main place to define what can be booked for both Massage and Depilation.\n\nUse Agenda when you need a quick “who is next” list on the phone.\n\nIf something is missing on the public site, check that the line is bookable, saved, and the day is open in Settings.",
-		"appointments": "Appointments",
-		"appointmentsSubtitle": "Drag an appointment to reschedule. Week view lets you move it to another day or time. Past slots are unavailable. Use Add appointment to create a new one.",
-		"colorAgendaTitle": "All price-list section colors",
-		"calendarBadgeTimeTitle": "Bookings waiting for a date and time",
-		"calendarBadgeDayTitle": "Full-day bookings still missing chosen days",
-		"fullDayNeedDaysCalendarHint": "Not on the week grid until each required day is set in Edit (one date per row). Tap a row to open it.",
-		"calendarAttentionTimeLabel": "Time",
-		"calendarAttentionDayLabel": "Days",
-		"prepBufferInfoTitle": "{minutes} minutes are reserved after each appointment for preparation. This time cannot be booked. Configure in Settings.",
-		"prepBufferNote": "{minutes} minute prep time is automatically kept between appointments so clients never overlap.",
-		"servicesLabel": "Services:",
-		"noServicesYet": "No services yet.",
-		"settingsSubtitle": "Manage working hours and services for {place}.",
-		"manageServicesNote": "Manage services customers can book. Each service has a title, color, and duration.",
-		"manageWorkingHoursNote": "Set when customers can book. Closed days won't appear in the public calendar.",
-		"addAppointment": "Add appointment",
-		"workingHours": "Working hours",
-		"titleLabel": "Title",
-		"titleSk": "Title (SK)",
-		"titleEn": "Title (EN)",
-		"titleRu": "Title (RU)",
-		"titleUk": "Title (UK)",
-		"descriptionSk": "Description (SK)",
-		"descriptionEn": "Description (EN)",
-		"descriptionRu": "Description (RU)",
-		"descriptionUk": "Description (UK)",
-		"colorLabel": "Color",
-		"durationLabel": "Duration (minutes)",
-		"priceLabel": "Price",
-		"appointmentTypeLabel": "Appointment type",
-		"appointmentTypeTime": "Date and time",
-		"adminAllDayDayCountLabel": "Number of calendar days",
-		"adminAllDayDayCountHint": "Choose how many days this booking spans. Then pick each date below (they can be non-consecutive).",
-		"adminAllDayDayCountOption": "{count, plural, one {# day} other {# days}}",
-		"appointmentTypeDay": "Day only",
-		"allDayNoClockTime": "All day",
-		"appointmentTypeDayHint": "Blocks the full working day. Use one calendar per required day below — all must be filled, each date only once.",
-		"appointmentTypeDayLockedHint": "All-day booking: time is not used. Set each required calendar day in its own row below.",
-		"addDayLabel": "Add day",
-		"moveDayLabel": "Move to day",
-		"moveDayHint": "Choose a new day and the whole day booking will shift with the same pattern.",
-		"selectedDaysLabel": "Selected days",
-		"selectedDaysHint": "Choose 1 to 14 available days.",
-		"selectedDaysPerSlotHint": "You must choose exactly {count} different days — one per row.",
-		"fullDaySlotPickerLabel": "Day {n}",
-		"fullDayPickExactlyDays": "Choose exactly {count} calendar days (one date in each row).",
-		"fullDayDaysMustBeDistinct": "Each day must be a different date.",
-		"currentServiceLabel": "Current service",
-		"allDayServiceLockedHint": "The booked service line cannot be changed here. You can still update the calendar days below.",
-		"selectedDaysEmpty": "No days selected yet.",
-		"daySlotPending": "Day {n} — not set yet",
-		"selectAtLeastOneDay": "Select at least one day.",
-		"dayMoveBlocked": "The booking cannot be moved because one of its days is already occupied.",
-		"removeDay": "remove",
-		"dayCountLabel": "Number of days",
-		"dayCountValue": "{count, plural, one {# day} other {# days}}",
-		"itemBookingModeLabel": "How customers book this line",
-		"itemBookingModeTime": "Time slot — pick date and time",
-		"itemBookingModeTbd": "Arrange with client — no calendar on their side; message on the booking step; you assign dates later. Duration is not used; the public booking flow shows the day count instead of minutes.",
-		"itemTbdDayCountLabel": "Full days for this booking",
-		"itemTbdDayCountHint": "Shown on the price list and booking UI as day count (not duration). After the customer books, set each calendar day in Edit.",
-		"itemScheduleTbdCustomerTitle": "Message for the customer (booking step), per language",
-		"titlePlaceholder": "e.g. Swedish Massage",
-		"titleRequired": "Title is required",
-		"durationInvalid": "Duration must be 15–240 minutes",
-		"saveServiceFailed": "Failed to save service",
-		"cancel": "Cancel",
-		"clear": "Clear",
-		"update": "Update",
-		"add": "Add",
-		"saving": "Saving...",
-		"serviceAdded": "Service added.",
-		"serviceUpdated": "Service updated.",
-		"serviceDeleted": "Service deleted.",
-		"deleteServiceFailed": "Failed to delete service.",
-		"edit": "Edit",
-		"delete": "Delete",
-		"addService": "Add service",
-		"editService": "Edit service",
-		"deleteServiceConfirm": "Delete service?",
-		"deleteServiceNote": "Remove {name}? Existing appointments will keep the service name but it won't appear in new bookings.",
-		"addButton": "Add",
-		"editAppointment": "Edit appointment",
-		"pastAppointmentNote": "This appointment is in the past. View only — no changes allowed.",
-		"nameOptional": "Name (optional)",
-		"emailOptional": "Email (optional)",
-		"phoneOptional": "Phone (optional)",
-		"adminNoteLabel": "Note (internal)",
-		"adminNotePlaceholder": "Add an internal note…",
-		"chooseTime": "Choose time",
-		"chooseService": "Choose service",
-		"selectServicePlaceholder": "— Select a service",
-		"close": "Close",
-		"save": "Save",
-		"cannotCreatePast": "Cannot create appointment in the past.",
-		"appointmentUpdated": "Appointment updated.",
-		"customer": "Customer",
-		"appointmentAdded": "Appointment added.",
-		"appointmentAddedNotified": "Appointment added. Customer notified by email.",
-		"appointmentAddedNoEmail": "Appointment added. Email could not be sent.",
-		"appointmentAddedEmailFailed": "Appointment added, but email failed: {error}",
-		"couldNotSend": "Could not send",
-		"slotBooked": "This time slot is already booked.",
-		"adminTimeNoSlots": "No free slots on this day for the selected duration. Change duration or pick another date.",
-		"adminTimeSlotsLoading": "Checking which times are free…",
-		"adminAvailabilityLoading": "Loading busy times for this month…",
-		"fullDayClosed": "One of the selected days is closed in working hours.",
-		"saveFailed": "Failed to save. Please try again.",
-		"copyDetails": "Appointment details copied to clipboard",
-		"copyFailed": "Failed to copy",
-		"copyAria": "Copy appointment details",
-		"editAria": "Edit appointment",
-		"cancelAria": "Cancel appointment",
-		"cannotMovePast": "Cannot move appointment to the past.",
-		"movedNotified": "Appointment moved. Customer notified by email.",
-		"tbdAssignedNotified": "Date assigned. Customer notified by email.",
-		"unscheduledTbdTitle": "Awaiting date (from booking)",
-		"unscheduledTbdHint": "These are not on the time grid and cannot be dragged. Use Edit on a row to set date and time.",
-		"listTbdNoTimeYet": "No date yet",
-		"listTbdAdminHintPrefix": "Note:",
-		"agendaUnscheduledTitle": "Awaiting date",
-		"agendaTbdNoDate": "Unscheduled",
-		"appointmentTbdNotice": "This booking has no fixed slot yet. Set date and time below, or move it from the “Awaiting date” list on the calendar.",
-		"notFound": "Appointment no longer exists.",
-		"moveFailed": "Failed to move appointment. {msg}",
-		"cancelledNotified": "Appointment cancelled. Customer notified by email.",
-		"cancelFailed": "Failed to cancel appointment.",
-		"calRescheduleTitle": "Reschedule this appointment?",
-		"calRescheduleBody": "Move {customerName} ({serviceName}) to {dateStr} at {timeStr}?",
-		"calRescheduleConfirm": "Confirm move",
-		"calCancelTitle": "Cancel this appointment?",
-		"calCancelBody": "Cancel the appointment for {customerName} ({serviceName})? The client will receive an email notification.",
-		"calCancelKeep": "Keep",
-		"calCancelConfirm": "Yes, cancel",
-		"durationMinutesAbbr": "{minutes} min",
-		"sun": "Sun",
-		"mon": "Mon",
-		"tue": "Tue",
-		"wed": "Wed",
-		"thu": "Thu",
-		"fri": "Fri",
-		"sat": "Sat",
-		"sunday": "Sunday",
-		"monday": "Monday",
-		"tuesday": "Tuesday",
-		"wednesday": "Wednesday",
-		"thursday": "Thursday",
-		"friday": "Friday",
-		"saturday": "Saturday",
-		"open": "Open",
-		"closed": "Closed",
-		"dayToggleTitle": "{day} – {status} (click to toggle)",
-		"loadScheduleFailed": "Failed to load schedule",
-		"copiedToMonth": "Copied default schedule to {month}.",
-		"availabilitySaved": "Availability saved.",
-		"prepTimeUpdated": "Prep time updated.",
-		"prepBufferTitle": "Minutes reserved after each appointment for preparation. This time cannot be booked.",
-		"prepBufferAria": "Prep buffer info",
-		"saveAvailability": "Save availability",
-		"defaultScope": "Default (weekly, all time)",
-		"specificMonth": "Specific month…",
-		"prevMonth": "Previous month",
-		"nextMonth": "Next month",
-		"selectDate": "Select date",
-		"month1": "January",
-		"month2": "February",
-		"month3": "March",
-		"month4": "April",
-		"month5": "May",
-		"month6": "June",
-		"month7": "July",
-		"month8": "August",
-		"month9": "September",
-		"month10": "October",
-		"month11": "November",
-		"month12": "December",
-		"from": "From",
-		"to": "to",
-		"scheduleHoursOnlyHint": "Configure which weekdays are open and their hours (from–to). To block entire days for customers, add an appointment in the calendar and choose «Day» — those dates become fully busy for booking.",
-		"scheduleDayType": "Day type",
-		"scheduleModeWindow": "Fixed hours (from – to)",
-		"scheduleModeSlotBegins": "Time slots (begin times only)",
-		"scheduleModeAllDay": "All day",
-		"scheduleAllDayHint": "Customers can book across the full day on this weekday. Timed services use 15-minute steps from midnight to midnight in the picker.",
-		"scheduleSlotBeginsHint": "Only start times are stored; the same list is reused every week for this weekday. Set when the day ends so long services cannot start too late.",
-		"scheduleDayEndsAt": "Day ends at",
-		"scheduleAddBeginTime": "Add begin time…",
-		"scheduleRemoveBeginTime": "Remove this begin time",
-		"scheduleSlotBeginsNeedOne": "Keep at least one begin time.",
-		"copyFromDefault": "Copy from default",
-		"manageScheduleFor": "Manage schedule for",
-		"toggleDaysFor": "Toggle days for",
-		"closedShort": "Closed",
-		"viewDay": "Day",
-		"viewWeek": "Week",
-		"previousDay": "← Previous day",
-		"today": "Today",
-		"nextDay": "Next day →",
-		"previousWeek": "← Previous week",
-		"nextWeek": "Next week →",
-		"loadingSchedule": "Loading schedule…",
-		"couldNotLoadSchedule": "Could not load schedule.",
-		"prepTimeBetween": "Prep time between appointments:",
-		"dayToggleInfo": "Click any day to switch it on or off. Gold = open, gray = closed.",
-		"dayToggleLegendOpen": "Open",
-		"dayToggleLegendClosed": "Closed",
-		"dayToggleTip": "Changes apply to this month only. Remember to save.",
-		"closeDayWithAppointmentsConfirm": "This day has {count, plural, one {# appointment} other {# appointments}}. Closing will hide it from public booking, but existing appointments will remain. Continue?",
-		"priceCatalog": "Price catalog",
-		"priceCatalogSubtitle": "Manage services, sections, zones and prices for the Price page. Titles in 4 languages (SK, EN, RU, UK).",
-		"priceCatalogSaved": "Price catalog saved.",
-		"loadExample": "Load example",
-		"structure": "Structure",
-		"editPanel": "Edit",
-		"selectNodeToEdit": "Select a node from the left to edit.",
-		"priceCatalogCalendarSyncHint": "When you save, bookable lines become booking services and appear in the admin calendar. Each new section (or top-level zone) gets its own color automatically.",
-		"priceCatalogPriceEmptyHint": "Leave price empty to show \"—\" on the public list; that line has no booking link. TBD / full-day lines still link when price is a dash.",
-		"priceCatalogUnnamedService": "Service {n}",
-		"priceCatalogUnnamedSection": "Section {n}",
-		"priceCatalogUnnamedZone": "Zone {n}",
-		"priceCatalogHeadingZone": "Zone",
-		"priceCatalogHeadingSection": "Section",
-		"priceCatalogHeadingService": "Service",
-		"priceCatalogHeadingDirectItems": "Direct items",
-		"priceCatalogBtnAddZone": "+ Zone",
-		"priceCatalogBtnAddSection": "+ Section",
-		"priceCatalogBtnAddItem": "+ Item",
-		"priceCatalogAddLineUnderZone": "+ Add line",
-		"priceCatalogPriceInputPlaceholder": "Price or e.g. from 20",
-		"priceCatalogSale": "Sale",
-		"priceCatalogSalePrice": "Sale price",
-		"priceCatalogSalePricePlaceholder": "New price",
-		"priceCatalogSaleActionLabel": "SALE",
-		"priceCatalogUnnamedLine": "Line {n}",
-		"priceCatalogMissingLine": "This line is no longer in the catalog. Choose another item in the structure.",
-		"priceCatalogBackToZone": "← Back to zone",
-		"priceCatalogBackToService": "← Back to service",
-		"priceCatalogPriceInputPlaceholderShort": "Price",
-		"priceCatalogDescriptionInputPlaceholder": "Important info for customers (e.g. availability, pricing notes)",
-		"sectionColorInCalendar": "This color is used in the admin calendar for every item in this section.",
-		"rootZoneColorInCalendar": "This color is used in the admin calendar for items in this zone.",
-		"zoneUsesSectionCalendarColor": "Calendar color comes from the parent section.",
-		"directItemsColorInCalendar": "This color is used in the admin calendar for these line items.",
-		"servicesManagedInPriceCatalog": "Define bookable services in the Price catalog: add services, sections, zones and price lines, then Save. Calendar colors follow each section (or each top-level zone). You no longer maintain a separate service list here.",
-		"openPriceCatalogForServices": "Open Price catalog →"
-	},
-	"adminSignin": {
-		"signIn": "Sign in",
-		"email": "Email",
-		"password": "Password",
-		"orDivider": "or",
-		"backToAurora": "← Back to V2studio",
-		"title": "Admin sign in",
-		"subtitle": "Sign in with email and password to access the admin panel.",
-		"accessDenied": "Access denied. Only authorized administrators can sign in.",
-		"invalidCredentials": "Invalid email or password.",
-		"signInFailed": "Sign in failed. Please try again.",
-		"signingIn": "Signing in...",
-		"continueWithGoogle": "Continue with Google"
-	},
-	"privacyPolicy": {
-		"metaTitle": "Privacy Policy | V2Studio Bratislava",
-		"metaDescription": "How V2studio in Bratislava processes personal data under the GDPR and Slovak Act No. 18/2018 Z.z.",
-		"title": "Privacy Policy",
-		"backHome": "← Back to home",
-		"intro": "This Privacy Policy applies to the V2studio website and online booking at {address}, Slovak Republic. We process personal data in accordance with Regulation (EU) 2016/679 (General Data Protection Regulation, GDPR) and Act No. 18/2018 Coll. on Personal Data Protection of the Slovak Republic, as amended.",
-		"sectionController": "Data controller",
-		"controller": "The controller of your personal data is Natali Volik, operating as {addressSubtitle}, V2studio, {address}, Slovak Republic. For questions about this policy or your data, contact us at {email} or {phone}.",
-		"sectionLegal": "Applicable law and supervisory authority",
-		"legal": "Because we provide services in Bratislava, Slovak Republic (European Union), the GDPR and the Slovak Act apply. You have the right to lodge a complaint with the Office for Personal Data Protection of the Slovak Republic (ÚOOÚ SR), Hraničná 12, 820 07 Bratislava 27, Slovakia — https://dataprotection.gov.sk/",
-		"sectionData": "Categories of personal data",
-		"data": "Depending on how you interact with us, we may process: identification and contact details you provide (name, phone, email, message content); booking details (date, time, selected service); and, where necessary for the website to function, limited technical data such as cookies (see the Cookie Policy link in the footer).",
-		"sectionPurposes": "Purposes and legal bases",
-		"purposes": "We use your data to: take and manage bookings and deliver our services (contract — Art. 6(1)(b) GDPR); communicate with you about appointments (contract or legitimate interests — Art. 6(1)(b) or (f)); comply with legal obligations such as accounting rules where applicable (Art. 6(1)(c)); keep the website secure and operational (legitimate interests — Art. 6(1)(f)); and, only if you give separate consent, send marketing messages (Art. 6(1)(a)).",
-		"sectionRetention": "Retention",
-		"retention": "We keep personal data only as long as needed for these purposes — generally for the duration of our relationship and then for any period required by tax, accounting, or other Slovak or EU law, or until you withdraw consent for marketing, unless longer retention is justified by legitimate interests (for example defending legal claims).",
-		"sectionRights": "Your rights",
-		"rights": "You may request access, rectification, erasure, restriction of processing, data portability, and object to processing based on legitimate interests. Where we rely on consent, you may withdraw it at any time without affecting the lawfulness of processing before withdrawal. To exercise your rights, contact {email}. You may also contact ÚOOÚ SR (see above).",
-		"sectionCookies": "Cookies",
-		"cookies": "We use cookies as described in our Cookie Policy. Optional cookies (analytics, marketing) are only activated with your consent via the banner or Cookie settings in the footer.",
-		"sectionChanges": "Changes",
-		"changes": "We may update this Privacy Policy when our practices or the law change. The current version is always published on this page. Last updated: March 2026."
-	},
-	"cookieConsent": {
-		"title": "We value your privacy",
-		"description": "We use essential cookies for the website to work and optional cookies for analytics and marketing. You can accept all, reject non-essential cookies, or choose categories. You can change your mind anytime.",
-		"learnMore": "Cookie Policy",
-		"acceptAll": "Accept all",
-		"rejectNonEssential": "Reject non-essential",
-		"customize": "Customise",
-		"saveChoices": "Save choices",
-		"back": "Back",
-		"close": "Close",
-		"manageSettings": "Cookie settings",
-		"ariaRegion": "Cookie consent",
-		"necessaryTitle": "Strictly necessary",
-		"necessaryDesc": "Needed for the site to function (security, core features, remembering your cookie choices). Always on.",
-		"analyticsTitle": "Analytics",
-		"analyticsDesc": "Helps us understand how the site is used (e.g. Google Analytics). Loaded only if you allow it.",
-		"marketingTitle": "Marketing",
-		"marketingDesc": "May support campaign measurement or relevant content. Loaded only if you allow it."
-	},
-	"cookiePolicy": {
-		"metaTitle": "Cookie Policy | V2Studio Bratislava",
-		"metaDescription": "How V2studio uses cookies and similar technologies in Slovakia and the EU.",
-		"title": "Cookie Policy",
-		"backHome": "← Back to home",
-		"intro": "This Cookie Policy explains how V2studio ({address}, Slovak Republic) uses cookies and similar technologies on this website, in line with EU law (including the GDPR) and national rules on electronic communications (ePrivacy) as implemented in Slovakia.",
-		"whatTitle": "What are cookies?",
-		"whatBody": "Cookies are small files stored on your device when you visit a website. They are often used to make the site work, remember settings, and—with your consent—to measure usage or personalise content.",
-		"categoriesTitle": "Categories we use",
-		"categoriesBody": "Strictly necessary cookies are required for core operation (for example storing your consent choice and secure parts of the site). Analytics cookies help us understand visits and improve the site; they load only if you accept them in the banner or enable them in custom settings. Marketing cookies are used only if you enable Marketing. We do not sell your personal data.",
-		"legalTitle": "Legal framework",
-		"legalBody": "The site is operated from Bratislava, Slovak Republic (EU). Where cookies involve personal data, the GDPR applies together with rules on cookies and similar technologies in electronic communications. See also our Privacy Policy for personal data processing.",
-		"usedTitle": "What we use on this site",
-		"usedBody": "We set a first-party cookie v2studio_cookie_consent (up to 12 months) to remember your choices. When you use the staff admin area, standard session cookies may be set for sign-in. If you consent to Analytics, we may load Google Analytics 4, which can set additional cookies or use similar storage.",
-		"manageTitle": "Managing cookies",
-		"manageBody": "Use the cookie banner or “Cookie settings” in the footer to change optional cookies. You can also block or delete cookies in your browser; if you remove the consent cookie, the banner will appear again after a short delay.",
-		"openSettings": "Open cookie settings",
-		"updatesTitle": "Updates",
-		"updatesBody": "We may update this Cookie Policy when our practices or the law change. Last updated: March 2026."
-	},
-	"metadata": {
-		"title": "V2studio Bratislava | Massage & Waxing Salon | Book Online",
-		"description": "Premium massage and waxing salon on Križna 22, Bratislava. V2studio / Epilroom: certified massage therapists, private rooms, face & body waxing by a medically trained specialist. Book online.",
-		"siteName": "V2studio · Bratislava",
-		"keywords": "V2studio, Epilroom Bratislava, massage salon Bratislava, waxing salon Bratislava, Brazilian wax Bratislava, depilation Bratislava, beauty salon Križna 22, Staré Mesto, online booking, therapeutic massage Slovakia, Natali Volik",
-		"adminTitle": "Admin | V2studio",
-		"adminDescription": "Staff sign-in and salon administration. Not indexed by search engines.",
-		"pages": {
-			"massage": {
-				"title": "Massage Bratislava | Sports, Deep Tissue & Relaxation | V2studio",
-				"description": "Sports, deep-tissue and relaxation massage in Bratislava city centre (Križna 22). Certified team, 8+ techniques, memberships—see prices and book online."
-			},
-			"depilation": {
-				"title": "Waxing Bratislava | Face & Body | Epilroom / V2studio",
-				"description": "Expert waxing and depilation by a medically trained specialist. Discreet studio on Križna 22, 14+ years experience—services, FAQ & online booking."
-			},
-			"booking": {
-				"title": "Book Massage or Waxing Online | V2studio Bratislava",
-				"description": "Book massage or depilation in minutes: pick a service, choose a time, confirm by email. V2studio, Križna 22, Bratislava—English, SK, RU & UK."
-			},
-			"massageBooking": {
-				"title": "Massage Appointment Online | Live Availability | V2studio",
-				"description": "Real-time massage booking at V2studio Bratislava. Select duration and technique, see open slots, get instant confirmation—Križna 22."
-			},
-			"depilationBooking": {
-				"title": "Waxing Appointment Online | V2studio / Epilroom",
-				"description": "Schedule face or body waxing online at V2studio. Choose your zone, pick a slot, receive confirmation—private Epilroom studio, Križna 22."
-			},
-			"massagePrice": {
-				"title": "Massage Price List Bratislava | V2studio Cenník",
-				"description": "Current massage rates at V2studio: durations, modalities and add-ons on Križna 22. Compare options, then book the session that fits you."
-			},
-			"depilationPrice": {
-				"title": "Waxing Price List Bratislava | Depilation Cenník | V2studio",
-				"description": "Transparent waxing & depilation prices—face, body, bundles. Plan your visit at V2studio / Epilroom, Bratislava, before you reserve online."
-			},
-			"cookies": {
-				"title": "Cookie Policy | V2studio Bratislava",
-				"description": "How V2studio uses cookies and similar technologies on this site, with consent choices that meet GDPR and EU ePrivacy expectations."
-			},
-			"privacy": {
-				"title": "Privacy Policy | V2studio Bratislava",
-				"description": "How V2studio collects, uses, and protects personal data when you book online, contact us, or browse our website in Slovakia."
-			}
-		}
-	},
-	"email": {
-		"confirmed": "Confirmed",
-		"hi": "Hi",
-		"luxurySalon": "Luxury Salon"
-	}
+  "common": {
+    "mainNav": "Main navigation",
+    "calendar": "Calendar",
+    "available": "available",
+    "unavailable": "unavailable",
+    "services": "Services",
+    "book": "Book",
+    "enter": "Enter",
+    "admin": "Admin",
+    "massage": "Massage",
+    "depilation": "Depilation",
+    "membership": "Membership",
+    "aurora": "V2studio",
+    "auroraHome": "V2studio - Home",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "getDirections": "Get directions",
+    "date": "Date",
+    "time": "Time",
+    "loading": "Loading...",
+    "about": "About",
+    "team": "Team",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "prices": "Prices"
+  },
+  "home": {
+    "chooseExperience": "Choose your experience",
+    "portalH1": "V2studio / Epilroom — premium massage and waxing salon in Bratislava, Križna 22",
+    "enterMassage": "Enter Massage experience",
+    "enterDepilation": "Enter Depilation experience"
+  },
+  "booking": {
+    "fullName": "Full name *",
+    "email": "Email *",
+    "phone": "Phone *",
+    "confirmBooking": "Confirm booking",
+    "bookingInProgress": "Booking…",
+    "selectService": "Select a service",
+    "selectDate": "Select date →",
+    "selectTime": "Select time →",
+    "availableTime": "Available time",
+    "chooseTime": "Choose time",
+    "loadingTimes": "Loading times…",
+    "availableTimesFor": "Available times for",
+    "loadingAvailability": "Loading availability…",
+    "back": "Back",
+    "cancel": "Cancel",
+    "next": "Next",
+    "placeholderFullName": "John Smith",
+    "placeholderEmail": "john@example.com",
+    "placeholderPhone": "+421 912 345 678",
+    "phoneWhatsAppHint": "Enter your mobile number with country code (e.g. +421 for Slovakia, +43 for Austria). We use it for WhatsApp booking messages when messaging is enabled, and so we can reach you if needed.",
+    "phoneRecognizedLabel": "Recognized as: {number}",
+    "noSlotsMessage": "No slots available on this day. Pick another date.",
+    "pickServiceDate": "Pick service and date",
+    "pickTime": "Pick time",
+    "yourDetails": "Your details",
+    "pickService": "Pick service",
+    "bookingSummary": "Booking summary",
+    "reviewSelection": "Review your selection",
+    "choicesAppearHere": "Your choices will appear here",
+    "chooseService": "Choose service →",
+    "chooseServiceLabel": "Choose service",
+    "contact": "Contact",
+    "contactUs": "Contact us",
+    "serviceDateTime": "Service, date & time",
+    "bookingProgress": "Booking progress",
+    "appointmentFallback": "Appointment",
+    "step1Label": "Choose service",
+    "step2Label": "Date and time",
+    "step2LabelTbd": "Arrange date",
+    "step3Label": "Your details",
+    "step1Title": "Choose service",
+    "step2Title": "Date and time",
+    "step3Title": "Your details",
+    "step1Desc": "Select your treatment.",
+    "step2Desc": "Pick a date and time that works for you.",
+    "step3Desc": "We'll use this to confirm your booking.",
+    "slotUnavailable": "This time slot is no longer available. Please choose another.",
+    "bookingFailed": "Booking failed. Please try again.",
+    "bookingConfirmed": "Booking confirmed.",
+    "emailNotSent": "Booking confirmed, but {error}",
+    "backToWebsite": "Back to website",
+    "searchServicePlaceholder": "Search for a service",
+    "clearSearch": "Clear search",
+    "categoryLabel": "Category",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "noSearchResults": "No services match your search.",
+    "noServicesInCategory": "No services in this category.",
+    "bookingInfo": "Choose below how we should send your confirmation. Please arrive 5 minutes before your appointment.",
+    "notifyTitle": "Confirmation messages",
+    "notifyEmailLabel": "Send confirmation by email",
+    "notifyWhatsAppLabel": "Send confirmation via WhatsApp",
+    "notifyWhatsAppNeedsPhone": "Use a valid mobile number with country code (e.g. +380…) if you want WhatsApp confirmations.",
+    "notifyWhatsAppMustFixPhone": "Fix or complete your number above — we can only send WhatsApp after it is recognized.",
+    "notifyHint": "You can select one or both. We still need your email and phone to complete the booking.",
+    "notifyChannelsRequired": "Choose email and/or WhatsApp for your confirmation.",
+    "notifySummaryTitle": "Confirmations",
+    "notifyShortEmail": "Email",
+    "notifyShortWhatsApp": "WhatsApp",
+    "notifyShortJoin": " · ",
+    "whatsappNotDeliveredWithEmail": "Booking saved. We could not deliver the WhatsApp confirmation — please check your email for details.",
+    "whatsappNotDeliveredNoEmail": "Booking saved, but we could not send WhatsApp. Please contact the salon if you need written confirmation.",
+    "whatsappError63016": "WhatsApp was not delivered: this number must join the Twilio test sandbox first (open WhatsApp on that phone and send the “join …” code to the Twilio sandbox number from your Twilio Console).",
+    "whatsappErrorEnvMissing": "WhatsApp was not delivered: messaging is not configured on the server (add TWILIO_* variables where the site is hosted). Check your email for booking details.",
+    "scheduleTbdBookingBadge": "Date arranged with you",
+    "allDayBadge": "{count, plural, one {# day} other {# days}}",
+    "allDayLabel": "All day",
+    "allDayBookingHint": "This service requires {count, plural, one {# full day} other {# full days}}. Choose a start date.",
+    "scheduleTbdCustomerHeading": "Scheduling details",
+    "scheduleTbdEmptyMessage": "We will contact you to agree a date and time that suits you.",
+    "emailScheduleTbdDateLine": "To be agreed with you",
+    "emailScheduleTbdTimeLine": "We will confirm by message or phone",
+    "sidebarScheduleTbdDate": "Not fixed yet — we’ll agree together",
+    "sidebarScheduleTbdTime": "After we contact you",
+    "tbdYourSelectionTitle": "Your selection",
+    "tbdYourSelectionDays": "{count, plural, one {# full calendar day} other {# full calendar days}}",
+    "tbdSidebarMetaTitle": "Booking type",
+    "successFullDayScope": "{count, plural, one {You requested # full calendar day for this service.} other {You requested # full calendar days for this service.}}"
+  },
+  "validation": {
+    "fullNameMin": "Full name must be at least 3 characters",
+    "fullNameMax": "Full name must be at most 100 characters",
+    "invalidEmail": "Invalid email address",
+    "invalidPhone": "Enter a valid mobile number with country code (e.g. +421 912 345 678). National numbers like 09xx work if they match a supported country."
+  },
+  "massage": {
+    "mostPopular": "Most Popular",
+    "select": "Select",
+    "selectMembership": "Select {tier} membership",
+    "hero": "Relaxation. Renewal. Deep healing.",
+    "heroBadge": "V2Studio — Premium Massage, Bratislava",
+    "heroSeoHeading": "Therapeutic, sports and relaxation massage in Bratislava — V2studio, Križna 22",
+    "heroBookButton": "Book",
+    "heroPricesButton": "View Prices",
+    "destinations": "Destinations",
+    "destinationsDesc": "Each journey is unique. Choose yours.",
+    "membershipDesc": "Elevate your ritual. Unlock more.",
+    "reserveTime": "Reserve Your Time",
+    "bookNow": "Book",
+    "trustBarLabel": "Credentials",
+    "trust": {
+      "trustYears": "10+ Years of Experience",
+      "trustCertified": "Certified Therapists",
+      "trustMedical": "Medical Approach",
+      "trustTechniques": "8 Massage Techniques",
+      "trustClients": "2000+ Happy Clients"
+    },
+    "aboutTitle": "About Our Studio",
+    "aboutIntro": "Welcome to V Studio Massage — your sanctuary of relaxation in the heart of Bratislava. We combine traditional massage techniques with modern therapeutic approaches.",
+    "aboutJourney": "Our team of certified therapists brings years of experience in sports, therapeutic, and relaxation massage. Every session is tailored to your individual needs.",
+    "aboutExpertise": "We specialize in deep tissue, Swedish, Thai, and hot stone massage techniques. Each therapist is trained and certified in multiple modalities.",
+    "aboutMedical": "With a focus on therapeutic outcomes, our sessions address chronic pain, stress relief, and rehabilitation with clinical precision.",
+    "aboutContinuous": "Our team regularly participates in advanced training programs and international wellness conferences to bring you the latest techniques.",
+    "philosophyTitle": "Philosophy",
+    "philosophyQuote": "Massage is not a luxury — it is a path to balance, health, and inner harmony.",
+    "howIHelpTitle": "What We Offer",
+    "howIHelpIntro": "In our studio you receive",
+    "valueRelaxation": "Deep relaxation and stress relief",
+    "valueProfessional": "Certified professional therapists",
+    "valueIndividual": "Personalized treatment plans",
+    "valueAmbiance": "Premium spa atmosphere",
+    "valueProducts": "Organic oils and premium products",
+    "achievementsTitle": "Professional Recognition",
+    "achievement1": "Certified by the International Spa Association",
+    "achievement2": "Trained in Thai, Swedish, and deep tissue modalities",
+    "achievement3": "Featured in Bratislava's Top Wellness Guide",
+    "achievement4": "Partnerships with sports teams and rehabilitation centers",
+    "achievement5": "Over 2,000 satisfied clients across Europe",
+    "serviceMenu": {
+      "title": "Massage Menu",
+      "subtitle": "All techniques. Tailored for you. Transparent pricing.",
+      "from": "from",
+      "min": "min",
+      "book": "Book",
+      "zone": {
+        "relaxation": "Relaxation",
+        "therapeutic": "Therapeutic",
+        "specialty": "Specialty"
+      },
+      "items": {
+        "swedishClassic": {
+          "name": "Swedish — Classic",
+          "desc": "Full-body relaxation massage with long flowing strokes."
+        },
+        "swedishDeep": {
+          "name": "Swedish — Deep Pressure",
+          "desc": "Deeper pressure for chronic tension and muscle recovery."
+        },
+        "hotStone": {
+          "name": "Hot Stone Massage",
+          "desc": "Heated basalt stones melt away stress and muscle tightness."
+        },
+        "aromatherapy": {
+          "name": "Aromatherapy Massage",
+          "desc": "Essential oils combined with gentle strokes for total relaxation."
+        },
+        "deepTissue": {
+          "name": "Deep Tissue — Full Body",
+          "desc": "Targets deep muscle layers. Ideal for chronic pain and stiffness."
+        },
+        "sportsMassage": {
+          "name": "Sports Massage",
+          "desc": "Pre and post-event recovery. Injury prevention and flexibility."
+        },
+        "backNeck": {
+          "name": "Back & Neck Focus",
+          "desc": "Concentrated work on upper body tension and office-related pain."
+        },
+        "thaiTraditional": {
+          "name": "Thai Traditional",
+          "desc": "Ancient stretching and acupressure on a floor mat. Clothed session."
+        },
+        "lymphatic": {
+          "name": "Lymphatic Drainage",
+          "desc": "Gentle rhythmic strokes to stimulate lymph flow and reduce swelling."
+        },
+        "headScalp": {
+          "name": "Head & Scalp Massage",
+          "desc": "Relieves headaches, eye strain, and mental fatigue."
+        },
+        "footReflexology": {
+          "name": "Foot Reflexology",
+          "desc": "Pressure points on feet connected to organs. Deep relaxation."
+        },
+        "couplesRetreat": {
+          "name": "Couples Retreat",
+          "desc": "Side-by-side massage for two. The ultimate shared relaxation."
+        }
+      }
+    },
+    "process": {
+      "title": "How Your Visit Works",
+      "subtitle": "From arrival to total relaxation — simple, comfortable, and professional.",
+      "consultation": {
+        "title": "Welcome",
+        "desc": "We discuss your goals, tension areas, and select the ideal technique together."
+      },
+      "preparation": {
+        "title": "Preparation",
+        "desc": "The room is prepared with your preferred temperature, music, and aroma."
+      },
+      "procedure": {
+        "title": "Session",
+        "desc": "Your therapist works with precision, adjusting pressure and technique to your comfort."
+      },
+      "aftercare": {
+        "title": "Aftercare",
+        "desc": "Herbal tea and personalized recommendations for continued wellness at home."
+      },
+      "expectation": "Most clients feel immediate relief and deep relaxation. For chronic issues, a course of 4-6 sessions is recommended. We provide personalized aftercare advice to maintain results between visits."
+    },
+    "team": {
+      "title": "Your specialist",
+      "subtitle": "Every session is performed by a certified professional.",
+      "therapist1": {
+        "name": "Serhiy Volyk",
+        "role": "Founder & lead massage specialist",
+        "specialty": "Classic · Sports · Anti-cellulite · Lymphatic drainage · Device-assisted · Gua sha",
+        "bio": "Practicing since 2022. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
+      },
+      "workspace": {
+        "title": "Our Space",
+        "desc": "A tranquil, private environment designed for complete relaxation. Ambient lighting, soothing music, and premium organic products."
+      }
+    },
+    "hygiene": {
+      "title": "Standards & Quality",
+      "subtitle": "Your comfort and safety are our top priority.",
+      "freshLinens": {
+        "title": "Fresh Linens",
+        "desc": "Clean, premium linens for every session. Laundered at high temperature with hypoallergenic detergent."
+      },
+      "sanitization": {
+        "title": "Room Sanitization",
+        "desc": "Each treatment room is fully sanitized between sessions. Hospital-grade disinfectants."
+      },
+      "organicProducts": {
+        "title": "Organic Products",
+        "desc": "We use only certified organic massage oils and creams. Free from parabens and artificial fragrances."
+      },
+      "certified": {
+        "title": "Certified Therapists",
+        "desc": "All therapists hold international certifications and undergo regular continuing education."
+      }
+    },
+    "testimonials": {
+      "title": "What Clients Say",
+      "subtitle": "Real experiences from real people.",
+      "review1": {
+        "text": "The best massage I've ever had. Anna found every knot and worked through it with incredible skill. I left feeling like a new person.",
+        "author": "David R.",
+        "service": "Deep Tissue"
+      },
+      "review2": {
+        "text": "The hot stone massage was pure heaven. The room, the music, the technique — everything was perfect. Already booked my next session.",
+        "author": "Jana M.",
+        "service": "Hot Stone"
+      },
+      "review3": {
+        "text": "I've been dealing with chronic back pain for years. After 4 sessions here, the improvement is remarkable. Truly professional.",
+        "author": "Martin K.",
+        "service": "Therapeutic"
+      },
+      "review4": {
+        "text": "My partner and I did the couples retreat for our anniversary. It was an unforgettable experience. Highly recommend!",
+        "author": "Sofia & Tomas",
+        "service": "Couples"
+      },
+      "review5": {
+        "text": "The Thai massage was authentic and amazing. I could feel the difference from other places immediately. Expert hands.",
+        "author": "Peter L.",
+        "service": "Thai"
+      },
+      "review6": {
+        "text": "Online booking was easy, the studio is beautiful, and the massage exceeded expectations. Five stars without hesitation.",
+        "author": "Monika S.",
+        "service": "Swedish"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know before your first visit.",
+      "duration": {
+        "q": "How long is a session?",
+        "a": "Sessions range from 30 to 90 minutes depending on the technique. We recommend 60 minutes for a full-body treatment and 90 minutes for deep tissue or therapeutic work."
+      },
+      "prepare": {
+        "q": "How should I prepare?",
+        "a": "Arrive 10 minutes early. Avoid heavy meals 2 hours before. Wear comfortable clothing — for Thai massage, loose-fitting clothes are provided. Shower before the session if possible."
+      },
+      "pressure": {
+        "q": "Can I choose the pressure level?",
+        "a": "Absolutely. Your therapist will check in during the session and adjust pressure to your preference. Communication is key to the best experience."
+      },
+      "frequency": {
+        "q": "How often should I get a massage?",
+        "a": "For maintenance, once or twice a month is ideal. For chronic pain or recovery, we may recommend weekly sessions initially, then gradually spacing them out."
+      },
+      "medical": {
+        "q": "Is massage safe if I have medical conditions?",
+        "a": "We always do a brief health consultation before your first session. Certain conditions may require a doctor's clearance. Please inform us of any conditions when booking."
+      },
+      "aftercare": {
+        "q": "What should I do after a massage?",
+        "a": "Drink plenty of water, avoid intense exercise for 24 hours, and take a warm (not hot) bath if desired. Some mild soreness is normal after deep tissue work."
+      },
+      "booking": {
+        "q": "How do I book and can I cancel?",
+        "a": "Book online through this website. You'll receive instant confirmation by email. Cancellations or changes should be made at least 24 hours in advance."
+      },
+      "couples": {
+        "q": "How does the couples massage work?",
+        "a": "You and your partner are in the same room on adjacent tables, each with your own therapist. You can choose different techniques if preferred."
+      }
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "subtitle": "Questions? Prefer to talk? We're here for you.",
+      "mapTitle": "V Studio location",
+      "hours": "Mon–Fri: 9:00–20:00 · Sat: 10:00–18:00",
+      "formTitle": "Send a Message",
+      "nameLabel": "Your name",
+      "namePlaceholder": "Jane Smith",
+      "emailLabel": "Email",
+      "emailPlaceholder": "jane@example.com",
+      "phoneLabel": "Phone (optional)",
+      "phonePlaceholder": "+421 ...",
+      "messageLabel": "Your message",
+      "messagePlaceholder": "Tell us about your needs or ask any question...",
+      "submit": "Send Message",
+      "success": "Thank you! We'll get back to you within 24 hours."
+    },
+    "reserveTitle": "Your Relaxation Starts Today",
+    "reserveDesc": "We look forward to welcoming you. Book your session now and discover the healing power of professional massage.",
+    "callNow": "Call Now",
+    "footer": {
+      "tagline": "Premium massage studio in Bratislava. Expert therapists, organic products, total relaxation.",
+      "navTitle": "Navigation",
+      "socialTitle": "Follow Us",
+      "rights": "All rights reserved.",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy"
+    }
+  },
+  "depilation": {
+    "heroLine2": "Smoothness you'll want to come back for.",
+    "heroSubtitle": "Premium depilation with 14 years of expertise. Medical precision meets comfort.",
+    "heroBadge": "<brand>V2Studio</brand> — Premium Depilation, Bratislava",
+    "heroSeoHeading": "Professional waxing and depilation for face and body in Bratislava — V2studio / Epilroom, Križna 22",
+    "heroBookButton": "Book",
+    "heroPricesButton": "View Prices",
+    "exploreMassage": "← Explore Massage",
+    "bookDepilation": "Book your depilation appointment.",
+    "bookDepilationButton": "Book Depilation",
+    "viewPricesAndBook": "View full price list and book your appointment.",
+    "pricePageButton": "Prices & Book",
+    "trustBarLabel": "Credentials",
+    "trust": {
+      "trustYears": "14+ Years of Experience",
+      "trustMedical": "Medical Education",
+      "trustChampion": "Ukraine Championship Winner",
+      "trustTechniques": "All Types of Depilation",
+      "trustClients": "1000+ Happy Clients"
+    },
+    "aboutTitle": "About Me",
+    "aboutIntro": "My name is Natalie Volik. I am a premium-class depilation specialist with 14 years of experience and a medical education. I am glad to welcome you to <brand>V2Studio</brand>.",
+    "aboutJourney": "My path began in Kyiv, where I worked as a TOP master in a premium depilation salon, after which I opened my own studio.",
+    "aboutExpertise": "I master a wide range of depilation techniques and choose the method individually — based on skin type, hair structure, and sensitivity.",
+    "aboutMedical": "I continually improve my skills through training, forums, and professional events. Throughout my career I've upheld high standards of quality, safety, and service. That allows me to use modern techniques, the finest materials, and offer clients a truly premium result.",
+    "aboutContinuous": "I work with both women and men, offering discretion and professionalism in every detail.",
+    "howIHelpTitle": "At <brand>V2Studio</brand> you receive",
+    "valueHygiene": "Impeccable hygiene and sterility",
+    "valueDelicacy": "Delicacy and comfort",
+    "valueIndividual": "Individual approach",
+    "valueService": "High level of service",
+    "valueAtmosphere": "Calm, trusting atmosphere",
+    "achievementsTitle": "Professional Recognition",
+    "achievement1": "Winner of the Ukraine Depilation Championship, «Professional» category",
+    "achievement2": "Technologist-educator for brands Terra, Enova, Biolaif",
+    "achievement3": "Judge at international depilation championships",
+    "achievement4": "Speaker at professional conferences and marathons",
+    "achievement5": "Participant in international beauty industry trade shows",
+    "serviceMenu": {
+      "title": "Services",
+      "subtitle": "We'll choose the optimal method individually for your skin.",
+      "from": "from",
+      "min": "min",
+      "book": "Book",
+      "zone": {
+        "face": "Face",
+        "body": "Body",
+        "intimate": "Intimate Zone"
+      },
+      "items": {
+        "sugaringUpperLip": {
+          "name": "Sugaring — Upper Lip",
+          "desc": "Gentle sugar paste, no redness. Done in minutes."
+        },
+        "sugaringFullFace": {
+          "name": "Sugaring — Full Face",
+          "desc": "Forehead, cheeks, chin, upper lip — complete treatment."
+        },
+        "waxUpperLip": {
+          "name": "Wax — Upper Lip",
+          "desc": "Classic warm wax for fast, precise removal."
+        },
+        "waxEyebrow": {
+          "name": "Wax — Eyebrow Shaping",
+          "desc": "Clean, defined brow line. Pain-minimized technique."
+        },
+        "electroFace": {
+          "name": "Electroepilation — Face",
+          "desc": "Permanent removal of fine and ingrown hairs. Precision work."
+        },
+        "sugaringUnderarms": {
+          "name": "Sugaring — Underarms",
+          "desc": "Smooth, irritation-free underarms. Natural paste, minimal discomfort."
+        },
+        "sugaringFullArms": {
+          "name": "Sugaring — Full Arms",
+          "desc": "Complete arm treatment from wrist to shoulder."
+        },
+        "sugaringFullLegs": {
+          "name": "Sugaring — Full Legs",
+          "desc": "Silky legs from ankle to hip. Lasts 3–4 weeks."
+        },
+        "waxFullLegs": {
+          "name": "Wax — Full Legs",
+          "desc": "Classic warm wax for longer-lasting smoothness."
+        },
+        "bioFullBody": {
+          "name": "Bio Depilation — Full Body",
+          "desc": "Premium Biolaif formula. Maximum skin care during removal."
+        },
+        "laserFullLegs": {
+          "name": "Laser — Full Legs",
+          "desc": "Long-term hair reduction. Professional diode laser."
+        },
+        "sugaringClassicBikini": {
+          "name": "Sugaring — Classic Bikini",
+          "desc": "Bikini line — gentle and precise. Minimal irritation."
+        },
+        "sugaringDeepBikini": {
+          "name": "Sugaring — Deep Bikini",
+          "desc": "Complete intimate zone. Maximum comfort, absolute privacy."
+        },
+        "waxClassicBikini": {
+          "name": "Wax — Classic Bikini",
+          "desc": "Fast bikini line treatment with warm wax."
+        },
+        "waxDeepBikini": {
+          "name": "Wax — Deep Bikini",
+          "desc": "Full intimate depilation. Discreet, professional, painless."
+        }
+      }
+    },
+    "serviceSections": {
+      "tapHint": "Services",
+      "learnMore": "Details",
+      "closeModal": "Close",
+      "viewPrices": "Full price list",
+      "book": "Book",
+      "cards": {
+        "laser": {
+          "title": "Laser epilation",
+          "body": "We work with a diode laser. The treatment suits all areas—from face to deep bikini.",
+          "bullets": [
+            "After the first session you’ll usually notice softer hair and slower regrowth.",
+            "Safe when protocol is followed and after a consultation.",
+            "For maximum results, a course of about 10–15 sessions is usually recommended."
+          ]
+        },
+        "wax": {
+          "title": "Wax epilation",
+          "body": "A fast, effective way to remove hair from the root.",
+          "bullets": [
+            "Skin stays smooth for up to 3–4 weeks.",
+            "Suits all areas: legs, arms, bikini, underarms, and face.",
+            "With each visit hair tends to grow finer; results are visible right after the session."
+          ]
+        },
+        "sugar": {
+          "title": "Sugaring",
+          "body": "Gentle sugar-paste removal from the root. Hair is taken in the direction of growth—less irritation and fewer ingrowns.",
+          "bullets": [
+            "Suits all areas, including sensitive skin.",
+            "Smooth skin for up to 3–4 weeks.",
+            "Over time hair can become finer and sparser."
+          ]
+        },
+        "electro": {
+          "title": "Electroepilation",
+          "body": "A lasting solution for unwanted hair: each hair is treated individually, the follicle is disabled, and regrowth is prevented. Ideal for face, bikini, underarms, and small hard-to-reach spots where other methods fall short.",
+          "bullets": [
+            "Most people need about 6–12 sessions for complete removal of the treated hair."
+          ]
+        },
+        "piercing": {
+          "title": "Piercing",
+          "body": "We pierce the whole ear—lobe and cartilage. Needle or gun; a wide choice of jewellery.",
+          "bullets": [
+            "Clients under 18 are accepted only with parental consent (written permission or the presence of one parent is required).",
+            "We choose jewellery together, taking your ear anatomy into account."
+          ]
+        },
+        "cosmetology": {
+          "title": "Cosmetology",
+          "body": "Holistic care with attention to every client’s skin.",
+          "bullets": [
+            "Facial massage—for tone, lift, and glow.",
+            "Cleansing treatments—for deep cleansing and freshness.",
+            "Peels—for renewal and smoother, more even skin.",
+            "Therapeutic and maintenance treatments tailored to your skin.",
+            "Most importantly—we build a home-care plan so results last and improve every day."
+          ]
+        },
+        "courses": {
+          "title": "Training courses",
+          "body": "Professional waxing and sugaring courses. Groups of up to two or one-to-one sessions.",
+          "bullets": [
+            "Beginner training from scratch.",
+            "Advanced skills and upskilling.",
+            "Practice on tricky areas where you need more confidence.",
+            "Preparation for depilation championships."
+          ],
+          "scheduleLabel": "Dates & booking",
+          "scheduleText": "Contact us by phone, WhatsApp, or email for the next intake—we will agree format, level, and schedule.",
+          "topicsLabel": "Curriculum highlights",
+          "topicsText": "Salon hygiene, skin and hair assessment, waxing and sugaring technique, sensitive zones, client consultation, and competition-focused practice where needed."
+        },
+        "intimateWhitening": {
+          "title": "Intimate whitening",
+          "body": "Intimate whitening is a discreet aesthetic treatment for women: professional brightening products gently even out tone, address melanin, and leave the area looking neat and cared for.",
+          "bullets": [
+            "We brighten: deep bikini, perianal area, underarms, elbows, knees, and inner thighs.",
+            "After completing the course, skin typically becomes up to two shades lighter."
+          ]
+        },
+        "antiCelluliteWraps": {
+          "title": "Anti-cellulite wraps",
+          "body": "Anti-cellulite wraps are an intensive option without aggressive devices—for clients who want visible change. We use the Austrian professional line STYX Naturcosmetic.",
+          "bullets": [
+            "Powerful anti-cellulite effect, often visible after the first session.",
+            "Visible reduction in volume after the first session, both visually and on the scale.",
+            "Many clients notice less puffiness after the first session.",
+            "Strong lymphatic drainage support and removal of excess fluid.",
+            "Smoother skin texture in cellulite-prone areas, with improved firmness and elasticity."
+          ]
+        }
+      }
+    },
+    "process": {
+      "title": "How Your Visit Works",
+      "consultation": {
+        "title": "Consultation",
+        "desc": "We discuss your goals, skin type, and together we choose the ideal technique."
+      },
+      "preparation": {
+        "title": "Preparation",
+        "desc": "We gently cleanse and prepare the skin. Sterile single-use instruments are opened in front of you."
+      },
+      "procedure": {
+        "title": "Procedure",
+        "desc": "The technique is performed with precision and care, following protocols and each client's individual needs."
+      },
+      "aftercare": {
+        "title": "Aftercare",
+        "desc": "You receive personalized recommendations for the best and longest-lasting results."
+      },
+      "expectation": ""
+    },
+    "team": {
+      "title": "Your specialists",
+      "subtitle": "Certified studio professionals perform every treatment.",
+      "natalie": {
+        "name": "Natalie Volik",
+        "role": "Founder & Lead Depilation Specialist",
+        "specialty": "Laser epilation · Wax epilation · Sugaring · Electroepilation · Piercing · Cosmetology · Training courses · Intimate whitening · Anti-cellulite wraps",
+        "bio": "14 years of experience. Medical education. Champion of Ukraine in depilation. Certified technologist for Terra, Enova, and Biolaif. I treat every client as the only one."
+      },
+      "serhiy": {
+        "name": "Serhiy Volyk",
+        "role": "Founder & lead massage specialist",
+        "specialty": "Classic · Sports · Anti-cellulite · Lymphatic drainage · Device-assisted · Gua sha",
+        "bio": "Practicing since 2022. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
+      },
+      "workspace": {
+        "title": "Our Studio",
+        "desc": "A calm, private space designed for your comfort. Every detail — from lighting to temperature — is carefully considered to make your experience as relaxing as possible."
+      }
+    },
+    "hygiene": {
+      "title": "Safety & Hygiene",
+      "subtitle": "Your health is non-negotiable. Every detail is controlled.",
+      "singleUse": {
+        "title": "Single-Use Tools",
+        "desc": "All applicators, spatulas, and contact materials are opened from sealed packaging in front of you and disposed of immediately after use."
+      },
+      "sanitization": {
+        "title": "Medical-Grade Sanitization",
+        "desc": "Surfaces and equipment are disinfected with professional antiseptics after each client."
+      },
+      "sterilization": {
+        "title": "Autoclave Sterilization",
+        "desc": "All reusable instruments undergo autoclave sterilization at 180–200°C."
+      },
+      "certified": {
+        "title": "Certified Materials",
+        "desc": "We work exclusively with certified professional brands: Terra, Enova, Biolaif. All products are dermatologically tested and hypoallergenic."
+      }
+    },
+    "testimonials": {
+      "title": "What Clients Say",
+      "subtitle": "Real experiences from real people.",
+      "review1": {
+        "text": "I had laser epilation with master Natasha and I'm very happy. The session was as comfortable as possible and almost painless. I'd been to another specialist before — it hurt much more, so I can compare. Natasha is very careful and attentive. I'll definitely come again! Thank you.",
+        "author": "Alena Kotova",
+        "meta": "2 weeks ago · New",
+        "service": "Laser"
+      },
+      "review2": {
+        "text": "I had my cartilage pierced and I'm thrilled ❤️ A very attentive, calm, and careful specialist. She explained everything in detail beforehand, answered all my questions, and helped me choose jewellery. The process was quick and almost painless; sterility was top level. I especially want to mention her light hand and caring approach 🙌 Healing is going great, with no issues, thanks to clear aftercare advice. If you've been thinking about a cartilage piercing but feel nervous — book with confidence. You're in safe hands! 🥰",
+        "author": "Kristina Sanduliak",
+        "meta": "1 month ago",
+        "service": "Piercing"
+      },
+      "review3": {
+        "text": "Huge thanks to Natali for professionalism and tact! 🌸 From the first minutes you feel at ease; the atmosphere is welcoming, everything is gentle and calm. My waxing flew by unnoticed: Natali is a true pro — confident and caring. My skin felt perfect, no discomfort, just lightness and a great mood! Rare to meet such an attentive specialist. This is my place now — 100% recommend! ❤️",
+        "author": "Artem",
+        "meta": "1 month ago",
+        "service": "Waxing"
+      },
+      "review4": {
+        "text": "I had my cartilage pierced with Natali Volik — everything was neat and calm. She's very attentive, explained everything in detail and answered my questions. It was quick and almost painless, everything clean and professional. I'm delighted with the result.",
+        "author": "Viktoriia Lomeiko",
+        "meta": "1 month ago",
+        "service": "Piercing"
+      },
+      "review5": {
+        "text": "Huge thanks to Natasha. A wonderful specialist — delicate and attentive to detail. I got not only the treatment but also care advice, and I had a lovely time at the salon. I recommend her to everyone.",
+        "author": "Svitlana Sapehina",
+        "meta": "3 weeks ago · New",
+        "service": "Depilation"
+      },
+      "review6": {
+        "text": "I highly recommend master Natali! My bikini is always perfect thanks to her — neat, clean, and above all quick! Friendly atmosphere and great chats; I genuinely look forward to every beauty appointment ❤️‍🔥",
+        "author": "Alena Fitsoni",
+        "meta": "2 weeks ago · New",
+        "service": "Bikini"
+      },
+      "review7": {
+        "text": "I chose Epilroom_Bratislava three years ago and I only go there. Great place, professional masters, quality products, and always a cosy atmosphere 💛 solid five stars.",
+        "author": "Mariia Kononova",
+        "meta": "2 weeks ago · New",
+        "service": "Studio"
+      },
+      "review8": {
+        "text": "You're simply amazing! The whole treatment was so quick and comfortable I didn't notice the time. Your skilled hands and light conversation made it as painless as possible. My skin is perfectly smooth and soft now! The result exceeded my expectations — I'm so glad I can forget the razor for weeks. A true professional — I recommend you to everyone and I'll definitely be back!",
+        "author": "Lol Juj",
+        "meta": "4 months ago",
+        "service": "Depilation"
+      },
+      "review9": {
+        "text": "I'm very happy with Natalia! She does depilation professionally, quickly, and to a high standard — and she's polite, tactful, and lovely.",
+        "author": "Yelena Volosozhar",
+        "meta": "4 months ago",
+        "service": "Depilation"
+      },
+      "review10": {
+        "text": "Natali is simply a MEGA master and person 💯 In Ukraine I went to the same master for over 5 years; finding \"your\" master abroad is hard, but I was incredibly lucky to find Natali here — from the first visit I knew she was my MEGA master. Thank you for quality, humanity, and the cosy vibe 😘",
+        "author": "Of fridom",
+        "meta": "4 months ago",
+        "service": "Depilation"
+      },
+      "review11": {
+        "text": "Such a pleasant salon atmosphere — you're always greeted with a smile, your mood lifts, and the work is 100%! I love how sterile everything is, how clearly they explain and show everything, and the sweet treats 😉 10/10 🙏",
+        "author": "Alena Barantseva",
+        "meta": "6 months ago",
+        "service": "Studio"
+      },
+      "review12": {
+        "text": "I had cartilage piercing with master Natalia — loved it. She's very communicative, helped choose the best spot, and I'll definitely come again ✨💗",
+        "author": "Valeriia Khmilenko",
+        "meta": "1 month ago",
+        "service": "Piercing"
+      },
+      "review13": {
+        "text": "I've been for depilation several times and I always love it — great quality and a nice atmosphere. I'll keep coming back ❤️",
+        "author": "Alena Postolnik",
+        "meta": "1 month ago",
+        "service": "Depilation"
+      },
+      "review14": {
+        "text": "With Natalia everything is always professional — she really listens and works quickly. Lovely atmosphere too!",
+        "author": "Lida Privezentseva",
+        "meta": "4 months ago",
+        "service": "Depilation"
+      },
+      "review15": {
+        "text": "The best laser epilation specialist in the world. After the first visit about 40% of hair was gone. Most importantly — Natalia's incredible energy. For us women, feeling comfortable during these treatments matters so much… With Natalia it's like an old friend — so comfortable. Fast, painless. We even had a good laugh. I only go to her now.",
+        "author": "Tetiana Kosarieva (Kosarieva.cosmetolog)",
+        "meta": "1 year ago",
+        "service": "Laser"
+      },
+      "review16": {
+        "text": "Hello. Natalia, thank you for your work — I loved how you do it: quality, clean, painless, and comfortable. You're a master of your craft. Thank you ☺️",
+        "author": "Viktoria Ganzienko",
+        "meta": "6 months ago",
+        "service": "Depilation"
+      },
+      "review17": {
+        "text": "The master is great! We chatted through the whole session.",
+        "author": "Ann",
+        "meta": "1 month ago",
+        "service": "Depilation"
+      },
+      "review18": {
+        "text": "Beautiful work! Very happy with the result — recommend!",
+        "author": "July Bel",
+        "meta": "1 year ago",
+        "service": "Depilation"
+      },
+      "review19": {
+        "text": "I'd like to leave a great review for master Natalia. I came to her for piercing — you can choose needle or gun. On the spot she suggests jewellery options and advises what works best. She stays in touch, checks how you're doing, and answers questions. She provides aftercare product and instructions. I had no issues with my piercings.",
+        "author": "Yeva Yachmenova",
+        "meta": "1 week ago · New",
+        "service": "Piercing"
+      },
+      "review20": {
+        "text": "Excellent master!) Recommend to everyone.",
+        "author": "Angelina",
+        "meta": "2 weeks ago · New",
+        "service": "Depilation"
+      },
+      "review21": {
+        "text": "Everything was wonderful — pleasant atmosphere, cleanliness, and comfort. The team is lovely and attentive; I felt relaxed. I also loved the little touches: sometimes cute gifts like gingerbread, fun collaborations, and a choice of products such as deodorants from trusted pros. Only positive impressions — I'll definitely return. Highly recommend!",
+        "author": "Polina",
+        "meta": "2 weeks ago · New",
+        "service": "Studio"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know before your first visit.",
+      "painful": {
+        "q": "Is depilation painful?",
+        "a": "Most clients describe it as a brief, tolerable warmth. I use techniques that minimize discomfort, and the sensation decreases with each subsequent session as hair becomes finer. If you're sensitive, I'll adapt the approach specifically for you."
+      },
+      "prepare": {
+        "q": "How should I prepare for my appointment?",
+        "a": "Hair should be 3–5 mm long (about 10–14 days of growth). Avoid sunbathing, tanning beds, and exfoliating 24 hours before. No creams or lotions on the day of the procedure. That's it — I'll take care of the rest."
+      },
+      "results": {
+        "q": "How long do results last?",
+        "a": "Depending on the technique and body zone, results last 3–5 weeks. With regular sessions, hair grows thinner and slower over time. Laser epilation provides long-term reduction after a course of sessions."
+      },
+      "technique": {
+        "q": "Which technique is best for me?",
+        "a": "It depends on your skin type, hair structure, and sensitivity. During the first visit, I'll assess your needs and recommend the most effective method. I'm certified in all five techniques — sugaring, wax, bio, laser, and electroepilation."
+      },
+      "men": {
+        "q": "Do you work with men?",
+        "a": "Absolutely. I work with both women and men, ensuring full tact, confidentiality, and professionalism. All services are available regardless of gender."
+      },
+      "pregnancy": {
+        "q": "Can I have depilation while pregnant?",
+        "a": "Yes — in all three trimesters."
+      },
+      "teens": {
+        "q": "Can teenagers have depilation?",
+        "a": "Yes — from age 8."
+      },
+      "aftercare": {
+        "q": "What aftercare do you recommend?",
+        "a": "Avoid hot baths, saunas, direct sun, and tight clothing for 24–48 hours. I'll give you a personalized aftercare card after every session with specific recommendations for your skin type."
+      },
+      "booking": {
+        "q": "How do I book and can I cancel?",
+        "a": "Book online through this website — select a service, date, and time. You'll receive an instant email confirmation. Need to reschedule? Just contact me at least 24 hours in advance."
+      },
+      "sensitive": {
+        "q": "Is it safe for sensitive skin or allergies?",
+        "a": "Yes. My medical education allows me to work safely with all skin types, including sensitive and allergy-prone skin. All materials are dermatologically tested and hypoallergenic. I always do a patch test if there's any concern."
+      }
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "subtitle": "Questions? Prefer to talk? I'm here for you.",
+      "mapTitle": "V Studio location",
+      "hours": "Mon–Fri: 9:00–19:00 · Sat: 10:00–16:00",
+      "formTitle": "Send a Message",
+      "nameLabel": "Your name",
+      "namePlaceholder": "Jane Smith",
+      "emailLabel": "Email",
+      "emailPlaceholder": "jane@example.com",
+      "phoneLabel": "Phone (optional)",
+      "phonePlaceholder": "+421 ...",
+      "messageLabel": "Your message",
+      "messagePlaceholder": "Tell me about your needs or ask any question...",
+      "submit": "Send Message",
+      "success": "Thank you! I'll get back to you within 24 hours."
+    },
+    "reserveTitle": "Your Smoothness Starts Today",
+    "reserveDesc": "I sincerely look forward to welcoming you to <brand>V2Studio</brand>. I'm confident you'll be delighted not only with the result, but also with the atmosphere, care, and that feeling of lightness you'll have after your procedure.",
+    "bookNow": "Book",
+    "callNow": "Call Now",
+    "servicesTitle": "Services",
+    "servicesDesc": "I work with both women and men, ensuring tact and professionalism in every detail.",
+    "serviceSugaring": "Sugaring",
+    "serviceSugaringDesc": "Natural paste removes hair gently with the grain. Ideal for sensitive skin and fine hair.",
+    "serviceWax": "Wax Depilation",
+    "serviceWaxDesc": "Classic warm or hot wax for longer-lasting smoothness. Suitable for all skin types.",
+    "serviceBio": "Bio Depilation",
+    "serviceBioDesc": "Premium natural formulas. Maximum care for your skin with professional brands.",
+    "footer": {
+      "tagline": "Premium depilation studio in Bratislava. 14 years of expertise, medical precision, absolute care.",
+      "navTitle": "Navigation",
+      "socialTitle": "Follow Us",
+      "rights": "All rights reserved.",
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy"
+    },
+    "myServices": {
+      "title": "My Services",
+      "subtitle": "Professional depilation techniques. I choose the method individually — for your skin type, hair structure, and sensitivity.",
+      "from": "from",
+      "sugaring": "Sugaring",
+      "sugaringDesc": "Natural sugar paste removes hair gently with the grain. Ideal for sensitive skin. Works with Terra, Enova.",
+      "wax": "Wax Depilation",
+      "waxDesc": "Classic warm or hot wax for longer-lasting smoothness. Suitable for all skin types and body zones.",
+      "bio": "Bio Depilation",
+      "bioDesc": "Premium natural formulas from Biolaif. Maximum care for your skin with professional brands.",
+      "laser": "Laser Epilation",
+      "laserDesc": "Long-term hair reduction with laser technology. Face, body, bikini, legs — professional equipment.",
+      "electro": "Electroepilation",
+      "electroDesc": "Permanent hair removal for face. Precision work with fine and ingrown hairs.",
+      "zoneFace": "Face",
+      "zoneBody": "Hands & Body",
+      "zoneBikini": "Bikini",
+      "zoneLegs": "Legs"
+    }
+  },
+  "price": {
+    "pageMetaTitle": "Price list",
+    "pageMetaDescription": "Full list of services and prices. Book your appointment online.",
+    "backLink": "Back to {name}",
+    "title": "Price",
+    "subtitle": "Find your service by section and body zone. All prices and durations are listed.",
+    "clickPriceToBookHint": "Click a price (woman or man column) to open booking with that line preset.",
+    "sex": "Booking for",
+    "woman": "Woman",
+    "man": "Man",
+    "min": "min",
+    "bookThis": "Book",
+    "noPricesYet": "Price list is being updated. Please contact us or book a general appointment.",
+    "noPricesForGender": "No prices listed for this category.",
+    "tbdPriceLineDays": "{count, plural, one {# full day (we set dates with you)} other {# full days (we set dates with you)}}",
+    "saleBadge": "SALE!"
+  },
+  "admin": {
+    "signIn": "Sign in",
+    "admin": "Admin",
+    "chooseBookingSystem": "Choose which booking system to manage",
+    "backToCabinet": "Back to cabinet",
+    "signOut": "Sign out",
+    "backToAurora": "← Back to V2studio",
+    "calendar": "Calendar",
+    "agenda": "Agenda",
+    "agendaSubtitle": "Full schedule of upcoming appointments.",
+    "agendaSearchPlaceholder": "Search by name, phone, email, or service…",
+    "agendaStatScheduled": "Scheduled",
+    "agendaStatAwaiting": "Awaiting date",
+    "agendaStatTotal": "Total",
+    "agendaOpenCalendar": "Calendar view",
+    "agendaNoMatches": "No appointments match your search.",
+    "agendaRowHint": "Tap or click a row to edit the appointment.",
+    "analytics": "Analytics",
+    "analyticsSubtitle": "All customers and appointments. Search by name or phone.",
+    "searchByNameOrPhone": "Search by name or phone…",
+    "exportPdf": "Export PDF",
+    "noSearchResults": "No matches found.",
+    "noCustomersYet": "No customers yet.",
+    "emailHeader": "Email",
+    "phoneHeader": "Phone",
+    "noUpcomingAppointments": "No upcoming appointments.",
+    "settings": "Settings",
+    "servicesCalendarAppointments": "Services, calendar, appointments",
+    "manageWorkingHours": "Manage working hours and services",
+    "openMenuAria": "Open admin menu",
+    "closeMenuAria": "Close admin menu",
+    "signOutAria": "Sign out",
+    "publicBooking": "Public booking",
+    "helpManual": "Help",
+    "helpManualAria": "Open admin user guide",
+    "helpPageTitle": "Admin guide",
+    "helpPageLead": "How to use the calendar, agenda, price catalog, and settings. For staff and administrators.",
+    "helpBackAria": "Back to admin",
+    "helpBackPlaceHint": "Tip: you opened this from {place}. Use the back arrow to return there.",
+    "helpDocNote": "A Markdown copy of this guide for editors lives in the project at docs/ADMIN_MANUAL.md.",
+    "helpSectionIntroTitle": "Signing in and choosing a business",
+    "helpSectionIntroBody": "Sign in from Admin with your work email (or Google, if enabled). Massage and Depilation are two public entry points to the same studio — each has its own calendar, services, and price list for that context.\n\nUse the language switcher in the header to change the interface (SK, EN, RU, UK).",
+    "helpSectionNavTitle": "Top navigation",
+    "helpSectionNavBody": "Calendar — week/month schedule, drag appointments, and the “waiting for date” list.\nAgenda — upcoming appointments in time order.\nAnalytics — search by name or phone; export PDF.\nPrice catalog — structure, prices, multilingual text; bookable lines sync to booking.\nSettings — working hours, closed days, preparation time between appointments.\n\n“Public booking” opens the customer site in a new tab.",
+    "helpSectionCalendarTitle": "Calendar",
+    "helpSectionCalendarBody": "Drag a timed booking to another day or slot. You cannot move into the past.\n\nSmall badges on the Calendar tab: red counts bookings that still need a real date and time; amber counts full-day bookings that still need every required calendar day chosen.\n\nCustomers who booked “we’ll arrange the date with you” appear in the unscheduled list until you assign slots.\n\nUse “Add appointment” to create a booking manually. Choose date + time, or “Day only” for full working days (multi-day services get one date row per day).",
+    "helpSectionEditTitle": "Editing appointments",
+    "helpSectionEditBody": "Open a block or row, then Edit. Update name, phone, email, internal notes, and schedule where the form allows.\n\nFor TBD (no slot yet) records, set date/time or each required full day in the modal, or use the calendar list actions your workspace provides.\n\nPast appointments are view-only.",
+    "helpSectionPriceTitle": "Price catalog",
+    "helpSectionPriceBody": "Organise services, sections, zones, and price lines. Set how each line is booked: time slot vs “arrange with client”, and how many full days when needed.\n\nSave the catalog so bookable lines appear in public booking and get colours in the admin calendar (by section or zone).",
+    "helpSectionSettingsTitle": "Settings",
+    "helpSectionSettingsBody": "Turn individual days on or off for the month you see, then save. Closed days are hidden from public booking; existing appointments stay.\n\nPreparation buffer: minutes automatically kept free after each appointment so clients do not overlap.",
+    "helpSectionPublicTitle": "Public booking link",
+    "helpSectionPublicBody": "Use “Public booking” in the header to preview exactly what customers see. Test a flow after you change the price catalog or working hours.",
+    "helpSectionTipsTitle": "Tips",
+    "helpSectionTipsBody": "Treat the price catalog as the main place to define what can be booked for both Massage and Depilation.\n\nUse Agenda when you need a quick “who is next” list on the phone.\n\nIf something is missing on the public site, check that the line is bookable, saved, and the day is open in Settings.",
+    "appointments": "Appointments",
+    "appointmentsSubtitle": "Drag an appointment to reschedule. Week view lets you move it to another day or time. Past slots are unavailable. Use Add appointment to create a new one.",
+    "colorAgendaTitle": "All price-list section colors",
+    "calendarBadgeTimeTitle": "Bookings waiting for a date and time",
+    "calendarBadgeDayTitle": "Full-day bookings still missing chosen days",
+    "fullDayNeedDaysCalendarHint": "Not on the week grid until each required day is set in Edit (one date per row). Tap a row to open it.",
+    "calendarAttentionTimeLabel": "Time",
+    "calendarAttentionDayLabel": "Days",
+    "prepBufferInfoTitle": "{minutes} minutes are reserved after each appointment for preparation. This time cannot be booked. Configure in Settings.",
+    "prepBufferNote": "{minutes} minute prep time is automatically kept between appointments so clients never overlap.",
+    "servicesLabel": "Services:",
+    "noServicesYet": "No services yet.",
+    "settingsSubtitle": "Manage working hours and services for {place}.",
+    "manageServicesNote": "Manage services customers can book. Each service has a title, color, and duration.",
+    "manageWorkingHoursNote": "Set when customers can book. Closed days won't appear in the public calendar.",
+    "addAppointment": "Add appointment",
+    "workingHours": "Working hours",
+    "titleLabel": "Title",
+    "titleSk": "Title (SK)",
+    "titleEn": "Title (EN)",
+    "titleRu": "Title (RU)",
+    "titleUk": "Title (UK)",
+    "descriptionSk": "Description (SK)",
+    "descriptionEn": "Description (EN)",
+    "descriptionRu": "Description (RU)",
+    "descriptionUk": "Description (UK)",
+    "colorLabel": "Color",
+    "durationLabel": "Duration (minutes)",
+    "priceLabel": "Price",
+    "appointmentTypeLabel": "Appointment type",
+    "appointmentTypeTime": "Date and time",
+    "adminAllDayDayCountLabel": "Number of calendar days",
+    "adminAllDayDayCountHint": "Choose how many days this booking spans. Then pick each date below (they can be non-consecutive).",
+    "adminAllDayDayCountOption": "{count, plural, one {# day} other {# days}}",
+    "appointmentTypeDay": "Day only",
+    "allDayNoClockTime": "All day",
+    "appointmentTypeDayHint": "Blocks the full working day. Use one calendar per required day below — all must be filled, each date only once.",
+    "appointmentTypeDayLockedHint": "All-day booking: time is not used. Set each required calendar day in its own row below.",
+    "addDayLabel": "Add day",
+    "moveDayLabel": "Move to day",
+    "moveDayHint": "Choose a new day and the whole day booking will shift with the same pattern.",
+    "selectedDaysLabel": "Selected days",
+    "selectedDaysHint": "Choose 1 to 14 available days.",
+    "selectedDaysPerSlotHint": "You must choose exactly {count} different days — one per row.",
+    "fullDaySlotPickerLabel": "Day {n}",
+    "fullDayPickExactlyDays": "Choose exactly {count} calendar days (one date in each row).",
+    "fullDayDaysMustBeDistinct": "Each day must be a different date.",
+    "currentServiceLabel": "Current service",
+    "allDayServiceLockedHint": "The booked service line cannot be changed here. You can still update the calendar days below.",
+    "selectedDaysEmpty": "No days selected yet.",
+    "daySlotPending": "Day {n} — not set yet",
+    "selectAtLeastOneDay": "Select at least one day.",
+    "dayMoveBlocked": "The booking cannot be moved because one of its days is already occupied.",
+    "removeDay": "remove",
+    "dayCountLabel": "Number of days",
+    "dayCountValue": "{count, plural, one {# day} other {# days}}",
+    "itemBookingModeLabel": "How customers book this line",
+    "itemBookingModeTime": "Time slot — pick date and time",
+    "itemBookingModeTbd": "Arrange with client — no calendar on their side; message on the booking step; you assign dates later. Duration is not used; the public booking flow shows the day count instead of minutes.",
+    "itemTbdDayCountLabel": "Full days for this booking",
+    "itemTbdDayCountHint": "Shown on the price list and booking UI as day count (not duration). After the customer books, set each calendar day in Edit.",
+    "itemScheduleTbdCustomerTitle": "Message for the customer (booking step), per language",
+    "titlePlaceholder": "e.g. Swedish Massage",
+    "titleRequired": "Title is required",
+    "durationInvalid": "Duration must be 15–240 minutes",
+    "saveServiceFailed": "Failed to save service",
+    "cancel": "Cancel",
+    "clear": "Clear",
+    "update": "Update",
+    "add": "Add",
+    "saving": "Saving...",
+    "serviceAdded": "Service added.",
+    "serviceUpdated": "Service updated.",
+    "serviceDeleted": "Service deleted.",
+    "deleteServiceFailed": "Failed to delete service.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "addService": "Add service",
+    "editService": "Edit service",
+    "deleteServiceConfirm": "Delete service?",
+    "deleteServiceNote": "Remove {name}? Existing appointments will keep the service name but it won't appear in new bookings.",
+    "addButton": "Add",
+    "editAppointment": "Edit appointment",
+    "pastAppointmentNote": "This appointment is in the past. View only — no changes allowed.",
+    "nameOptional": "Name (optional)",
+    "emailOptional": "Email (optional)",
+    "phoneOptional": "Phone (optional)",
+    "adminNoteLabel": "Note (internal)",
+    "adminNotePlaceholder": "Add an internal note…",
+    "chooseTime": "Choose time",
+    "chooseService": "Choose service",
+    "selectServicePlaceholder": "— Select a service",
+    "close": "Close",
+    "save": "Save",
+    "cannotCreatePast": "Cannot create appointment in the past.",
+    "appointmentUpdated": "Appointment updated.",
+    "customer": "Customer",
+    "appointmentAdded": "Appointment added.",
+    "appointmentAddedNotified": "Appointment added. Customer notified by email.",
+    "appointmentAddedNoEmail": "Appointment added. Email could not be sent.",
+    "appointmentAddedEmailFailed": "Appointment added, but email failed: {error}",
+    "couldNotSend": "Could not send",
+    "slotBooked": "This time slot is already booked.",
+    "adminTimeNoSlots": "No free slots on this day for the selected duration. Change duration or pick another date.",
+    "adminTimeSlotsLoading": "Checking which times are free…",
+    "adminAvailabilityLoading": "Loading busy times for this month…",
+    "fullDayClosed": "One of the selected days is closed in working hours.",
+    "saveFailed": "Failed to save. Please try again.",
+    "copyDetails": "Appointment details copied to clipboard",
+    "copyFailed": "Failed to copy",
+    "copyAria": "Copy appointment details",
+    "editAria": "Edit appointment",
+    "cancelAria": "Cancel appointment",
+    "cannotMovePast": "Cannot move appointment to the past.",
+    "movedNotified": "Appointment moved. Customer notified by email.",
+    "tbdAssignedNotified": "Date assigned. Customer notified by email.",
+    "unscheduledTbdTitle": "Awaiting date (from booking)",
+    "unscheduledTbdHint": "These are not on the time grid and cannot be dragged. Use Edit on a row to set date and time.",
+    "listTbdNoTimeYet": "No date yet",
+    "listTbdAdminHintPrefix": "Note:",
+    "agendaUnscheduledTitle": "Awaiting date",
+    "agendaTbdNoDate": "Unscheduled",
+    "appointmentTbdNotice": "This booking has no fixed slot yet. Set date and time below, or move it from the “Awaiting date” list on the calendar.",
+    "notFound": "Appointment no longer exists.",
+    "moveFailed": "Failed to move appointment. {msg}",
+    "cancelledNotified": "Appointment cancelled. Customer notified by email.",
+    "cancelFailed": "Failed to cancel appointment.",
+    "calRescheduleTitle": "Reschedule this appointment?",
+    "calRescheduleBody": "Move {customerName} ({serviceName}) to {dateStr} at {timeStr}?",
+    "calRescheduleConfirm": "Confirm move",
+    "calCancelTitle": "Cancel this appointment?",
+    "calCancelBody": "Cancel the appointment for {customerName} ({serviceName})? The client will receive an email notification.",
+    "calCancelKeep": "Keep",
+    "calCancelConfirm": "Yes, cancel",
+    "durationMinutesAbbr": "{minutes} min",
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "open": "Open",
+    "closed": "Closed",
+    "dayToggleTitle": "{day} – {status} (click to toggle)",
+    "loadScheduleFailed": "Failed to load schedule",
+    "copiedToMonth": "Copied default schedule to {month}.",
+    "availabilitySaved": "Availability saved.",
+    "prepTimeUpdated": "Prep time updated.",
+    "prepBufferTitle": "Minutes reserved after each appointment for preparation. This time cannot be booked.",
+    "prepBufferAria": "Prep buffer info",
+    "saveAvailability": "Save availability",
+    "defaultScope": "Default (weekly, all time)",
+    "specificMonth": "Specific month…",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "selectDate": "Select date",
+    "month1": "January",
+    "month2": "February",
+    "month3": "March",
+    "month4": "April",
+    "month5": "May",
+    "month6": "June",
+    "month7": "July",
+    "month8": "August",
+    "month9": "September",
+    "month10": "October",
+    "month11": "November",
+    "month12": "December",
+    "from": "From",
+    "to": "to",
+    "scheduleHoursOnlyHint": "Configure which weekdays are open and their hours (from–to). To block entire days for customers, add an appointment in the calendar and choose «Day» — those dates become fully busy for booking.",
+    "scheduleDayType": "Day type",
+    "scheduleModeWindow": "Fixed hours (from – to)",
+    "scheduleModeSlotBegins": "Time slots (begin times only)",
+    "scheduleModeAllDay": "All day",
+    "scheduleAllDayHint": "Customers can book across the full day on this weekday. Timed services use 15-minute steps from midnight to midnight in the picker.",
+    "scheduleSlotBeginsHint": "Only start times are stored; the same list is reused every week for this weekday. Set when the day ends so long services cannot start too late.",
+    "scheduleDayEndsAt": "Day ends at",
+    "scheduleAddBeginTime": "Add begin time…",
+    "scheduleRemoveBeginTime": "Remove this begin time",
+    "scheduleSlotBeginsNeedOne": "Keep at least one begin time.",
+    "copyFromDefault": "Copy from default",
+    "manageScheduleFor": "Manage schedule for",
+    "toggleDaysFor": "Toggle days for",
+    "closedShort": "Closed",
+    "viewDay": "Day",
+    "viewWeek": "Week",
+    "previousDay": "← Previous day",
+    "today": "Today",
+    "nextDay": "Next day →",
+    "previousWeek": "← Previous week",
+    "nextWeek": "Next week →",
+    "loadingSchedule": "Loading schedule…",
+    "couldNotLoadSchedule": "Could not load schedule.",
+    "prepTimeBetween": "Prep time between appointments:",
+    "dayToggleInfo": "Click any day to switch it on or off. Gold = open, gray = closed.",
+    "dayToggleLegendOpen": "Open",
+    "dayToggleLegendClosed": "Closed",
+    "dayToggleTip": "Changes apply to this month only. Remember to save.",
+    "closeDayWithAppointmentsConfirm": "This day has {count, plural, one {# appointment} other {# appointments}}. Closing will hide it from public booking, but existing appointments will remain. Continue?",
+    "priceCatalog": "Price catalog",
+    "priceCatalogSubtitle": "Manage services, sections, zones and prices for the Price page. Titles in 4 languages (SK, EN, RU, UK).",
+    "priceCatalogSaved": "Price catalog saved.",
+    "loadExample": "Load example",
+    "structure": "Structure",
+    "editPanel": "Edit",
+    "selectNodeToEdit": "Select a node from the left to edit.",
+    "priceCatalogCalendarSyncHint": "When you save, bookable lines become booking services and appear in the admin calendar. Each new section (or top-level zone) gets its own color automatically.",
+    "priceCatalogPriceEmptyHint": "Leave price empty to show \"—\" on the public list; that line has no booking link. TBD / full-day lines still link when price is a dash.",
+    "priceCatalogUnnamedService": "Service {n}",
+    "priceCatalogUnnamedSection": "Section {n}",
+    "priceCatalogUnnamedZone": "Zone {n}",
+    "priceCatalogHeadingZone": "Zone",
+    "priceCatalogHeadingSection": "Section",
+    "priceCatalogHeadingService": "Service",
+    "priceCatalogHeadingDirectItems": "Direct items",
+    "priceCatalogBtnAddZone": "+ Zone",
+    "priceCatalogBtnAddSection": "+ Section",
+    "priceCatalogBtnAddItem": "+ Item",
+    "priceCatalogAddLineUnderZone": "+ Add line",
+    "priceCatalogPriceInputPlaceholder": "Price or e.g. from 20",
+    "priceCatalogSale": "Sale",
+    "priceCatalogSalePrice": "Sale price",
+    "priceCatalogSalePricePlaceholder": "New price",
+    "priceCatalogSaleActionLabel": "SALE",
+    "priceCatalogUnnamedLine": "Line {n}",
+    "priceCatalogMissingLine": "This line is no longer in the catalog. Choose another item in the structure.",
+    "priceCatalogBackToZone": "← Back to zone",
+    "priceCatalogBackToService": "← Back to service",
+    "priceCatalogPriceInputPlaceholderShort": "Price",
+    "priceCatalogDescriptionInputPlaceholder": "Important info for customers (e.g. availability, pricing notes)",
+    "sectionColorInCalendar": "This color is used in the admin calendar for every item in this section.",
+    "rootZoneColorInCalendar": "This color is used in the admin calendar for items in this zone.",
+    "zoneUsesSectionCalendarColor": "Calendar color comes from the parent section.",
+    "directItemsColorInCalendar": "This color is used in the admin calendar for these line items.",
+    "servicesManagedInPriceCatalog": "Define bookable services in the Price catalog: add services, sections, zones and price lines, then Save. Calendar colors follow each section (or each top-level zone). You no longer maintain a separate service list here.",
+    "openPriceCatalogForServices": "Open Price catalog →"
+  },
+  "adminSignin": {
+    "signIn": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "orDivider": "or",
+    "backToAurora": "← Back to V2studio",
+    "title": "Admin sign in",
+    "subtitle": "Sign in with email and password to access the admin panel.",
+    "accessDenied": "Access denied. Only authorized administrators can sign in.",
+    "invalidCredentials": "Invalid email or password.",
+    "signInFailed": "Sign in failed. Please try again.",
+    "signingIn": "Signing in...",
+    "continueWithGoogle": "Continue with Google"
+  },
+  "privacyPolicy": {
+    "metaTitle": "Privacy Policy | V2Studio Bratislava",
+    "metaDescription": "How V2studio in Bratislava processes personal data under the GDPR and Slovak Act No. 18/2018 Z.z.",
+    "title": "Privacy Policy",
+    "backHome": "← Back to home",
+    "intro": "This Privacy Policy applies to the V2studio website and online booking at {address}, Slovak Republic. We process personal data in accordance with Regulation (EU) 2016/679 (General Data Protection Regulation, GDPR) and Act No. 18/2018 Coll. on Personal Data Protection of the Slovak Republic, as amended.",
+    "sectionController": "Data controller",
+    "controller": "The controller of your personal data is Natali Volik, operating as {addressSubtitle}, V2studio, {address}, Slovak Republic. For questions about this policy or your data, contact us at {email} or {phone}.",
+    "sectionLegal": "Applicable law and supervisory authority",
+    "legal": "Because we provide services in Bratislava, Slovak Republic (European Union), the GDPR and the Slovak Act apply. You have the right to lodge a complaint with the Office for Personal Data Protection of the Slovak Republic (ÚOOÚ SR), Hraničná 12, 820 07 Bratislava 27, Slovakia — https://dataprotection.gov.sk/",
+    "sectionData": "Categories of personal data",
+    "data": "Depending on how you interact with us, we may process: identification and contact details you provide (name, phone, email, message content); booking details (date, time, selected service); and, where necessary for the website to function, limited technical data such as cookies (see the Cookie Policy link in the footer).",
+    "sectionPurposes": "Purposes and legal bases",
+    "purposes": "We use your data to: take and manage bookings and deliver our services (contract — Art. 6(1)(b) GDPR); communicate with you about appointments (contract or legitimate interests — Art. 6(1)(b) or (f)); comply with legal obligations such as accounting rules where applicable (Art. 6(1)(c)); keep the website secure and operational (legitimate interests — Art. 6(1)(f)); and, only if you give separate consent, send marketing messages (Art. 6(1)(a)).",
+    "sectionRetention": "Retention",
+    "retention": "We keep personal data only as long as needed for these purposes — generally for the duration of our relationship and then for any period required by tax, accounting, or other Slovak or EU law, or until you withdraw consent for marketing, unless longer retention is justified by legitimate interests (for example defending legal claims).",
+    "sectionRights": "Your rights",
+    "rights": "You may request access, rectification, erasure, restriction of processing, data portability, and object to processing based on legitimate interests. Where we rely on consent, you may withdraw it at any time without affecting the lawfulness of processing before withdrawal. To exercise your rights, contact {email}. You may also contact ÚOOÚ SR (see above).",
+    "sectionCookies": "Cookies",
+    "cookies": "We use cookies as described in our Cookie Policy. Optional cookies (analytics, marketing) are only activated with your consent via the banner or Cookie settings in the footer.",
+    "sectionChanges": "Changes",
+    "changes": "We may update this Privacy Policy when our practices or the law change. The current version is always published on this page. Last updated: March 2026."
+  },
+  "cookieConsent": {
+    "title": "We value your privacy",
+    "description": "We use essential cookies for the website to work and optional cookies for analytics and marketing. You can accept all, reject non-essential cookies, or choose categories. You can change your mind anytime.",
+    "learnMore": "Cookie Policy",
+    "acceptAll": "Accept all",
+    "rejectNonEssential": "Reject non-essential",
+    "customize": "Customise",
+    "saveChoices": "Save choices",
+    "back": "Back",
+    "close": "Close",
+    "manageSettings": "Cookie settings",
+    "ariaRegion": "Cookie consent",
+    "necessaryTitle": "Strictly necessary",
+    "necessaryDesc": "Needed for the site to function (security, core features, remembering your cookie choices). Always on.",
+    "analyticsTitle": "Analytics",
+    "analyticsDesc": "Helps us understand how the site is used (e.g. Google Analytics). Loaded only if you allow it.",
+    "marketingTitle": "Marketing",
+    "marketingDesc": "May support campaign measurement or relevant content. Loaded only if you allow it."
+  },
+  "cookiePolicy": {
+    "metaTitle": "Cookie Policy | V2Studio Bratislava",
+    "metaDescription": "How V2studio uses cookies and similar technologies in Slovakia and the EU.",
+    "title": "Cookie Policy",
+    "backHome": "← Back to home",
+    "intro": "This Cookie Policy explains how V2studio ({address}, Slovak Republic) uses cookies and similar technologies on this website, in line with EU law (including the GDPR) and national rules on electronic communications (ePrivacy) as implemented in Slovakia.",
+    "whatTitle": "What are cookies?",
+    "whatBody": "Cookies are small files stored on your device when you visit a website. They are often used to make the site work, remember settings, and—with your consent—to measure usage or personalise content.",
+    "categoriesTitle": "Categories we use",
+    "categoriesBody": "Strictly necessary cookies are required for core operation (for example storing your consent choice and secure parts of the site). Analytics cookies help us understand visits and improve the site; they load only if you accept them in the banner or enable them in custom settings. Marketing cookies are used only if you enable Marketing. We do not sell your personal data.",
+    "legalTitle": "Legal framework",
+    "legalBody": "The site is operated from Bratislava, Slovak Republic (EU). Where cookies involve personal data, the GDPR applies together with rules on cookies and similar technologies in electronic communications. See also our Privacy Policy for personal data processing.",
+    "usedTitle": "What we use on this site",
+    "usedBody": "We set a first-party cookie v2studio_cookie_consent (up to 12 months) to remember your choices. When you use the staff admin area, standard session cookies may be set for sign-in. If you consent to Analytics, we may load Google Analytics 4, which can set additional cookies or use similar storage.",
+    "manageTitle": "Managing cookies",
+    "manageBody": "Use the cookie banner or “Cookie settings” in the footer to change optional cookies. You can also block or delete cookies in your browser; if you remove the consent cookie, the banner will appear again after a short delay.",
+    "openSettings": "Open cookie settings",
+    "updatesTitle": "Updates",
+    "updatesBody": "We may update this Cookie Policy when our practices or the law change. Last updated: March 2026."
+  },
+  "metadata": {
+    "title": "V2studio Bratislava | Massage & Waxing Salon | Book Online",
+    "description": "Premium massage and waxing salon on Križna 22, Bratislava. V2studio / Epilroom: certified massage therapists, private rooms, face & body waxing by a medically trained specialist. Book online.",
+    "siteName": "V2studio · Bratislava",
+    "keywords": "V2studio, Epilroom Bratislava, massage salon Bratislava, waxing salon Bratislava, Brazilian wax Bratislava, depilation Bratislava, beauty salon Križna 22, Staré Mesto, online booking, therapeutic massage Slovakia, Natali Volik",
+    "adminTitle": "Admin | V2studio",
+    "adminDescription": "Staff sign-in and salon administration. Not indexed by search engines.",
+    "pages": {
+      "massage": {
+        "title": "Massage Bratislava | Sports, Deep Tissue & Relaxation | V2studio",
+        "description": "Sports, deep-tissue and relaxation massage in Bratislava city centre (Križna 22). Certified team, 8+ techniques, memberships—see prices and book online."
+      },
+      "depilation": {
+        "title": "Waxing Bratislava | Face & Body | Epilroom / V2studio",
+        "description": "Expert waxing and depilation by a medically trained specialist. Discreet studio on Križna 22, 14+ years experience—services, FAQ & online booking."
+      },
+      "booking": {
+        "title": "Book Massage or Waxing Online | V2studio Bratislava",
+        "description": "Book massage or depilation in minutes: pick a service, choose a time, confirm by email. V2studio, Križna 22, Bratislava—English, SK, RU & UK."
+      },
+      "massageBooking": {
+        "title": "Massage Appointment Online | Live Availability | V2studio",
+        "description": "Real-time massage booking at V2studio Bratislava. Select duration and technique, see open slots, get instant confirmation—Križna 22."
+      },
+      "depilationBooking": {
+        "title": "Waxing Appointment Online | V2studio / Epilroom",
+        "description": "Schedule face or body waxing online at V2studio. Choose your zone, pick a slot, receive confirmation—private Epilroom studio, Križna 22."
+      },
+      "massagePrice": {
+        "title": "Massage Price List Bratislava | V2studio Cenník",
+        "description": "Current massage rates at V2studio: durations, modalities and add-ons on Križna 22. Compare options, then book the session that fits you."
+      },
+      "depilationPrice": {
+        "title": "Waxing Price List Bratislava | Depilation Cenník | V2studio",
+        "description": "Transparent waxing & depilation prices—face, body, bundles. Plan your visit at V2studio / Epilroom, Bratislava, before you reserve online."
+      },
+      "cookies": {
+        "title": "Cookie Policy | V2studio Bratislava",
+        "description": "How V2studio uses cookies and similar technologies on this site, with consent choices that meet GDPR and EU ePrivacy expectations."
+      },
+      "privacy": {
+        "title": "Privacy Policy | V2studio Bratislava",
+        "description": "How V2studio collects, uses, and protects personal data when you book online, contact us, or browse our website in Slovakia."
+      }
+    }
+  },
+  "email": {
+    "confirmed": "Confirmed",
+    "hi": "Hi",
+    "luxurySalon": "Luxury Salon"
+  }
 }

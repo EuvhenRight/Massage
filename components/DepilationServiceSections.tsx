@@ -88,7 +88,7 @@ export default function DepilationServiceSections({
 								</button>
 							</DialogClose>
 							<div className='flex max-h-[min(90vh,760px)] flex-col overflow-hidden rounded-2xl border border-white/12 bg-nearBlack/95 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.75)] ring-1 ring-white/[0.04] backdrop-blur-xl'>
-								<div className='relative isolate aspect-[20/9] min-h-[140px] w-full shrink-0 overflow-hidden sm:aspect-[2/1] sm:min-h-[160px]'>
+								<div className='relative isolate aspect-[12/9] min-h-[140px] w-full shrink-0 overflow-hidden sm:aspect-[5/4] sm:min-h-[160px]'>
 									<Image
 										src={DEPILATION_SERVICE_SECTION_IMAGES[openId]}
 										alt={t(`serviceSections.cards.${openId}.title`)}
