@@ -82,7 +82,7 @@ export default function DepilationServiceSections({
 								<button
 									type='button'
 									aria-label={t('serviceSections.closeModal')}
-									className='absolute right-0 top-[66px] z-[60] inline-flex h-11 w-11 -translate-x-1/2 -translate-y-[calc(100%+10px)] items-center justify-center rounded-md text-icyWhite/75 transition-colors hover:text-gold-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent md:left-auto md:right-[-34px] md:translate-x-0 md:translate-y-0'
+									className='absolute sm:right-0 sm:top-0 right-[-16px] top-[72px] z-[60] inline-flex h-11 w-11 -translate-x-1/2 -translate-y-[calc(100%+10px)] items-center justify-center rounded-md text-icyWhite/75 transition-colors hover:text-gold-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent md:left-auto md:right-[-34px] md:translate-x-0 md:translate-y-0'
 								>
 									<X className='h-6 w-6' strokeWidth={2} aria-hidden />
 								</button>
