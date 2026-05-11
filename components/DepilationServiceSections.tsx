@@ -82,13 +82,13 @@ export default function DepilationServiceSections({
 								<button
 									type='button'
 									aria-label={t('serviceSections.closeModal')}
-									className='absolute left-1/2 top-0 z-[60] inline-flex h-11 w-11 -translate-x-1/2 -translate-y-[calc(100%+10px)] items-center justify-center rounded-md text-icyWhite/75 transition-colors hover:text-gold-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent md:left-auto md:right-[-34px] md:translate-x-0 md:translate-y-0'
+									className='absolute right-0 top-[66px] z-[60] inline-flex h-11 w-11 -translate-x-1/2 -translate-y-[calc(100%+10px)] items-center justify-center rounded-md text-icyWhite/75 transition-colors hover:text-gold-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent md:left-auto md:right-[-34px] md:translate-x-0 md:translate-y-0'
 								>
 									<X className='h-6 w-6' strokeWidth={2} aria-hidden />
 								</button>
 							</DialogClose>
 							<div className='flex max-h-[min(90vh,760px)] flex-col overflow-hidden rounded-2xl border border-white/12 bg-nearBlack/95 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.75)] ring-1 ring-white/[0.04] backdrop-blur-xl'>
-								<div className='relative isolate aspect-[12/9] min-h-[140px] w-full shrink-0 overflow-hidden sm:aspect-[5/4] sm:min-h-[160px]'>
+								<div className='relative isolate aspect-[12/12] min-h-[140px] w-full shrink-0 overflow-hidden sm:aspect-[5/5] sm:min-h-[160px]'>
 									<Image
 										src={DEPILATION_SERVICE_SECTION_IMAGES[openId]}
 										alt={t(`serviceSections.cards.${openId}.title`)}

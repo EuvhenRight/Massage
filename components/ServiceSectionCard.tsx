@@ -56,7 +56,7 @@ export function ServiceSectionCard({
 			onClick={onClick}
 			className='group text-left rounded-3xl overflow-hidden border border-white/[0.08] bg-white/[0.02] hover:border-gold-soft/35 hover:bg-white/[0.04] hover:shadow-[0_0_40px_-12px_rgba(232,184,0,0.18)] transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/40'
 		>
-			<div className='relative aspect-[4/3] overflow-hidden'>
+			<div className='relative aspect-[4/4] overflow-hidden'>
 				<Image
 					src={imageSrc}
 					alt={imageAlt}
