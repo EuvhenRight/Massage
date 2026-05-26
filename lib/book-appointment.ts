@@ -46,6 +46,9 @@ export interface AppointmentData {
   scheduleTbdAdminHint?: string;
   /** Free-form internal note set by admin */
   adminNote?: string;
+  /** Customer's channel choice at booking time — used for reschedule/cancel notifications. */
+  notifyByEmail?: boolean;
+  notifyByWhatsApp?: boolean;
 }
 
 export interface BookingInput {
@@ -69,6 +72,8 @@ export interface BookingInput {
    * Legacy fallback: when >= 1, books this many consecutive full working days from `date`.
    */
   multiDayFullDayCount?: number;
+  notifyByEmail?: boolean;
+  notifyByWhatsApp?: boolean;
 }
 
 /** Placeholder start for TBD bookings — not shown on the week grid; admin assigns a real slot later. */
@@ -99,6 +104,8 @@ export interface ScheduleTbdBookingInput {
    * Stored on the doc so admin and emails match what was booked.
    */
   multiDayFullDayCount?: number;
+  notifyByEmail?: boolean;
+  notifyByWhatsApp?: boolean;
 }
 
 /** Admin can create with all fields optional */
@@ -114,6 +121,8 @@ export interface AdminBookingInput {
   email?: string;
   phone?: string;
   adminNote?: string;
+  notifyByEmail?: boolean;
+  notifyByWhatsApp?: boolean;
 }
 
 /** Admin can update any field */
@@ -128,6 +137,8 @@ export interface AdminAppointmentUpdate {
   adminFullDayDates?: string[];
   multiDayFullDayCount?: number;
   adminNote?: string;
+  notifyByEmail?: boolean;
+  notifyByWhatsApp?: boolean;
 }
 
 /**
@@ -367,6 +378,9 @@ async function bookFullDayAppointment(
     if (input.serviceRu) baseData.serviceRu = input.serviceRu;
     if (input.serviceUk) baseData.serviceUk = input.serviceUk;
 
+    if (typeof input.notifyByEmail === "boolean") baseData.notifyByEmail = input.notifyByEmail;
+    if (typeof input.notifyByWhatsApp === "boolean") baseData.notifyByWhatsApp = input.notifyByWhatsApp;
+
     transaction.set(appointmentRef, baseData);
 
     for (let i = 0; i < windows.length; i++) {
@@ -485,6 +499,9 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
     if (input.serviceRu) baseData.serviceRu = input.serviceRu;
     if (input.serviceUk) baseData.serviceUk = input.serviceUk;
 
+    if (typeof input.notifyByEmail === "boolean") baseData.notifyByEmail = input.notifyByEmail;
+    if (typeof input.notifyByWhatsApp === "boolean") baseData.notifyByWhatsApp = input.notifyByWhatsApp;
+
     transaction.set(appointmentRef, baseData);
 
     transaction.set(dayRef, {
@@ -549,6 +566,8 @@ export async function bookScheduleTbdAppointment(
   if (input.scheduleTbdAdminHint?.trim()) {
     baseData.scheduleTbdAdminHint = input.scheduleTbdAdminHint.trim();
   }
+  if (typeof input.notifyByEmail === "boolean") baseData.notifyByEmail = input.notifyByEmail;
+  if (typeof input.notifyByWhatsApp === "boolean") baseData.notifyByWhatsApp = input.notifyByWhatsApp;
   if (input.serviceId) baseData.serviceId = input.serviceId;
   if (input.serviceSk) baseData.serviceSk = input.serviceSk;
   if (input.serviceEn) baseData.serviceEn = input.serviceEn;
@@ -789,6 +808,10 @@ export async function getAppointment(appointmentId: string): Promise<Appointment
     scheduleTbd: d.scheduleTbd === true,
     scheduleTbdAdminHint: d.scheduleTbdAdminHint as string | undefined,
     adminNote: d.adminNote as string | undefined,
+    notifyByEmail:
+      typeof d.notifyByEmail === "boolean" ? d.notifyByEmail : undefined,
+    notifyByWhatsApp:
+      typeof d.notifyByWhatsApp === "boolean" ? d.notifyByWhatsApp : undefined,
   } as AppointmentData;
 }
 
@@ -813,6 +836,8 @@ export async function bookAppointmentAdmin(input: AdminBookingInput, place: Plac
     fullName: input.fullName?.trim() || "—",
     email: input.email?.trim() || "",
     phone: input.phone?.trim() ? normalizeStoredPhone(input.phone) : "—",
+    notifyByEmail: input.notifyByEmail,
+    notifyByWhatsApp: input.notifyByWhatsApp,
   };
 
   const result = await bookAppointment(normalized, place);

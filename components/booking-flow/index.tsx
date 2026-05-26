@@ -150,6 +150,8 @@ function BookingFlowInner({
 							serviceUk: selected?.titleUk ?? finalService,
 							scheduleTbdAdminHint: scheduleTbdAdminHint || undefined,
 							multiDayFullDayCount: bookingDayCount,
+							notifyByEmail,
+							notifyByWhatsApp,
 						},
 						place,
 					)
@@ -258,6 +260,8 @@ function BookingFlowInner({
 						fullName: data.fullName,
 						email: data.email,
 						phone: data.phone,
+						notifyByEmail,
+						notifyByWhatsApp,
 					},
 					place,
 				)

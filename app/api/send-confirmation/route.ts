@@ -12,6 +12,7 @@ import {
   notifyStaffWhatsAppCancelled,
   notifyCustomerWhatsAppNew,
   notifyCustomerWhatsAppCancelled,
+  notifyCustomerWhatsAppRescheduled,
   type WhatsAppNotifyResult,
   type BookingPlace,
 } from "@/lib/whatsapp-admin-notify";
@@ -147,11 +148,11 @@ export async function POST(request: Request) {
           ? notifyStaffWhatsAppNew(
               {
                 customerName: nameStr,
+                customerPhone: customerPhoneRaw,
                 email: toStr,
                 date: dateStr,
                 time: timeStr,
                 service: serviceStr,
-                fullCalendarDayCount: fullDayCount,
               },
               { bookingPlace }
             )
@@ -165,7 +166,6 @@ export async function POST(request: Request) {
               date: dateStr,
               time: timeStr,
               service: serviceStr,
-              fullCalendarDayCount: fullDayCount,
             })
           : Promise.resolve({
               status: "skipped" as WhatsAppNotifyResult,
@@ -198,24 +198,76 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
+      const toStr = String(to);
+      const nameStr = String(customerName);
+      const oldDateStr = String(oldDate);
+      const oldTimeStr = String(oldTime);
+      const newDateStr = String(newDate);
+      const newTimeStr = String(newTime);
+      const serviceStr = service ? String(service) : "";
 
-      const customerResult = await resend.emails.send({
-        from: `${FROM_NAME} <${FROM_EMAIL}>`,
-        to: [String(to)],
-        subject: SUBJECTS.rescheduled(String(newDate), String(newTime)),
-        html: buildRescheduledEmail(
-          String(customerName),
-          service ? String(service) : "",
-          String(oldDate),
-          String(oldTime),
-          String(newDate),
-          String(newTime)
-        ),
-      });
+      const notifyByEmail =
+        body.notifyByEmail !== false && body.notifyByEmail !== "false";
+      const notifyByWhatsApp =
+        body.notifyByWhatsApp === true || body.notifyByWhatsApp === "true";
 
-      if (customerResult.error) {
-        console.error("[send-confirmation] Resend error:", customerResult.error.message);
-        return NextResponse.json({ error: customerResult.error.message }, { status: 500 });
+      if (!notifyByEmail && !notifyByWhatsApp) {
+        return NextResponse.json(
+          { error: "Select at least one notification channel" },
+          { status: 400 }
+        );
+      }
+      if (notifyByWhatsApp && !parseWhatsappE164(customerPhoneRaw)) {
+        return NextResponse.json(
+          { error: "Invalid phone for WhatsApp notifications" },
+          { status: 400 }
+        );
+      }
+
+      if (notifyByEmail) {
+        const customerResult = await resend.emails.send({
+          from: `${FROM_NAME} <${FROM_EMAIL}>`,
+          to: [toStr],
+          subject: SUBJECTS.rescheduled(newDateStr, newTimeStr),
+          html: buildRescheduledEmail(
+            nameStr,
+            serviceStr,
+            oldDateStr,
+            oldTimeStr,
+            newDateStr,
+            newTimeStr
+          ),
+        });
+        if (customerResult.error) {
+          console.error("[send-confirmation] Resend error:", customerResult.error.message);
+          return NextResponse.json({ error: customerResult.error.message }, { status: 500 });
+        }
+      }
+
+      if (notifyByWhatsApp) {
+        const waCustResult = await notifyCustomerWhatsAppRescheduled({
+          customerPhone: customerPhoneRaw,
+          customerName: nameStr,
+          service: serviceStr,
+          oldDate: oldDateStr,
+          oldTime: oldTimeStr,
+          newDate: newDateStr,
+          newTime: newTimeStr,
+        });
+        whatsappCustomer = waCustResult.status;
+        whatsappCustomerMeta = {
+          twilioCode: waCustResult.twilioCode,
+          skipReason: waCustResult.skipReason,
+        };
+        if (whatsappCustomer !== "sent") {
+          console.warn(
+            "[send-confirmation] Customer WhatsApp reschedule not delivered:",
+            whatsappCustomer,
+            whatsappCustomerMeta?.twilioCode != null
+              ? `Twilio code ${whatsappCustomerMeta.twilioCode}`
+              : whatsappCustomerMeta?.skipReason ?? ""
+          );
+        }
       }
     } else if (type === "cancelled") {
       const bookingPlace = parseBookingPlace(body);
@@ -259,7 +311,7 @@ export async function POST(request: Request) {
         notifyStaffWhatsAppCancelled(
           {
             customerName: nameStr,
-            email: toStr,
+            customerPhone: customerPhoneRaw,
             date: dateStr,
             time: timeStr,
             service: serviceStr,

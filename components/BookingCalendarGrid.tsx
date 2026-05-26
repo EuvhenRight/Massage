@@ -215,6 +215,10 @@ function toAppointmentData(doc: {
 		scheduleTbd: d.scheduleTbd === true,
 		scheduleTbdAdminHint: d.scheduleTbdAdminHint as string | undefined,
 		adminNote: d.adminNote as string | undefined,
+		notifyByEmail:
+			typeof d.notifyByEmail === 'boolean' ? d.notifyByEmail : undefined,
+		notifyByWhatsApp:
+			typeof d.notifyByWhatsApp === 'boolean' ? d.notifyByWhatsApp : undefined,
 	}
 }
 

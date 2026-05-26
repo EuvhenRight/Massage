@@ -700,6 +700,13 @@ export default function AdminAppointmentModal({
 			const noteValue = adminNote.trim() || undefined
 
 			if (isEdit && appointment) {
+				const oldStart =
+					appointment.startTime && 'toDate' in appointment.startTime
+						? appointment.startTime.toDate()
+						: new Date(appointment.startTime as Date)
+				const newStart = new Date(`${primaryDate}T${startTime}:00`)
+				const timeChanged =
+					!isDayMode && oldStart.getTime() !== newStart.getTime()
 				await updateAppointment(
 					appointment.id,
 					{
@@ -707,7 +714,7 @@ export default function AdminAppointmentModal({
 						fullName: fullName || undefined,
 						email: email || undefined,
 						phone: phone || undefined,
-						startTime: new Date(`${primaryDate}T${startTime}:00`),
+						startTime: newStart,
 						durationMinutes: dur,
 						adminBookingMode: bookingMode,
 						adminFullDayDates: isDayMode ? normalizedDayDates : undefined,
@@ -715,6 +722,40 @@ export default function AdminAppointmentModal({
 					},
 					place,
 				)
+				if (timeChanged && email?.trim() && email.includes('@')) {
+					const notifyByEmail =
+						typeof appointment.notifyByEmail === 'boolean'
+							? appointment.notifyByEmail
+							: true
+					const notifyByWhatsApp =
+						typeof appointment.notifyByWhatsApp === 'boolean'
+							? appointment.notifyByWhatsApp
+							: false
+					if (notifyByEmail || notifyByWhatsApp) {
+						try {
+							await fetch('/api/send-confirmation', {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' },
+								body: JSON.stringify({
+									type: 'rescheduled',
+									to: email.trim(),
+									customerName: fullName?.trim() || t('customer'),
+									customerPhone: phone?.trim() || undefined,
+									service: service || undefined,
+									oldDate: formatDateForEmail(oldStart),
+									oldTime: formatTimeForEmail(oldStart),
+									newDate: formatDateForEmail(newStart),
+									newTime: formatTimeForEmail(newStart),
+									bookingPlace: place,
+									notifyByEmail,
+									notifyByWhatsApp,
+								}),
+							})
+						} catch {
+							/* notification is best-effort — reschedule already saved */
+						}
+					}
+				}
 				toast.success(t('appointmentUpdated'))
 			} else {
 				const input: AdminBookingInput = {

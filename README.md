@@ -56,12 +56,12 @@ Code: [`lib/whatsapp-admin-notify.ts`](lib/whatsapp-admin-notify.ts). API respon
 1. [Twilio Console](https://www.twilio.com/console) → copy **Account SID** and **Auth Token** into `.env.local`.
 2. **Messaging** → **Try it out** → **Send a WhatsApp message** (sandbox). Note the **sandbox keyword** (e.g. `join something-here`).
 3. On the **admin** phone that should receive alerts, open **WhatsApp** and send `join <keyword>` to the **sandbox number** Twilio shows (e.g. `+1 415 523 8886`). Wait for the confirmation reply. **Customers** who should receive WhatsApp must also join the sandbox from **their** number (same `join` flow) until you use a production WhatsApp sender.
-4. In the same Twilio screen, copy the **From** value for WhatsApp (format `whatsapp:+14155238886`) → `TWILIO_WHATSAPP_FROM`. Do **not** use your own mobile as `From`.
-5. Set `ADMIN_WHATSAPP_PHONE` to that same phone’s **E.164** number (e.g. `+4219xxxxxxx`) — the one that joined the sandbox. It must **differ** from `TWILIO_WHATSAPP_FROM` (different roles: Twilio line vs your handset).
+4. In the same Twilio screen, copy the **From** value for WhatsApp (format `whatsapp:+14155238886`) → `TWILIO_MESSAGING_SERVICE_SID`. Do **not** use your own mobile as `From`.
+5. Set `ADMIN_WHATSAPP_PHONE` to that same phone’s **E.164** number (e.g. `+4219xxxxxxx`) — the one that joined the sandbox. It must **differ** from `TWILIO_MESSAGING_SERVICE_SID` (different roles: Twilio line vs your handset).
 6. Put all four variables in **`.env.local`** (see [`.env.example`](.env.example)). For **Vercel/hosting**, add them under Project → Settings → Environment Variables.
 7. Run `npm run test:whatsapp` — you should get two test messages. If not, check the terminal hint for **63007** (wrong `From`/account), **63016** (sandbox not joined), **63031** (`From` and `To` identical).
 
-**Production:** replace the sandbox with a **WhatsApp-enabled** Twilio sender approved for your business; update `TWILIO_WHATSAPP_FROM` accordingly.
+**Production:** replace the sandbox with a **WhatsApp-enabled** Twilio sender approved for your business; update `TWILIO_MESSAGING_SERVICE_SID` accordingly.
 
 **Note:** If Resend fails first, WhatsApp is not called. Admin-created bookings skip **admin** WhatsApp; **customer** WhatsApp still runs when a valid `customerPhone` is sent.
 
@@ -101,14 +101,14 @@ luxe-salon/
 
 All placeholder images are sourced from [Unsplash](https://unsplash.com) under the Unsplash License (free to use):
 
-| Image | Source |
-|-------|--------|
-| Massage / Spa | [Unsplash - Spa](https://images.unsplash.com/photo-1544161515-4ab6ce6db874) |
+| Image                 | Source                                                                              |
+| --------------------- | ----------------------------------------------------------------------------------- |
+| Massage / Spa         | [Unsplash - Spa](https://images.unsplash.com/photo-1544161515-4ab6ce6db874)         |
 | Depilation / Wellness | [Unsplash - Wellness](https://images.unsplash.com/photo-1519824145371-296894a0daa9) |
-| Hot Stone | [Unsplash - Stones](https://images.unsplash.com/photo-1540555700478-4be289fbecef) |
-| Aromatherapy | [Unsplash - Oils](https://images.unsplash.com/photo-1600334129128-685c5582fd35) |
-| Sports Recovery | [Unsplash - Sports](https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b) |
-| Couples | [Unsplash - Couples](https://images.unsplash.com/photo-1515377905703-c4788e51af15) |
+| Hot Stone             | [Unsplash - Stones](https://images.unsplash.com/photo-1540555700478-4be289fbecef)   |
+| Aromatherapy          | [Unsplash - Oils](https://images.unsplash.com/photo-1600334129128-685c5582fd35)     |
+| Sports Recovery       | [Unsplash - Sports](https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b)   |
+| Couples               | [Unsplash - Couples](https://images.unsplash.com/photo-1515377905703-c4788e51af15)  |
 
 Replace these with your own high-quality imagery for production.
 
