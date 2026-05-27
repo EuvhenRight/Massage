@@ -335,7 +335,7 @@ export default function DepilationPage() {
 					initial={{ opacity: 0, y: 20 }}
 					animate={
 						visibleMobileBook
-							? { opacity: 1, y: 0 }
+							? { opacity: 1, y: 0, pointerEvents: 'auto' as const }
 							: { opacity: 0, y: 20, pointerEvents: 'none' as const }
 					}
 					transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}

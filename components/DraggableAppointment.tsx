@@ -18,7 +18,10 @@ import {
 } from '@/lib/services'
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
+import { Pencil, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
+import type React from 'react'
+import { NotificationChannelBadge } from './NotificationChannelBadge'
 
 const DEFAULT_COLOR = `${ADMIN_APPOINTMENT_FALLBACK_COLOR} text-icyWhite`
 
@@ -39,6 +42,10 @@ export interface PositionedCalendarLayout {
 	topPx: number
 	heightPx: number
 	zIndex: number
+	/** Column packing for concurrent bookings (Google-Calendar style). When set,
+	 *  the block is placed by percentage width/left instead of full-width insets. */
+	leftPct?: number
+	widthPct?: number
 }
 
 interface DraggableAppointmentProps {
@@ -52,6 +59,8 @@ interface DraggableAppointmentProps {
 	onOpenDetail?: () => void
 	onEdit?: () => void
 	onCancel?: () => void
+	/** Pointer-down on the bottom resize handle (timed grid blocks only). */
+	onResizeStart?: (e: React.PointerEvent) => void
 	services?: ServiceData[]
 	isPast?: boolean
 	layout?: 'calendar' | 'list'
@@ -86,6 +95,8 @@ export default function DraggableAppointment({
 	positionedCalendar = null,
 	onOpenDetail,
 	onEdit,
+	onCancel,
+	onResizeStart,
 	services = [],
 	isPast = false,
 	layout = 'calendar',
@@ -195,8 +206,13 @@ export default function DraggableAppointment({
 						position: 'absolute',
 						top: positionedCalendar.topPx,
 						height: positionedCalendar.heightPx,
-						left: '0.1875rem',
-						right: '0.1875rem',
+						...(positionedCalendar.leftPct != null &&
+						positionedCalendar.widthPct != null
+							? {
+									left: `calc(${positionedCalendar.leftPct}% + 2px)`,
+									width: `calc(${positionedCalendar.widthPct}% - 4px)`,
+								}
+							: { left: '0.1875rem', right: '0.1875rem' }),
 						zIndex: positionedCalendar.zIndex,
 						minHeight: 0,
 						...(transform
@@ -244,6 +260,17 @@ export default function DraggableAppointment({
 		onOpenDetail()
 	}
 
+	/** Keyboard equivalent of the card click — Enter/Space opens detail (or edits
+	 *  a full-day block). Ignored when focus is on an inner action button. */
+	const isCardInteractive = !!onOpenDetail || (isFullDay && !!onEdit)
+	const handleCardKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key !== 'Enter' && e.key !== ' ') return
+		if (e.target !== e.currentTarget) return
+		e.preventDefault()
+		if (onOpenDetail) onOpenDetail()
+		else if (isFullDay && onEdit) onEdit()
+	}
+
 	const listOrSpecialChrome =
 		'rounded-xl border border-white/12 px-3 py-2.5 text-sm shadow-md ring-1 ring-black/20'
 
@@ -282,6 +309,48 @@ export default function DraggableAppointment({
 			? 'justify-start'
 			: 'justify-center'
 
+	/** Left status rail: a crisp Google-Calendar-style edge that encodes booking
+	 *  status on top of the service-colored body. */
+	const statusRailClass = isPast
+		? 'bg-white/25'
+		: isTbd
+			? 'bg-rose-400'
+			: isFullDay
+				? 'bg-amber-400'
+				: 'bg-white/40'
+	const showStatusRail = !showAwaitingListChrome
+
+	/** Notification channel marker: shown on roomy blocks; the tiny micro/compact
+	 *  timed tiers skip it (no space) — the detail popover still shows it. */
+	const showChannelBadge =
+		!isPast &&
+		!awaitingCalendarAssignment &&
+		!isDragOverlay &&
+		(isList ||
+			isFullDay ||
+			isTbd ||
+			timedTier === 'short' ||
+			timedTier === 'medium' ||
+			timedTier === 'full')
+
+	const isTimedGrid = !isList && !isFullDay && !isTbd && !isDragOverlay
+
+	/** Hover quick-actions (edit / cancel) — skip the tiny tiers and past blocks;
+	 *  the detail popover remains the fallback everywhere. */
+	const showHoverActions =
+		!isPast &&
+		!isDragOverlay &&
+		!awaitingCalendarAssignment &&
+		(onEdit != null || onCancel != null) &&
+		(isList ||
+			isFullDay ||
+			timedTier === 'short' ||
+			timedTier === 'medium' ||
+			timedTier === 'full')
+
+	/** Drag the bottom edge to change duration (timed grid blocks only). */
+	const showResizeHandle = isTimedGrid && !isPast && onResizeStart != null
+
 	return (
 		<div
 			ref={setNodeRef}
@@ -294,9 +363,13 @@ export default function DraggableAppointment({
 			}
 			style={style}
 			title={onOpenDetail ? undefined : hoverTitle || undefined}
+			aria-label={hoverTitle || appointment.service || undefined}
+			onKeyDown={isCardInteractive ? handleCardKeyDown : undefined}
 			{...(!disabled && !isTbd && !isFullDay
 				? { ...listeners, ...attributes }
-				: {})}
+				: isCardInteractive
+					? { tabIndex: 0, role: 'button' }
+					: {})}
 			onClick={
 				onOpenDetail
 					? handleCardClick
@@ -326,6 +399,9 @@ export default function DraggableAppointment({
 						: 'before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-to-b before:from-white/[0.1] before:to-transparent'
 				}
         group select-none
+        transition-shadow duration-150 ease-out
+        focus-visible:outline-none focus-visible:z-30 focus-visible:ring-2 focus-visible:ring-white/70
+        ${isPast || isDragOverlay ? '' : 'hover:z-30 hover:shadow-lg hover:shadow-black/45 hover:ring-1 hover:ring-white/30'}
         ${usePositionedCalendar ? 'pointer-events-auto' : ''}
         ${surfaceClass}
         ${isDragging ? 'opacity-0 pointer-events-none' : ''}
@@ -338,6 +414,12 @@ export default function DraggableAppointment({
 				}
       `}
 		>
+			{showStatusRail ? (
+				<span
+					className={`pointer-events-none absolute inset-y-0 left-0 z-[2] w-[3px] rounded-l-[inherit] ${statusRailClass}`}
+					aria-hidden
+				/>
+			) : null}
 			<div
 				className={`relative z-[1] flex h-full min-h-[18px] w-full flex-col ${innerColumnJustify}`}
 			>
@@ -475,6 +557,65 @@ export default function DraggableAppointment({
 					</div>
 				) : null}
 			</div>
+			{showChannelBadge ? (
+				<NotificationChannelBadge
+					appointment={appointment}
+					className={`pointer-events-none absolute right-1 top-1 z-[2] rounded-full bg-nearBlack/45 px-1 py-0.5 backdrop-blur-sm ${
+						showHoverActions ? 'transition-opacity group-hover:opacity-0' : ''
+					}`}
+				/>
+			) : null}
+			{showHoverActions ? (
+				<div className='absolute right-1 top-1 z-[4] flex items-center gap-1 opacity-0 transition-opacity duration-150 focus-within:opacity-100 group-hover:opacity-100'>
+					{onEdit ? (
+						<button
+							type='button'
+							onPointerDown={e => e.stopPropagation()}
+							onClick={e => {
+								e.stopPropagation()
+								e.preventDefault()
+								onEdit()
+							}}
+							className='inline-flex h-5 w-5 items-center justify-center rounded-md border border-white/15 bg-nearBlack/75 text-icyWhite/90 backdrop-blur-sm transition-colors hover:bg-nearBlack hover:text-icyWhite'
+							aria-label={t('editAppointment')}
+							title={t('editAppointment')}
+						>
+							<Pencil className='h-3 w-3' />
+						</button>
+					) : null}
+					{onCancel ? (
+						<button
+							type='button'
+							onPointerDown={e => e.stopPropagation()}
+							onClick={e => {
+								e.stopPropagation()
+								e.preventDefault()
+								onCancel()
+							}}
+							className='inline-flex h-5 w-5 items-center justify-center rounded-md border border-red-400/30 bg-red-500/25 text-red-100 backdrop-blur-sm transition-colors hover:bg-red-500/45'
+							aria-label={t('cancel')}
+							title={t('cancel')}
+						>
+							<X className='h-3 w-3' />
+						</button>
+					) : null}
+				</div>
+			) : null}
+			{showResizeHandle ? (
+				<div
+					onPointerDown={e => {
+						e.stopPropagation()
+						onResizeStart?.(e)
+					}}
+					onClick={e => e.stopPropagation()}
+					className='absolute inset-x-0 bottom-0 z-[3] flex h-2.5 cursor-ns-resize items-end justify-center opacity-0 transition-opacity duration-150 group-hover:opacity-100'
+					role='separator'
+					aria-label={t('resizeDurationAria')}
+					title={t('resizeDurationAria')}
+				>
+					<span className='mb-0.5 h-1 w-6 rounded-full bg-white/55' aria-hidden />
+				</div>
+			) : null}
 		</div>
 	)
 }

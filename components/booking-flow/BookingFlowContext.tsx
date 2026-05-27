@@ -17,6 +17,7 @@ import {
   parseDraftToState,
 } from "@/lib/booking-draft-storage";
 import { findBookableServiceForSelection } from "@/lib/services";
+import { toggleNotifyChannel } from "@/lib/notify-channels";
 import {
   normalizeItemBookingDayCount,
   type SexKey,
@@ -86,7 +87,7 @@ const initialState: BookingFlowState = {
   email: "",
   phone: "",
   notifyByEmail: true,
-  notifyByWhatsApp: true,
+  notifyByWhatsApp: false,
   catalogSex: null,
 };
 
@@ -204,8 +205,10 @@ export function BookingFlowProvider({
         fullName: parsed.fullName,
         email: parsed.email,
         phone: parsed.phone,
-        notifyByEmail: parsed.notifyByEmail,
-        notifyByWhatsApp: parsed.notifyByWhatsApp,
+        // Channels are mutually exclusive now; only keep WhatsApp-only drafts,
+        // otherwise fall back to email (covers legacy both-on / both-off drafts).
+        notifyByEmail: !(parsed.notifyByWhatsApp === true && parsed.notifyByEmail === false),
+        notifyByWhatsApp: parsed.notifyByWhatsApp === true && parsed.notifyByEmail === false,
         catalogSex: parsed.catalogSex ?? null,
       };
     }
@@ -262,7 +265,7 @@ export function BookingFlowProvider({
             : "",
         catalogSex: null,
         notifyByEmail: true,
-        notifyByWhatsApp: true,
+        notifyByWhatsApp: false,
       };
     });
   }, [services, place, defaultDuration, defaultService]);
@@ -416,24 +419,16 @@ export function BookingFlowProvider({
     []
   );
 
-  const setNotifyByEmail = useCallback((notifyByEmail: boolean) => {
-    setState((s) => {
-      const next = { ...s, notifyByEmail };
-      if (!next.notifyByEmail && !next.notifyByWhatsApp) {
-        next.notifyByWhatsApp = true;
-      }
-      return next;
-    });
+  // Notification channels are mutually exclusive: exactly one is always active.
+  // Turning one on turns the other off; turning one off turns the other on.
+  const setNotifyByEmail = useCallback((value: boolean) => {
+    const { email, whatsapp } = toggleNotifyChannel("email", value);
+    setState((s) => ({ ...s, notifyByEmail: email, notifyByWhatsApp: whatsapp }));
   }, []);
 
-  const setNotifyByWhatsApp = useCallback((notifyByWhatsApp: boolean) => {
-    setState((s) => {
-      const next = { ...s, notifyByWhatsApp };
-      if (!next.notifyByEmail && !next.notifyByWhatsApp) {
-        next.notifyByEmail = true;
-      }
-      return next;
-    });
+  const setNotifyByWhatsApp = useCallback((value: boolean) => {
+    const { email, whatsapp } = toggleNotifyChannel("whatsapp", value);
+    setState((s) => ({ ...s, notifyByEmail: email, notifyByWhatsApp: whatsapp }));
   }, []);
 
   const nextStep = useCallback(() => {
@@ -468,7 +463,7 @@ export function BookingFlowProvider({
           : "",
       catalogSex: null,
       notifyByEmail: true,
-      notifyByWhatsApp: true,
+      notifyByWhatsApp: false,
     });
   }, [defaultDuration, services]);
 

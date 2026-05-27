@@ -12,6 +12,13 @@
  */
 
 import { parseWhatsappE164 } from './phone-e164'
+import { splitCatalogServiceTitle } from './split-catalog-service-title'
+
+/** WhatsApp messages show only the booked line, not the full catalog path —
+ *  e.g. "Cosmetology › Hygienic cleaning › Body › Back" → "Back". */
+function serviceLineTitle(service: string): string {
+	return splitCatalogServiceTitle(service).lineTitle || service
+}
 
 export type WhatsAppNotifyResult = 'skipped' | 'sent' | 'failed'
 
@@ -26,6 +33,7 @@ const CONTENT_SID_ENV = {
 	reminder1Hour: 'TWILIO_CONTENT_SID_REMINDER_1H',
 	staffNew: 'TWILIO_CONTENT_SID_STAFF_NEW',
 	staffCancelled: 'TWILIO_CONTENT_SID_STAFF_CANCELLED',
+	staffCustomerConfirmed: 'TWILIO_CONTENT_SID_STAFF_CUSTOMER_CONFIRMED',
 } as const
 
 type ContentTemplateKey = keyof typeof CONTENT_SID_ENV
@@ -311,7 +319,7 @@ async function sendStaffNew(
 			'1': payload.customerName,
 			'2': payload.customerPhone,
 			'3': payload.email,
-			'4': payload.service,
+			'4': serviceLineTitle(payload.service),
 			'5': payload.date,
 			'6': payload.time,
 		},
@@ -340,7 +348,7 @@ async function sendStaffCancelled(
 		{
 			'1': payload.customerName,
 			'2': payload.customerPhone,
-			'3': payload.service,
+			'3': serviceLineTitle(payload.service),
 			'4': payload.date,
 			'5': payload.time,
 		},
@@ -407,6 +415,49 @@ export async function notifyStaffWhatsAppCancelled(
 	return { staff }
 }
 
+/** Customer pressed "Potvrdiť" on a reminder — tell the master the booking is confirmed. */
+export async function notifyStaffWhatsAppCustomerConfirmed(
+	payload: {
+		customerName: string
+		customerPhone: string
+		service: string
+		date: string
+		time: string
+	},
+	options?: { bookingPlace?: BookingPlace },
+): Promise<StaffWhatsAppNotifyResult> {
+	const bookingPlace = options?.bookingPlace ?? 'massage'
+	const phone = resolveStaffRecipientPhone(bookingPlace)
+	if (!phone || !twilioMessagingCoreConfigured()) {
+		return { staff: 'skipped' }
+	}
+	if (!getContentSid('staffCustomerConfirmed')) {
+		return { staff: 'skipped' }
+	}
+	const ctx = staffLogContextForRecipient(bookingPlace, phone)
+	const result = await sendTwilioWhatsAppTemplate(
+		phone,
+		'staffCustomerConfirmed',
+		{
+			'1': payload.customerName,
+			'2': payload.customerPhone,
+			'3': serviceLineTitle(payload.service),
+			'4': payload.date,
+			'5': payload.time,
+		},
+		ctx,
+	)
+	if (!result.ok) {
+		const tag =
+			ctx === 'depilation-master'
+				? '[whatsapp-depilation-master]'
+				: '[whatsapp-admin]'
+		console.error(`${tag} Twilio error:`, result.error)
+		return { staff: 'failed' }
+	}
+	return { staff: 'sent' }
+}
+
 /* ============================ Customer ============================ */
 
 export async function notifyCustomerWhatsAppNew(payload: {
@@ -433,7 +484,7 @@ export async function notifyCustomerWhatsAppNew(payload: {
 		'bookingNew',
 		{
 			'1': firstName(payload.customerName),
-			'2': payload.service,
+			'2': serviceLineTitle(payload.service),
 			'3': payload.date,
 			'4': payload.time,
 		},
@@ -472,7 +523,7 @@ export async function notifyCustomerWhatsAppRescheduled(payload: {
 		'bookingRescheduled',
 		{
 			'1': firstName(payload.customerName),
-			'2': payload.service,
+			'2': serviceLineTitle(payload.service),
 			'3': payload.oldDate,
 			'4': payload.oldTime,
 			'5': payload.newDate,
@@ -501,7 +552,7 @@ export async function notifyCustomerWhatsAppCancelled(payload: {
 		e164,
 		'bookingCancelled',
 		{
-			'1': payload.service,
+			'1': serviceLineTitle(payload.service),
 			'2': payload.date,
 			'3': payload.time,
 		},
@@ -543,7 +594,7 @@ export async function notifyCustomerWhatsAppReminder2Days(payload: {
 		'reminder2Days',
 		{
 			'1': firstName(payload.customerName),
-			'2': payload.service,
+			'2': serviceLineTitle(payload.service),
 			'3': payload.date,
 			'4': payload.time,
 			'5': payload.actionToken,
@@ -582,7 +633,7 @@ export async function notifyCustomerWhatsAppReminder1Day(payload: {
 		'reminder1Day',
 		{
 			'1': firstName(payload.customerName),
-			'2': payload.service,
+			'2': serviceLineTitle(payload.service),
 			'3': payload.date,
 			'4': payload.time,
 			'5': payload.actionToken,

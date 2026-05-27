@@ -5,6 +5,8 @@
 	"scripts": {
 		"test:crud": "tsx scripts/test-crud.ts",
 		"test:whatsapp": "tsx scripts/test-whatsapp-admin.ts",
+		"test:notify": "tsx scripts/test-notify-channels.ts",
+		"test:columns": "tsx scripts/test-calendar-columns.ts",
 		"delete-appointments": "tsx scripts/delete-all-appointments.ts",
 		"rebuild-days": "tsx scripts/rebuild-days-from-appointments.ts",
 		"seed:price-catalog": "tsx scripts/seed-price-catalog.ts",

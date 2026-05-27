@@ -17,6 +17,7 @@ import {
   type BookingPlace,
 } from "@/lib/whatsapp-admin-notify";
 import { parseWhatsappE164 } from "@/lib/phone-e164";
+import { resolveNotifyChannels } from "@/lib/notify-channels";
 
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -96,10 +97,8 @@ export async function POST(request: Request) {
           ? dayCountNum
           : undefined;
 
-      const notifyByEmail =
-        body.notifyByEmail !== false && body.notifyByEmail !== "false";
-      const notifyByWhatsApp =
-        body.notifyByWhatsApp !== false && body.notifyByWhatsApp !== "false";
+      const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
+        resolveNotifyChannels(body, { defaultWhatsApp: true });
 
       if (!notifyByEmail && !notifyByWhatsApp) {
         return NextResponse.json(
@@ -206,10 +205,8 @@ export async function POST(request: Request) {
       const newTimeStr = String(newTime);
       const serviceStr = service ? String(service) : "";
 
-      const notifyByEmail =
-        body.notifyByEmail !== false && body.notifyByEmail !== "false";
-      const notifyByWhatsApp =
-        body.notifyByWhatsApp === true || body.notifyByWhatsApp === "true";
+      const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
+        resolveNotifyChannels(body);
 
       if (!notifyByEmail && !notifyByWhatsApp) {
         return NextResponse.json(
@@ -284,13 +281,27 @@ export async function POST(request: Request) {
       const timeStr = String(time);
       const serviceStr = service ? String(service) : "";
 
+      // Respect the customer's chosen channel (email by default, WhatsApp opt-in),
+      // same as the "rescheduled" branch. The admin/staff copies always go out.
+      const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
+        resolveNotifyChannels(body);
+
+      if (notifyByWhatsApp && !parseWhatsappE164(customerPhoneRaw)) {
+        return NextResponse.json(
+          { error: "Invalid phone for WhatsApp notifications" },
+          { status: 400 }
+        );
+      }
+
       const [customerResult, adminResult] = await Promise.all([
-        resend.emails.send({
-          from: `${FROM_NAME} <${FROM_EMAIL}>`,
-          to: [toStr],
-          subject: SUBJECTS.cancelled,
-          html: buildCancelledEmail(nameStr, dateStr, timeStr, serviceStr),
-        }),
+        notifyByEmail
+          ? resend.emails.send({
+              from: `${FROM_NAME} <${FROM_EMAIL}>`,
+              to: [toStr],
+              subject: SUBJECTS.cancelled,
+              html: buildCancelledEmail(nameStr, dateStr, timeStr, serviceStr),
+            })
+          : Promise.resolve({ error: null as { message?: string } | null }),
         resend.emails.send({
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: [ADMIN_EMAIL],
@@ -318,13 +329,15 @@ export async function POST(request: Request) {
           },
           { bookingPlace }
         ),
-        notifyCustomerWhatsAppCancelled({
-          customerPhone: customerPhoneRaw,
-          customerName: nameStr,
-          date: dateStr,
-          time: timeStr,
-          service: serviceStr,
-        }),
+        notifyByWhatsApp
+          ? notifyCustomerWhatsAppCancelled({
+              customerPhone: customerPhoneRaw,
+              customerName: nameStr,
+              date: dateStr,
+              time: timeStr,
+              service: serviceStr,
+            })
+          : Promise.resolve("skipped" as WhatsAppNotifyResult),
       ]);
       whatsappStaff = waStaff.staff;
       whatsappCustomer = waCust;

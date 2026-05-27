@@ -1,5 +1,6 @@
-/** Admin week/day calendar: one hour row height (4 × 15-min cells). */
-export const ADMIN_CALENDAR_HOUR_ROW_PX = 96; // 50% taller than legacy 64px for easier reading / drag
+/** Admin week/day calendar: one hour row height (4 × 15-min cells).
+ *  112px = "comfortable" Google-Calendar-like density (28px per 15-min quarter). */
+export const ADMIN_CALENDAR_HOUR_ROW_PX = 112;
 export const ADMIN_SLOT_INTERVAL_MIN = 15;
 const QUARTERS_PER_HOUR = 60 / ADMIN_SLOT_INTERVAL_MIN; // 4
 
@@ -38,46 +39,115 @@ export function adminAppointmentDurationHeightPx(
   return Math.max(minPx, Math.round(raw) - 2);
 }
 
-export type TimedOverlayEntry = {
+export interface ColumnLayoutInput {
   id: string;
   startMs: number;
   durationMinutes: number;
-};
+}
+
+/** Position of one timed event when concurrent bookings are split into columns. */
+export interface PositionedColumn {
+  topPx: number;
+  heightPx: number;
+  /** 0–100, percentage of the day column. */
+  leftPct: number;
+  widthPct: number;
+  zIndex: number;
+}
 
 /**
- * Heights that never extend past the next timed event (or grid end), so cards stay visually separate.
+ * Google-Calendar-style column packing for a single day's timed events.
+ *
+ * Transitively overlapping events form a cluster; within a cluster each event
+ * is greedily placed in the first column that is free at its start, then
+ * expanded rightward across any columns that stay free for its whole duration.
+ * The result lets concurrent bookings sit side-by-side at full height instead
+ * of stacking/clipping, so dense days stay readable.
  */
-export function computeTimedOverlayHeightsPx(
-  sortedTimed: TimedOverlayEntry[],
+export function computeTimedColumnLayout(
+  events: ColumnLayoutInput[],
   gridStartHour: number,
-  gridEndHour: number
-): Map<string, number> {
-  const gridBottomPx = (gridEndHour - gridStartHour) * ADMIN_CALENDAR_HOUR_ROW_PX;
-  const out = new Map<string, number>();
+  _gridEndHour: number,
+  opts: { minHeightPx?: number } = {}
+): Map<string, PositionedColumn> {
+  const minHeightPx = opts.minHeightPx ?? 18;
+  const out = new Map<string, PositionedColumn>();
+  if (events.length === 0) return out;
 
-  for (let i = 0; i < sortedTimed.length; i++) {
-    const cur = sortedTimed[i];
-    const start = new Date(cur.startMs);
-    const topPx = adminAppointmentTopPxFromStart(start, gridStartHour);
-    const dur = Math.max(1, cur.durationMinutes);
-    const idealPx = (dur / 15) * pxPerQuarter - 2;
+  type E = {
+    id: string;
+    startMs: number;
+    endMs: number;
+    col: number;
+    topPx: number;
+    heightPx: number;
+  };
+  const items: E[] = events.map((e) => {
+    const start = new Date(e.startMs);
+    return {
+      id: e.id,
+      startMs: e.startMs,
+      endMs: e.startMs + Math.max(1, e.durationMinutes) * 60000,
+      col: 0,
+      topPx: adminAppointmentTopPxFromStart(start, gridStartHour),
+      heightPx: adminAppointmentDurationHeightPx(e.durationMinutes, minHeightPx),
+    };
+  });
+  // Earliest first; longer events first so they take the leftmost columns.
+  items.sort((a, b) => a.startMs - b.startMs || b.endMs - a.endMs);
 
-    const nextTopPx =
-      i + 1 < sortedTimed.length
-        ? adminAppointmentTopPxFromStart(
-            new Date(sortedTimed[i + 1].startMs),
-            gridStartHour
-          )
-        : gridBottomPx;
+  const timeOverlap = (a: E, b: E) => a.startMs < b.endMs && b.startMs < a.endMs;
 
-    const gapPx = nextTopPx - topPx - 2;
-    /** Vertical breathing room between back-to-back 15-min-aligned events. */
-    const GAP = 3;
-    const h =
-      gapPx <= 0
-        ? Math.max(10, idealPx)
-        : Math.min(Math.max(10, idealPx - GAP), Math.max(10, gapPx - GAP));
-    out.set(cur.id, Math.round(h));
+  let i = 0;
+  while (i < items.length) {
+    // Gather a cluster of transitively overlapping events.
+    const group: E[] = [items[i]];
+    let groupEnd = items[i].endMs;
+    let j = i + 1;
+    while (j < items.length && items[j].startMs < groupEnd) {
+      group.push(items[j]);
+      groupEnd = Math.max(groupEnd, items[j].endMs);
+      j++;
+    }
+
+    // Greedy column assignment: first column whose last event already ended.
+    const colEnds: number[] = [];
+    for (const ev of group) {
+      let placed = false;
+      for (let c = 0; c < colEnds.length; c++) {
+        if (colEnds[c] <= ev.startMs) {
+          ev.col = c;
+          colEnds[c] = ev.endMs;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        ev.col = colEnds.length;
+        colEnds.push(ev.endMs);
+      }
+    }
+    const numCols = colEnds.length;
+
+    for (const ev of group) {
+      // Expand rightward over columns that stay free for this event's duration.
+      let span = 1;
+      for (let c = ev.col + 1; c < numCols; c++) {
+        const collides = group.some(
+          (o) => o !== ev && o.col === c && timeOverlap(o, ev)
+        );
+        if (collides) break;
+        span++;
+      }
+      out.set(ev.id, {
+        topPx: ev.topPx,
+        heightPx: ev.heightPx,
+        leftPct: (ev.col / numCols) * 100,
+        widthPct: (span / numCols) * 100,
+        zIndex: 10 + ev.col,
+      });
+    }
+    i = j;
   }
   return out;
 }

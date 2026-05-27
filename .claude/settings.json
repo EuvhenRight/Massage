@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(BOOKING_ACTION_SECRET=47afecc45d7fab0f09b67db51cf5c48d440ad7de1a4732510478c3aabe96285a npx tsx -e ' *)",
+      "Bash(npm run *)",
+      "Bash(echo \"dev server started, pid: $!\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s -i http://localhost:3001/api/cron/send-reminders)",
+      "Bash(curl -s -i -H \"Authorization: Bearer wrong\" http://localhost:3001/api/cron/send-reminders)",
+      "Bash(curl -s -i \"http://localhost:3001/api/booking/confirm?t=invalid\")",
+      "Bash(curl -s -i \"http://localhost:3001/api/booking/cancel?t=invalid\")",
+      "Bash(curl -s -i \"http://localhost:3001/api/booking/confirm\")",
+      "Bash(npx tsx -e ' *)",
+      "Bash(curl -s \"http://localhost:3001/booking/confirmed?ok=1\")",
+      "Bash(curl -s \"http://localhost:3001/booking/cancelled?err=token\")",
+      "Bash(curl -s \"http://localhost:3001/booking/cancelled?ok=already\")",
+      "Bash(curl -s -i \"http://localhost:3001/booking/confirmed?ok=1\")",
+      "Bash(mkdir -p /Users/yevhenright/Documents/luxe-salon/app/\\\\[locale\\\\]/booking/confirmed /Users/yevhenright/Documents/luxe-salon/app/\\\\[locale\\\\]/booking/cancelled)",
+      "Bash(mv /Users/yevhenright/Documents/luxe-salon/app/booking/confirmed/page.tsx /Users/yevhenright/Documents/luxe-salon/app/\\\\[locale\\\\]/booking/confirmed/page.tsx)",
+      "Bash(mv /Users/yevhenright/Documents/luxe-salon/app/booking/cancelled/page.tsx /Users/yevhenright/Documents/luxe-salon/app/\\\\[locale\\\\]/booking/cancelled/page.tsx)",
+      "Bash(curl -sL \"http://localhost:3001/booking/confirmed?ok=1\")",
+      "Bash(curl -s \"http://localhost:3001/sk/booking/confirmed?ok=1\")",
+      "Bash(curl -s \"http://localhost:3001/sk/booking/cancelled?err=token\")",
+      "Bash(curl -s \"http://localhost:3001/sk/booking/cancelled?ok=already\")",
+      "Bash(kill 82549)",
+      "Bash(wait 82549)"
+    ]
+  }
+}

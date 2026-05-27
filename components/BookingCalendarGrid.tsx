@@ -4,9 +4,11 @@ import { isPriceCatalogSectionCalendarId } from '@/lib/admin-calendar-services'
 import {
 	ADMIN_CALENDAR_HOUR_ROW_PX,
 	ADMIN_SLOT_INTERVAL_MIN,
-	computeTimedOverlayHeightsPx,
+	computeTimedColumnLayout,
 	adminAppointmentDurationHeightPx,
 	adminAppointmentTopPxFromStart,
+	pxPerQuarter,
+	type PositionedColumn,
 } from '@/lib/admin-calendar-grid-layout'
 import { getDateKey } from '@/lib/booking'
 import {
@@ -49,6 +51,8 @@ import {
 	type DragEndEvent,
 	type DragStartEvent,
 } from '@dnd-kit/core'
+import { resolveNotifyChannels } from '@/lib/notify-channels'
+import { useFocusTrap } from '@/lib/use-focus-trap'
 import { cn } from '@/lib/utils'
 import {
 	collection,
@@ -58,12 +62,13 @@ import {
 	Timestamp,
 	where,
 } from 'firebase/firestore'
-import { ChevronLeft, ChevronRight, CalendarDays, CalendarRange, CircleDot } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CalendarDays, CalendarRange, CircleDot, Plus } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import AdminCalendarEventDetail from './AdminCalendarEventDetail'
+import AdminMonthView, { monthGridDays } from './AdminMonthView'
 import DraggableAppointment from './DraggableAppointment'
 import DroppableCell, { cellIdToTimestamp, makeCellId } from './DroppableCell'
 
@@ -97,6 +102,34 @@ function addDays(d: Date, n: number): Date {
 	return out
 }
 
+/** Shimmer placeholder shown until the first Firestore snapshot arrives. */
+function CalendarSkeleton() {
+	return (
+		<div className='space-y-2 p-4' aria-hidden>
+			<div className='flex gap-2 pl-14'>
+				{Array.from({ length: 7 }).map((_, i) => (
+					<div
+						key={i}
+						className='h-8 flex-1 animate-pulse rounded-md bg-white/[0.06]'
+					/>
+				))}
+			</div>
+			{Array.from({ length: 7 }).map((_, r) => (
+				<div key={r} className='flex gap-2'>
+					<div className='h-12 w-12 animate-pulse rounded bg-white/[0.04]' />
+					{Array.from({ length: 7 }).map((_, c) => (
+						<div
+							key={c}
+							className='h-12 flex-1 animate-pulse rounded bg-white/[0.03]'
+							style={{ animationDelay: `${(r * 7 + c) * 25}ms` }}
+						/>
+					))}
+				</div>
+			))}
+		</div>
+	)
+}
+
 function isToday(d: Date): boolean {
 	const t = new Date()
 	return (
@@ -112,6 +145,17 @@ function isAppointmentPast(apt: AppointmentData): boolean {
 			? apt.endTime.toDate()
 			: new Date(apt.endTime as Date)
 	return end.getTime() < Date.now()
+}
+
+/** i18n key for the channel(s) a booking's customer notifications go out on —
+ *  mirrors how the send-confirmation route resolves email vs WhatsApp. */
+function notifyChannelKey(
+	apt: Pick<AppointmentData, 'notifyByEmail' | 'notifyByWhatsApp'>,
+): 'notifyChannelViaBoth' | 'notifyChannelViaWhatsApp' | 'notifyChannelViaEmail' {
+	const { email, whatsapp } = resolveNotifyChannels(apt)
+	if (email && whatsapp) return 'notifyChannelViaBoth'
+	if (whatsapp) return 'notifyChannelViaWhatsApp'
+	return 'notifyChannelViaEmail'
 }
 
 function isCellPast(day: Date, hour: number, minute: number): boolean {
@@ -272,7 +316,7 @@ export default function BookingCalendarGrid({
 	const ui = useMemo(() => getPlaceAccentUi(place), [place])
 	const locale = useLocale()
 	const t = useTranslations('admin')
-	const [view, setView] = useState<'day' | 'week'>('week')
+	const [view, setView] = useState<'day' | 'week' | 'month'>('week')
 	const [weekStart, setWeekStart] = useState(() =>
 		weekStartProp ? startOfWeek(weekStartProp) : startOfWeek(new Date()),
 	)
@@ -282,6 +326,7 @@ export default function BookingCalendarGrid({
 		return d
 	})
 	const [appointments, setAppointments] = useState<AppointmentData[]>([])
+	const [isLoading, setIsLoading] = useState(true)
 	const [fullDayAwaitingList, setFullDayAwaitingList] = useState<
 		AppointmentData[]
 	>([])
@@ -295,6 +340,19 @@ export default function BookingCalendarGrid({
 		newCellId: string
 		/** When moving an all-day booking: new explicit day keys (confirm uses `updateAppointment`). */
 		newFullDayDateKeys?: string[]
+	} | null>(null)
+	/** Live drag-to-resize preview for a timed block (duration in minutes). */
+	const [resize, setResize] = useState<{
+		id: string
+		previewDurationMin: number
+	} | null>(null)
+	const resizeRef = useRef<{
+		id: string
+		start: Date
+		baseDur: number
+		startY: number
+		maxDur: number
+		preview: number
 	} | null>(null)
 
 	const weekDays = useMemo(
@@ -327,6 +385,16 @@ export default function BookingCalendarGrid({
 		return () => window.clearInterval(id)
 	}, [])
 
+	/** On phones the week grid needs horizontal scroll — default to the day view. */
+	useEffect(() => {
+		if (
+			typeof window !== 'undefined' &&
+			window.matchMedia('(max-width: 639px)').matches
+		) {
+			setView('day')
+		}
+	}, [])
+
 	const nowIndicator = useMemo(() => {
 		const now = new Date(nowTick)
 		const dayIndex = displayDays.findIndex(d => isToday(d))
@@ -353,12 +421,17 @@ export default function BookingCalendarGrid({
 	}, [place])
 
 	useEffect(() => {
-		const dayStart = new Date(view === 'day' ? selectedDay : weekStart)
+		setIsLoading(true)
+		const rangeAnchor =
+			view === 'day'
+				? selectedDay
+				: view === 'week'
+					? weekStart
+					: monthGridDays(selectedDay)[0]
+		const spanDays = view === 'day' ? 1 : view === 'week' ? 7 : 42
+		const dayStart = new Date(rangeAnchor)
 		dayStart.setHours(0, 0, 0, 0)
-		const dayEnd = addDays(
-			view === 'day' ? selectedDay : weekStart,
-			view === 'day' ? 1 : 7,
-		)
+		const dayEnd = addDays(rangeAnchor, spanDays)
 		dayEnd.setHours(23, 59, 59, 999)
 		const q = query(
 			collection(db, 'appointments'),
@@ -366,23 +439,28 @@ export default function BookingCalendarGrid({
 			orderBy('startTime', 'asc'),
 		)
 
-		const unsubscribe = onSnapshot(q, snapshot => {
-			const list = snapshot.docs
-				.map(doc => toAppointmentData({ id: doc.id, data: () => doc.data() }))
-				.filter(a => {
-					const start =
-						a.startTime && 'toDate' in a.startTime
-							? a.startTime.toDate()
-							: new Date(a.startTime as Date)
-					const end =
-						a.endTime && 'toDate' in a.endTime
-							? a.endTime.toDate()
-							: new Date(a.endTime as Date)
-					return start < dayEnd && end >= dayStart
-				})
-				.filter(a => a.scheduleTbd !== true)
-			setAppointments(list)
-		})
+		const unsubscribe = onSnapshot(
+			q,
+			snapshot => {
+				const list = snapshot.docs
+					.map(doc => toAppointmentData({ id: doc.id, data: () => doc.data() }))
+					.filter(a => {
+						const start =
+							a.startTime && 'toDate' in a.startTime
+								? a.startTime.toDate()
+								: new Date(a.startTime as Date)
+						const end =
+							a.endTime && 'toDate' in a.endTime
+								? a.endTime.toDate()
+								: new Date(a.endTime as Date)
+						return start < dayEnd && end >= dayStart
+					})
+					.filter(a => a.scheduleTbd !== true)
+				setAppointments(list)
+				setIsLoading(false)
+			},
+			() => setIsLoading(false),
+		)
 
 		return () => unsubscribe()
 	}, [weekStart, selectedDay, view, place])
@@ -548,9 +626,9 @@ export default function BookingCalendarGrid({
 		return map
 	}, [appointments, displayDays])
 
-	const { overlayTimedHeightsByDayKey, overlayTimedZIndexByDayKey } = useMemo(() => {
-		const heightsByDay = new Map<string, Map<string, number>>()
-		const zByDay = new Map<string, Map<string, number>>()
+	/** Per-day Google-Calendar-style column packing for concurrent timed bookings. */
+	const timedColumnLayoutByDayKey = useMemo(() => {
+		const byDay = new Map<string, Map<string, PositionedColumn>>()
 		for (const [dk, list] of Array.from(
 			appointmentsByDayKeyForOverlay.entries(),
 		)) {
@@ -567,21 +645,12 @@ export default function BookingCalendarGrid({
 						durationMinutes: getAppointmentDuration(a),
 					}
 				})
-				.sort((x, y) => x.startMs - y.startMs)
-			const heights = computeTimedOverlayHeightsPx(
-				timed,
-				gridStartHour,
-				gridEndHour,
+			byDay.set(
+				dk,
+				computeTimedColumnLayout(timed, gridStartHour, gridEndHour),
 			)
-			const z = new Map<string, number>()
-			timed.forEach((t, i) => z.set(t.id, 10 + i))
-			heightsByDay.set(dk, heights)
-			zByDay.set(dk, z)
 		}
-		return {
-			overlayTimedHeightsByDayKey: heightsByDay,
-			overlayTimedZIndexByDayKey: zByDay,
-		}
+		return byDay
 	}, [appointmentsByDayKeyForOverlay, gridStartHour, gridEndHour])
 
 	const sensors = useSensors(
@@ -698,6 +767,8 @@ export default function BookingCalendarGrid({
 								to: appointment.email,
 								customerName: appointment.fullName,
 								customerPhone: appointment.phone?.trim() ?? '',
+								notifyByEmail: appointment.notifyByEmail,
+								notifyByWhatsApp: appointment.notifyByWhatsApp,
 								date: formatDateForEmail(newStartEmail),
 								time: allDayLabel,
 								service: appointment.service,
@@ -713,6 +784,8 @@ export default function BookingCalendarGrid({
 								to: appointment.email,
 								customerName: appointment.fullName,
 								customerPhone: appointment.phone?.trim() ?? '',
+								notifyByEmail: appointment.notifyByEmail,
+								notifyByWhatsApp: appointment.notifyByWhatsApp,
 								service: appointment.service,
 								oldDate: formatDateForEmail(oldStartEmail),
 								oldTime: allDayLabel,
@@ -726,7 +799,9 @@ export default function BookingCalendarGrid({
 					/* email failure */
 				}
 				toast.success(
-					wasTbd ? t('tbdAssignedNotified') : t('movedNotified'),
+					wasTbd
+						? t('tbdAssignedNotified', { channel: t(notifyChannelKey(appointment)) })
+						: t('movedNotified', { channel: t(notifyChannelKey(appointment)) }),
 				)
 			} catch (err) {
 				const msg = err instanceof Error ? err.message : String(err)
@@ -769,6 +844,8 @@ export default function BookingCalendarGrid({
 							to: appointment.email,
 							customerName: appointment.fullName,
 							customerPhone: appointment.phone?.trim() ?? '',
+							notifyByEmail: appointment.notifyByEmail,
+							notifyByWhatsApp: appointment.notifyByWhatsApp,
 							date: formatDateForEmail(newStart),
 							time: formatTimeForEmail(newStart),
 							service: appointment.service,
@@ -784,6 +861,8 @@ export default function BookingCalendarGrid({
 							to: appointment.email,
 							customerName: appointment.fullName,
 							customerPhone: appointment.phone?.trim() ?? '',
+							notifyByEmail: appointment.notifyByEmail,
+							notifyByWhatsApp: appointment.notifyByWhatsApp,
 							service: appointment.service,
 							oldDate: formatDateForEmail(oldStart),
 							oldTime: formatTimeForEmail(oldStart),
@@ -797,7 +876,9 @@ export default function BookingCalendarGrid({
 				/* email failure */
 			}
 			toast.success(
-				wasTbd ? t('tbdAssignedNotified') : t('movedNotified'),
+					wasTbd
+					? t('tbdAssignedNotified', { channel: t(notifyChannelKey(appointment)) })
+					: t('movedNotified', { channel: t(notifyChannelKey(appointment)) }),
 			)
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err)
@@ -865,6 +946,8 @@ export default function BookingCalendarGrid({
 						to: appointment.email,
 						customerName: appointment.fullName,
 						customerPhone: appointment.phone?.trim() ?? '',
+						notifyByEmail: appointment.notifyByEmail,
+						notifyByWhatsApp: appointment.notifyByWhatsApp,
 						date: formatDateForEmail(start),
 						time:
 							appointment.adminBookingMode === 'day'
@@ -877,13 +960,85 @@ export default function BookingCalendarGrid({
 			} catch {
 				/* email failure */
 			}
-			toast.success(t('cancelledNotified'))
+			toast.success(
+				t('cancelledNotified', { channel: t(notifyChannelKey(appointment)) }),
+			)
 		} catch (err) {
 			toast.error(t('cancelFailed'))
 		}
 	}, [pendingCancel, place, t])
 
 	const handleDismissCancel = useCallback(() => setPendingCancel(null), [])
+
+	const moveDialogRef = useFocusTrap<HTMLDivElement>(
+		!!pendingMove && allowDrag,
+		handleCancelMove,
+	)
+	const cancelDialogRef = useFocusTrap<HTMLDivElement>(
+		!!pendingCancel,
+		handleDismissCancel,
+	)
+
+	/** Drag-to-resize a timed block's bottom edge. Snaps to 15-min steps, clamps
+	 *  to grid end, and persists on release via `updateAppointmentTime` (start
+	 *  unchanged, so no reschedule notification is sent). */
+	const beginResize = useCallback(
+		(apt: AppointmentData, e: React.PointerEvent) => {
+			if (isAppointmentPast(apt)) return
+			const start =
+				apt.startTime && 'toDate' in apt.startTime
+					? apt.startTime.toDate()
+					: new Date(apt.startTime as Date)
+			const baseDur = getAppointmentDuration(apt)
+			const startMin = start.getHours() * 60 + start.getMinutes()
+			const maxDur = Math.max(SLOT_INTERVAL, gridEndHour * 60 - startMin)
+			resizeRef.current = {
+				id: apt.id,
+				start,
+				baseDur,
+				startY: e.clientY,
+				maxDur,
+				preview: baseDur,
+			}
+			setResize({ id: apt.id, previewDurationMin: baseDur })
+
+			const onMove = (ev: PointerEvent) => {
+				const r = resizeRef.current
+				if (!r) return
+				const deltaQuarters = Math.round((ev.clientY - r.startY) / pxPerQuarter)
+				const next = Math.min(
+					r.maxDur,
+					Math.max(SLOT_INTERVAL, r.baseDur + deltaQuarters * SLOT_INTERVAL),
+				)
+				if (next !== r.preview) {
+					r.preview = next
+					setResize({ id: r.id, previewDurationMin: next })
+				}
+			}
+			const onUp = () => {
+				window.removeEventListener('pointermove', onMove)
+				window.removeEventListener('pointerup', onUp)
+				const r = resizeRef.current
+				resizeRef.current = null
+				setResize(null)
+				if (r && r.preview !== r.baseDur) {
+					updateAppointmentTime(r.id, r.start, r.preview).catch(err => {
+						const msg = err instanceof Error ? err.message : String(err)
+						toast.error(
+							msg === 'OVERLAP'
+								? t('slotBooked')
+								: msg === 'APPOINTMENT_NOT_FOUND'
+									? t('notFound')
+									: t('moveFailed', { msg: String(msg) }),
+						)
+					})
+				}
+			}
+			window.addEventListener('pointermove', onMove)
+			window.addEventListener('pointerup', onUp)
+		},
+		[gridEndHour, t],
+	)
 
 	const activeAppointment = activeId
 		? (() => {
@@ -911,8 +1066,8 @@ export default function BookingCalendarGrid({
 			const ts = cellIdToTimestamp(cellKey)
 			const dk = getDateKey(ts)
 			return (
-				overlayTimedHeightsByDayKey.get(dk)?.get(activeAppointment.id) ??
-				fallback
+				timedColumnLayoutByDayKey.get(dk)?.get(activeAppointment.id)
+					?.heightPx ?? fallback
 			)
 		} catch {
 			return fallback
@@ -920,11 +1075,17 @@ export default function BookingCalendarGrid({
 	}, [
 		activeId,
 		activeAppointment,
-		overlayTimedHeightsByDayKey,
+		timedColumnLayoutByDayKey,
 		hourSlots.length,
 	])
 
 	const toolbarRangeLabel = useMemo(() => {
+		if (view === 'month') {
+			return selectedDay.toLocaleDateString(locale, {
+				month: 'long',
+				year: 'numeric',
+			})
+		}
 		if (view === 'day') {
 			return selectedDay.toLocaleDateString(locale, {
 				weekday: 'long',
@@ -975,7 +1136,11 @@ export default function BookingCalendarGrid({
 	}, [services, locale])
 
 	return (
-		<div className='min-w-0 rounded-xl border border-white/10 bg-nearBlack/90 shadow-lg shadow-black/40 overflow-hidden'>
+		<div
+			role='region'
+			aria-label={`${t('calendarRegionAria')} — ${toolbarRangeLabel}`}
+			className='min-w-0 rounded-xl border border-white/10 bg-nearBlack/90 shadow-lg shadow-black/40 overflow-hidden'
+		>
 			{/* Toolbar — stack on narrow screens; controls scroll horizontally if needed */}
 			<div className='flex flex-col gap-3 border-b border-white/10 bg-black/20 px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4 sm:px-4 sm:py-3.5'>
 				<div className='flex min-w-0 items-center gap-2 overflow-x-auto pb-0.5 [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:overflow-visible sm:pb-0'>
@@ -1016,6 +1181,20 @@ export default function BookingCalendarGrid({
 							<CalendarRange className='w-4 h-4 shrink-0' />
 							<span className='hidden sm:inline'>{t('viewWeek')}</span>
 						</button>
+						<button
+							type='button'
+							onClick={() => setView('month')}
+							className={cn(
+								'inline-flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-sm transition-colors min-w-[2.5rem] sm:min-w-0',
+								view === 'month'
+									? ui.toolbarActive
+									: 'bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10',
+							)}
+							aria-label={t('viewMonth')}
+						>
+							<CalendarDays className='w-4 h-4 shrink-0' />
+							<span className='hidden sm:inline'>{t('viewMonth')}</span>
+						</button>
 					</div>
 					{view === 'day' ? (
 						<>
@@ -1051,7 +1230,7 @@ export default function BookingCalendarGrid({
 								<span className='hidden sm:inline'>{t('nextDay')}</span>
 							</button>
 						</>
-					) : (
+					) : view === 'week' ? (
 						<>
 							<button
 								type='button'
@@ -1079,6 +1258,48 @@ export default function BookingCalendarGrid({
 							>
 								<ChevronRight className='w-4 h-4 shrink-0' />
 								<span className='hidden sm:inline'>{t('nextWeek')}</span>
+							</button>
+						</>
+					) : (
+						<>
+							<button
+								type='button'
+								onClick={() =>
+									setSelectedDay(
+										d => new Date(d.getFullYear(), d.getMonth() - 1, 1),
+									)
+								}
+								className='inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10 text-sm min-w-[2.5rem] sm:min-w-0'
+								aria-label={t('previousMonth')}
+							>
+								<ChevronLeft className='w-4 h-4 shrink-0' />
+								<span className='hidden sm:inline'>{t('previousMonth')}</span>
+							</button>
+							<button
+								type='button'
+								onClick={() => {
+									const today = new Date()
+									today.setHours(0, 0, 0, 0)
+									setSelectedDay(today)
+								}}
+								className='inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10 text-sm min-w-[2.5rem] sm:min-w-0'
+								aria-label={t('today')}
+							>
+								<CircleDot className='w-4 h-4 shrink-0' />
+								<span className='hidden sm:inline'>{t('today')}</span>
+							</button>
+							<button
+								type='button'
+								onClick={() =>
+									setSelectedDay(
+										d => new Date(d.getFullYear(), d.getMonth() + 1, 1),
+									)
+								}
+								className='inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-icyWhite hover:bg-white/10 text-sm min-w-[2.5rem] sm:min-w-0'
+								aria-label={t('nextMonth')}
+							>
+								<ChevronRight className='w-4 h-4 shrink-0' />
+								<span className='hidden sm:inline'>{t('nextMonth')}</span>
 							</button>
 						</>
 					)}
@@ -1126,6 +1347,31 @@ export default function BookingCalendarGrid({
 				onDragStart={handleDragStart}
 				onDragEnd={handleDragEnd}
 			>
+				{isLoading ? (
+					<CalendarSkeleton />
+				) : view === 'month' ? (
+					<AdminMonthView
+						monthAnchor={selectedDay}
+						appointments={appointments}
+						services={services}
+						place={place}
+						onSelectDay={day => {
+							const d = new Date(day)
+							d.setHours(0, 0, 0, 0)
+							setSelectedDay(d)
+							setView('day')
+						}}
+						onOpenDetail={apt => setDetailAppointment(apt)}
+					/>
+				) : (
+				<div className='relative'>
+				{appointments.length === 0 ? (
+					<div className='pointer-events-none absolute inset-x-0 top-0 z-[36] flex justify-center pt-16'>
+						<p className='rounded-full bg-nearBlack/70 px-4 py-2 text-sm text-icyWhite/55 backdrop-blur-sm'>
+							{t('calendarEmpty')}
+						</p>
+					</div>
+				) : null}
 				<div className='min-h-[260px] w-full min-w-0 overflow-x-auto overscroll-x-contain sm:min-h-[320px] md:min-h-[380px]'>
 					<div
 						className={cn(
@@ -1235,6 +1481,11 @@ export default function BookingCalendarGrid({
 																: minute === 30
 																	? 'border-b border-dotted border-white/[0.14]'
 																	: 'border-b border-white/[0.05]'
+														const cellClickable =
+															!isOccupied &&
+															!aptAtCell &&
+															!isCellPast(day, hour, minute) &&
+															!!onCellClick
 														return (
 															<DroppableCell
 																key={cellId}
@@ -1249,13 +1500,23 @@ export default function BookingCalendarGrid({
 																className={cn('border-r-0', quarterBorder)}
 															>
 																<div
-																	className='relative h-full w-full min-h-[8px]'
+																	className={cn(
+																		'group/cell relative h-full w-full min-h-[8px]',
+																		cellClickable &&
+																			'cursor-pointer transition-colors hover:bg-white/[0.06]',
+																	)}
 																	onClick={() =>
-																		!isOccupied &&
-																		!aptAtCell &&
+																		cellClickable &&
 																		onCellClick?.(day, hour, minute)
 																	}
-																/>
+																>
+																	{cellClickable ? (
+																		<Plus
+																			className='pointer-events-none absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 text-icyWhite/0 transition-colors group-hover/cell:text-icyWhite/35'
+																			aria-hidden
+																		/>
+																	) : null}
+																</div>
 															</DroppableCell>
 														)
 													})}
@@ -1331,15 +1592,23 @@ export default function BookingCalendarGrid({
 													sm,
 												)
 												const dur = getAppointmentDuration(apt)
-												const topPx = adminAppointmentTopPxFromStart(
-													start,
-													gridStartHour,
-												)
-												const heightPx =
-													overlayTimedHeightsByDayKey.get(dk)?.get(apt.id) ??
-													adminAppointmentDurationHeightPx(dur, 12)
-												const zTimed =
-													overlayTimedZIndexByDayKey.get(dk)?.get(apt.id) ?? 10
+												const col = timedColumnLayoutByDayKey
+													.get(dk)
+													?.get(apt.id)
+												const topPx =
+													col?.topPx ??
+													adminAppointmentTopPxFromStart(
+														start,
+														gridStartHour,
+													)
+												const isResizing = resize?.id === apt.id
+												const heightPx = isResizing
+													? adminAppointmentDurationHeightPx(
+															resize!.previewDurationMin,
+															18,
+														)
+													: (col?.heightPx ??
+														adminAppointmentDurationHeightPx(dur, 12))
 												return (
 													<DraggableAppointment
 														key={`${apt.id}-${dk}-t`}
@@ -1348,11 +1617,22 @@ export default function BookingCalendarGrid({
 														positionedCalendar={{
 															topPx,
 															heightPx,
-															zIndex: zTimed,
+															zIndex: isResizing
+																? 60
+																: (col?.zIndex ?? 10),
+															leftPct: col?.leftPct,
+															widthPct: col?.widthPct,
 														}}
+														onResizeStart={
+															allowDrag &&
+															!isAppointmentPast(apt)
+																? e => beginResize(apt, e)
+																: undefined
+														}
 														disabled={
 															!allowDrag ||
 															!!activeId ||
+															!!resize ||
 															isAppointmentPast(apt)
 														}
 														isPast={isAppointmentPast(apt)}
@@ -1383,6 +1663,8 @@ export default function BookingCalendarGrid({
 						</div>
 					</div>
 				</div>
+				</div>
+				)}
 
 				{tbdAppointments.length > 0 && (
 					<div className='border-t border-white/10 bg-black/25 p-3 sm:p-4'>
@@ -1500,10 +1782,12 @@ export default function BookingCalendarGrid({
 							onClick={handleCancelMove}
 						/>
 						<div
+							ref={moveDialogRef}
+							tabIndex={-1}
 							role='dialog'
 							aria-modal='true'
 							aria-labelledby='admin-cal-move-title'
-							className='relative z-[1] w-full max-w-md max-h-[min(85dvh,calc(100dvh-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-nearBlack p-5 shadow-2xl shadow-black/50 sm:p-6'
+							className='relative z-[1] w-full max-w-md max-h-[min(85dvh,calc(100dvh-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-nearBlack p-5 shadow-2xl shadow-black/50 focus:outline-none sm:p-6'
 							onClick={e => e.stopPropagation()}
 						>
 							<h3
@@ -1571,11 +1855,13 @@ export default function BookingCalendarGrid({
 							onClick={handleDismissCancel}
 						/>
 						<div
+							ref={cancelDialogRef}
+							tabIndex={-1}
 							role='alertdialog'
 							aria-modal='true'
 							aria-labelledby='admin-cal-cancel-title'
 							aria-describedby='admin-cal-cancel-desc'
-							className='relative z-[1] w-full max-w-md max-h-[min(85dvh,calc(100dvh-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-red-500/20 bg-nearBlack p-5 shadow-2xl shadow-black/50 sm:p-6'
+							className='relative z-[1] w-full max-w-md max-h-[min(85dvh,calc(100dvh-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-red-500/20 bg-nearBlack p-5 shadow-2xl shadow-black/50 focus:outline-none sm:p-6'
 							onClick={e => e.stopPropagation()}
 						>
 							<h3

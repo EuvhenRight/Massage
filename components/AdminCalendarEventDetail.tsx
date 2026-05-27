@@ -14,9 +14,11 @@ import {
 	resolvedOpaqueCalendarSlotFill,
 } from '@/lib/section-calendar-colors'
 import { cn } from '@/lib/utils'
+import { useFocusTrap } from '@/lib/use-focus-trap'
+import { NotificationChannelBadge } from './NotificationChannelBadge'
 import { Copy, Pencil, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 
@@ -119,13 +121,7 @@ export default function AdminCalendarEventDetail({
 		)
 	}
 
-	useEffect(() => {
-		const onKey = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') onClose()
-		}
-		window.addEventListener('keydown', onKey)
-		return () => window.removeEventListener('keydown', onKey)
-	}, [onClose])
+	const dialogRef = useFocusTrap<HTMLDivElement>(true, onClose)
 
 	if (typeof document === 'undefined') return null
 
@@ -138,7 +134,9 @@ export default function AdminCalendarEventDetail({
 				onClick={onClose}
 			/>
 			<div
-				className='fixed left-1/2 top-1/2 z-[71] w-[calc(100%-1.5rem)] max-w-md max-h-[min(88dvh,calc(100vh-1rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-nearBlack p-5 shadow-2xl shadow-black/60'
+				ref={dialogRef}
+				tabIndex={-1}
+				className='fixed left-1/2 top-1/2 z-[71] w-[calc(100%-1.5rem)] max-w-md max-h-[min(88dvh,calc(100vh-1rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-nearBlack p-5 shadow-2xl shadow-black/60 focus:outline-none'
 				role='dialog'
 				aria-modal='true'
 				aria-labelledby='admin-cal-event-detail-title'
@@ -215,6 +213,10 @@ export default function AdminCalendarEventDetail({
 									{appointment.phone}
 								</p>
 							) : null}
+							<p className='flex items-center gap-1.5 text-icyWhite/75'>
+								<span className='text-icyWhite/45'>{t('notifyChannelTitle')}: </span>
+								<NotificationChannelBadge appointment={appointment} showLabel />
+							</p>
 						</div>
 
 						{appointment.adminNote?.trim() ? (

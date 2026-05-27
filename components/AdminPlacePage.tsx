@@ -550,6 +550,16 @@ export default function AdminPlacePage({
 		setAddModalOpen(true)
 	}, [])
 
+	/** Click an empty calendar slot → open the create modal pre-filled at that time. */
+	const handleCellQuickCreate = useCallback(
+		(date: Date, hour: number, minute: number) => {
+			setEditSlot({ date, hour, minute })
+			setEditAppointment(null)
+			setAddModalOpen(true)
+		},
+		[],
+	)
+
 	const filteredAgendaAppointments = useMemo(
 		() => agendaAppointments.filter(a => agendaMatchesSearch(a, agendaQuery)),
 		[agendaAppointments, agendaQuery],
@@ -866,6 +876,7 @@ export default function AdminPlacePage({
 								allowCancel
 								allowDrag
 								onEditAppointment={handleEditAppointment}
+								onCellClick={handleCellQuickCreate}
 								services={calendarColorServices}
 								place={place}
 							/>

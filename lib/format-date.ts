@@ -86,6 +86,49 @@ export function formatWeekdayShort(date: Date, locale: string = "sk"): string {
 /** For emails: always use Slovak (default site language) */
 export const EMAIL_LOCALE: SupportedLocale = "sk";
 
+/** Server-side date/time formatting in Bratislava timezone, regardless of
+ *  process TZ (Vercel runs UTC by default). Use these in API routes / cron. */
+const BOOKING_TZ = "Europe/Bratislava";
+
+function bratislavaParts(d: Date): {
+  year: string;
+  month: string;
+  day: string;
+  hour: string;
+  minute: string;
+} {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: BOOKING_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(d);
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  return {
+    year: get("year"),
+    month: get("month"),
+    day: get("day"),
+    hour: get("hour"),
+    minute: get("minute"),
+  };
+}
+
+/** DD.MM.YYYY in Bratislava TZ — for WhatsApp templates / staff notifications. */
+export function formatBratislavaDate(d: Date): string {
+  const p = bratislavaParts(d);
+  return `${p.day}.${p.month}.${p.year}`;
+}
+
+/** HH:MM 24h in Bratislava TZ. */
+export function formatBratislavaTime(d: Date): string {
+  const p = bratislavaParts(d);
+  return `${p.hour}:${p.minute}`;
+}
+
 /** Format date for email body (Slovak) */
 export function formatDateForEmail(date: Date): string {
   return date.toLocaleDateString(EMAIL_LOCALE, {
