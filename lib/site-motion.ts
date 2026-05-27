@@ -136,16 +136,26 @@ export function scrollFade(minimal: boolean): Reveal {
 	}
 }
 
+/**
+ * Above-the-fold entrance (hero badge/content, entry-portal panels, floating CTA).
+ *
+ * TRANSFORM-ONLY by design — never animates opacity. framer SSR-renders the
+ * `initial` state, and on a hard load iOS Safari can fail to start the
+ * post-hydration animation; an `opacity: 0` initial would then ship the content
+ * invisible until a re-render. A `translateY` initial degrades to a harmless
+ * offset instead. The `minimal` branch also drives `y: 0` (not an empty
+ * `animate`) so it re-asserts position if `minimal`/reduced flips after mount.
+ */
 export function heroEnter(
 	minimal: boolean,
 	opts?: { delay?: number },
 ): Pick<HTMLMotionProps<'div'>, 'initial' | 'animate' | 'transition'> {
 	if (minimal) {
-		return { initial: false, animate: {}, transition: { duration: 0 } }
+		return { initial: false, animate: { y: 0 }, transition: { duration: 0 } }
 	}
 	return {
-		initial: { opacity: 0, y: 8 },
-		animate: { opacity: 1, y: 0 },
+		initial: { y: 8 },
+		animate: { y: 0 },
 		transition: { ...TRANSITION.hero, delay: opts?.delay ?? 0 },
 	}
 }

@@ -182,20 +182,26 @@ export default function DepilationPage() {
 	const { minimal, prefersReducedMotion, narrowPhone } = useSiteMotion()
 	const heroScrollFx = !minimal && heroParallaxDesktop
 
-	/** Hero entrances play on phones too — only a reduced-motion preference disables them. */
+	/*
+	 * Hero entrances are TRANSFORM-ONLY (no opacity). The content must never be
+	 * SSR-rendered at opacity:0: on a hard load, iOS Safari can fail to kick off
+	 * the post-hydration entrance animation, leaving the block stuck invisible
+	 * until a re-render (e.g. navigating away and back). With transform-only, the
+	 * worst case is content that's slightly offset — never hidden.
+	 */
 	const heroBlock = prefersReducedMotion
 		? { initial: false as const }
 		: {
-				initial: { opacity: 0, y: 20 },
-				animate: { opacity: 1, y: 0 },
-				transition: { duration: 0.8, delay: 0.3, ease: EASE_EXPO_OUT },
+				initial: { y: 18 },
+				animate: { y: 0 },
+				transition: { duration: 0.8, delay: 0.25, ease: EASE_EXPO_OUT },
 			}
 	/** Logo descends from above and settles just over the wordmark. */
 	const logoIntro = prefersReducedMotion
 		? { initial: false as const }
 		: {
-				initial: { opacity: 0, y: -36, scale: 0.94 },
-				animate: { opacity: 1, y: 0, scale: 1 },
+				initial: { y: -28, scale: 0.94 },
+				animate: { y: 0, scale: 1 },
 				transition: { duration: 0.9, delay: 0.15, ease: EASE_EXPO_OUT },
 			}
 
@@ -395,8 +401,8 @@ export default function DepilationPage() {
 
 				{/* Badge line */}
 				<motion.p
-					initial={prefersReducedMotion ? false : { opacity: 0, y: -12 }}
-					animate={{ opacity: 1, y: 0 }}
+					initial={prefersReducedMotion ? false : { y: -12 }}
+					animate={{ y: 0 }}
 					transition={{ duration: 0.6, delay: 0.2, ease: EASE_EXPO_OUT }}
 					className='relative z-10 w-full shrink-0 text-center text-gold-soft text-[10px] sm:text-xs font-medium tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28 [text-shadow:0_2px_12px_rgba(0,0,0,0.75)]'
 				>
@@ -431,18 +437,18 @@ export default function DepilationPage() {
 						/>
 
 						<motion.p
-							initial={prefersReducedMotion ? false : { opacity: 0 }}
-							animate={{ opacity: 1 }}
-							transition={{ delay: 0.8, duration: 0.8, ease: EASE_EXPO_OUT }}
+							initial={prefersReducedMotion ? false : { y: 8 }}
+							animate={{ y: 0 }}
+							transition={{ delay: 0.45, duration: 0.6, ease: EASE_EXPO_OUT }}
 							className='-mt-1 text-gold-soft text-xs sm:text-sm tracking-wider uppercase max-w-lg mx-auto leading-relaxed [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]'
 						>
 							{t('heroLine2')}
 						</motion.p>
 
 						<motion.div
-							initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 1, duration: 0.6, ease: EASE_EXPO_OUT }}
+							initial={prefersReducedMotion ? false : { y: 16 }}
+							animate={{ y: 0 }}
+							transition={{ delay: 0.5, duration: 0.6, ease: EASE_EXPO_OUT }}
 							className='mt-6 flex flex-wrap justify-center gap-3'
 						>
 							<Link
