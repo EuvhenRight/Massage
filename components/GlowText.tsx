@@ -162,13 +162,20 @@ export default function GlowText({
 	useEffect(() => {
 		draw()
 
-		const handleResize = () => draw()
-		window.addEventListener('resize', handleResize)
+		// Coalesce resize redraws to one per frame — the multi-layer blur redraw is
+		// expensive and resize fires in bursts (esp. iOS URL-bar show/hide).
+		let resizeRaf = 0
+		const handleResize = () => {
+			cancelAnimationFrame(resizeRaf)
+			resizeRaf = requestAnimationFrame(draw)
+		}
+		window.addEventListener('resize', handleResize, { passive: true })
 		return () => {
 			window.removeEventListener('resize', handleResize)
+			cancelAnimationFrame(resizeRaf)
 			cancelAnimationFrame(raf.current)
 		}
-	}, [draw, animate])
+	}, [draw])
 
 	const handleMouseMove = useCallback(
 		(e: React.MouseEvent) => {

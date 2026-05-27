@@ -1,16 +1,37 @@
 'use client'
 
-import { TRANSITION, VIEWPORT_SCROLL } from '@/lib/motion-tokens'
+import { EASE_EXPO_OUT, TRANSITION, VIEWPORT_SCROLL } from '@/lib/motion-tokens'
 import type { HTMLMotionProps } from 'framer-motion'
 import { useReducedMotion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
-export { EASE_OUT, TRANSITION, VIEWPORT_SCROLL } from '@/lib/motion-tokens'
+export {
+	EASE_OUT,
+	EASE_EXPO_OUT,
+	TRANSITION,
+	VIEWPORT_SCROLL,
+} from '@/lib/motion-tokens'
 
 type Reveal = Pick<
 	HTMLMotionProps<'div'>,
-	'initial' | 'whileInView' | 'viewport' | 'transition'
+	'initial' | 'animate' | 'whileInView' | 'viewport' | 'transition'
 >
+
+/**
+ * Visible resting state for reduced/minimal motion.
+ *
+ * Critical: this uses `animate` (not a bare `initial: false`). `minimal` flips
+ * `false → true` *after mount* (the `narrowPhone` matchMedia effect). If a reveal
+ * returned only `initial: false` on that flip, framer-motion would strip
+ * `whileInView` while the element was still parked at its `opacity: 0` initial and
+ * never reset it — leaving whole sections stuck invisible on phones. Driving
+ * `animate: { opacity: 1 }` re-asserts visibility immediately, viewport-independent.
+ */
+const SHOWN: Reveal = {
+	initial: false,
+	animate: { opacity: 1, x: 0, y: 0 },
+	transition: { duration: 0 },
+}
 
 /**
  * “Minimal” motion: system reduced-motion preference, or very small phone widths only.
@@ -59,7 +80,7 @@ export function enterDelay(minimal: boolean, delaySec: number) {
 }
 
 export function scrollRevealY(minimal: boolean): Reveal {
-	if (minimal) return { initial: false, transition: { duration: 0 } }
+	if (minimal) return SHOWN
 	return {
 		initial: { opacity: 0, y: 10 },
 		whileInView: { opacity: 1, y: 0 },
@@ -72,7 +93,7 @@ export function scrollRevealX(
 	minimal: boolean,
 	dir: 'left' | 'right' = 'left',
 ): Reveal {
-	if (minimal) return { initial: false, transition: { duration: 0 } }
+	if (minimal) return SHOWN
 	const x = dir === 'left' ? -14 : 14
 	return {
 		initial: { opacity: 0, x },
@@ -82,8 +103,31 @@ export function scrollRevealX(
 	}
 }
 
+/**
+ * Flexible scroll-reveal (transform + opacity only → GPU friendly). Collapses to
+ * an instant, no-transform show under reduced/minimal motion. Use for any
+ * `whileInView` block so every entrance respects the same gating + easing.
+ */
+export function revealUp(
+	minimal: boolean,
+	opts?: { y?: number; delay?: number; duration?: number },
+): Reveal {
+	if (minimal) return SHOWN
+	const y = opts?.y ?? 16
+	return {
+		initial: { opacity: 0, y },
+		whileInView: { opacity: 1, y: 0 },
+		viewport: VIEWPORT_SCROLL,
+		transition: {
+			duration: opts?.duration ?? 0.6,
+			ease: EASE_EXPO_OUT,
+			delay: opts?.delay ?? 0,
+		},
+	}
+}
+
 export function scrollFade(minimal: boolean): Reveal {
-	if (minimal) return { initial: false, transition: { duration: 0 } }
+	if (minimal) return SHOWN
 	return {
 		initial: { opacity: 0 },
 		whileInView: { opacity: 1 },

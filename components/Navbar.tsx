@@ -36,14 +36,20 @@ const DEPILATION_LINKS: NavLink[] = [
 	{ path: '/depilation#contact', key: 'contact', icon: Mail },
 ]
 
+/*
+ * Mobile drawer: opacity-only on the blurred panel (compositor-cheap). The
+ * signature reveal comes from the staggered list items sliding in (itemVariants),
+ * so we avoid animating transform/clip-path on a `backdrop-filter` layer —
+ * `clipPath: circle()` interpolation is a known jank source on iOS WebKit.
+ */
 const mobileMenuVariants = {
 	closed: {
-		clipPath: 'circle(0% at calc(100% - 40px) 32px)',
-		transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+		opacity: 0,
+		transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
 	},
 	open: {
-		clipPath: 'circle(150% at calc(100% - 40px) 32px)',
-		transition: { duration: 0.5, ease: [0, 0.55, 0.45, 1] },
+		opacity: 1,
+		transition: { duration: 0.3, ease: [0, 0.55, 0.45, 1] },
 	},
 }
 
@@ -233,7 +239,7 @@ export default function Navbar() {
 	return (
 		<>
 			<motion.header
-				className='fixed top-0 left-0 right-0 z-50 transition-all duration-500'
+				className='fixed top-0 left-0 right-0 z-50 transition-[background-color,backdrop-filter] duration-500'
 				style={{
 					backgroundColor: scrolled ? 'rgba(10, 10, 10, 0.9)' : 'transparent',
 					backdropFilter: scrolled ? 'blur(16px)' : 'blur(0px)',
@@ -272,13 +278,9 @@ export default function Navbar() {
 						>
 							<div className='w-5 h-4 flex flex-col justify-between'>
 								<motion.span
-									animate={
-										open
-											? { rotate: 45, y: 6, width: '100%' }
-											: { rotate: 0, y: 0, width: '100%' }
-									}
+									animate={open ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
 									transition={{ duration: 0.3, ease: 'easeInOut' }}
-									className='block h-[1.5px] bg-icyWhite rounded-full origin-left'
+									className='block h-[1.5px] w-full bg-icyWhite rounded-full origin-left'
 								/>
 								<motion.span
 									animate={open ? { opacity: 0, x: 10 } : { opacity: 1, x: 0 }}
@@ -286,13 +288,9 @@ export default function Navbar() {
 									className='block h-[1.5px] w-3/4 bg-icyWhite/70 rounded-full'
 								/>
 								<motion.span
-									animate={
-										open
-											? { rotate: -45, y: -6, width: '100%' }
-											: { rotate: 0, y: 0, width: '100%' }
-									}
+									animate={open ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
 									transition={{ duration: 0.3, ease: 'easeInOut' }}
-									className='block h-[1.5px] bg-icyWhite rounded-full origin-left'
+									className='block h-[1.5px] w-full bg-icyWhite rounded-full origin-left'
 								/>
 							</div>
 						</button>

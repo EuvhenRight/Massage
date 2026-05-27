@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useIntersectionVisible } from '@/lib/use-intersection-visible'
 import { SITE_CONFIG } from '@/lib/site-config'
 import {
+	EASE_EXPO_OUT,
 	enterDelay,
 	heroEnter,
 	scrollFade,
@@ -220,7 +221,7 @@ export default function MassagePage() {
 							? { opacity: 1, y: 0, pointerEvents: 'auto' as const }
 							: { opacity: 0, y: 20, pointerEvents: 'none' as const }
 					}
-					transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+					transition={{ duration: 0.35, ease: EASE_EXPO_OUT }}
 				>
 					<Link
 						href={`/${locale}/massage/booking`}
@@ -668,7 +669,7 @@ export default function MassagePage() {
 					<div className='relative'>
 						<div
 							ref={sliderRef}
-							className='flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
+							className='flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 							style={{ scrollbarWidth: 'none' }}
 						>
 							<motion.article

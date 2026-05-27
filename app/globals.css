@@ -131,52 +131,10 @@
 }
 
 /*
- * Depilation trust marquee — seamless infinite loop.
- * Content is repeated 4× in React; one cycle = translateX(-25%) = exactly one segment width.
+ * Trust marquee lives in components/Marquee.tsx now — pixel-measured WAAPI
+ * transform with the blurred backdrop as a sibling (iOS-safe). The old
+ * percentage CSS keyframe froze on iOS Safari/Chrome and was removed.
  */
-@keyframes marquee-trust-seamless {
-	from {
-		transform: translate3d(0, 0, 0);
-	}
-	to {
-		transform: translate3d(-25%, 0, 0);
-	}
-}
-
-.marquee-track-trust {
-	display: flex;
-	flex-flow: row nowrap;
-	width: max-content;
-	flex-shrink: 0;
-	/* Slower on narrow viewports — less visual noise on phones */
-	animation: marquee-trust-seamless 72s linear infinite;
-	will-change: transform;
-	-webkit-backface-visibility: hidden;
-	backface-visibility: hidden;
-}
-
-.marquee-track-trust:hover {
-	animation-play-state: paused;
-}
-
-@media (min-width: 640px) {
-	.marquee-track-trust {
-		animation-duration: 54s;
-	}
-}
-
-@media (min-width: 1024px) {
-	.marquee-track-trust {
-		animation-duration: 44s;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.marquee-track-trust {
-		animation: none;
-		transform: translate3d(0, 0, 0);
-	}
-}
 
 /* Hero trust bars — opacity-only entrance (transform + backdrop-blur + overflow-hidden breaks keyframes on iOS). */
 @keyframes hero-trust-bar-in {
@@ -241,45 +199,6 @@
 	.sd-wave-path--play {
 		animation-duration: 0.4s;
 		animation-timing-function: ease-out;
-	}
-}
-
-/* Soft fade at left/right on phones/tablets — avoids hard clipping */
-.trust-marquee-viewport {
-	-webkit-mask-image: linear-gradient(
-		90deg,
-		transparent,
-		#000 5%,
-		#000 95%,
-		transparent
-	);
-	mask-image: linear-gradient(
-		90deg,
-		transparent,
-		#000 5%,
-		#000 95%,
-		transparent
-	);
-}
-
-/*
- * iOS Safari: mask + backdrop-filter on an ancestor can prevent CSS keyframe
- * transforms from running on children. Drop the mask on touch iOS; edges stay
- * clipped by overflow-hidden.
- */
-@supports (-webkit-touch-callout: none) {
-	@media (max-width: 1023px) {
-		.trust-marquee-viewport {
-			-webkit-mask-image: none;
-			mask-image: none;
-		}
-	}
-}
-
-@media (min-width: 1024px) {
-	.trust-marquee-viewport {
-		-webkit-mask-image: none;
-		mask-image: none;
 	}
 }
 

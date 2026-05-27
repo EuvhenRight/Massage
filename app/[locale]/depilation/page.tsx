@@ -3,6 +3,7 @@
 import { useCookieConsent } from '@/components/CookieConsentContext'
 import DepilationServiceSections from '@/components/DepilationServiceSections'
 import GlowText from '@/components/GlowText'
+import Marquee from '@/components/Marquee'
 import Navbar from '@/components/Navbar'
 import SectionDivider from '@/components/SectionDivider'
 import {
@@ -22,7 +23,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SITE_CONFIG } from '@/lib/site-config'
-import { useSiteMotion } from '@/lib/site-motion'
+import { EASE_EXPO_OUT, revealUp, useSiteMotion } from '@/lib/site-motion'
 import { useIntersectionVisible } from '@/lib/use-intersection-visible'
 import {
 	motion,
@@ -31,7 +32,6 @@ import {
 	useTransform,
 } from 'framer-motion'
 import {
-	ArrowDown,
 	BadgeCheck,
 	Calendar,
 	ChevronLeft,
@@ -182,6 +182,23 @@ export default function DepilationPage() {
 	const { minimal, prefersReducedMotion, narrowPhone } = useSiteMotion()
 	const heroScrollFx = !minimal && heroParallaxDesktop
 
+	/** Hero entrances play on phones too — only a reduced-motion preference disables them. */
+	const heroBlock = prefersReducedMotion
+		? { initial: false as const }
+		: {
+				initial: { opacity: 0, y: 20 },
+				animate: { opacity: 1, y: 0 },
+				transition: { duration: 0.8, delay: 0.3, ease: EASE_EXPO_OUT },
+			}
+	/** Logo descends from above and settles just over the wordmark. */
+	const logoIntro = prefersReducedMotion
+		? { initial: false as const }
+		: {
+				initial: { opacity: 0, y: -36, scale: 0.94 },
+				animate: { opacity: 1, y: 0, scale: 1 },
+				transition: { duration: 0.9, delay: 0.15, ease: EASE_EXPO_OUT },
+			}
+
 	const aboutStagger = useMemo(
 		() =>
 			prefersReducedMotion
@@ -278,11 +295,9 @@ export default function DepilationPage() {
 	const heroImgY = useTransform(scrollYProgress, [0, 1], ['0%', '25%'])
 	const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
 
-	const [heroScrolled, setHeroScrolled] = useState(false)
 	const [showFloatingCTA, setShowFloatingCTA] = useState(false)
 	const [footerRef, footerInView] = useIntersectionVisible()
 	useMotionValueEvent(scrollYProgress, 'change', v => {
-		setHeroScrolled(v > 0.1)
 		setShowFloatingCTA(v > 0.85)
 	})
 	const visibleMobileBook = showFloatingCTA && !footerInView
@@ -312,13 +327,7 @@ export default function DepilationPage() {
 		})),
 	}
 
-	/** One segment = full trust list; 4 identical segments → loop at -25% translate = seamless */
-	const TRUST_MARQUEE_COPIES = 4
 	const trustSegment = TRUST_ITEMS.map(key => t(`trust.${key}`))
-	const duplicatedTrust = Array.from(
-		{ length: TRUST_MARQUEE_COPIES },
-		() => trustSegment,
-	).flat()
 
 	return (
 		<>
@@ -338,7 +347,7 @@ export default function DepilationPage() {
 							? { opacity: 1, y: 0, pointerEvents: 'auto' as const }
 							: { opacity: 0, y: 20, pointerEvents: 'none' as const }
 					}
-					transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+					transition={{ duration: 0.35, ease: EASE_EXPO_OUT }}
 				>
 					<Link
 						href={`/${locale}/depilation/booking`}
@@ -366,11 +375,16 @@ export default function DepilationPage() {
 						src={IMG.portrait}
 						alt=''
 						fill
-						className='object-cover scale-100 lg:scale-110'
+						className='object-cover object-[50%_26%] scale-100 lg:object-[50%_18%] lg:scale-105'
 						priority
 						sizes='100vw'
 					/>
-					<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/70 via-nearBlack/50 to-nearBlack' />
+					{/* Mobile: near-transparent over the face (top), solid only behind the
+					    lowered content. lg+: keep the original even wash. */}
+					<div className='absolute inset-0 bg-gradient-to-b from-nearBlack/25 via-nearBlack/45 to-nearBlack lg:from-nearBlack/25 lg:via-nearBlack/45 lg:to-nearBlack' />
+					{/* lg+: darker scrim only over the lower band where the wordmark + CTAs live,
+					    leaving the portrait's face/head clear above. */}
+					<div className='absolute inset-x-0 bottom-0 h-[55%] hidden lg:block bg-gradient-to-b from-transparent via-nearBlack/55 to-nearBlack' />
 				</motion.div>
 
 				{/* Ambient glow orbs */}
@@ -381,35 +395,34 @@ export default function DepilationPage() {
 
 				{/* Badge line */}
 				<motion.p
-					initial={{ opacity: 0, y: -12 }}
+					initial={prefersReducedMotion ? false : { opacity: 0, y: -12 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.6, delay: 0.2 }}
-					className='relative z-10 w-full shrink-0 text-center text-gold-soft/60 text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28'
+					transition={{ duration: 0.6, delay: 0.2, ease: EASE_EXPO_OUT }}
+					className='relative z-10 w-full shrink-0 text-center text-gold-soft text-[10px] sm:text-xs font-medium tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28 [text-shadow:0_2px_12px_rgba(0,0,0,0.75)]'
 				>
 					{t.rich('heroBadge', richStudioBrand)}
 				</motion.p>
 
-				{/* Main hero content — scroll-linked fade only with parallax (lg+). */}
+				{/* Main hero content — bottom-weighted on mobile to reveal the portrait's
+				    face; centered on lg+. Scroll-linked fade only with parallax (lg+). */}
 				<motion.div
 					style={heroScrollFx ? { opacity: heroOpacity } : undefined}
-					className='relative z-10 flex-1 min-h-0 flex flex-col items-center justify-center px-6 overflow-hidden'
+					className='relative z-10 flex-1 min-h-0 flex flex-col items-center justify-end pb-6 sm:pb-10 lg:pb-16 xl:pb-20 px-6 overflow-hidden'
 				>
-					<motion.div
-						initial={{ opacity: 0, y: 30 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-						className='text-center'
-					>
-						<div className='flex justify-center mb-10 sm:mb-20 md:mb-20 lg:mb-0'>
+					<motion.div {...heroBlock} className='text-center'>
+						<motion.div
+							{...logoIntro}
+							className='flex justify-center mb-3 sm:mb-6 lg:mb-2'
+						>
 							<Image
 								src='/images/Gemini_yellow2.png'
 								alt='V2studio'
 								width={180}
 								height={200}
-								className='h-28 sm:h-28 md:h-32 lg:h-36 w-auto drop-shadow-[0_0_40px_rgba(232,184,0,0.2)]'
+								className='h-20 sm:h-24 md:h-28 lg:h-28 xl:h-32 w-auto drop-shadow-[0_0_40px_rgba(232,184,0,0.2)]'
 								priority
 							/>
-						</div>
+						</motion.div>
 
 						<GlowText
 							text={tCommon('depilation')}
@@ -418,76 +431,59 @@ export default function DepilationPage() {
 						/>
 
 						<motion.p
-							initial={{ opacity: 0 }}
+							initial={prefersReducedMotion ? false : { opacity: 0 }}
 							animate={{ opacity: 1 }}
-							transition={{ delay: 0.8, duration: 0.8 }}
-							className='-mt-1 text-gold-soft/80 text-xs sm:text-sm tracking-wider uppercase max-w-lg mx-auto leading-relaxed'
+							transition={{ delay: 0.8, duration: 0.8, ease: EASE_EXPO_OUT }}
+							className='-mt-1 text-gold-soft text-xs sm:text-sm tracking-wider uppercase max-w-lg mx-auto leading-relaxed [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]'
 						>
 							{t('heroLine2')}
 						</motion.p>
 
 						<motion.div
-							initial={{ opacity: 0, y: 16 }}
+							initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 1, duration: 0.6 }}
+							transition={{ delay: 1, duration: 0.6, ease: EASE_EXPO_OUT }}
 							className='mt-6 flex flex-wrap justify-center gap-3'
 						>
 							<Link
 								href={`/${locale}/depilation/booking`}
-								className='group inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/25 hover:border-gold-soft/60 hover:shadow-glow transition-all duration-500'
+								className='group inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-all duration-500'
 							>
 								{t('heroBookButton')}
 								<ChevronRight className='w-4 h-4 group-hover:translate-x-0.5 transition-transform' />
 							</Link>
 							<Link
 								href={`/${locale}/depilation/price`}
-								className='inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-white/10 text-icyWhite/60 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/30 hover:text-gold-soft/80 transition-all duration-500'
+								className='inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-all duration-500'
 							>
 								{t('heroPricesButton')}
 							</Link>
 						</motion.div>
 					</motion.div>
 
-					{/* Scroll indicator */}
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: heroScrolled ? 0 : 1 }}
-						transition={{ duration: 0.4 }}
-						className='absolute bottom-6 sm:bottom-6 left-1/2 -translate-x-1/2'
-					>
-						<motion.div
-							animate={minimal ? undefined : { y: [0, 6, 0] }}
-							transition={
-								minimal
-									? undefined
-									: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }
-							}
-						>
-							<ArrowDown className='w-5 h-5 text-gold-soft/40' />
-						</motion.div>
-					</motion.div>
 				</motion.div>
 
-				{/* Trust bar — seamless 4-segment loop + soft edges on mobile/tablet.
-				    Do not wrap the CSS-animated track in a Framer transform parent: iOS Safari
-				    often fails to run nested transform animations. */}
-				<div
-					className='hero-trust-bar-depilation relative z-10 mt-auto shrink-0 py-3.5 sm:py-4 border-t border-white/[0.06] bg-nearBlack/70 backdrop-blur-md overflow-hidden trust-marquee-viewport'
-					aria-label={t('trustBarLabel')}
+				{/* Trust bar — seamless marquee. iOS-safe: pixel-measured WAAPI transform
+				    with the blurred backdrop as a sibling (not an ancestor) of the track. */}
+				<Marquee
+					speed={narrowPhone ? 36 : 60}
+					gradientEdges
+					pauseOnHover
+					ariaLabel={t('trustBarLabel')}
+					className='hero-trust-bar-depilation z-10 mt-auto shrink-0 py-3.5 sm:py-4 border-t border-white/[0.06]'
+					backgroundClassName='bg-nearBlack/70 backdrop-blur-md'
 				>
-					<div className='marquee-track-trust' aria-hidden>
-						{duplicatedTrust.map((text, i) => (
-							<span
-								key={`trust-marquee-${i}`}
-								className='flex items-center gap-2 sm:gap-3 md:gap-4 pl-3 pr-2.5 sm:pl-4 sm:pr-3 md:px-5 shrink-0'
-							>
-								<span className='text-gold-soft/70 text-[10px] sm:text-xs tracking-[0.12em] sm:tracking-[0.2em] uppercase whitespace-nowrap font-medium'>
-									{text}
-								</span>
+					{trustSegment.map((text, i) => (
+						<span
+							key={`trust-${i}`}
+							className='flex items-center gap-2 sm:gap-3 md:gap-4 pl-3 pr-2.5 sm:pl-4 sm:pr-3 md:px-5 shrink-0'
+						>
+							<span className='text-gold-soft/70 text-[10px] sm:text-xs tracking-[0.12em] sm:tracking-[0.2em] uppercase whitespace-nowrap font-medium'>
+								{text}
 							</span>
-						))}
-					</div>
-				</div>
+						</span>
+					))}
+				</Marquee>
 			</section>
 
 			<SectionDivider />
@@ -514,7 +510,7 @@ export default function DepilationPage() {
 							transition={
 								prefersReducedMotion
 									? { duration: 0 }
-									: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
+									: { duration: 0.8, ease: EASE_EXPO_OUT }
 							}
 							className='relative order-1 md:h-full md:min-h-0'
 						>
@@ -597,10 +593,10 @@ export default function DepilationPage() {
 				<div className='relative max-w-6xl mx-auto'>
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-stretch'>
 						<motion.div
-							initial={{ opacity: 0, x: -40 }}
+							initial={minimal ? false : { opacity: 0, x: -40 }}
 							whileInView={{ opacity: 1, x: 0 }}
 							viewport={{ once: true, margin: '-60px' }}
-							transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+							transition={{ duration: 0.8, ease: EASE_EXPO_OUT }}
 							className='relative order-2 md:order-1 md:h-full md:min-h-0'
 						>
 							<div className='relative w-full aspect-[4/3] rounded-3xl overflow-hidden md:aspect-auto md:h-full md:min-h-0'>
@@ -760,7 +756,7 @@ export default function DepilationPage() {
 								transition={{
 									delay: minimal ? 0 : i * 0.1,
 									duration: minimal ? 0 : 0.6,
-									ease: [0.22, 1, 0.36, 1],
+									ease: EASE_EXPO_OUT,
 								}}
 								className='relative p-7 rounded-3xl glass-card group'
 							>
@@ -814,14 +810,11 @@ export default function DepilationPage() {
 					<div className='relative'>
 						<div
 							ref={sliderRef}
-							className='flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
+							className='flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 						>
 							{/* Natalie card */}
 							<motion.article
-								initial={{ opacity: 0, y: 32 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+								{...revealUp(minimal, { y: 28, duration: 0.7 })}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4] overflow-hidden'>
@@ -854,14 +847,7 @@ export default function DepilationPage() {
 
 							{/* Massage specialist — same studio */}
 							<motion.article
-								initial={{ opacity: 0, y: 32 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{
-									delay: 0.08,
-									duration: 0.7,
-									ease: [0.22, 1, 0.36, 1],
-								}}
+								{...revealUp(minimal, { y: 28, delay: 0.08, duration: 0.7 })}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4] overflow-hidden'>
@@ -894,14 +880,7 @@ export default function DepilationPage() {
 
 							{/* Workspace card */}
 							<motion.article
-								initial={{ opacity: 0, y: 32 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{
-									delay: 0.12,
-									duration: 0.7,
-									ease: [0.22, 1, 0.36, 1],
-								}}
+								{...revealUp(minimal, { y: 28, delay: 0.12, duration: 0.7 })}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4] overflow-hidden'>
@@ -1004,14 +983,7 @@ export default function DepilationPage() {
 							return (
 								<motion.div
 									key={key}
-									initial={{ opacity: 0, y: 28 }}
-									whileInView={{ opacity: 1, y: 0 }}
-									viewport={{ once: true, margin: '-40px' }}
-									transition={{
-										delay: i * 0.08,
-										duration: 0.6,
-										ease: [0.22, 1, 0.36, 1],
-									}}
+									{...revealUp(minimal, { y: 24, delay: i * 0.08 })}
 									className={cardClass}
 								>
 									{inner}
@@ -1058,15 +1030,8 @@ export default function DepilationPage() {
 							{TESTIMONIALS.map((key, i) => (
 								<motion.blockquote
 									key={key}
-									initial={{ opacity: 0, y: 28 }}
-									whileInView={{ opacity: 1, y: 0 }}
-									viewport={{ once: true }}
-									transition={{
-										delay: i * 0.06,
-										duration: 0.6,
-										ease: [0.22, 1, 0.36, 1],
-									}}
-									className='group shrink-0 w-[300px] sm:w-[380px] snap-center overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent p-6 sm:p-7 transition-all duration-300 hover:border-gold-soft/25 hover:shadow-[0_0_28px_-8px_rgba(232,184,0,0.15)]'
+									{...revealUp(minimal, { y: 24, delay: Math.min(i, 8) * 0.06 })}
+									className='group shrink-0 w-[300px] sm:w-[380px] snap-center overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent p-6 sm:p-7 transition-[border-color,box-shadow] duration-300 hover:border-gold-soft/25 hover:shadow-[0_0_28px_-8px_rgba(232,184,0,0.15)]'
 								>
 									<div className='flex gap-1 mb-4'>
 										{Array.from({ length: 5 }).map((_, si) => (
@@ -1155,10 +1120,7 @@ export default function DepilationPage() {
 						{FAQ_ITEMS.map((key, i) => (
 							<motion.div
 								key={key}
-								initial={{ opacity: 0, y: 16 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: i * 0.04, duration: 0.5 }}
+								{...revealUp(minimal, { y: 16, delay: i * 0.04, duration: 0.5 })}
 							>
 								<AccordionItem
 									value={key}
@@ -1210,10 +1172,7 @@ export default function DepilationPage() {
 
 					<div className='grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12 lg:items-stretch'>
 						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.6 }}
+							{...revealUp(minimal, { y: 20 })}
 							className='flex min-h-0 flex-col lg:h-full'
 						>
 							<div className='relative min-h-[260px] flex-1 overflow-hidden rounded-3xl ring-1 ring-white/[0.06] sm:min-h-[280px] lg:min-h-0'>
@@ -1251,10 +1210,7 @@ export default function DepilationPage() {
 						</motion.div>
 
 						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ delay: 0.1, duration: 0.6 }}
+							{...revealUp(minimal, { y: 20, delay: 0.1 })}
 							className='flex min-h-0 flex-col lg:h-full'
 						>
 							<div className='flex h-full min-h-0 flex-col rounded-3xl glass-card p-7'>
