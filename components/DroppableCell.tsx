@@ -65,11 +65,12 @@ export default function DroppableCell({
 			className={cn(
 				'border-b border-r border-white/[0.06] p-px transition-colors',
 				compact ? 'min-h-[14px] flex-1' : 'min-h-[30px]',
-				isPast && 'bg-white/5',
+				isPast && 'bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.04)_0,rgba(255,255,255,0.04)_4px,rgba(255,255,255,0.085)_4px,rgba(255,255,255,0.085)_8px)]',
 				showOver &&
 					(canDrop
-						? dropOverClassName ?? 'bg-gold-soft/20 ring-1 ring-gold-soft/50'
-						: 'bg-red-500/10 ring-1 ring-red-400/60'),
+						? dropOverClassName ??
+							'bg-gold-soft/55 ring-2 ring-gold-soft shadow-lg shadow-gold-soft/30'
+						: 'bg-red-500/30 ring-2 ring-red-400 shadow-lg shadow-red-500/20'),
 				className,
 			)}
 		>

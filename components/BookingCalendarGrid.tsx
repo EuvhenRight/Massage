@@ -18,9 +18,7 @@ import {
 import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import {
 	deleteAppointment,
-	getUiAppointmentDayDateKeys,
 	inferAdminBookingModeFromFirestore,
-	updateAppointment,
 	updateAppointmentTime,
 	type AppointmentData,
 } from '@/lib/book-appointment'
@@ -40,7 +38,6 @@ import {
 import {
 	closestCenter,
 	DndContext,
-	DragOverlay,
 	PointerSensor,
 	pointerWithin,
 	rectIntersection,
@@ -190,27 +187,6 @@ function extractAppointmentId(dragId: string): string {
 	return m ? m[1] : dragId
 }
 
-function formatFullDayMoveSummary(keys: string[], locale: string): string {
-	const sorted = [...keys].sort((a, b) => a.localeCompare(b))
-	if (sorted.length === 1) {
-		return new Date(`${sorted[0]}T12:00:00`).toLocaleDateString(locale, {
-			weekday: 'short',
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-		})
-	}
-	const a = new Date(`${sorted[0]}T12:00:00`)
-	const b = new Date(`${sorted[sorted.length - 1]}T12:00:00`)
-	const opts: Intl.DateTimeFormatOptions = {
-		weekday: 'short',
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric',
-	}
-	return `${a.toLocaleDateString(locale, opts)} – ${b.toLocaleDateString(locale, opts)}`
-}
-
 /** Short TZ label for week grid corner (e.g. GMT+1), Google Calendar–style. */
 function shortTimeZoneName(d = new Date()): string {
 	try {
@@ -335,12 +311,6 @@ export default function BookingCalendarGrid({
 		ReturnType<typeof getSchedule>
 	> | null>(null)
 	const [activeId, setActiveId] = useState<string | null>(null)
-	const [pendingMove, setPendingMove] = useState<{
-		appointment: AppointmentData
-		newCellId: string
-		/** When moving an all-day booking: new explicit day keys (confirm uses `updateAppointment`). */
-		newFullDayDateKeys?: string[]
-	} | null>(null)
 	/** Live drag-to-resize preview for a timed block (duration in minutes). */
 	const [resize, setResize] = useState<{
 		id: string
@@ -669,6 +639,130 @@ export default function BookingCalendarGrid({
 		setActiveId(event.active.id as string)
 	}, [])
 
+	/** Notification grace window: admin has this long to click Undo before the
+	 *  customer is notified. Keeps undo silent end-to-end. */
+	const MOVE_NOTIFICATION_GRACE_MS = 5000
+
+	const sendMoveNotification = useCallback(
+		async (
+			appointment: AppointmentData,
+			oldStart: Date,
+			newStart: Date,
+			wasTbd: boolean,
+		) => {
+			const bookingPlace = appointment.place ?? place
+			try {
+				if (wasTbd) {
+					await fetch('/api/send-confirmation', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							type: 'new',
+							source: 'admin',
+							to: appointment.email,
+							customerName: appointment.fullName,
+							customerPhone: appointment.phone?.trim() ?? '',
+							notifyByEmail: appointment.notifyByEmail,
+							notifyByWhatsApp: appointment.notifyByWhatsApp,
+							date: formatDateForEmail(newStart),
+							time: formatTimeForEmail(newStart),
+							service: appointment.service,
+							bookingPlace,
+						}),
+					})
+				} else {
+					await fetch('/api/send-confirmation', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							type: 'rescheduled',
+							source: 'admin',
+							to: appointment.email,
+							customerName: appointment.fullName,
+							customerPhone: appointment.phone?.trim() ?? '',
+							notifyByEmail: appointment.notifyByEmail,
+							notifyByWhatsApp: appointment.notifyByWhatsApp,
+							service: appointment.service,
+							oldDate: formatDateForEmail(oldStart),
+							oldTime: formatTimeForEmail(oldStart),
+							newDate: formatDateForEmail(newStart),
+							newTime: formatTimeForEmail(newStart),
+							bookingPlace,
+						}),
+					})
+				}
+			} catch {
+				/* notification is best-effort — DB move already persisted */
+			}
+		},
+		[place],
+	)
+
+	const applyMove = useCallback(
+		async (appointment: AppointmentData, newCellId: string) => {
+			const newStart = cellIdToTimestamp(newCellId)
+			if (newStart.getTime() < Date.now()) {
+				toast.error(t('cannotMovePast'))
+				return
+			}
+			const oldStart =
+				appointment.startTime && 'toDate' in appointment.startTime
+					? appointment.startTime.toDate()
+					: new Date(appointment.startTime as Date)
+			const durationMinutes = getAppointmentDuration(appointment)
+			const wasTbd = appointment.scheduleTbd === true
+
+			try {
+				await updateAppointmentTime(appointment.id, newStart, durationMinutes)
+			} catch (err) {
+				const msg = err instanceof Error ? err.message : String(err)
+				toast.error(
+					msg === 'OVERLAP'
+						? t('slotBooked')
+						: msg === 'APPOINTMENT_NOT_FOUND'
+							? t('notFound')
+							: t('moveFailed', { msg: String(msg) }),
+				)
+				return
+			}
+
+			let undone = false
+			const timer = setTimeout(() => {
+				if (undone) return
+				void sendMoveNotification(appointment, oldStart, newStart, wasTbd)
+			}, MOVE_NOTIFICATION_GRACE_MS)
+
+			toast.success(
+				wasTbd
+					? t('tbdAssignedNotified', {
+							channel: t(notifyChannelKey(appointment)),
+						})
+					: t('movedNotified', { channel: t(notifyChannelKey(appointment)) }),
+				{
+					duration: MOVE_NOTIFICATION_GRACE_MS,
+					action: {
+						label: t('moveUndo'),
+						onClick: async () => {
+							undone = true
+							clearTimeout(timer)
+							try {
+								await updateAppointmentTime(
+									appointment.id,
+									oldStart,
+									durationMinutes,
+								)
+								toast.success(t('moveUndone'))
+							} catch {
+								toast.error(t('moveUndoFailed'))
+							}
+						},
+					},
+				},
+			)
+		},
+		[t, sendMoveNotification],
+	)
+
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
 			setActiveId(null)
@@ -716,7 +810,10 @@ export default function BookingCalendarGrid({
 				const ownRangeEnd = aptEnd.getTime() + prepBuffer * 60 * 1000
 				const isWithinOwnRange =
 					cellTime >= ownRangeStart && cellTime < ownRangeEnd
-				if (!isWithinOwnRange) return
+				if (!isWithinOwnRange) {
+					toast.error(t('slotBookedOrInBuffer'))
+					return
+				}
 			}
 
 			if (newStart.getTime() < Date.now()) {
@@ -724,7 +821,7 @@ export default function BookingCalendarGrid({
 				return
 			}
 
-			setPendingMove({ appointment, newCellId: cellId })
+			void applyMove(appointment, cellId)
 		},
 		[
 			appointments,
@@ -733,182 +830,11 @@ export default function BookingCalendarGrid({
 			allowDrag,
 			cellsOccupiedBy,
 			prepBuffer,
+			applyMove,
 			t,
 		],
 	)
 
-	const handleConfirmMove = useCallback(async () => {
-		if (!pendingMove) return
-		const { appointment, newCellId, newFullDayDateKeys } = pendingMove
-		setPendingMove(null)
-
-		if (newFullDayDateKeys?.length) {
-			const sorted = [...newFullDayDateKeys].sort((a, b) => a.localeCompare(b))
-			const firstNew = new Date(`${sorted[0]}T12:00:00`)
-			const startOfToday = new Date()
-			startOfToday.setHours(0, 0, 0, 0)
-			if (firstNew < startOfToday) {
-				toast.error(t('cannotMovePast'))
-				return
-			}
-
-			const oldKeys = getUiAppointmentDayDateKeys(appointment)
-			const oldSorted = [...oldKeys].sort((a, b) => a.localeCompare(b))
-			const oldFirstKey = oldSorted[0]!
-			const newFirstKey = sorted[0]!
-			const oldStartEmail = new Date(`${oldFirstKey}T12:00:00`)
-			const newStartEmail = new Date(`${newFirstKey}T12:00:00`)
-			const allDayLabel = t('allDayNoClockTime')
-
-			try {
-				await updateAppointment(
-					appointment.id,
-					{ adminFullDayDates: sorted },
-					appointment.place ?? place,
-				)
-
-				const wasTbd = appointment.scheduleTbd === true
-				const bookingPlace = appointment.place ?? place
-				try {
-					if (wasTbd) {
-						await fetch('/api/send-confirmation', {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({
-								to: appointment.email,
-								customerName: appointment.fullName,
-								customerPhone: appointment.phone?.trim() ?? '',
-								notifyByEmail: appointment.notifyByEmail,
-								notifyByWhatsApp: appointment.notifyByWhatsApp,
-								date: formatDateForEmail(newStartEmail),
-								time: allDayLabel,
-								service: appointment.service,
-								bookingPlace,
-							}),
-						})
-					} else {
-						await fetch('/api/send-confirmation', {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({
-								type: 'rescheduled',
-								to: appointment.email,
-								customerName: appointment.fullName,
-								customerPhone: appointment.phone?.trim() ?? '',
-								notifyByEmail: appointment.notifyByEmail,
-								notifyByWhatsApp: appointment.notifyByWhatsApp,
-								service: appointment.service,
-								oldDate: formatDateForEmail(oldStartEmail),
-								oldTime: allDayLabel,
-								newDate: formatDateForEmail(newStartEmail),
-								newTime: allDayLabel,
-								bookingPlace,
-							}),
-						})
-					}
-				} catch {
-					/* email failure */
-				}
-				toast.success(
-					wasTbd
-						? t('tbdAssignedNotified', { channel: t(notifyChannelKey(appointment)) })
-						: t('movedNotified', { channel: t(notifyChannelKey(appointment)) }),
-				)
-			} catch (err) {
-				const msg = err instanceof Error ? err.message : String(err)
-				const message =
-					msg === 'OVERLAP'
-						? t('slotBooked')
-						: msg === 'DAY_CLOSED'
-							? t('fullDayClosed')
-							: msg === 'APPOINTMENT_NOT_FOUND'
-								? t('notFound')
-								: t('moveFailed', { msg: String(msg) })
-				toast.error(message)
-			}
-			return
-		}
-
-		const newStart = cellIdToTimestamp(newCellId)
-		if (newStart.getTime() < Date.now()) {
-			toast.error(t('cannotMovePast'))
-			return
-		}
-
-		const oldStart =
-			appointment.startTime && 'toDate' in appointment.startTime
-				? appointment.startTime.toDate()
-				: new Date(appointment.startTime as Date)
-
-		try {
-			const durationMinutes = getAppointmentDuration(appointment)
-			await updateAppointmentTime(appointment.id, newStart, durationMinutes)
-
-			const wasTbd = appointment.scheduleTbd === true
-			const bookingPlace = appointment.place ?? place
-			try {
-				if (wasTbd) {
-					await fetch('/api/send-confirmation', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							type: 'new',
-							source: 'admin',
-							to: appointment.email,
-							customerName: appointment.fullName,
-							customerPhone: appointment.phone?.trim() ?? '',
-							notifyByEmail: appointment.notifyByEmail,
-							notifyByWhatsApp: appointment.notifyByWhatsApp,
-							date: formatDateForEmail(newStart),
-							time: formatTimeForEmail(newStart),
-							service: appointment.service,
-							bookingPlace,
-						}),
-					})
-				} else {
-					await fetch('/api/send-confirmation', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							type: 'rescheduled',
-							source: 'admin',
-							to: appointment.email,
-							customerName: appointment.fullName,
-							customerPhone: appointment.phone?.trim() ?? '',
-							notifyByEmail: appointment.notifyByEmail,
-							notifyByWhatsApp: appointment.notifyByWhatsApp,
-							service: appointment.service,
-							oldDate: formatDateForEmail(oldStart),
-							oldTime: formatTimeForEmail(oldStart),
-							newDate: formatDateForEmail(newStart),
-							newTime: formatTimeForEmail(newStart),
-							bookingPlace,
-						}),
-					})
-				}
-			} catch {
-				/* email failure */
-			}
-			toast.success(
-					wasTbd
-					? t('tbdAssignedNotified', { channel: t(notifyChannelKey(appointment)) })
-					: t('movedNotified', { channel: t(notifyChannelKey(appointment)) }),
-			)
-		} catch (err) {
-			const msg = err instanceof Error ? err.message : String(err)
-			const message =
-				msg === 'OVERLAP'
-					? t('slotBooked')
-					: msg === 'APPOINTMENT_NOT_FOUND'
-						? t('notFound')
-						: t('moveFailed', { msg: String(msg) })
-			toast.error(message)
-		}
-	}, [pendingMove, place, t])
-
-	const handleCancelMove = useCallback(() => {
-		setPendingMove(null)
-	}, [])
 
 	const [pendingCancel, setPendingCancel] = useState<AppointmentData | null>(
 		null,
@@ -916,11 +842,9 @@ export default function BookingCalendarGrid({
 	const [detailAppointment, setDetailAppointment] =
 		useState<AppointmentData | null>(null)
 
-	/** One lock for detail + cancel/move modals so closing detail → cancel does not restore scroll between overlays. */
+	/** One lock for detail + cancel modal so closing detail → cancel does not restore scroll between overlays. */
 	const adminCalendarScrollLock =
-		detailAppointment != null ||
-		pendingCancel != null ||
-		pendingMove != null
+		detailAppointment != null || pendingCancel != null
 
 	useEffect(() => {
 		if (!adminCalendarScrollLock) return
@@ -984,10 +908,6 @@ export default function BookingCalendarGrid({
 
 	const handleDismissCancel = useCallback(() => setPendingCancel(null), [])
 
-	const moveDialogRef = useFocusTrap<HTMLDivElement>(
-		!!pendingMove && allowDrag,
-		handleCancelMove,
-	)
 	const cancelDialogRef = useFocusTrap<HTMLDivElement>(
 		!!pendingCancel,
 		handleDismissCancel,
@@ -1054,44 +974,6 @@ export default function BookingCalendarGrid({
 		[gridEndHour, t],
 	)
 
-	const activeAppointment = activeId
-		? (() => {
-				const realId = extractAppointmentId(activeId)
-				return (
-					appointments.find(a => a.id === realId) ??
-					tbdAppointments.find(a => a.id === realId) ??
-					fullDayAwaitingList.find(a => a.id === realId)
-				)
-			})()
-		: null
-
-	/** Match on-grid block height (stack-aware) so DragOverlay preview is not stretched. */
-	const activeDragOverlayHeightPx = useMemo(() => {
-		if (!activeId || !activeAppointment) return undefined
-		if (activeAppointment.scheduleTbd) return undefined
-		if (activeAppointment.adminBookingMode === 'day') {
-			return hourSlots.length * ADMIN_CALENDAR_HOUR_ROW_PX - 2
-		}
-		const cellKey = activeId.match(/(\d{8}-\d{4})$/)?.[1]
-		const dur = getAppointmentDuration(activeAppointment)
-		const fallback = adminAppointmentDurationHeightPx(dur, 12)
-		if (!cellKey) return fallback
-		try {
-			const ts = cellIdToTimestamp(cellKey)
-			const dk = getDateKey(ts)
-			return (
-				timedColumnLayoutByDayKey.get(dk)?.get(activeAppointment.id)
-					?.heightPx ?? fallback
-			)
-		} catch {
-			return fallback
-		}
-	}, [
-		activeId,
-		activeAppointment,
-		timedColumnLayoutByDayKey,
-		hourSlots.length,
-	])
 
 	const toolbarRangeLabel = useMemo(() => {
 		if (view === 'month') {
@@ -1358,8 +1240,10 @@ export default function BookingCalendarGrid({
 			<DndContext
 				sensors={sensors}
 				collisionDetection={calendarCollisionDetection}
+				autoScroll={{ enabled: true, threshold: { x: 0.1, y: 0.15 } }}
 				onDragStart={handleDragStart}
 				onDragEnd={handleDragEnd}
+				onDragCancel={() => setActiveId(null)}
 			>
 				{isLoading ? (
 					<CalendarSkeleton />
@@ -1756,104 +1640,9 @@ export default function BookingCalendarGrid({
 					</div>
 				)}
 
-				<DragOverlay>
-					{activeAppointment ? (
-						<div className='pointer-events-none opacity-95'>
-							<DraggableAppointment
-								appointment={activeAppointment}
-								awaitingCalendarAssignment={
-									activeAppointment.scheduleTbd === true ||
-									isFullDayAwaitingExplicitDays(activeAppointment)
-								}
-								disabled
-								isDragOverlay
-								blockHeight={activeDragOverlayHeightPx}
-								onEdit={undefined}
-								onCancel={undefined}
-								services={services}
-								layout={
-									activeAppointment.scheduleTbd ? 'list' : 'calendar'
-								}
-							/>
-						</div>
-					) : null}
-				</DragOverlay>
 			</DndContext>
 
-			{/* Move / cancel confirmations: portal to body so fixed is viewport-based (glass-card backdrop-filter would trap fixed inside the panel). */}
-			{typeof document !== 'undefined' &&
-				pendingMove &&
-				allowDrag &&
-				createPortal(
-					<div
-						className='fixed inset-0 z-[100] flex items-center justify-center p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6'
-						role='presentation'
-					>
-						<button
-							type='button'
-							className='absolute inset-0 bg-nearBlack/80 backdrop-blur-sm'
-							aria-label={t('close')}
-							onClick={handleCancelMove}
-						/>
-						<div
-							ref={moveDialogRef}
-							tabIndex={-1}
-							role='dialog'
-							aria-modal='true'
-							aria-labelledby='admin-cal-move-title'
-							className='relative z-[1] w-full max-w-md max-h-[min(85dvh,calc(100dvh-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-nearBlack p-5 shadow-2xl shadow-black/50 focus:outline-none sm:p-6'
-							onClick={e => e.stopPropagation()}
-						>
-							<h3
-								id='admin-cal-move-title'
-								className='font-serif text-lg text-icyWhite sm:text-xl mb-2'
-							>
-								{t('calRescheduleTitle')}
-							</h3>
-							<p className='text-sm leading-relaxed text-icyWhite/70 mb-5 break-words'>
-								{t('calRescheduleBody', {
-									customerName: pendingMove.appointment.fullName,
-									serviceName: pendingMove.appointment.service,
-									dateStr:
-										pendingMove.newFullDayDateKeys?.length &&
-										pendingMove.newFullDayDateKeys.length > 0
-											? formatFullDayMoveSummary(
-													pendingMove.newFullDayDateKeys,
-													locale,
-												)
-											: formatDateForEmail(
-													cellIdToTimestamp(pendingMove.newCellId),
-												),
-									timeStr:
-										pendingMove.newFullDayDateKeys?.length &&
-										pendingMove.newFullDayDateKeys.length > 0
-											? t('allDayNoClockTime')
-											: formatTimeForEmail(
-													cellIdToTimestamp(pendingMove.newCellId),
-												),
-								})}
-							</p>
-							<div className='flex flex-col-reverse gap-2.5 sm:flex-row sm:justify-end sm:gap-3'>
-								<button
-									type='button'
-									onClick={handleCancelMove}
-									className='min-h-11 flex-1 rounded-xl border border-white/12 px-4 py-2.5 text-sm text-icyWhite hover:bg-white/10 sm:min-h-0 sm:flex-none sm:min-w-[7rem] sm:py-2.5'
-								>
-									{t('cancel')}
-								</button>
-								<button
-									type='button'
-									onClick={handleConfirmMove}
-									className={`min-h-11 flex-1 rounded-xl px-4 py-2.5 text-sm font-medium sm:min-h-0 sm:flex-none sm:min-w-[9rem] sm:py-2.5 ${ui.btnPrimarySm}`}
-								>
-									{t('calRescheduleConfirm')}
-								</button>
-							</div>
-						</div>
-					</div>,
-					document.body,
-				)}
-
+			{/* Cancel confirmation: portal to body so fixed is viewport-based (glass-card backdrop-filter would trap fixed inside the panel). */}
 			{typeof document !== 'undefined' &&
 				pendingCancel &&
 				allowCancel &&

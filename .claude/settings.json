@@ -29,7 +29,8 @@
       "Bash(grep -n \"new Date\\(\\\\`\" /Users/yevhenright/Documents/luxe-salon/lib/book-appointment.ts /Users/yevhenright/Documents/luxe-salon/lib/availability-firestore.ts /Users/yevhenright/Documents/luxe-salon/app/api/availability/route.ts)",
       "Bash(grep -n \"new Date\\(\\\\`\\\\|new Date\\(.*T\" /Users/yevhenright/Documents/luxe-salon/components/AdminAppointmentModal.tsx)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(kill 16361 16362)"
     ]
   }
 }

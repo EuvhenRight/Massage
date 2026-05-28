@@ -404,7 +404,7 @@ export default function DraggableAppointment({
         ${isPast || isDragOverlay ? '' : 'hover:z-30 hover:shadow-lg hover:shadow-black/45 hover:ring-1 hover:ring-white/30'}
         ${usePositionedCalendar ? 'pointer-events-auto' : ''}
         ${surfaceClass}
-        ${isDragging ? 'opacity-0 pointer-events-none' : ''}
+        ${isDragging ? 'z-40 opacity-30 cursor-grabbing' : ''}
         ${
 					isFullDay && onEdit
 						? 'cursor-pointer'
