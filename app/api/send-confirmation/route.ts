@@ -54,6 +54,29 @@ export async function POST(request: Request) {
     const type: EmailType =
       body.type === "rescheduled" || body.type === "cancelled" ? body.type : "new";
 
+    // [DEBUG] Twilio env check — remove after troubleshooting
+    console.log("[send-confirmation][DEBUG] twilio env:", {
+      hasAccountSid: Boolean(process.env.TWILIO_ACCOUNT_SID),
+      accountSidLen: process.env.TWILIO_ACCOUNT_SID?.length ?? 0,
+      hasAuthToken: Boolean(process.env.TWILIO_AUTH_TOKEN),
+      authTokenLen: process.env.TWILIO_AUTH_TOKEN?.length ?? 0,
+      hasMessagingSid: Boolean(process.env.TWILIO_MESSAGING_SERVICE_SID),
+      messagingSidPrefix: process.env.TWILIO_MESSAGING_SERVICE_SID?.slice(0, 4),
+      hasContentNew: Boolean(process.env.TWILIO_CONTENT_SID_BOOKING_NEW),
+      hasContentResched: Boolean(process.env.TWILIO_CONTENT_SID_BOOKING_RESCHEDULED),
+      hasContentCancelled: Boolean(process.env.TWILIO_CONTENT_SID_BOOKING_CANCELLED),
+      hasAdminPhone: Boolean(process.env.ADMIN_WHATSAPP_PHONE),
+      hasDepilationPhone: Boolean(process.env.DEPILATION_MASTER_WHATSAPP_PHONE),
+    });
+    console.log("[send-confirmation][DEBUG] request body keys:", {
+      type,
+      keys: Object.keys(body),
+      customerPhone: body.customerPhone,
+      notifyByEmail: body.notifyByEmail,
+      notifyByWhatsApp: body.notifyByWhatsApp,
+      source: body.source,
+    });
+
     let whatsappStaff: WhatsAppNotifyResult = "skipped";
     let whatsappCustomer: WhatsAppNotifyResult = "skipped";
     let whatsappCustomerMeta:
@@ -174,6 +197,15 @@ export async function POST(request: Request) {
       ]);
       whatsappStaff = waStaff.staff;
       whatsappCustomer = waCustResult.status;
+      // [DEBUG] full result objects — remove after troubleshooting
+      console.log("[send-confirmation][DEBUG] notify results (new):", {
+        notifyByEmail,
+        notifyByWhatsApp,
+        customerPhoneRaw,
+        parsedE164: parseWhatsappE164(customerPhoneRaw),
+        waStaff,
+        waCustResult,
+      });
       if (notifyByWhatsApp) {
         whatsappCustomerMeta = {
           twilioCode: waCustResult.twilioCode,
