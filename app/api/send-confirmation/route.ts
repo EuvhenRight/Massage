@@ -73,18 +73,20 @@ export async function POST(request: Request) {
     if (type === "new") {
       const bookingPlace = parseBookingPlace(body);
       const { to, customerName, date, time, service, source, fullCalendarDayCount } = body;
-      if (!to || !customerName || !date || !time) {
+      const isAdminCreated = source === "admin";
+      const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
+        resolveNotifyChannels(body, { defaultWhatsApp: !isAdminCreated });
+      if (!customerName || !date || !time || (notifyByEmail && !to)) {
         return NextResponse.json(
           { error: "Missing required fields: to, customerName, date, time" },
           { status: 400 }
         );
       }
-      const toStr = String(to);
+      const toStr = to ? String(to) : "";
       const nameStr = String(customerName);
       const dateStr = String(date);
       const timeStr = String(time);
       const serviceStr = service ? String(service) : "";
-      const isAdminCreated = source === "admin";
       const dayCountRaw = fullCalendarDayCount;
       const dayCountNum =
         typeof dayCountRaw === "number"
@@ -96,9 +98,6 @@ export async function POST(request: Request) {
         Number.isFinite(dayCountNum) && dayCountNum >= 1 && dayCountNum <= 14
           ? dayCountNum
           : undefined;
-
-      const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
-        resolveNotifyChannels(body, { defaultWhatsApp: true });
 
       if (!notifyByEmail && !notifyByWhatsApp) {
         return NextResponse.json(

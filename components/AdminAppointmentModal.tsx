@@ -2,6 +2,7 @@
 
 import AdminDatePicker from '@/components/AdminDatePicker'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -37,6 +38,7 @@ import {
 	formatTimeForEmail,
 	formatTimeFromHourMinute,
 } from '@/lib/format-date'
+import { parseWhatsappE164 } from '@/lib/phone-e164'
 import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import type { Place } from '@/lib/places'
 import type { ScheduleData } from '@/lib/schedule-firestore'
@@ -236,6 +238,21 @@ export default function AdminAppointmentModal({
 	const [email, setEmail] = useState(appointment?.email ?? '')
 	const [phone, setPhone] = useState(appointment?.phone ?? '')
 	const [adminNote, setAdminNote] = useState(appointment?.adminNote ?? '')
+	const [notifyByEmail, setNotifyByEmail] = useState<boolean>(
+		appointment?.notifyByEmail ?? false,
+	)
+	const [notifyByWhatsApp, setNotifyByWhatsApp] = useState<boolean>(
+		appointment?.notifyByWhatsApp ?? false,
+	)
+
+	const emailIsValid = useMemo(() => {
+		const trimmed = email.trim()
+		return trimmed.length > 0 && trimmed.includes('@')
+	}, [email])
+	const phoneIsValid = useMemo(
+		() => !!parseWhatsappE164(phone.trim()),
+		[phone],
+	)
 
 	const catalogServiceForSlots = useMemo(() => {
 		return (
@@ -543,6 +560,8 @@ export default function AdminAppointmentModal({
 			setEmail(appointment.email ?? '')
 			setPhone(appointment.phone ?? '')
 			setAdminNote(appointment.adminNote ?? '')
+			setNotifyByEmail(appointment.notifyByEmail ?? false)
+			setNotifyByWhatsApp(appointment.notifyByWhatsApp ?? false)
 		} else {
 			setDateStr(getDateKey(resolvedDefaultDate))
 			setHour(defaultHour)
@@ -556,6 +575,8 @@ export default function AdminAppointmentModal({
 			setEmail('')
 			setPhone('')
 			setAdminNote('')
+			setNotifyByEmail(false)
+			setNotifyByWhatsApp(false)
 		}
 	}, [
 		isOpen,
@@ -699,6 +720,11 @@ export default function AdminAppointmentModal({
 				: Math.max(5, Math.min(240, Number.isFinite(duration) ? duration : 60))
 			const noteValue = adminNote.trim() || undefined
 
+			const effectiveNotifyByEmail =
+				notifyByEmail && !!email.trim() && email.includes('@')
+			const effectiveNotifyByWhatsApp =
+				notifyByWhatsApp && !!parseWhatsappE164(phone.trim())
+
 			if (isEdit && appointment) {
 				const oldStart =
 					appointment.startTime && 'toDate' in appointment.startTime
@@ -719,26 +745,23 @@ export default function AdminAppointmentModal({
 						adminBookingMode: bookingMode,
 						adminFullDayDates: isDayMode ? normalizedDayDates : undefined,
 						adminNote: noteValue ?? '',
+						notifyByEmail: effectiveNotifyByEmail,
+						notifyByWhatsApp: effectiveNotifyByWhatsApp,
 					},
 					place,
 				)
-				if (timeChanged && email?.trim() && email.includes('@')) {
-					const notifyByEmail =
-						typeof appointment.notifyByEmail === 'boolean'
-							? appointment.notifyByEmail
-							: true
-					const notifyByWhatsApp =
-						typeof appointment.notifyByWhatsApp === 'boolean'
-							? appointment.notifyByWhatsApp
-							: false
-					if (notifyByEmail || notifyByWhatsApp) {
+				if (
+					timeChanged &&
+					(effectiveNotifyByEmail || effectiveNotifyByWhatsApp)
+				) {
+					{
 						try {
 							await fetch('/api/send-confirmation', {
 								method: 'POST',
 								headers: { 'Content-Type': 'application/json' },
 								body: JSON.stringify({
 									type: 'rescheduled',
-									to: email.trim(),
+									to: email.trim() || undefined,
 									customerName: fullName?.trim() || t('customer'),
 									customerPhone: phone?.trim() || undefined,
 									service: service || undefined,
@@ -747,8 +770,8 @@ export default function AdminAppointmentModal({
 									newDate: formatDateForEmail(newStart),
 									newTime: formatTimeForEmail(newStart),
 									bookingPlace: place,
-									notifyByEmail,
-									notifyByWhatsApp,
+									notifyByEmail: effectiveNotifyByEmail,
+									notifyByWhatsApp: effectiveNotifyByWhatsApp,
 								}),
 							})
 						} catch {
@@ -769,9 +792,11 @@ export default function AdminAppointmentModal({
 					email: email || undefined,
 					phone: phone || undefined,
 					adminNote: noteValue,
+					notifyByEmail: effectiveNotifyByEmail,
+					notifyByWhatsApp: effectiveNotifyByWhatsApp,
 				}
 				await bookAppointmentAdmin(input, place)
-				if (email?.trim() && email.includes('@')) {
+				if (effectiveNotifyByEmail || effectiveNotifyByWhatsApp) {
 					const slotDate = new Date(`${primaryDate}T${startTime}:00`)
 					try {
 						const res = await fetch('/api/send-confirmation', {
@@ -780,7 +805,7 @@ export default function AdminAppointmentModal({
 							body: JSON.stringify({
 								type: 'new',
 								source: 'admin',
-								to: email.trim(),
+								to: email.trim() || undefined,
 								customerName: fullName?.trim() || t('customer'),
 								customerPhone: phone?.trim() || undefined,
 								date: formatDateForEmail(slotDate),
@@ -789,6 +814,8 @@ export default function AdminAppointmentModal({
 									: formatTimeForEmail(slotDate),
 								service: service || undefined,
 								bookingPlace: place,
+								notifyByEmail: effectiveNotifyByEmail,
+								notifyByWhatsApp: effectiveNotifyByWhatsApp,
 							}),
 						})
 						if (!res.ok) {
@@ -1151,6 +1178,57 @@ export default function AdminAppointmentModal({
 								onChange={e => setPhone(e.target.value)}
 								placeholder='—'
 							/>
+						</div>
+
+						{/* ── Notification channels ── */}
+						<div className='space-y-2'>
+							<Label className='text-icyWhite/80'>
+								{t('notifyCustomerLabel')}
+							</Label>
+							<div className='flex flex-col gap-2'>
+								<label
+									className={clsx(
+										'flex items-center gap-2 text-sm',
+										emailIsValid
+											? 'text-icyWhite/90 cursor-pointer'
+											: 'text-icyWhite/40 cursor-not-allowed',
+									)}
+									title={
+										emailIsValid ? undefined : t('notifyEmailDisabledHint')
+									}
+								>
+									<Checkbox
+										checked={notifyByEmail && emailIsValid}
+										disabled={!emailIsValid}
+										onCheckedChange={value =>
+											setNotifyByEmail(value === true)
+										}
+									/>
+									<span>{t('notifyByEmail')}</span>
+								</label>
+								<label
+									className={clsx(
+										'flex items-center gap-2 text-sm',
+										phoneIsValid
+											? 'text-icyWhite/90 cursor-pointer'
+											: 'text-icyWhite/40 cursor-not-allowed',
+									)}
+									title={
+										phoneIsValid
+											? undefined
+											: t('notifyWhatsAppDisabledHint')
+									}
+								>
+									<Checkbox
+										checked={notifyByWhatsApp && phoneIsValid}
+										disabled={!phoneIsValid}
+										onCheckedChange={value =>
+											setNotifyByWhatsApp(value === true)
+										}
+									/>
+									<span>{t('notifyByWhatsApp')}</span>
+								</label>
+							</div>
 						</div>
 
 						{/* ── Admin note ── */}

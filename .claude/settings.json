@@ -24,7 +24,8 @@
       "Bash(curl -s \"http://localhost:3001/sk/booking/cancelled?err=token\")",
       "Bash(curl -s \"http://localhost:3001/sk/booking/cancelled?ok=already\")",
       "Bash(kill 82549)",
-      "Bash(wait 82549)"
+      "Bash(wait 82549)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
     ]
   }
 }
