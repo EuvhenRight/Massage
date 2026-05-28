@@ -816,7 +816,7 @@ export default function DepilationPage() {
 					<div className='relative'>
 						<div
 							ref={sliderRef}
-							className='flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
+							className='flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x touch-pan-y snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 						>
 							{/* Natalie card */}
 							<motion.article
@@ -1031,7 +1031,7 @@ export default function DepilationPage() {
 					<div className='relative'>
 						<div
 							ref={testimonialRef}
-							className='flex gap-5 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
+							className='flex gap-5 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x touch-pan-y snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 						>
 							{TESTIMONIALS.map((key, i) => (
 								<motion.blockquote
