@@ -30,6 +30,7 @@ const CONTENT_SID_ENV = {
 	bookingRescheduled: 'TWILIO_CONTENT_SID_BOOKING_RESCHEDULED',
 	reminder2Days: 'TWILIO_CONTENT_SID_REMINDER_2D',
 	reminder1Day: 'TWILIO_CONTENT_SID_REMINDER_1D',
+	reminderSameDay: 'TWILIO_CONTENT_SID_REMINDER_0D',
 	reminder1Hour: 'TWILIO_CONTENT_SID_REMINDER_1H',
 	staffNew: 'TWILIO_CONTENT_SID_STAFF_NEW',
 	staffCancelled: 'TWILIO_CONTENT_SID_STAFF_CANCELLED',
@@ -631,6 +632,45 @@ export async function notifyCustomerWhatsAppReminder1Day(payload: {
 	const result = await sendTwilioWhatsAppTemplate(
 		e164,
 		'reminder1Day',
+		{
+			'1': firstName(payload.customerName),
+			'2': serviceLineTitle(payload.service),
+			'3': payload.date,
+			'4': payload.time,
+			'5': payload.actionToken,
+		},
+		'customer',
+	)
+	if (!result.ok) {
+		console.error('[whatsapp-customer] Twilio error:', result.error)
+		return { status: 'failed', twilioCode: result.twilioCode }
+	}
+	return { status: 'sent' }
+}
+
+export async function notifyCustomerWhatsAppReminderSameDay(payload: {
+	customerPhone: string
+	customerName: string
+	service: string
+	date: string
+	time: string
+	actionToken: string
+}): Promise<{
+	status: WhatsAppNotifyResult
+	twilioCode?: number
+	skipReason?: 'twilio_env' | 'unparseable_phone' | 'missing_content_sid'
+}> {
+	const e164 = parseWhatsappE164(payload.customerPhone)
+	if (!e164) return { status: 'skipped', skipReason: 'unparseable_phone' }
+	if (!twilioMessagingCoreConfigured()) {
+		return { status: 'skipped', skipReason: 'twilio_env' }
+	}
+	if (!getContentSid('reminderSameDay')) {
+		return { status: 'skipped', skipReason: 'missing_content_sid' }
+	}
+	const result = await sendTwilioWhatsAppTemplate(
+		e164,
+		'reminderSameDay',
 		{
 			'1': firstName(payload.customerName),
 			'2': serviceLineTitle(payload.service),

@@ -1,13 +1,18 @@
 /**
  * Vercel Cron: scans upcoming appointments and sends WhatsApp reminders.
  *
- * Daily run (Hobby plan), so windows are 24h wide:
- *   - 2-day  : 36h ≤ Δ < 60h   (appointments day-after-tomorrow)
- *   - 1-day  : 12h ≤ Δ < 36h   (appointments tomorrow)
+ * Date-based (not hour-based): compares calendar dates in Europe/Bratislava.
+ *   - 2-day : appointment date − today = 2  → "you have a booking in 2 days"
+ *   - 1-day : appointment date − today = 1  → "you have a booking tomorrow"
+ *   - 0-day : appointment date − today = 0  → "you have a booking today"
  *
- * 1-hour reminder removed — requires sub-hourly cron (Pro plan).
+ * Same-day-creation guard: if a booking was created on the same calendar day
+ * as the reminder would fire, that reminder is suppressed (no retroactive
+ * messaging on the day the customer just booked).
  *
- * Each appointment doc tracks `reminder{2Day,1Day}SentAt` to avoid double-send.
+ * Each appointment doc tracks `reminder{2Day,1Day,0Day}SentAt` to avoid
+ * double-send if the cron ever runs more than once per day.
+ *
  * Auth: Vercel attaches `Authorization: Bearer <CRON_SECRET>` to scheduled calls.
  */
 
@@ -26,6 +31,7 @@ import { db } from '@/lib/firebase'
 import {
 	notifyCustomerWhatsAppReminder2Days,
 	notifyCustomerWhatsAppReminder1Day,
+	notifyCustomerWhatsAppReminderSameDay,
 	parseWhatsappE164,
 } from '@/lib/whatsapp-admin-notify'
 import { signTokenForAppointment } from '@/lib/booking-action-token'
@@ -38,18 +44,38 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const HOUR_MS = 60 * 60 * 1000
+const DAY_MS = 24 * HOUR_MS
 
-type Window = '2day' | '1day'
+type Window = '2day' | '1day' | '0day'
 
-function pickWindow(deltaMs: number): Window | null {
-	const h = deltaMs / HOUR_MS
-	if (h >= 36 && h < 60) return '2day'
-	if (h >= 12 && h < 36) return '1day'
+/** YYYY-MM-DD calendar date of `d` in Europe/Bratislava (ignores wall time). */
+function bratislavaDateKey(d: Date): string {
+	return new Intl.DateTimeFormat('en-CA', {
+		timeZone: 'Europe/Bratislava',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+	}).format(d)
+}
+
+/** Whole-day delta between two YYYY-MM-DD strings (later − earlier). */
+function daysBetween(fromKey: string, toKey: string): number {
+	const a = Date.parse(`${fromKey}T00:00:00Z`)
+	const b = Date.parse(`${toKey}T00:00:00Z`)
+	return Math.round((b - a) / DAY_MS)
+}
+
+function pickWindow(daysUntil: number): Window | null {
+	if (daysUntil === 2) return '2day'
+	if (daysUntil === 1) return '1day'
+	if (daysUntil === 0) return '0day'
 	return null
 }
 
 function sentFlagField(w: Window): string {
-	return w === '2day' ? 'reminder2DaySentAt' : 'reminder1DaySentAt'
+	if (w === '2day') return 'reminder2DaySentAt'
+	if (w === '1day') return 'reminder1DaySentAt'
+	return 'reminder0DaySentAt'
 }
 
 function authorized(request: Request): boolean {
@@ -67,9 +93,13 @@ export async function GET(request: Request) {
 		return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 	}
 
-	const now = Date.now()
-	const fromTs = Timestamp.fromMillis(now + 11 * HOUR_MS)
-	const toTs = Timestamp.fromMillis(now + 61 * HOUR_MS)
+	const now = new Date()
+	// Scan window spans today through the day-after-tomorrow appointments.
+	// Start at `now` (not later) so a same-day appointment booked just before
+	// midnight isn't excluded from its 0-day reminder.
+	const fromTs = Timestamp.fromMillis(now.getTime())
+	const toTs = Timestamp.fromMillis(now.getTime() + 72 * HOUR_MS)
+	const todayKey = bratislavaDateKey(now)
 
 	const q = query(
 		collection(db, 'appointments'),
@@ -80,7 +110,7 @@ export async function GET(request: Request) {
 
 	const summary = {
 		scanned: snap.size,
-		sent: { '2day': 0, '1day': 0 } as Record<Window, number>,
+		sent: { '2day': 0, '1day': 0, '0day': 0 } as Record<Window, number>,
 		skipped: 0,
 		failed: 0,
 	}
@@ -100,8 +130,22 @@ export async function GET(request: Request) {
 			continue
 		}
 		const start = startTs.toDate()
-		const window = pickWindow(start.getTime() - now)
+		const daysUntil = daysBetween(todayKey, bratislavaDateKey(start))
+		const window = pickWindow(daysUntil)
 		if (!window) {
+			summary.skipped += 1
+			continue
+		}
+
+		// Same-day-creation guard: if the booking was created today, skip the
+		// reminder that would fire today. The customer just booked it — no
+		// retroactive reminder needed.
+		const createdTs = data.createdAt as Timestamp | undefined
+		if (
+			createdTs &&
+			typeof createdTs.toMillis === 'function' &&
+			bratislavaDateKey(createdTs.toDate()) === todayKey
+		) {
 			summary.skipped += 1
 			continue
 		}
@@ -137,7 +181,9 @@ export async function GET(request: Request) {
 			const fn =
 				window === '2day'
 					? notifyCustomerWhatsAppReminder2Days
-					: notifyCustomerWhatsAppReminder1Day
+					: window === '1day'
+						? notifyCustomerWhatsAppReminder1Day
+						: notifyCustomerWhatsAppReminderSameDay
 			const r = await fn({
 				customerPhone: phoneRaw,
 				customerName,
