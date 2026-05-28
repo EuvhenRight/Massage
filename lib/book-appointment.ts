@@ -456,8 +456,14 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
     dayQueryEnd,
     schedule
   );
+  // Symmetric prep buffer: `occ.end` is already extended by buffer in
+  // parseOccupiedSlots, so also extend the new appointment's end to enforce
+  // the gap when the new booking lands *before* an existing one.
+  const newEndWithBufferForMerged = new Date(
+    newEnd.getTime() + prepBuffer * 60 * 1000
+  );
   for (const occ of mergedOccupied) {
-    if (overlaps(occ.start, occ.end, newStart, newEnd)) {
+    if (overlaps(occ.start, occ.end, newStart, newEndWithBufferForMerged)) {
       throw new Error("OVERLAP");
     }
   }
@@ -468,13 +474,20 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
     const slots: { id: string; start: Timestamp; end: Timestamp }[] =
       (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
 
+    // Symmetric prep buffer: enforce `prepBuffer` minutes of gap on BOTH sides
+    // by extending each appointment's end. With both sides extended, the
+    // interval-overlap check rejects placements that are too close regardless
+    // of which appointment was created first.
+    const newEndWithBuffer = new Date(newEnd.getTime() + prepBuffer * 60 * 1000);
     for (const slot of slots) {
       const existingStart = slot.start.toDate();
       const existingEnd = slot.end.toDate();
       const existingEndWithBuffer = new Date(
         existingEnd.getTime() + prepBuffer * 60 * 1000
       );
-      if (overlaps(existingStart, existingEndWithBuffer, newStart, newEnd)) {
+      if (
+        overlaps(existingStart, existingEndWithBuffer, newStart, newEndWithBuffer)
+      ) {
         throw new Error("OVERLAP");
       }
     }
@@ -638,6 +651,8 @@ export async function updateAppointmentTime(
     const slots: { id: string; start: Timestamp; end: Timestamp }[] =
       (daySnap.exists() ? (daySnap.data()?.slots as typeof slots) : null) ?? [];
 
+    // Symmetric prep buffer (see comment in admin/public booking overlap above).
+    const newEndWithBuffer = new Date(newEnd.getTime() + prepBuffer * 60 * 1000);
     for (const slot of slots) {
       if (slot.id === appointmentId) continue;
       const existingStart = slot.start.toDate();
@@ -645,7 +660,9 @@ export async function updateAppointmentTime(
       const existingEndWithBuffer = new Date(
         existingEnd.getTime() + prepBuffer * 60 * 1000
       );
-      if (overlaps(existingStart, existingEndWithBuffer, newStart, newEnd)) {
+      if (
+        overlaps(existingStart, existingEndWithBuffer, newStart, newEndWithBuffer)
+      ) {
         throw new Error("OVERLAP");
       }
     }

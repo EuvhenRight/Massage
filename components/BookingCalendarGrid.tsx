@@ -537,15 +537,20 @@ export default function BookingCalendarGrid({
 			const durationMinutes = Math.round(
 				(end.getTime() - start.getTime()) / 60000,
 			)
-			const blockedMinutes = durationMinutes + prepBuffer
 			const h = start.getHours()
 			const m = start.getMinutes()
 			const snappedMin = snapGridMinute(m)
 			const startCellId = makeCellId(start, h, snappedMin)
 			byCell.set(startCellId, apt)
-			let slotStart = new Date(start)
-			slotStart.setMinutes(snappedMin, 0, 0)
-			const blockEnd = new Date(start.getTime() + blockedMinutes * 60 * 1000)
+			// Symmetric prep buffer: block prepBuffer minutes BEFORE the appointment
+			// (so adjacent drag-drops keep the gap on both sides) and after it.
+			const preBlockStartMs = start.getTime() - prepBuffer * 60 * 1000
+			const blockEnd = new Date(
+				start.getTime() + (durationMinutes + prepBuffer) * 60 * 1000,
+			)
+			const preBlockStart = new Date(preBlockStartMs)
+			let slotStart = new Date(preBlockStart)
+			slotStart.setMinutes(snapGridMinute(preBlockStart.getMinutes()), 0, 0)
 			while (slotStart.getTime() < blockEnd.getTime()) {
 				const cid = makeCellId(
 					slotStart,
@@ -698,15 +703,20 @@ export default function BookingCalendarGrid({
 			)
 			if (cellId === oldCellId) return // Same slot, no change
 
-			// Block drop on occupied slots (other appointment or buffer) - don't open modal
+			// Block drop on occupied slots — except cells contributed by the dragged
+			// appointment itself (its own body OR its own pre/post prep-buffer).
+			// The server transaction excludes the dragging appointment from its own
+			// overlap check, so sliding within own range is safe.
 			if (cellsOccupiedBy.has(cellId)) {
 				const aptEnd = new Date(
 					oldStart.getTime() + getAppointmentDuration(appointment) * 60 * 1000,
 				)
 				const cellTime = newStart.getTime()
-				const isOwnBody =
-					cellTime >= oldStart.getTime() && cellTime < aptEnd.getTime()
-				if (!isOwnBody) return
+				const ownRangeStart = oldStart.getTime() - prepBuffer * 60 * 1000
+				const ownRangeEnd = aptEnd.getTime() + prepBuffer * 60 * 1000
+				const isWithinOwnRange =
+					cellTime >= ownRangeStart && cellTime < ownRangeEnd
+				if (!isWithinOwnRange) return
 			}
 
 			if (newStart.getTime() < Date.now()) {
@@ -722,6 +732,7 @@ export default function BookingCalendarGrid({
 			fullDayAwaitingList,
 			allowDrag,
 			cellsOccupiedBy,
+			prepBuffer,
 			t,
 		],
 	)
@@ -841,6 +852,8 @@ export default function BookingCalendarGrid({
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({
+							type: 'new',
+							source: 'admin',
 							to: appointment.email,
 							customerName: appointment.fullName,
 							customerPhone: appointment.phone?.trim() ?? '',
@@ -858,6 +871,7 @@ export default function BookingCalendarGrid({
 						headers: { 'Content-Type': 'application/json' },
 						body: JSON.stringify({
 							type: 'rescheduled',
+							source: 'admin',
 							to: appointment.email,
 							customerName: appointment.fullName,
 							customerPhone: appointment.phone?.trim() ?? '',

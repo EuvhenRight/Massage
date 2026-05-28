@@ -125,7 +125,10 @@ export async function POST(request: Request) {
       }
 
       let errMsg = customerResult.error?.message;
-      if (!isAdminCreated && !errMsg) {
+      // Mirror customer's channel choice for the admin copy: if customer opted
+      // out of email (WhatsApp-only), skip the admin email too — staff
+      // WhatsApp notification below covers admin awareness.
+      if (!isAdminCreated && notifyByEmail && !errMsg) {
         const adminResult = await resend.emails.send({
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: [ADMIN_EMAIL],
@@ -301,12 +304,15 @@ export async function POST(request: Request) {
               html: buildCancelledEmail(nameStr, dateStr, timeStr, serviceStr),
             })
           : Promise.resolve({ error: null as { message?: string } | null }),
-        resend.emails.send({
-          from: `${FROM_NAME} <${FROM_EMAIL}>`,
-          to: [ADMIN_EMAIL],
-          subject: SUBJECTS.cancelledAdmin(nameStr, dateStr, timeStr),
-          html: buildAdminCancelled(nameStr, toStr, dateStr, timeStr, serviceStr),
-        }),
+        // Mirror customer's channel choice for the admin copy (see "new" branch).
+        notifyByEmail
+          ? resend.emails.send({
+              from: `${FROM_NAME} <${FROM_EMAIL}>`,
+              to: [ADMIN_EMAIL],
+              subject: SUBJECTS.cancelledAdmin(nameStr, dateStr, timeStr),
+              html: buildAdminCancelled(nameStr, toStr, dateStr, timeStr, serviceStr),
+            })
+          : Promise.resolve({ error: null as { message?: string } | null }),
       ]);
 
       const errMsg = customerResult.error?.message ?? adminResult.error?.message;

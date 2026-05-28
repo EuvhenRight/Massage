@@ -25,7 +25,11 @@
       "Bash(curl -s \"http://localhost:3001/sk/booking/cancelled?ok=already\")",
       "Bash(kill 82549)",
       "Bash(wait 82549)",
-      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(grep -n \"new Date\\(\\\\`\" /Users/yevhenright/Documents/luxe-salon/lib/book-appointment.ts /Users/yevhenright/Documents/luxe-salon/lib/availability-firestore.ts /Users/yevhenright/Documents/luxe-salon/app/api/availability/route.ts)",
+      "Bash(grep -n \"new Date\\(\\\\`\\\\|new Date\\(.*T\" /Users/yevhenright/Documents/luxe-salon/components/AdminAppointmentModal.tsx)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
