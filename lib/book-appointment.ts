@@ -21,6 +21,28 @@ import { fetchMergedPublicOccupiedSlots } from "./booking-occupied-slots";
 import { getSchedule } from "./schedule-firestore";
 import type { ScheduleData } from "./schedule-firestore";
 import { normalizeStoredPhone } from "./phone-e164";
+import { upsertClientFromBooking } from "./clients-firestore";
+
+/**
+ * Mirror customer details into the `clients` collection so birthday + re-engagement
+ * cron passes have something to read. Best-effort: a failure here must not break
+ * the booking commit itself, which has already succeeded by the time we get here.
+ */
+async function tryUpsertClientFromBookingSafe(args: {
+  phone: string;
+  fullName: string;
+  email: string;
+  place: Place;
+  appointmentStartAt: Date;
+  birthday?: string;
+  optInMarketing?: boolean;
+}): Promise<void> {
+  try {
+    await upsertClientFromBooking(args);
+  } catch (e) {
+    console.error("[book-appointment] client upsert failed", e);
+  }
+}
 
 export interface AppointmentData {
   id: string;
@@ -74,6 +96,10 @@ export interface BookingInput {
   multiDayFullDayCount?: number;
   notifyByEmail?: boolean;
   notifyByWhatsApp?: boolean;
+  /** Optional YYYY-MM-DD birthday from the booking form — written to the client card on first booking. */
+  birthday?: string;
+  /** Marketing-channel opt-in from the booking form — written to the client card on first booking (default false). */
+  optInMarketing?: boolean;
 }
 
 /** Placeholder start for TBD bookings — not shown on the week grid; admin assigns a real slot later. */
@@ -106,6 +132,8 @@ export interface ScheduleTbdBookingInput {
   multiDayFullDayCount?: number;
   notifyByEmail?: boolean;
   notifyByWhatsApp?: boolean;
+  birthday?: string;
+  optInMarketing?: boolean;
 }
 
 /** Admin can create with all fields optional */
@@ -334,7 +362,7 @@ async function bookFullDayAppointment(
   const newStart = windows[0].start;
   const newEnd = windows[windows.length - 1].end;
 
-  return runTransaction(db, async (transaction) => {
+  const result = await runTransaction(db, async (transaction) => {
     const dayRefs = windows.map((w) => doc(db, "days", w.dayKey));
     const snaps = await Promise.all(dayRefs.map((ref) => transaction.get(ref)));
 
@@ -422,6 +450,18 @@ async function bookFullDayAppointment(
       phone: normalizeStoredPhone(input.phone),
     } as AppointmentData;
   });
+
+  await tryUpsertClientFromBookingSafe({
+    phone: input.phone,
+    fullName: input.fullName,
+    email: input.email,
+    place,
+    appointmentStartAt: newStart,
+    birthday: input.birthday,
+    optInMarketing: input.optInMarketing,
+  });
+
+  return result;
 }
 
 export async function bookAppointment(input: BookingInput, place: Place = "massage"): Promise<AppointmentData> {
@@ -468,7 +508,7 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
     }
   }
 
-  return runTransaction(db, async (transaction) => {
+  const result = await runTransaction(db, async (transaction) => {
     const dayRef = doc(db, "days", dayKey);
     const daySnap = await transaction.get(dayRef);
     const slots: { id: string; start: Timestamp; end: Timestamp }[] =
@@ -539,6 +579,18 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
       phone: normalizeStoredPhone(input.phone),
     } as AppointmentData;
   });
+
+  await tryUpsertClientFromBookingSafe({
+    phone: input.phone,
+    fullName: input.fullName,
+    email: input.email,
+    place,
+    appointmentStartAt: newStart,
+    birthday: input.birthday,
+    optInMarketing: input.optInMarketing,
+  });
+
+  return result;
 }
 
 /**
@@ -588,6 +640,18 @@ export async function bookScheduleTbdAppointment(
   if (input.serviceUk) baseData.serviceUk = input.serviceUk;
 
   const ref = await addDoc(collection(db, "appointments"), baseData);
+
+  // TBD bookings have no real start date — use "now" as the contact point so
+  // the client still surfaces as a recent customer for re-engagement timing.
+  await tryUpsertClientFromBookingSafe({
+    phone: input.phone,
+    fullName: input.fullName,
+    email: input.email,
+    place,
+    appointmentStartAt: new Date(),
+    birthday: input.birthday,
+    optInMarketing: input.optInMarketing,
+  });
 
   return {
     id: ref.id,

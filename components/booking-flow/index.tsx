@@ -78,6 +78,8 @@ function BookingFlowInner({
 		fullName,
 		email,
 		phone,
+		birthday,
+		optInMarketing,
 		notifyByEmail,
 		notifyByWhatsApp,
 		nextStep,
@@ -107,9 +109,35 @@ function BookingFlowInner({
 		: formValid
 
 	const handleBack = useCallback(() => {
-		if (step > 1) prevStep()
-		else onCancel?.() ?? router.back()
-	}, [step, prevStep, onCancel, router])
+		if (step > 1) {
+			prevStep()
+			return
+		}
+		if (onCancel) {
+			onCancel()
+			return
+		}
+		// Step 1 with no host-supplied onCancel: leave the flow gracefully.
+		// `router.back()` is a no-op when the booking page was opened directly
+		// (no in-app history), so the Cancel button used to feel dead. Use
+		// `back()` only when the previous entry came from this same origin;
+		// otherwise navigate to the place landing as a stable fallback.
+		const fallback = `/${locale}/${place}`
+		if (typeof window !== 'undefined') {
+			try {
+				const sameOrigin =
+					!!document.referrer &&
+					new URL(document.referrer).origin === window.location.origin
+				if (sameOrigin && window.history.length > 1) {
+					router.back()
+					return
+				}
+			} catch {
+				/* fall through to push */
+			}
+		}
+		router.push(fallback)
+	}, [step, prevStep, onCancel, router, locale, place])
 
 	const handleConfirm = useCallback(
 		async (formData?: BookingFormData) => {
@@ -152,6 +180,9 @@ function BookingFlowInner({
 							multiDayFullDayCount: bookingDayCount,
 							notifyByEmail,
 							notifyByWhatsApp,
+							birthday: dataTbd.birthday || birthday || undefined,
+							optInMarketing:
+								dataTbd.optInMarketing === true || optInMarketing === true,
 						},
 						place,
 					)
@@ -262,6 +293,9 @@ function BookingFlowInner({
 						phone: data.phone,
 						notifyByEmail,
 						notifyByWhatsApp,
+						birthday: data.birthday || birthday || undefined,
+						optInMarketing:
+							data.optInMarketing === true || optInMarketing === true,
 					},
 					place,
 				)

@@ -53,7 +53,11 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
     fullName,
     email,
     phone,
+    birthday,
+    optInMarketing,
     setCustomerInfo,
+    setBirthday,
+    setOptInMarketing,
     notifyByEmail,
     notifyByWhatsApp,
     setNotifyByEmail,
@@ -67,6 +71,7 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
     fullNameMax: tValidation("fullNameMax"),
     invalidEmail: tValidation("invalidEmail"),
     invalidPhone: tValidation("invalidPhone"),
+    invalidBirthday: tValidation("invalidBirthday"),
   });
 
   const form = useForm<BookingFormData>({
@@ -77,6 +82,8 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
       fullName: fullName || "",
       email: email || "",
       phone: phone || "",
+      birthday: birthday || "",
+      optInMarketing: optInMarketing === true,
     },
   });
 
@@ -109,8 +116,10 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
       email: values.email,
       phone: values.phone,
     });
+    setBirthday(values.birthday ?? "");
+    setOptInMarketing(values.optInMarketing === true);
     return true;
-  }, [form, setCustomerInfo]);
+  }, [form, setCustomerInfo, setBirthday, setOptInMarketing]);
 
   const submitForConfirm = useCallback(
     async (onConfirm: (data: BookingFormData) => void | Promise<void>) => {
@@ -130,9 +139,20 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
         email: values.email,
         phone: values.phone,
       });
+      setBirthday(values.birthday ?? "");
+      setOptInMarketing(values.optInMarketing === true);
       await onConfirm(values);
     },
-    [form, setCustomerInfo, notifyByEmail, notifyByWhatsApp, t, tValidation],
+    [
+      form,
+      setCustomerInfo,
+      setBirthday,
+      setOptInMarketing,
+      notifyByEmail,
+      notifyByWhatsApp,
+      t,
+      tValidation,
+    ],
   );
 
   useImperativeHandle(
@@ -204,6 +224,45 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
                     {...field}
                   />
                 </FormControl>
+                <FormMessage className="text-red-400 text-xs" />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="birthday"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-icyWhite/90 text-sm font-medium">
+                  {t("birthdayLabel")}{" "}
+                  <span className="text-icyWhite/45 font-normal">
+                    ({t("optionalSuffix")})
+                  </span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    variant="booking"
+                    type="date"
+                    autoComplete="bday"
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onClick={(e) => {
+                      const input = e.currentTarget as HTMLInputElement & {
+                        showPicker?: () => void;
+                      };
+                      try {
+                        input.showPicker?.();
+                      } catch {
+                        /* unsupported / not in a user-gesture frame */
+                      }
+                    }}
+                    className="cursor-pointer"
+                  />
+                </FormControl>
+                <p className="text-xs text-icyWhite/45 leading-relaxed">
+                  {t("birthdayHint")}
+                </p>
                 <FormMessage className="text-red-400 text-xs" />
               </FormItem>
             )}
@@ -288,6 +347,29 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
             </label>
             <p className="text-xs text-icyWhite/45 leading-relaxed">{t("notifyHint")}</p>
           </div>
+
+          <FormField
+            control={form.control}
+            name="optInMarketing"
+            render={({ field }) => (
+              <FormItem className="space-y-2 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <Checkbox
+                    checked={field.value === true}
+                    onCheckedChange={(c) => field.onChange(c === true)}
+                    className="mt-0.5"
+                    aria-label={t("marketingOptInLabel")}
+                  />
+                  <span className="text-sm text-icyWhite/85 leading-snug">
+                    {t("marketingOptInLabel")}
+                  </span>
+                </label>
+                <p className="text-xs text-icyWhite/45 leading-relaxed">
+                  {t("marketingOptInHint")}
+                </p>
+              </FormItem>
+            )}
+          />
 
           <p className="text-xs text-icyWhite/50 leading-relaxed">{t("bookingInfo")}</p>
         </form>

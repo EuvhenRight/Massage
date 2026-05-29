@@ -49,6 +49,7 @@ import {
 	type ServiceData,
 } from '@/lib/services'
 import { clsx } from 'clsx'
+import { RotateCcw, X } from 'lucide-react'
 import {
 	collection,
 	doc,
@@ -244,6 +245,65 @@ export default function AdminAppointmentModal({
 	const [notifyByWhatsApp, setNotifyByWhatsApp] = useState<boolean>(
 		appointment?.notifyByWhatsApp ?? false,
 	)
+
+	/**
+	 * Revert all form fields to the values currently stored on the appointment
+	 * (edit mode) or to the modal defaults (add mode). Useful when the admin
+	 * wants to discard local edits without closing and reopening the modal.
+	 */
+	const resetForm = useCallback(() => {
+		if (isEdit && appointment) {
+			const apStart =
+				appointment.startTime && 'toDate' in appointment.startTime
+					? appointment.startTime.toDate()
+					: new Date(appointment.startTime as Date)
+			const apEnd =
+				appointment.endTime && 'toDate' in appointment.endTime
+					? appointment.endTime.toDate()
+					: new Date(appointment.endTime as Date)
+			setDateStr(getDateKey(apStart))
+			setHour(apStart.getHours())
+			setMinute(Math.round(apStart.getMinutes() / 5) * 5)
+			setBookingMode(initialBookingMode)
+			setDaySlotValues(
+				getInitialDaySlots(
+					appointment,
+					getEditInitialDaySlotCount(appointment, services),
+				),
+			)
+			setDuration(Math.round((apEnd.getTime() - apStart.getTime()) / 60000))
+			setService(appointment.service ?? '')
+			setFullName(appointment.fullName ?? '')
+			setEmail(appointment.email ?? '')
+			setPhone(appointment.phone ?? '')
+			setAdminNote(appointment.adminNote ?? '')
+			setNotifyByEmail(appointment.notifyByEmail ?? false)
+			setNotifyByWhatsApp(appointment.notifyByWhatsApp ?? false)
+		} else {
+			setDateStr(getDateKey(resolvedDefaultDate))
+			setHour(defaultHour ?? 9)
+			setMinute(Math.round((defaultMinute ?? 0) / 5) * 5)
+			setBookingMode('time')
+			setDaySlotValues([])
+			setAllDayDayCount(1)
+			setDuration(60)
+			setService('')
+			setFullName('')
+			setEmail('')
+			setPhone('')
+			setAdminNote('')
+			setNotifyByEmail(false)
+			setNotifyByWhatsApp(false)
+		}
+	}, [
+		isEdit,
+		appointment,
+		initialBookingMode,
+		services,
+		resolvedDefaultDate,
+		defaultHour,
+		defaultMinute,
+	])
 
 	const emailIsValid = useMemo(() => {
 		const trimmed = email.trim()
@@ -869,9 +929,19 @@ export default function AdminAppointmentModal({
 				)}
 				onClick={e => e.stopPropagation()}
 			>
-				<h2 className='font-serif text-xl text-icyWhite mb-6'>
-					{isEdit ? t('editAppointment') : t('addAppointment')}
-				</h2>
+				<div className='mb-6 flex items-start justify-between gap-3'>
+					<h2 className='font-serif text-xl text-icyWhite'>
+						{isEdit ? t('editAppointment') : t('addAppointment')}
+					</h2>
+					<button
+						type='button'
+						onClick={onClose}
+						aria-label={t('close')}
+						className='-mr-1 -mt-1 shrink-0 rounded-full p-2 text-icyWhite/60 hover:bg-white/10 hover:text-icyWhite transition-colors'
+					>
+						<X className='h-5 w-5' />
+					</button>
+				</div>
 
 				{isEdit && appointment && (
 					<div className='mb-4 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 space-y-1'>
@@ -1243,20 +1313,23 @@ export default function AdminAppointmentModal({
 							/>
 						</div>
 
-						{/* ── Actions ── */}
-						<div className='flex gap-3 pt-4'>
-							<Button
-								type='button'
-								variant='outline'
-								className='flex-1 border-white/10 text-icyWhite hover:bg-white/10'
-								onClick={onClose}
-							>
-								{isPastAppointment ? t('close') : t('cancel')}
-							</Button>
-							{!isPastAppointment && (
+						{/* ── Actions ── Save/Add (primary) and Reset (edit mode). Top X dismisses. */}
+						{!isPastAppointment && (
+							<div className='flex flex-wrap items-center justify-end gap-2 pt-4'>
+								{isEdit && (
+									<button
+										type='button'
+										onClick={resetForm}
+										disabled={loading}
+										className='inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-icyWhite/80 hover:bg-white/[0.08] transition-colors disabled:opacity-50'
+									>
+										<RotateCcw className='h-4 w-4' aria-hidden />
+										{t('clientsBtnReset')}
+									</button>
+								)}
 								<Button
 									type='submit'
-									className={`flex-1 ${ui.btnPrimarySm}`}
+									className={`min-w-[8rem] ${ui.btnPrimarySm}`}
 									disabled={(() => {
 										if (loading) return true
 										if (!isDayMode)
@@ -1270,8 +1343,8 @@ export default function AdminAppointmentModal({
 								>
 									{loading ? t('saving') : isEdit ? t('save') : t('add')}
 								</Button>
-							)}
-						</div>
+							</div>
+						)}
 					</fieldset>
 				</form>
 			</div>

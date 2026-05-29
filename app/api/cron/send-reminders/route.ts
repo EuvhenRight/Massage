@@ -29,11 +29,20 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import {
+	bookingUrlFor,
+	notifyCustomerWhatsAppBirthday,
+	notifyCustomerWhatsAppReEngagement,
 	notifyCustomerWhatsAppReminder2Days,
 	notifyCustomerWhatsAppReminder1Day,
 	notifyCustomerWhatsAppReminderSameDay,
 	parseWhatsappE164,
 } from '@/lib/whatsapp-admin-notify'
+import {
+	findClientsForReEngagement,
+	findClientsWithBirthdayOn,
+	markBirthdayGreeted,
+	markReEngagementSent,
+} from '@/lib/clients-firestore'
 import { signTokenForAppointment } from '@/lib/booking-action-token'
 import {
 	formatBratislavaDate,
@@ -56,6 +65,15 @@ function bratislavaDateKey(d: Date): string {
 		month: '2-digit',
 		day: '2-digit',
 	}).format(d)
+}
+
+/** Year/month/day in Europe/Bratislava — used for birthday matching and the
+ *  per-year guard against double-sending greetings. UTC year would skip Jan-1
+ *  birthdays for clients greeted at 23:30 UTC on Dec 31. */
+function bratislavaYmd(d: Date): { year: number; month: number; day: number } {
+	const key = bratislavaDateKey(d)
+	const [y, m, day] = key.split('-').map(Number)
+	return { year: y!, month: m!, day: day! }
 }
 
 /** Whole-day delta between two YYYY-MM-DD strings (later − earlier). */
@@ -113,6 +131,8 @@ export async function GET(request: Request) {
 		sent: { '2day': 0, '1day': 0, '0day': 0 } as Record<Window, number>,
 		skipped: 0,
 		failed: 0,
+		birthday: { scanned: 0, sent: 0, skipped: 0, failed: 0 },
+		reEngagement: { scanned: 0, sent: 0, skipped: 0, failed: 0 },
 	}
 
 	for (const docSnap of snap.docs) {
@@ -207,6 +227,110 @@ export async function GET(request: Request) {
 			console.error('[cron/send-reminders] send failed', id, window, e)
 			summary.failed += 1
 		}
+	}
+
+	// ------------------------------------------------------------------------
+	// Pass 2: birthday greetings
+	// One per client per year. Matches month+day in Europe/Bratislava so the
+	// salon's wall clock is the source of truth (not UTC). Year of birth is
+	// stored on the client doc but ignored for matching — used only by the
+	// `birthdayGreetedYear` guard to avoid double-sending in the same calendar
+	// year if cron ever runs twice.
+	// ------------------------------------------------------------------------
+	const today = bratislavaYmd(now)
+	try {
+		const candidates = await findClientsWithBirthdayOn(today.month, today.day)
+		summary.birthday.scanned = candidates.length
+		for (const client of candidates) {
+			if (!client.optInWhatsApp) {
+				summary.birthday.skipped += 1
+				continue
+			}
+			if (client.birthdayGreetedYear === today.year) {
+				summary.birthday.skipped += 1
+				continue
+			}
+			const e164 = parseWhatsappE164(client.phone)
+			if (!e164) {
+				summary.birthday.skipped += 1
+				continue
+			}
+			try {
+				const r = await notifyCustomerWhatsAppBirthday({
+					customerPhone: client.phone,
+					customerName: client.firstName || '—',
+					bookingUrl: bookingUrlFor(client.lastVisitPlace),
+				})
+				if (r.status === 'sent') {
+					await markBirthdayGreeted(e164, today.year)
+					summary.birthday.sent += 1
+				} else if (r.status === 'failed') {
+					summary.birthday.failed += 1
+				} else {
+					summary.birthday.skipped += 1
+				}
+			} catch (e) {
+				console.error(
+					'[cron/send-reminders] birthday send failed',
+					client.phone,
+					e,
+				)
+				summary.birthday.failed += 1
+			}
+		}
+	} catch (e) {
+		console.error('[cron/send-reminders] birthday pass failed', e)
+	}
+
+	// ------------------------------------------------------------------------
+	// Pass 3: re-engagement
+	// Clients whose lastVisitAt is more than RE_ENGAGEMENT_THRESHOLD_DAYS ago
+	// AND who haven't received a re-engagement message inside the same window.
+	// Marketing category — opt-in is required (filtered at query level).
+	// ------------------------------------------------------------------------
+	const thresholdDaysRaw = Number(process.env.RE_ENGAGEMENT_THRESHOLD_DAYS)
+	const thresholdDays =
+		Number.isFinite(thresholdDaysRaw) && thresholdDaysRaw > 0
+			? Math.floor(thresholdDaysRaw)
+			: 180
+	try {
+		const dormant = await findClientsForReEngagement(thresholdDays, now)
+		summary.reEngagement.scanned = dormant.length
+		for (const client of dormant) {
+			if (!client.optInWhatsApp) {
+				summary.reEngagement.skipped += 1
+				continue
+			}
+			const e164 = parseWhatsappE164(client.phone)
+			if (!e164) {
+				summary.reEngagement.skipped += 1
+				continue
+			}
+			try {
+				const r = await notifyCustomerWhatsAppReEngagement({
+					customerPhone: client.phone,
+					customerName: client.firstName || '—',
+					bookingUrl: bookingUrlFor(client.lastVisitPlace),
+				})
+				if (r.status === 'sent') {
+					await markReEngagementSent(e164, now)
+					summary.reEngagement.sent += 1
+				} else if (r.status === 'failed') {
+					summary.reEngagement.failed += 1
+				} else {
+					summary.reEngagement.skipped += 1
+				}
+			} catch (e) {
+				console.error(
+					'[cron/send-reminders] re-engagement send failed',
+					client.phone,
+					e,
+				)
+				summary.reEngagement.failed += 1
+			}
+		}
+	} catch (e) {
+		console.error('[cron/send-reminders] re-engagement pass failed', e)
 	}
 
 	return NextResponse.json({ ok: true, ...summary })

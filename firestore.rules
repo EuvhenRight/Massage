@@ -23,5 +23,12 @@ service cloud.firestore {
     match /priceCatalog/{document} {
       allow read, write: if true;
     }
+
+    // Clients: customer profile cards (birthday, opt-ins, visit history).
+    // Public read/write to keep the rule shape consistent with appointments;
+    // tighten alongside the broader admin-auth migration when that lands.
+    match /clients/{document} {
+      allow read, write: if true;
+    }
   }
 }

@@ -34,6 +34,8 @@ const CONTENT_SID_ENV = {
 	staffNew: 'TWILIO_CONTENT_SID_STAFF_NEW',
 	staffCancelled: 'TWILIO_CONTENT_SID_STAFF_CANCELLED',
 	staffCustomerConfirmed: 'TWILIO_CONTENT_SID_STAFF_CUSTOMER_CONFIRMED',
+	birthday: 'TWILIO_CONTENT_SID_BIRTHDAY',
+	reEngagement: 'TWILIO_CONTENT_SID_RE_ENGAGEMENT',
 } as const
 
 type ContentTemplateKey = keyof typeof CONTENT_SID_ENV
@@ -676,6 +678,84 @@ export async function notifyCustomerWhatsAppReminderSameDay(payload: {
 			'3': payload.date,
 			'4': payload.time,
 			'5': payload.actionToken,
+		},
+		'customer',
+	)
+	if (!result.ok) {
+		console.error('[whatsapp-customer] Twilio error:', result.error)
+		return { status: 'failed', twilioCode: result.twilioCode }
+	}
+	return { status: 'sent' }
+}
+
+/**
+ * Booking URL for the WhatsApp template variable {{2}}.
+ * Derived from `NEXT_PUBLIC_SITE_URL` + locale `sk` + place segment so we
+ * don't need separate BOOKING_URL_* env vars per service.
+ */
+export function bookingUrlFor(place: 'massage' | 'depilation' | null): string {
+	const base =
+		process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '') || ''
+	const segment = place === 'massage' ? 'massage' : 'depilation'
+	return `${base}/sk/${segment}/booking`
+}
+
+export async function notifyCustomerWhatsAppBirthday(payload: {
+	customerPhone: string
+	customerName: string
+	bookingUrl: string
+}): Promise<{
+	status: WhatsAppNotifyResult
+	twilioCode?: number
+	skipReason?: 'twilio_env' | 'unparseable_phone' | 'missing_content_sid'
+}> {
+	const e164 = parseWhatsappE164(payload.customerPhone)
+	if (!e164) return { status: 'skipped', skipReason: 'unparseable_phone' }
+	if (!twilioMessagingCoreConfigured()) {
+		return { status: 'skipped', skipReason: 'twilio_env' }
+	}
+	if (!getContentSid('birthday')) {
+		return { status: 'skipped', skipReason: 'missing_content_sid' }
+	}
+	const result = await sendTwilioWhatsAppTemplate(
+		e164,
+		'birthday',
+		{
+			'1': firstName(payload.customerName),
+			'2': payload.bookingUrl,
+		},
+		'customer',
+	)
+	if (!result.ok) {
+		console.error('[whatsapp-customer] Twilio error:', result.error)
+		return { status: 'failed', twilioCode: result.twilioCode }
+	}
+	return { status: 'sent' }
+}
+
+export async function notifyCustomerWhatsAppReEngagement(payload: {
+	customerPhone: string
+	customerName: string
+	bookingUrl: string
+}): Promise<{
+	status: WhatsAppNotifyResult
+	twilioCode?: number
+	skipReason?: 'twilio_env' | 'unparseable_phone' | 'missing_content_sid'
+}> {
+	const e164 = parseWhatsappE164(payload.customerPhone)
+	if (!e164) return { status: 'skipped', skipReason: 'unparseable_phone' }
+	if (!twilioMessagingCoreConfigured()) {
+		return { status: 'skipped', skipReason: 'twilio_env' }
+	}
+	if (!getContentSid('reEngagement')) {
+		return { status: 'skipped', skipReason: 'missing_content_sid' }
+	}
+	const result = await sendTwilioWhatsAppTemplate(
+		e164,
+		'reEngagement',
+		{
+			'1': firstName(payload.customerName),
+			'2': payload.bookingUrl,
 		},
 		'customer',
 	)

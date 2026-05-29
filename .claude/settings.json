@@ -30,7 +30,11 @@
       "Bash(grep -n \"new Date\\(\\\\`\\\\|new Date\\(.*T\" /Users/yevhenright/Documents/luxe-salon/components/AdminAppointmentModal.tsx)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(kill 16361 16362)"
+      "Bash(kill 16361 16362)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(node -e \"for \\(const f of ['en','sk','ru','uk']\\) { JSON.parse\\(require\\('fs'\\).readFileSync\\('messages/'+f+'.json','utf8'\\)\\); console.log\\(f, 'OK'\\); }\")",
+      "Bash(grep -n \"useBookingFlow\\\\|notifyByEmail,\\\\|notifyByWhatsApp,$\" /Users/yevhenright/Documents/luxe-salon/components/booking-flow/index.tsx)",
+      "Bash(awk 'NR==574{print \"MARKER_START\"; in_h=1} in_h && /^\t\t\t<\\\\/header>$/{print \"MARKER_END:\" NR; in_h=0; exit}' /Users/yevhenright/Documents/luxe-salon/components/AdminPlacePage.tsx)"
     ]
   }
 }

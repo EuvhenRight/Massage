@@ -1,7 +1,7 @@
 'use client'
 
 import LanguageSwitcher from '@/components/LanguageSwitcher'
-import { BookOpen, Hand, LogOut, Menu, Sparkles, X } from 'lucide-react'
+import { BookOpen, Hand, LogOut, Menu, Sparkles, Users, X } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -124,6 +124,23 @@ export default function AdminPage() {
 								</h2>
 								<p className='text-sm text-icyWhite/50'>
 									{t('servicesCalendarAppointments')}
+								</p>
+							</div>
+						</Link>
+
+						<Link
+							href={`/${locale}/admin/clients`}
+							className='flex items-center gap-4 p-5 rounded-3xl glass-card hover:bg-white/[0.05] hover:border-gold-soft/25 transition-all group'
+						>
+							<div className='flex h-12 w-12 items-center justify-center rounded-xl bg-gold-soft/15 border border-gold-soft/40 group-hover:bg-gold-soft/25'>
+								<Users className='h-6 w-6 text-gold-glow' />
+							</div>
+							<div className='flex-1 text-left'>
+								<h2 className='font-medium text-icyWhite'>
+									{t('clientsTileTitle')}
+								</h2>
+								<p className='text-sm text-icyWhite/50'>
+									{t('clientsTileSubtitle')}
 								</p>
 							</div>
 						</Link>

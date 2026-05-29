@@ -16,7 +16,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useFocusTrap } from '@/lib/use-focus-trap'
 import { NotificationChannelBadge } from './NotificationChannelBadge'
-import { Copy, Pencil, X } from 'lucide-react'
+import { Copy, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { createPortal } from 'react-dom'
@@ -142,35 +142,22 @@ export default function AdminCalendarEventDetail({
 				aria-labelledby='admin-cal-event-detail-title'
 			>
 				<div className='mb-2 flex items-center justify-end gap-0.5'>
-						<button
-							type='button'
-							onClick={handleCopy}
-							className='rounded-lg p-2 text-icyWhite/70 transition-colors hover:bg-white/10 hover:text-icyWhite'
-							aria-label={t('copyAria')}
-						>
-							<Copy className='h-4 w-4' />
-						</button>
-						{!readOnly ? (
-							<button
-								type='button'
-								onClick={() => {
-									onClose()
-									onEdit(appointment)
-								}}
-								className='rounded-lg p-2 text-icyWhite/70 transition-colors hover:bg-white/10 hover:text-icyWhite'
-								aria-label={t('editAria')}
-							>
-								<Pencil className='h-4 w-4' />
-							</button>
-						) : null}
-						<button
-							type='button'
-							onClick={onClose}
-							className='rounded-full p-2 text-icyWhite/60 transition-colors hover:bg-white/10 hover:text-icyWhite'
-							aria-label={t('close')}
-						>
-							<X className='h-5 w-5' />
-						</button>
+					<button
+						type='button'
+						onClick={handleCopy}
+						className='rounded-lg p-2 text-icyWhite/70 transition-colors hover:bg-white/10 hover:text-icyWhite'
+						aria-label={t('copyAria')}
+					>
+						<Copy className='h-4 w-4' />
+					</button>
+					<button
+						type='button'
+						onClick={onClose}
+						className='rounded-full p-2 text-icyWhite/60 transition-colors hover:bg-white/10 hover:text-icyWhite'
+						aria-label={t('close')}
+					>
+						<X className='h-5 w-5' />
+					</button>
 				</div>
 
 				<div className='flex gap-3'>
@@ -225,37 +212,28 @@ export default function AdminCalendarEventDetail({
 							</div>
 						) : null}
 
-						<div className='flex flex-col-reverse gap-2 border-t border-white/10 pt-4 sm:flex-row sm:justify-end'>
-							<button
-								type='button'
-								onClick={onClose}
-								className='min-h-11 rounded-lg border border-white/15 px-4 py-2.5 text-sm text-icyWhite/90 hover:bg-white/5 sm:min-h-0 sm:py-2'
-							>
-								{t('close')}
-							</button>
-							{!readOnly ? (
-								<>
-									<button
-										type='button'
-										onClick={() => onRequestCancel(appointment)}
-										className='min-h-11 rounded-lg border border-red-400/35 bg-red-500/15 px-4 py-2.5 text-sm font-medium text-red-300 hover:bg-red-500/25 sm:min-h-0 sm:py-2'
-										aria-label={t('cancelAria')}
-									>
-										{t('cancel')}
-									</button>
-									<button
-										type='button'
-										onClick={() => {
-											onClose()
-											onEdit(appointment)
-										}}
-										className={`min-h-11 rounded-lg px-4 py-2.5 text-sm font-medium sm:min-h-0 sm:py-2 ${ui.btnPrimarySm}`}
-									>
-										{t('editAppointment')}
-									</button>
-								</>
-							) : null}
-						</div>
+						{!readOnly ? (
+							<div className='flex flex-col-reverse gap-2 border-t border-white/10 pt-4 sm:flex-row sm:justify-between sm:items-center'>
+								<button
+									type='button'
+									onClick={() => onRequestCancel(appointment)}
+									className='min-h-11 rounded-lg border border-red-400/35 bg-red-500/15 px-4 py-2.5 text-sm font-medium text-red-300 hover:bg-red-500/25 sm:min-h-0 sm:py-2'
+									aria-label={t('cancelAria')}
+								>
+									{t('cancel')}
+								</button>
+								<button
+									type='button'
+									onClick={() => {
+										onClose()
+										onEdit(appointment)
+									}}
+									className={`min-h-11 rounded-lg px-4 py-2.5 text-sm font-medium sm:min-h-0 sm:py-2 ${ui.btnPrimarySm}`}
+								>
+									{t('editAppointment')}
+								</button>
+							</div>
+						) : null}
 					</div>
 				</div>
 			</div>

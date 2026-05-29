@@ -40,6 +40,22 @@
         { "fieldPath": "endTime", "order": "ASCENDING" },
         { "fieldPath": "startTime", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "clients",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "birthday.month", "order": "ASCENDING" },
+        { "fieldPath": "optInMarketing", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "clients",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "optInMarketing", "order": "ASCENDING" },
+        { "fieldPath": "lastVisitAt", "order": "ASCENDING" }
+      ]
     }
   ]
 }

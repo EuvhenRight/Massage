@@ -5,7 +5,7 @@ const STORAGE_PREFIX = "booking-draft-";
 const TTL_MS = 60 * 60 * 1000; // 1 hour
 
 /** Bump when on-disk shape or rules change so we can invalidate bad drafts. */
-export const BOOKING_DRAFT_FORMAT_VERSION = 3;
+export const BOOKING_DRAFT_FORMAT_VERSION = 4;
 
 const MAX_BOOKING_DURATION_MINUTES = 24 * 60;
 
@@ -32,6 +32,9 @@ export interface BookingDraft {
   /** v3+: customer notification preferences (default true when missing). */
   notifyByEmail?: boolean;
   notifyByWhatsApp?: boolean;
+  /** v4+: optional birthday (YYYY-MM-DD) for greetings, and marketing opt-in (GDPR). */
+  birthday?: string;
+  optInMarketing?: boolean;
   /** Price-catalog woman/man branch (optional). */
   catalogSex?: "woman" | "man" | null;
   savedAt: number;
@@ -199,6 +202,8 @@ export interface BookingDraftInput {
   phone: string;
   notifyByEmail?: boolean;
   notifyByWhatsApp?: boolean;
+  birthday?: string;
+  optInMarketing?: boolean;
   catalogSex?: "woman" | "man" | null;
 }
 
@@ -219,6 +224,11 @@ export function saveBookingDraft(place: string, state: BookingDraftInput): void 
       catalogSex: state.catalogSex ?? null,
       notifyByEmail: state.notifyByEmail !== false,
       notifyByWhatsApp: state.notifyByWhatsApp !== false,
+      birthday:
+        typeof state.birthday === "string" && state.birthday.trim()
+          ? state.birthday.trim()
+          : undefined,
+      optInMarketing: state.optInMarketing === true,
       savedAt: Date.now(),
     };
     localStorage.setItem(storageKey(place), JSON.stringify(draft));
@@ -242,6 +252,8 @@ export function parseDraftToState(draft: BookingDraft): {
   phone: string;
   notifyByEmail: boolean;
   notifyByWhatsApp: boolean;
+  birthday: string;
+  optInMarketing: boolean;
   catalogSex: "woman" | "man" | null;
 } {
   const granTbd =
@@ -281,6 +293,11 @@ export function parseDraftToState(draft: BookingDraft): {
     phone: draft.phone,
     notifyByEmail,
     notifyByWhatsApp,
+    birthday:
+      typeof draft.birthday === "string" && /^\d{4}-\d{2}-\d{2}$/.test(draft.birthday)
+        ? draft.birthday
+        : "",
+    optInMarketing: draft.optInMarketing === true,
     catalogSex:
       draft.catalogSex === "woman" || draft.catalogSex === "man"
         ? draft.catalogSex

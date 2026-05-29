@@ -6,6 +6,7 @@ export type BookingSchemaMessages = {
   fullNameMax: string;
   invalidEmail: string;
   invalidPhone: string;
+  invalidBirthday: string;
 };
 
 const defaultMessages: BookingSchemaMessages = {
@@ -14,7 +15,11 @@ const defaultMessages: BookingSchemaMessages = {
   invalidEmail: "Invalid email address",
   invalidPhone:
     "Enter a valid mobile number with country code (e.g. +421 912 345 678). National numbers like 09xx work if they match a supported country.",
+  invalidBirthday: "Use the date picker (YYYY-MM-DD).",
 };
+
+/** Empty string ↔ optional birthday. Native <input type="date"> emits "" when blank. */
+const birthdayPattern = /^\d{4}-\d{2}-\d{2}$/;
 
 export function getBookingSchema(messages: Partial<BookingSchemaMessages> = {}) {
   const m = { ...defaultMessages, ...messages };
@@ -25,6 +30,14 @@ export function getBookingSchema(messages: Partial<BookingSchemaMessages> = {}) 
     phone: z
       .string()
       .refine((val) => parseWhatsappE164(val) !== null, { message: m.invalidPhone }),
+    birthday: z
+      .string()
+      .optional()
+      .refine(
+        (v) => !v || birthdayPattern.test(v),
+        { message: m.invalidBirthday },
+      ),
+    optInMarketing: z.boolean().optional(),
   });
 }
 

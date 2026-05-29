@@ -67,6 +67,10 @@ export interface BookingFlowState {
   fullName: string;
   email: string;
   phone: string;
+  /** YYYY-MM-DD, empty when not provided. Drives birthday greetings (optional). */
+  birthday: string;
+  /** GDPR-compliant marketing opt-in — default OFF. Required for Marketing-category WhatsApp templates. */
+  optInMarketing: boolean;
   notifyByEmail: boolean;
   notifyByWhatsApp: boolean;
   /** Woman / man branch when booking from the price catalog (depilation). */
@@ -86,6 +90,8 @@ const initialState: BookingFlowState = {
   fullName: "",
   email: "",
   phone: "",
+  birthday: "",
+  optInMarketing: false,
   notifyByEmail: true,
   notifyByWhatsApp: false,
   catalogSex: null,
@@ -123,6 +129,8 @@ interface BookingFlowContextValue extends BookingFlowState {
   setTime: (v: string | null) => void;
   setStep: (s: BookingStep) => void;
   setCustomerInfo: (info: { fullName: string; email: string; phone: string }) => void;
+  setBirthday: (v: string) => void;
+  setOptInMarketing: (v: boolean) => void;
   setNotifyByEmail: (v: boolean) => void;
   setNotifyByWhatsApp: (v: boolean) => void;
   nextStep: () => void;
@@ -205,6 +213,8 @@ export function BookingFlowProvider({
         fullName: parsed.fullName,
         email: parsed.email,
         phone: parsed.phone,
+        birthday: parsed.birthday ?? "",
+        optInMarketing: parsed.optInMarketing === true,
         // Channels are mutually exclusive now; only keep WhatsApp-only drafts,
         // otherwise fall back to email (covers legacy both-on / both-off drafts).
         notifyByEmail: !(parsed.notifyByWhatsApp === true && parsed.notifyByEmail === false),
@@ -320,6 +330,8 @@ export function BookingFlowProvider({
       fullName: state.fullName,
       email: state.email,
       phone: state.phone,
+      birthday: state.birthday,
+      optInMarketing: state.optInMarketing,
       catalogSex: state.catalogSex,
       notifyByEmail: state.notifyByEmail,
       notifyByWhatsApp: state.notifyByWhatsApp,
@@ -338,6 +350,8 @@ export function BookingFlowProvider({
     state.fullName,
     state.email,
     state.phone,
+    state.birthday,
+    state.optInMarketing,
     state.catalogSex,
     state.notifyByEmail,
     state.notifyByWhatsApp,
@@ -419,6 +433,14 @@ export function BookingFlowProvider({
     []
   );
 
+  const setBirthday = useCallback((birthday: string) => {
+    setState((s) => ({ ...s, birthday }));
+  }, []);
+
+  const setOptInMarketing = useCallback((optInMarketing: boolean) => {
+    setState((s) => ({ ...s, optInMarketing }));
+  }, []);
+
   // Notification channels are mutually exclusive: exactly one is always active.
   // Turning one on turns the other off; turning one off turns the other on.
   const setNotifyByEmail = useCallback((value: boolean) => {
@@ -475,6 +497,8 @@ export function BookingFlowProvider({
     setCatalogSex,
     setStep,
     setCustomerInfo,
+    setBirthday,
+    setOptInMarketing,
     setNotifyByEmail,
     setNotifyByWhatsApp,
     nextStep,
