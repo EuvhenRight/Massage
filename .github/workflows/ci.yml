@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master, main]
+  push:
+    branches: [master, main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: typecheck + lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+
+  unit:
+    name: unit + integration (Vitest + Firestore emulator)
+    runs-on: ubuntu-latest
+    needs: static
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      # Firestore emulator runs on the JVM. Java 17 is the minimum supported
+      # by recent firebase-tools releases; older runners default to Java 11.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - name: Vitest under Firestore emulator
+        run: npx firebase emulators:exec --only firestore "npm test -- --reporter=default"
+        env:
+          # The emulator is configured for "luxe-salon-test" in firebase.json;
+          # disable interactive UI for CI runs.
+          GCLOUD_PROJECT: luxe-salon-test
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  e2e-smoke:
+    name: Playwright smoke
+    runs-on: ubuntu-latest
+    needs: static
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: Run smoke spec only
+        run: npx playwright test e2e/smoke.spec.ts
+        env:
+          # CI uses dummy Firebase config — only the sign-in page renders need.
+          NEXT_PUBLIC_FIREBASE_API_KEY: ci-dummy-key
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: luxe-salon-ci
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: luxe-salon-ci.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: luxe-salon-ci.appspot.com
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '000000000000'
+          NEXT_PUBLIC_FIREBASE_APP_ID: '1:000000000000:web:0000000000000000000000'
+          NEXT_PUBLIC_SITE_URL: http://localhost:3007
+          AUTH_SECRET: ci-only-do-not-reuse
+          AUTH_ADMIN_EMAIL: admin@example.test
+          AUTH_ADMIN_PASSWORD: ci-test-password
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

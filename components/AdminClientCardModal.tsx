@@ -11,6 +11,7 @@ import {
 	type ClientAdminPatch,
 } from '@/lib/clients-firestore'
 import { parseWhatsappE164 } from '@/lib/phone-e164'
+import type { Place } from '@/lib/places'
 import type { AppointmentData } from '@/lib/book-appointment'
 import { inferAdminBookingModeFromFirestore } from '@/lib/book-appointment'
 import { clsx } from 'clsx'
@@ -30,6 +31,8 @@ export type AdminClientCardModalMode = 'edit' | 'create'
 interface AdminClientCardModalProps {
 	mode: AdminClientCardModalMode
 	client: ClientDoc | null
+	/** Current studio context — used as `lastVisitPlace` for manually-created clients. */
+	place: Place
 	onClose: () => void
 	onCreated?: (phoneE164: string) => void
 }
@@ -70,6 +73,7 @@ function bookingStatus(apt: AppointmentData, now: Date): BookingStatus {
 export default function AdminClientCardModal({
 	mode,
 	client,
+	place,
 	onClose,
 	onCreated,
 }: AdminClientCardModalProps) {
@@ -210,6 +214,7 @@ export default function AdminClientCardModal({
 					tags,
 					optInWhatsApp,
 					optInMarketing,
+					lastVisitPlace: place,
 				})
 				if (!res.ok) {
 					setSaveError(

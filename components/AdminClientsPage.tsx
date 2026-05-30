@@ -6,12 +6,14 @@ import { Input } from '@/components/ui/input'
 import { db } from '@/lib/firebase'
 import { formatBratislavaDate } from '@/lib/format-date'
 import type { ClientDoc } from '@/lib/clients-firestore'
+import type { Place } from '@/lib/places'
 import { clsx } from 'clsx'
 import {
 	collection,
 	onSnapshot,
 	query,
 	Timestamp,
+	where,
 } from 'firebase/firestore'
 import { Plus, Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -48,7 +50,11 @@ function daysUntilBirthday(
 	return Math.round((next.getTime() - todayMid.getTime()) / DAY_MS)
 }
 
-export default function AdminClientsPage() {
+interface AdminClientsPageProps {
+	place: Place
+}
+
+export default function AdminClientsPage({ place }: AdminClientsPageProps) {
 	const params = useParams()
 	const locale = (params?.locale as string) ?? 'ru'
 	const t = useTranslations('admin')
@@ -60,7 +66,16 @@ export default function AdminClientsPage() {
 	const [createOpen, setCreateOpen] = useState(false)
 
 	useEffect(() => {
-		const q = query(collection(db, 'clients'))
+		// Per-place scoping: clients show up under the studio of their last
+		// visit. A single phone number is still one client doc (canonical
+		// identity), but the list view filters by `lastVisitPlace` so the
+		// two admin panels stay independent. Manually-created clients pass
+		// `place` to `createClientByAdmin` so they land in the right bucket
+		// from day one.
+		const q = query(
+			collection(db, 'clients'),
+			where('lastVisitPlace', '==', place),
+		)
 		const unsub = onSnapshot(q, snap => {
 			const list = snap.docs.map(d => d.data() as ClientDoc)
 			list.sort((a, b) => {
@@ -71,7 +86,7 @@ export default function AdminClientsPage() {
 			setClients(list)
 		})
 		return () => unsub()
-	}, [])
+	}, [place])
 
 	const now = useMemo(() => new Date(), [clients])
 
@@ -115,11 +130,16 @@ export default function AdminClientsPage() {
 		<main className='flex min-h-screen flex-col bg-nearBlack pb-[env(safe-area-inset-bottom,0px)] text-icyWhite'>
 			<AdminHeader
 				locale={locale}
-				place={null}
-				activeGlobal='clients'
+				place={place}
+				section='clients'
 			/>
 
-			<div className='mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8'>
+			{/*
+			 * Width mirrors `lib/place-accent-ui.ts > adminMainContent` so this
+			 * page sits in the same horizontal rhythm as Calendar / Agenda /
+			 * Analytics / Price. No `max-w` — admin pages run edge-to-edge.
+			 */}
+			<div className='relative z-10 w-full min-w-0 px-4 py-8 sm:px-8 sm:py-10 lg:px-12'>
 				<div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
 					<div>
 						<h1 className='font-serif text-2xl sm:text-3xl text-icyWhite'>
@@ -233,6 +253,7 @@ export default function AdminClientsPage() {
 				<AdminClientCardModal
 					mode='edit'
 					client={selected}
+					place={place}
 					onClose={() => setSelected(null)}
 				/>
 			)}
@@ -240,6 +261,7 @@ export default function AdminClientsPage() {
 				<AdminClientCardModal
 					mode='create'
 					client={null}
+					place={place}
 					onClose={() => setCreateOpen(false)}
 				/>
 			)}

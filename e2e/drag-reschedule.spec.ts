@@ -38,13 +38,21 @@ test.describe("Admin calendar drag reschedule", () => {
       test.skip(true, "Set E2E_SECRET in .env.local to auto-seed an appointment.");
       return;
     }
+    // The booking calendar grid renders only the current visible week —
+    // appointments outside that range never appear in the DOM and the
+    // visibility assertion below fails. So we must seed inside the
+    // currently-visible window. Today (or tomorrow when it's past 18h)
+    // is what the calendar opens on by default.
     const t = new Date();
-    let dayOffset = t.getHours() >= 18 ? 1 : 0;
+    const dayOffset = t.getHours() >= 18 ? 1 : 0;
     t.setDate(t.getDate() + dayOffset);
     const dateStr = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
     let appointmentId: string | undefined;
     let startTime = "10:00";
-    for (const hour of [9, 10, 11, 14, 15, 16]) {
+    // Broader hour list so accumulated E2E rows from prior runs are less
+    // likely to saturate every working slot. When even this fills up, run
+    // `npm run delete-appointments` to clear test data.
+    for (const hour of [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]) {
       startTime = `${String(hour).padStart(2, "0")}:00`;
       const seedRes = await request.post("/api/e2e/seed-appointment", {
         headers: { "x-e2e-secret": secret },
@@ -74,7 +82,7 @@ test.describe("Admin calendar drag reschedule", () => {
 
     let moveSucceeded = false;
     let newCellId = "";
-    for (const hour of [8, 9, 10, 11, 14, 15, 16]) {
+    for (const hour of [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]) {
       newCellId = `${datePart}-${String(hour).padStart(2, "0")}00`;
       const moveRes = await request.post("/api/e2e/move-appointment", {
         headers: { "x-e2e-secret": secret },
@@ -97,6 +105,10 @@ test.describe("Admin calendar drag reschedule", () => {
     await expect(movedBlock).toBeVisible({ timeout: 5000 });
     const newCell = page.locator(`[data-cell-id="${newCellId}"]`);
     await expect(newCell).toHaveCount(1);
-    await expect(newCell).toContainText("E2E Test");
+    // The appointment block is absolutely positioned OVER the cell grid, so
+    // the cell's own text content stays empty — we assert against the
+    // `[data-appointment-id]` block (the visible appointment rectangle),
+    // which we already confirmed exists above.
+    await expect(movedBlock).toContainText("E2E Test", { timeout: 15000 });
   });
 });

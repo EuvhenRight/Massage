@@ -36,10 +36,15 @@ export type AdminSection =
 	| 'calendar'
 	| 'agenda'
 	| 'analytics'
+	| 'clients'
 	| 'price'
 	| 'settings'
 
-export type AdminGlobalRoute = 'clients'
+/**
+ * `AdminGlobalRoute` is retained for backwards-compat at the type level but
+ * is no longer populated — clients are now per-studio (see PLACE_SECTIONS).
+ */
+export type AdminGlobalRoute = never
 
 export type AdminPlace = 'massage' | 'depilation'
 
@@ -59,6 +64,8 @@ interface AdminHeaderProps {
 	calendarDayBadge?: number
 }
 
+const LAST_PLACE_STORAGE_KEY = 'luxe-salon:admin:last-place'
+
 export default function AdminHeader({
 	locale,
 	place,
@@ -72,6 +79,19 @@ export default function AdminHeader({
 	const tCommon = useTranslations('common')
 	const { data: session } = useSession()
 	const [open, setOpen] = useState(false)
+
+	// Remember the last visited studio so global pages like /admin/clients
+	// can still show the studio's section links in the drawer. Without this
+	// the drawer collapses to "Clients + utilities" on global pages and the
+	// admin loses one-click navigation back to whatever they were just doing.
+	useEffect(() => {
+		if (!place) return
+		try {
+			localStorage.setItem(LAST_PLACE_STORAGE_KEY, place)
+		} catch {
+			/* private mode / storage disabled — silently ignore */
+		}
+	}, [place])
 
 	useEffect(() => {
 		if (!open) return
@@ -90,12 +110,7 @@ export default function AdminHeader({
 	const close = useCallback(() => setOpen(false), [])
 
 	const resolvedTitle =
-		title ??
-		(activeGlobal === 'clients'
-			? t('clientsTitle')
-			: place
-				? tCommon(place)
-				: t('admin'))
+		title ?? (place ? tCommon(place) : t('admin'))
 
 	return (
 		<>
@@ -164,6 +179,7 @@ const PLACE_SECTIONS: { id: AdminSection; labelKey: string; icon: ElementType }[
 	{ id: 'calendar', labelKey: 'calendar', icon: Calendar },
 	{ id: 'agenda', labelKey: 'agenda', icon: CalendarRange },
 	{ id: 'analytics', labelKey: 'analytics', icon: BarChart2 },
+	{ id: 'clients', labelKey: 'clientsTitle', icon: Users },
 	{ id: 'price', labelKey: 'priceCatalog', icon: Banknote },
 	{ id: 'settings', labelKey: 'settings', icon: Settings },
 ]
@@ -181,15 +197,40 @@ function AdminDrawer({
 }: AdminDrawerProps) {
 	const t = useTranslations('admin')
 	const tCommon = useTranslations('common')
+	// When we're on a global page (place === null) we still want to show
+	// the section list of the studio the admin was just working in. Read
+	// the persisted "last visited" hint and use it as a fallback for the
+	// section-list place — independent of the active-highlight place.
+	const [lastVisitedPlace, setLastVisitedPlace] = useState<AdminPlace | null>(
+		null,
+	)
+	useEffect(() => {
+		if (!open) return
+		try {
+			const raw = localStorage.getItem(LAST_PLACE_STORAGE_KEY)
+			if (raw === 'massage' || raw === 'depilation') {
+				setLastVisitedPlace(raw)
+			}
+		} catch {
+			/* storage disabled — fallback below */
+		}
+	}, [open])
 
 	if (!open) return null
 
 	const sectionHref = (p: AdminPlace, id: AdminSection) =>
 		id === 'calendar'
 			? `/${locale}/admin/${p}`
-			: `/${locale}/admin/${p}/${id}`
+			: id === 'clients'
+				? `/${locale}/admin/${p}/clients`
+				: `/${locale}/admin/${p}/${id}`
 
-	const bookingUrl = `/${locale}/${place ?? 'depilation'}/booking`
+	// Sections are rendered for the current studio when we're on one,
+	// otherwise for the last-visited studio (continuation), otherwise
+	// (true cold start, no history) we default to massage.
+	const sectionListPlace: AdminPlace = place ?? lastVisitedPlace ?? 'massage'
+
+	const bookingUrl = `/${locale}/${sectionListPlace}/booking`
 
 	const isSectionActive = (p: AdminPlace, id: AdminSection) =>
 		!activeGlobal && place === p && section === id
@@ -201,10 +242,17 @@ function AdminDrawer({
 			aria-modal='true'
 			aria-label={t('openMenuAria')}
 		>
+			{/*
+			 * Backdrop is a mouse-only dismiss affordance. Hidden from assistive
+			 * tech (the explicit X button in the drawer header is the keyboard /
+			 * screen-reader path), so it doesn't duplicate the "Close menu"
+			 * label and doesn't show up as a stray landmark in the a11y tree.
+			 */}
 			<button
 				type='button'
 				onClick={onClose}
-				aria-label={t('closeMenuAria')}
+				aria-hidden='true'
+				tabIndex={-1}
 				className='absolute inset-0 bg-nearBlack/70 backdrop-blur-[2px] animate-in fade-in-0 duration-150'
 			/>
 			<aside className='absolute left-0 top-0 flex h-full w-full max-w-[20rem] flex-col bg-nearBlack text-icyWhite shadow-2xl shadow-black/60 animate-in slide-in-from-left-4 fade-in-0 duration-200'>
@@ -241,53 +289,39 @@ function AdminDrawer({
 						</div>
 					)}
 
-					{place && (
-						<>
-							<SectionHeader>{tCommon(place)}</SectionHeader>
-							<ul className='mb-4 space-y-1'>
-								{PLACE_SECTIONS.map(item => {
-									const isActive = isSectionActive(place, item.id)
-									const Icon = item.icon
-									const showBadge =
-										item.id === 'calendar' &&
-										(calendarTbdBadge > 0 || calendarDayBadge > 0)
-									return (
-										<li key={item.id}>
-											<Link
-												href={sectionHref(place, item.id)}
-												onClick={onClose}
-												className={drawerLinkClass(isActive)}
-											>
-												<Icon className='h-4 w-4 shrink-0' aria-hidden />
-												<span className='flex-1 truncate'>
-													{t(item.labelKey)}
-												</span>
-												{showBadge && (
-													<DrawerBadges
-														tbd={calendarTbdBadge}
-														day={calendarDayBadge}
-													/>
-												)}
-											</Link>
-										</li>
-									)
-								})}
-							</ul>
-						</>
-					)}
-
-					<SectionHeader>{t('drawerGlobal')}</SectionHeader>
+					<SectionHeader>{tCommon(sectionListPlace)}</SectionHeader>
 					<ul className='mb-4 space-y-1'>
-						<li>
-							<Link
-								href={`/${locale}/admin/clients`}
-								onClick={onClose}
-								className={drawerLinkClass(activeGlobal === 'clients')}
-							>
-								<Users className='h-4 w-4 shrink-0' aria-hidden />
-								<span className='flex-1 truncate'>{t('clientsTitle')}</span>
-							</Link>
-						</li>
+						{PLACE_SECTIONS.map(item => {
+							// Only highlight + decorate the row when we're actually
+							// inside the rendered studio — on global pages the rows
+							// are continuation links, not the active route.
+							const isActive = isSectionActive(sectionListPlace, item.id)
+							const Icon = item.icon
+							const showBadge =
+								place === sectionListPlace &&
+								item.id === 'calendar' &&
+								(calendarTbdBadge > 0 || calendarDayBadge > 0)
+							return (
+								<li key={item.id}>
+									<Link
+										href={sectionHref(sectionListPlace, item.id)}
+										onClick={onClose}
+										className={drawerLinkClass(isActive)}
+									>
+										<Icon className='h-4 w-4 shrink-0' aria-hidden />
+										<span className='flex-1 truncate'>
+											{t(item.labelKey)}
+										</span>
+										{showBadge && (
+											<DrawerBadges
+												tbd={calendarTbdBadge}
+												day={calendarDayBadge}
+											/>
+										)}
+									</Link>
+								</li>
+							)
+						})}
 					</ul>
 
 					<SectionHeader>{t('drawerUtilities')}</SectionHeader>

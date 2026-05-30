@@ -907,13 +907,12 @@ export default function AdminPlacePage({
 								{t('settingsSubtitle', { place: placeLabel })}
 							</p>
 						</div>
-						<div
-							className={clsx(
-								'space-y-6',
-								place === 'massage' && 'max-w-5xl mx-auto',
-								place === 'depilation' && 'max-w-6xl mx-auto w-full',
-							)}
-						>
+						{/*
+						 * Settings ran narrower than every other section (max-w-5xl /
+						 * max-w-6xl) which made admin width feel inconsistent. Aligned
+						 * to the full-width pattern used by Calendar / Agenda / etc.
+						 */}
+						<div className='space-y-6 w-full'>
 							<section>
 								<h2 className='font-medium text-icyWhite mb-2'>
 									{tCommon('services')}

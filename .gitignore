@@ -11,6 +11,9 @@
 /e2e/.auth/
 /blob-report/
 /playwright/.cache/
+/.vitest-cache/
+/firebase-debug.log
+/firestore-debug.log
 
 # Next.js
 /.next/

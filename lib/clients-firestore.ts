@@ -279,6 +279,13 @@ export interface CreateClientByAdminInput {
 	tags?: string[]
 	optInWhatsApp?: boolean
 	optInMarketing?: boolean
+	/**
+	 * Which studio the client belongs to for the per-place client list.
+	 * Set when the admin opens the modal from `/admin/{place}/clients` so
+	 * the manually-created card shows up in the right studio's view even
+	 * before any booking has been made.
+	 */
+	lastVisitPlace?: Place | null
 }
 
 export type CreateClientResult =
@@ -311,7 +318,7 @@ export async function createClientByAdmin(
 		birthday: parseBirthdayInput(input.birthday ?? undefined),
 		firstSeenAt: now,
 		lastVisitAt: now,
-		lastVisitPlace: null,
+		lastVisitPlace: input.lastVisitPlace ?? null,
 		visitCount: 0,
 		optInWhatsApp: input.optInWhatsApp !== false,
 		optInMarketing: input.optInMarketing === true,
