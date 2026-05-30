@@ -39,7 +39,8 @@ process.env.RESEND_FROM_EMAIL ??= 'noreply@example.test'
 process.env.ADMIN_EMAIL ??= 'admin@example.test'
 process.env.NEXT_PUBLIC_SITE_URL ??= 'https://test.v2studio.sk'
 process.env.CRON_SECRET ??= 'test-cron-secret'
-process.env.BOOKING_ACTION_SECRET ??= 'test-action-secret'
+process.env.BOOKING_ACTION_SECRET ??=
+	'test-action-secret-padded-to-32-chars-minimum-length'
 process.env.RE_ENGAGEMENT_THRESHOLD_DAYS ??= '180'
 
 // Firebase web SDK requires a non-empty config object to construct the app —
