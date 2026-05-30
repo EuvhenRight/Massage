@@ -34,7 +34,17 @@
       "Bash(echo \"exit=$?\")",
       "Bash(node -e \"for \\(const f of ['en','sk','ru','uk']\\) { JSON.parse\\(require\\('fs'\\).readFileSync\\('messages/'+f+'.json','utf8'\\)\\); console.log\\(f, 'OK'\\); }\")",
       "Bash(grep -n \"useBookingFlow\\\\|notifyByEmail,\\\\|notifyByWhatsApp,$\" /Users/yevhenright/Documents/luxe-salon/components/booking-flow/index.tsx)",
-      "Bash(awk 'NR==574{print \"MARKER_START\"; in_h=1} in_h && /^\t\t\t<\\\\/header>$/{print \"MARKER_END:\" NR; in_h=0; exit}' /Users/yevhenright/Documents/luxe-salon/components/AdminPlacePage.tsx)"
+      "Bash(awk 'NR==574{print \"MARKER_START\"; in_h=1} in_h && /^\t\t\t<\\\\/header>$/{print \"MARKER_END:\" NR; in_h=0; exit}' /Users/yevhenright/Documents/luxe-salon/components/AdminPlacePage.tsx)",
+      "Bash(npx vitest *)",
+      "Bash(npm test *)",
+      "Bash(grep -n \"{ mode, client, onClose, onCreated\\\\|mode,$\\\\|client,$\\\\|onClose,$\\\\|onCreated,$\" /Users/yevhenright/Documents/luxe-salon/components/AdminClientCardModal.tsx)",
+      "Bash(rm /Users/yevhenright/Documents/luxe-salon/app/\\\\[locale\\\\]/admin/clients/page.tsx)",
+      "Bash(rmdir /Users/yevhenright/Documents/luxe-salon/app/\\\\[locale\\\\]/admin/clients)",
+      "Bash(rm -rf /Users/yevhenright/Documents/luxe-salon/.next/types/app/\\\\[locale\\\\]/admin/clients 2>&1 && npx tsc --noEmit 2>&1 | head -20; echo \"exit=$?\")",
+      "Bash(git restore *)"
+    ],
+    "additionalDirectories": [
+      "/Users/yevhenright/Documents/luxe-salon/.next/types/app/[locale]/admin/clients"
     ]
   }
 }
