@@ -41,7 +41,9 @@
       "Bash(rm /Users/yevhenright/Documents/luxe-salon/app/\\\\[locale\\\\]/admin/clients/page.tsx)",
       "Bash(rmdir /Users/yevhenright/Documents/luxe-salon/app/\\\\[locale\\\\]/admin/clients)",
       "Bash(rm -rf /Users/yevhenright/Documents/luxe-salon/.next/types/app/\\\\[locale\\\\]/admin/clients 2>&1 && npx tsc --noEmit 2>&1 | head -20; echo \"exit=$?\")",
-      "Bash(git restore *)"
+      "Bash(git restore *)",
+      "Bash(npm install *)",
+      "Bash(npm ci *)"
     ],
     "additionalDirectories": [
       "/Users/yevhenright/Documents/luxe-salon/.next/types/app/[locale]/admin/clients"
