@@ -1,38 +1,50 @@
 'use client'
 
 import { useCookieConsent } from '@/components/CookieConsentContext'
+import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
 import Script from 'next/script'
 import { useMemo } from 'react'
 
 /**
- * Loads Google Analytics 4 only when the user has opted in to the Analytics category.
- * Set NEXT_PUBLIC_GA_MEASUREMENT_ID in the environment (e.g. G-XXXXXXXXXX).
+ * Single consent-gated entry point for all analytics tools.
+ *
+ *   - Google Analytics 4 (requires cookies — strictly needs consent)
+ *   - Vercel Analytics (cookieless, but gated here for consistency so the
+ *     user's "analytics" opt-in covers every metrics tool the site uses)
+ *
+ * Both tools render only when `allowsAnalytics` is true; flipping the
+ * consent toggle off immediately unmounts them.
  */
 export default function ConditionalAnalytics() {
 	const { allowsAnalytics, ready } = useCookieConsent()
 	const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
-	const shouldLoad = useMemo(
-		() => Boolean(ready && allowsAnalytics && measurementId),
-		[ready, allowsAnalytics, measurementId],
+	const consentReady = useMemo(
+		() => Boolean(ready && allowsAnalytics),
+		[ready, allowsAnalytics],
 	)
 
-	if (!shouldLoad || !measurementId) return null
+	if (!consentReady) return null
 
 	return (
 		<>
-			<Script
-				src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-				strategy='afterInteractive'
-			/>
-			<Script id='ga4-init' strategy='afterInteractive'>
-				{`
+			{measurementId ? (
+				<>
+					<Script
+						src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
+						strategy='afterInteractive'
+					/>
+					<Script id='ga4-init' strategy='afterInteractive'>
+						{`
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', '${measurementId}');
-				`.trim()}
-			</Script>
+						`.trim()}
+					</Script>
+				</>
+			) : null}
+			<VercelAnalytics />
 		</>
 	)
 }
