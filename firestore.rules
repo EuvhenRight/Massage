@@ -29,6 +29,19 @@ service cloud.firestore {
     // tighten alongside the broader admin-auth migration when that lands.
     match /clients/{document} {
       allow read, write: if true;
+
+      // Per-client CRM timeline written by the booking status orchestrator
+      // and reminder cron. Same access shape as the parent doc.
+      match /activity/{activityId} {
+        allow read, write: if true;
+      }
+    }
+
+    // Booking audit log: append-only history written by route handlers, cron
+    // jobs, and the booking status orchestrator. Same open access shape as
+    // the rest of the collections until the admin-auth migration lands.
+    match /booking_audit/{document} {
+      allow read, write: if true;
     }
   }
 }

@@ -910,6 +910,30 @@
   "admin": {
     "signIn": "Prihlásiť sa",
     "admin": "Admin",
+    "bookingStatus": {
+      "pending": "Čaká na potvrdenie",
+      "confirmed": "Potvrdené",
+      "cancelled": "Zrušené",
+      "completed": "Dokončené",
+      "noShow": "Neprišiel"
+    },
+    "bookingStatusActions": "Zmeniť stav",
+    "bookingStatusBusy": "Ukladám…",
+    "bookingStatusButton": {
+      "pending": "Označiť ako čakajúce",
+      "confirmed": "Označiť ako potvrdené",
+      "cancelled": "Zrušiť rezerváciu",
+      "completed": "Označiť ako dokončené",
+      "noShow": "Označiť ako neprišiel"
+    },
+    "bookingStatusToast": {
+      "confirmed": "Označené ako potvrdené",
+      "cancelled": "Rezervácia bola zrušená",
+      "completed": "Označené ako dokončené",
+      "noShow": "Označené ako neprišiel",
+      "pending": "Označené ako čakajúce",
+      "failed": "Stav sa nepodarilo zmeniť"
+    },
     "chooseBookingSystem": "Vyberte systém rezervácií",
     "drawerPlaces": "Štúdiá",
     "drawerSections": "Sekcie",
@@ -1453,5 +1477,30 @@
     "confirmed": "Potvrdené",
     "hi": "Ahoj",
     "luxurySalon": "Luxusný salón"
+  },
+  "bookingLanding": {
+    "confirmedTitle": "Rezervácia potvrdená",
+    "confirmedBody": "Ďakujeme za potvrdenie. Tešíme sa na vás.",
+    "confirmedAlreadyTitle": "Rezervácia je potvrdená",
+    "confirmedAlreadyBody": "Túto rezerváciu sme už evidovali ako potvrdenú. Vidíme sa v dohodnutom termíne.",
+    "cancelledTitle": "Rezervácia bola zrušená",
+    "cancelledBody": "Ďakujeme, že ste nám dali vedieť. Termín je opäť voľný. Tešíme sa na vás nabudúce.",
+    "cancelledAlreadyTitle": "Rezervácia bola už zrušená",
+    "cancelledAlreadyBody": "Túto rezerváciu sme v systéme nenašli — pravdepodobne bola zrušená skôr.",
+    "tokenErrTitleConfirm": "Odkaz vypršal",
+    "tokenErrBodyConfirm": "Tento odkaz je neplatný alebo už vypršal. Ak potrebujete potvrdiť rezerváciu, kontaktujte nás prosím priamo.",
+    "tokenErrTitleCancel": "Odkaz vypršal",
+    "tokenErrBodyCancel": "Tento odkaz je neplatný alebo už vypršal. Ak chcete rezerváciu zrušiť, kontaktujte nás priamo.",
+    "missingTitle": "Rezerváciu sme nenašli",
+    "missingBody": "Vaša rezervácia v systéme neexistuje. Možno bola už zrušená. Ak máte otázky, ozvite sa nám.",
+    "summaryHeading": "Detaily rezervácie",
+    "summaryService": "Služba",
+    "summaryDate": "Dátum",
+    "summaryTime": "Čas",
+    "summaryLocation": "Miesto",
+    "actionBackHome": "Späť na úvod",
+    "actionBookAnother": "Rezervovať ďalší termín",
+    "actionGetDirections": "Zobraziť na mape",
+    "needHelp": "Potrebujete zmenu? Kontaktujte nás:"
   }
 }

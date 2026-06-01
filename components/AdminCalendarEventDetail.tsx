@@ -2,6 +2,8 @@
 
 import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import type { AppointmentData } from '@/lib/book-appointment'
+import { readBookingStatus, type BookingStatus } from '@/lib/booking-status'
+import { getBookingStatusUi } from '@/lib/booking-status-ui'
 import { formatDate, formatTime } from '@/lib/format-date'
 import type { Place } from '@/lib/places'
 import {
@@ -18,7 +20,7 @@ import { useFocusTrap } from '@/lib/use-focus-trap'
 import { NotificationChannelBadge } from './NotificationChannelBadge'
 import { Copy, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 
@@ -121,6 +123,64 @@ export default function AdminCalendarEventDetail({
 		)
 	}
 
+	const bookingStatusValue = readBookingStatus(
+		appointment as unknown as Record<string, unknown>,
+	)
+	const statusUi = getBookingStatusUi(bookingStatusValue)
+	const statusLabel = t(`bookingStatus.${statusUi.i18nKey}`)
+	const StatusIcon = statusUi.icon
+
+	const [submittingStatus, setSubmittingStatus] = useState<BookingStatus | null>(
+		null,
+	)
+
+	/**
+	 * Per-status transition map: only show buttons that the state machine in
+	 * `lib/booking-status.ts` will accept. Keeps the UI from offering moves
+	 * the API would immediately reject (terminal-state combinations).
+	 */
+	const allowedNextStatuses: BookingStatus[] = (() => {
+		switch (bookingStatusValue) {
+			case 'pending':
+				return ['confirmed', 'cancelled', 'completed', 'no_show']
+			case 'confirmed':
+				return ['cancelled', 'completed', 'no_show']
+			case 'completed':
+				return ['no_show']
+			case 'no_show':
+				return ['completed']
+			case 'cancelled':
+			default:
+				return []
+		}
+	})()
+
+	async function applyTransition(toStatus: BookingStatus): Promise<void> {
+		if (submittingStatus) return
+		setSubmittingStatus(toStatus)
+		try {
+			const res = await fetch(
+				`/api/admin/appointments/${encodeURIComponent(appointment.id)}/status`,
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ toStatus }),
+				},
+			)
+			if (!res.ok) {
+				const detail = await res.text().catch(() => '')
+				throw new Error(detail || `HTTP ${res.status}`)
+			}
+			toast.success(t(`bookingStatusToast.${getBookingStatusUi(toStatus).i18nKey}`))
+			onClose()
+		} catch (e) {
+			console.error('[admin-event-detail] status change failed', e)
+			toast.error(t('bookingStatusToast.failed'))
+		} finally {
+			setSubmittingStatus(null)
+		}
+	}
+
 	const dialogRef = useFocusTrap<HTMLDivElement>(true, onClose)
 
 	if (typeof document === 'undefined') return null
@@ -167,12 +227,25 @@ export default function AdminCalendarEventDetail({
 					/>
 					<div className='min-w-0 flex-1 space-y-3'>
 						<div>
-							<h2
-								id='admin-cal-event-detail-title'
-								className='font-serif text-lg leading-snug text-icyWhite sm:text-xl'
-							>
-								{appointment.service?.trim() || '—'}
-							</h2>
+							<div className='flex items-start justify-between gap-2'>
+								<h2
+									id='admin-cal-event-detail-title'
+									className='font-serif text-lg leading-snug text-icyWhite sm:text-xl'
+								>
+									{appointment.service?.trim() || '—'}
+								</h2>
+								<span
+									className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${statusUi.badgeClass}`}
+									aria-label={statusLabel}
+								>
+									<StatusIcon
+										className={`h-3 w-3 ${statusUi.iconClass}`}
+										strokeWidth={2.25}
+										aria-hidden
+									/>
+									{statusLabel}
+								</span>
+							</div>
 							<p className='mt-1.5 text-sm leading-relaxed text-icyWhite/75'>
 								{dateHeading}
 								<span className='text-icyWhite/40'> · </span>
@@ -209,6 +282,39 @@ export default function AdminCalendarEventDetail({
 						{appointment.adminNote?.trim() ? (
 							<div className='rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs italic text-icyWhite/65 whitespace-pre-wrap'>
 								{appointment.adminNote.trim()}
+							</div>
+						) : null}
+
+						{!readOnly && allowedNextStatuses.length > 0 ? (
+							<div className='border-t border-white/10 pt-4'>
+								<p className='mb-2 text-[11px] font-medium uppercase tracking-wider text-icyWhite/45'>
+									{t('bookingStatusActions')}
+								</p>
+								<div className='flex flex-wrap gap-2'>
+									{allowedNextStatuses.map(next => {
+										const nextUi = getBookingStatusUi(next)
+										const NextIcon = nextUi.icon
+										const busy = submittingStatus === next
+										return (
+											<button
+												key={next}
+												type='button'
+												onClick={() => applyTransition(next)}
+												disabled={submittingStatus !== null}
+												className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${nextUi.badgeClass} hover:brightness-110`}
+											>
+												<NextIcon
+													className={`h-3.5 w-3.5 ${nextUi.iconClass}`}
+													strokeWidth={2.25}
+													aria-hidden
+												/>
+												{busy
+													? t('bookingStatusBusy')
+													: t(`bookingStatusButton.${nextUi.i18nKey}`)}
+											</button>
+										)
+									})}
+								</div>
 							</div>
 						) : null}
 

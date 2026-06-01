@@ -149,6 +149,18 @@ function toAppointmentData(doc: {
 			typeof d.notifyByEmail === 'boolean' ? d.notifyByEmail : undefined,
 		notifyByWhatsApp:
 			typeof d.notifyByWhatsApp === 'boolean' ? d.notifyByWhatsApp : undefined,
+		bookingStatus:
+			d.bookingStatus === 'pending' ||
+			d.bookingStatus === 'confirmed' ||
+			d.bookingStatus === 'cancelled' ||
+			d.bookingStatus === 'completed' ||
+			d.bookingStatus === 'no_show'
+				? d.bookingStatus
+				: undefined,
+		confirmedAt: d.confirmedAt as Timestamp | undefined,
+		cancelledAt: d.cancelledAt as Timestamp | undefined,
+		completedAt: d.completedAt as Timestamp | undefined,
+		noShowAt: d.noShowAt as Timestamp | undefined,
 	}
 }
 
@@ -377,6 +389,10 @@ export default function AdminPlacePage({
 			setAgendaAppointments(
 				snapshot.docs
 					.filter(doc => doc.data().scheduleTbd !== true)
+					// Cancelled bookings stay in Firestore for audit history but
+					// shouldn't clutter the active agenda. A future filter chip can
+					// surface them on demand.
+					.filter(doc => doc.data().bookingStatus !== 'cancelled')
 					.map(doc =>
 						toAppointmentData({ id: doc.id, data: () => doc.data() }),
 					)
@@ -415,9 +431,15 @@ export default function AdminPlacePage({
 			orderBy('startTime', 'asc'),
 		)
 		const unsub = onSnapshot(q, snapshot => {
-			const list = snapshot.docs.map(doc =>
-				toAppointmentData({ id: doc.id, data: () => doc.data() }),
-			)
+			const list = snapshot.docs
+				// History view also hides cancelled by default to match the agenda
+				// behavior; cancelled bookings are still readable individually
+				// (admin can find them via the client card timeline once that
+				// lands in a later phase).
+				.filter(doc => doc.data().bookingStatus !== 'cancelled')
+				.map(doc =>
+					toAppointmentData({ id: doc.id, data: () => doc.data() }),
+				)
 			setAllAppointments([...list].reverse())
 		})
 		return () => unsub()

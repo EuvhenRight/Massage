@@ -910,6 +910,30 @@
   "admin": {
     "signIn": "Увійти",
     "admin": "Адмін",
+    "bookingStatus": {
+      "pending": "Очікує підтвердження",
+      "confirmed": "Підтверджено",
+      "cancelled": "Скасовано",
+      "completed": "Завершено",
+      "noShow": "Не з'явився"
+    },
+    "bookingStatusActions": "Змінити статус",
+    "bookingStatusBusy": "Зберігаємо…",
+    "bookingStatusButton": {
+      "pending": "Позначити як очікує",
+      "confirmed": "Позначити як підтверджено",
+      "cancelled": "Скасувати запис",
+      "completed": "Позначити як завершено",
+      "noShow": "Позначити як не з'явився"
+    },
+    "bookingStatusToast": {
+      "confirmed": "Позначено як підтверджено",
+      "cancelled": "Запис скасовано",
+      "completed": "Позначено як завершено",
+      "noShow": "Позначено як не з'явився",
+      "pending": "Позначено як очікує",
+      "failed": "Не вдалося змінити статус"
+    },
     "chooseBookingSystem": "Оберіть систему бронювання",
     "drawerPlaces": "Студії",
     "drawerSections": "Розділи",
@@ -1453,5 +1477,30 @@
     "confirmed": "Підтверджено",
     "hi": "Вітаємо",
     "luxurySalon": "Люксовий салон"
+  },
+  "bookingLanding": {
+    "confirmedTitle": "Запис підтверджено",
+    "confirmedBody": "Дякуємо за підтвердження. Чекаємо на вас у призначений час.",
+    "confirmedAlreadyTitle": "Запис підтверджено",
+    "confirmedAlreadyBody": "Цей запис уже позначено як підтверджений. Чекаємо на вас.",
+    "cancelledTitle": "Запис скасовано",
+    "cancelledBody": "Дякуємо, що повідомили. Час знову вільний. Будемо раді бачити вас наступного разу.",
+    "cancelledAlreadyTitle": "Запис уже було скасовано",
+    "cancelledAlreadyBody": "Ми не знайшли цей запис у системі — ймовірно, його було скасовано раніше.",
+    "tokenErrTitleConfirm": "Посилання недійсне",
+    "tokenErrBodyConfirm": "Це посилання недійсне або термін його дії минув. Щоб підтвердити запис, зв'яжіться з нами безпосередньо.",
+    "tokenErrTitleCancel": "Посилання недійсне",
+    "tokenErrBodyCancel": "Це посилання недійсне або термін його дії минув. Щоб скасувати запис, зв'яжіться з нами безпосередньо.",
+    "missingTitle": "Запис не знайдено",
+    "missingBody": "Ми не знайшли ваш запис у системі. Можливо, його вже скасували. Якщо маєте питання — напишіть нам.",
+    "summaryHeading": "Деталі запису",
+    "summaryService": "Послуга",
+    "summaryDate": "Дата",
+    "summaryTime": "Час",
+    "summaryLocation": "Адреса",
+    "actionBackHome": "На головну",
+    "actionBookAnother": "Записатися ще раз",
+    "actionGetDirections": "Відкрити на мапі",
+    "needHelp": "Потрібні зміни? Зв'яжіться з нами:"
   }
 }

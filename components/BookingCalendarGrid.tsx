@@ -239,6 +239,18 @@ function toAppointmentData(doc: {
 			typeof d.notifyByEmail === 'boolean' ? d.notifyByEmail : undefined,
 		notifyByWhatsApp:
 			typeof d.notifyByWhatsApp === 'boolean' ? d.notifyByWhatsApp : undefined,
+		bookingStatus:
+			d.bookingStatus === 'pending' ||
+			d.bookingStatus === 'confirmed' ||
+			d.bookingStatus === 'cancelled' ||
+			d.bookingStatus === 'completed' ||
+			d.bookingStatus === 'no_show'
+				? d.bookingStatus
+				: undefined,
+		confirmedAt: d.confirmedAt as Timestamp | undefined,
+		cancelledAt: d.cancelledAt as Timestamp | undefined,
+		completedAt: d.completedAt as Timestamp | undefined,
+		noShowAt: d.noShowAt as Timestamp | undefined,
 	}
 }
 
@@ -426,6 +438,10 @@ export default function BookingCalendarGrid({
 						return start < dayEnd && end >= dayStart
 					})
 					.filter(a => a.scheduleTbd !== true)
+					// Soft-cancelled bookings remain in Firestore for the audit trail
+					// but the slot is already freed in `days/*`; hiding them from the
+					// grid avoids ghost blocks on otherwise-bookable times.
+					.filter(a => a.bookingStatus !== 'cancelled')
 				setAppointments(list)
 				setIsLoading(false)
 			},

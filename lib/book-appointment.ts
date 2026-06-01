@@ -71,6 +71,20 @@ export interface AppointmentData {
   /** Customer's channel choice at booking time — used for reschedule/cancel notifications. */
   notifyByEmail?: boolean;
   notifyByWhatsApp?: boolean;
+  /**
+   * Lifecycle status. Legacy docs without the field are treated as 'pending'
+   * by the read helpers in `lib/booking-status.ts`.
+   */
+  bookingStatus?:
+    | "pending"
+    | "confirmed"
+    | "cancelled"
+    | "completed"
+    | "no_show";
+  confirmedAt?: Timestamp;
+  cancelledAt?: Timestamp;
+  completedAt?: Timestamp;
+  noShowAt?: Timestamp;
 }
 
 export interface BookingInput {
@@ -893,6 +907,18 @@ export async function getAppointment(appointmentId: string): Promise<Appointment
       typeof d.notifyByEmail === "boolean" ? d.notifyByEmail : undefined,
     notifyByWhatsApp:
       typeof d.notifyByWhatsApp === "boolean" ? d.notifyByWhatsApp : undefined,
+    bookingStatus:
+      d.bookingStatus === "pending" ||
+      d.bookingStatus === "confirmed" ||
+      d.bookingStatus === "cancelled" ||
+      d.bookingStatus === "completed" ||
+      d.bookingStatus === "no_show"
+        ? d.bookingStatus
+        : undefined,
+    confirmedAt: d.confirmedAt as Timestamp | undefined,
+    cancelledAt: d.cancelledAt as Timestamp | undefined,
+    completedAt: d.completedAt as Timestamp | undefined,
+    noShowAt: d.noShowAt as Timestamp | undefined,
   } as AppointmentData;
 }
 

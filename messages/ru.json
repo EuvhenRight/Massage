@@ -911,6 +911,30 @@
   "admin": {
     "signIn": "Войти",
     "admin": "Админ",
+    "bookingStatus": {
+      "pending": "Ожидает подтверждения",
+      "confirmed": "Подтверждено",
+      "cancelled": "Отменено",
+      "completed": "Завершено",
+      "noShow": "Не пришёл"
+    },
+    "bookingStatusActions": "Изменить статус",
+    "bookingStatusBusy": "Сохраняем…",
+    "bookingStatusButton": {
+      "pending": "Отметить как ожидающее",
+      "confirmed": "Отметить как подтверждённое",
+      "cancelled": "Отменить запись",
+      "completed": "Отметить как завершённое",
+      "noShow": "Отметить как не пришёл"
+    },
+    "bookingStatusToast": {
+      "confirmed": "Отмечено как подтверждённое",
+      "cancelled": "Запись отменена",
+      "completed": "Отмечено как завершённое",
+      "noShow": "Отмечено как не пришёл",
+      "pending": "Отмечено как ожидающее",
+      "failed": "Не удалось изменить статус"
+    },
     "chooseBookingSystem": "Выберите систему бронирования",
     "drawerPlaces": "Студии",
     "drawerSections": "Разделы",
@@ -1454,5 +1478,30 @@
     "confirmed": "Подтверждено",
     "hi": "Здравствуйте",
     "luxurySalon": "Люксовый салон"
+  },
+  "bookingLanding": {
+    "confirmedTitle": "Запись подтверждена",
+    "confirmedBody": "Спасибо за подтверждение. Ждём вас в назначенное время.",
+    "confirmedAlreadyTitle": "Запись подтверждена",
+    "confirmedAlreadyBody": "Эта запись уже отмечена как подтверждённая. Ждём вас в назначенное время.",
+    "cancelledTitle": "Запись отменена",
+    "cancelledBody": "Спасибо, что сообщили. Время снова свободно. Будем рады видеть вас в следующий раз.",
+    "cancelledAlreadyTitle": "Запись уже была отменена",
+    "cancelledAlreadyBody": "Мы не нашли эту запись в системе — вероятно, она была отменена ранее.",
+    "tokenErrTitleConfirm": "Ссылка недействительна",
+    "tokenErrBodyConfirm": "Эта ссылка недействительна или истёк её срок. Чтобы подтвердить запись, свяжитесь с нами напрямую.",
+    "tokenErrTitleCancel": "Ссылка недействительна",
+    "tokenErrBodyCancel": "Эта ссылка недействительна или истёк её срок. Чтобы отменить запись, свяжитесь с нами напрямую.",
+    "missingTitle": "Запись не найдена",
+    "missingBody": "Мы не нашли вашу запись в системе. Возможно, она уже была отменена. Если есть вопросы — напишите нам.",
+    "summaryHeading": "Детали записи",
+    "summaryService": "Услуга",
+    "summaryDate": "Дата",
+    "summaryTime": "Время",
+    "summaryLocation": "Адрес",
+    "actionBackHome": "На главную",
+    "actionBookAnother": "Записаться снова",
+    "actionGetDirections": "Открыть на карте",
+    "needHelp": "Нужно что-то изменить? Свяжитесь с нами:"
   }
 }

@@ -1,61 +1,80 @@
+/**
+ * Post-cancellation landing page. Reaches this URL after the customer clicks
+ * the cancel link in a WhatsApp reminder; the route handler at
+ * `/api/booking/cancel` has already soft-cancelled the appointment and fired
+ * the notifications by the time we render here.
+ *
+ * `?ok=1`        — first-time cancellation (shows the variant message).
+ * `?ok=already`  — re-click on a link that was already cancelled (we don't
+ *                  re-fire notifications and the page acknowledges the prior
+ *                  state).
+ * `?err=token`   — invalid / expired signed token.
+ */
+
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import BookingActionLanding from '@/components/BookingActionLanding'
 
 export const metadata: Metadata = {
-	title: 'Rezervácia zrušená — V2studio',
+	title: 'V2studio',
 	robots: { index: false, follow: false },
 }
 
-type SearchParams = Promise<{ ok?: string; err?: string }>
+type SearchParams = Promise<{ ok?: string; err?: string; id?: string }>
 
-function copy(ok?: string, err?: string): { title: string; body: string } {
+type Copy = { title: string; body: string }
+
+async function resolveCopy(
+	locale: string,
+	ok: string | undefined,
+	err: string | undefined,
+): Promise<Copy> {
+	const t = await getTranslations({ locale, namespace: 'bookingLanding' })
 	if (err === 'token') {
 		return {
-			title: 'Odkaz vypršal',
-			body: 'Tento odkaz je neplatný alebo už vypršal. Ak chcete rezerváciu zrušiť, kontaktujte nás priamo.',
-		}
-	}
-	if (err === 'delete') {
-		return {
-			title: 'Nepodarilo sa zrušiť',
-			body: 'Pri rušení rezervácie sa vyskytla chyba. Skúste prosím znova alebo nás kontaktujte.',
+			title: t('tokenErrTitleCancel'),
+			body: t('tokenErrBodyCancel'),
 		}
 	}
 	if (ok === 'already') {
 		return {
-			title: 'Rezervácia bola už zrušená',
-			body: 'Túto rezerváciu sme v systéme nenašli — pravdepodobne bola zrušená skôr.',
-		}
-	}
-	if (ok === '1') {
-		return {
-			title: 'Rezervácia bola zrušená',
-			body: 'Ďakujeme, že ste nám dali vedieť. Termín je opäť voľný. Tešíme sa na vás nabudúce.',
+			title: t('cancelledAlreadyTitle'),
+			body: t('cancelledAlreadyBody'),
 		}
 	}
 	return {
-		title: 'Rezervácia zrušená',
-		body: 'Ďakujeme.',
+		title: t('cancelledTitle'),
+		body: t('cancelledBody'),
 	}
 }
 
 export default async function BookingCancelledPage({
+	params,
 	searchParams,
 }: {
+	params: Promise<{ locale: string }>
 	searchParams: SearchParams
 }) {
+	const { locale } = await params
 	const { ok, err } = await searchParams
-	const { title, body } = copy(ok, err)
+	const [copy, t] = await Promise.all([
+		resolveCopy(locale, ok, err),
+		getTranslations({ locale, namespace: 'bookingLanding' }),
+	])
 
 	return (
-		<main className="min-h-[70vh] flex items-center justify-center px-6 py-16">
-			<div className="max-w-md text-center space-y-6">
-				<h1 className="text-2xl font-medium">{title}</h1>
-				<p className="text-base text-gray-600">{body}</p>
-				<Link href="/" className="inline-block underline">
-					Späť na úvod
-				</Link>
-			</div>
-		</main>
+		<BookingActionLanding
+			variant={err ? 'error' : 'cancelled'}
+			title={copy.title}
+			body={copy.body}
+			actionLabels={{
+				backHome: t('actionBackHome'),
+				bookAnother: t('actionBookAnother'),
+				getDirections: t('actionGetDirections'),
+				needHelp: t('needHelp'),
+			}}
+			homeHref={`/${locale}`}
+			bookAnotherHref={`/${locale}/massage/booking`}
+		/>
 	)
 }

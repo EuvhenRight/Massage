@@ -16,6 +16,8 @@ import {
 	resolveAppointmentRequiredFullDayCount,
 	type ServiceData,
 } from '@/lib/services'
+import { readBookingStatus } from '@/lib/booking-status'
+import { getBookingStatusUi } from '@/lib/booking-status-ui'
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { Pencil, X } from 'lucide-react'
@@ -288,11 +290,25 @@ export default function DraggableAppointment({
 				? tierChrome(timedTier)
 				: 'rounded-lg border border-white/15 px-2 py-1.5'
 
+	const bookingStatusValue = readBookingStatus(
+		appointment as unknown as Record<string, unknown>,
+	)
+	const statusUi = getBookingStatusUi(bookingStatusValue)
+	const hasExplicitStatus =
+		bookingStatusValue !== 'pending' && !isPast
+
+	// Cancelled blocks: pull the surface back from the service color so the
+	// row visually recedes without losing the strong rose rail. We keep them
+	// renderable so admin filter chips (Phase 4 follow-up) can still surface
+	// them — by default the parent query hides cancelled rows.
+	const isCancelled = bookingStatusValue === 'cancelled'
 	const surfaceClass = isPast
 		? PAST_COLOR
 		: showAwaitingListChrome
 			? 'bg-transparent border-2 border-dashed border-white/45 text-icyWhite/95'
-			: getServiceColor(appointment, services)
+			: isCancelled
+				? `${getServiceColor(appointment, services)} opacity-55 saturate-50`
+				: getServiceColor(appointment, services)
 
 	/** Tall grid blocks: pin service / name / time to the top instead of vertically centering. */
 	const timedBlockHeightPx = usePositionedCalendar
@@ -309,15 +325,19 @@ export default function DraggableAppointment({
 			? 'justify-start'
 			: 'justify-center'
 
-	/** Left status rail: a crisp Google-Calendar-style edge that encodes booking
-	 *  status on top of the service-colored body. */
+	/** Left status rail: a crisp Google-Calendar-style edge. Booking status
+	 *  takes priority once it leaves `pending`; otherwise we fall back to the
+	 *  existing TBD/full-day/default palette so non-status semantics still
+	 *  read at a glance. */
 	const statusRailClass = isPast
 		? 'bg-white/25'
-		: isTbd
-			? 'bg-rose-400'
-			: isFullDay
-				? 'bg-amber-400'
-				: 'bg-white/40'
+		: hasExplicitStatus
+			? statusUi.railClass
+			: isTbd
+				? 'bg-rose-400'
+				: isFullDay
+					? 'bg-amber-400'
+					: 'bg-white/40'
 	const showStatusRail = !showAwaitingListChrome
 
 	/** Notification channel marker: shown on roomy blocks; the tiny micro/compact
@@ -564,6 +584,19 @@ export default function DraggableAppointment({
 						showHoverActions ? 'transition-opacity group-hover:opacity-0' : ''
 					}`}
 				/>
+			) : null}
+			{hasExplicitStatus && !showAwaitingListChrome && !isDragOverlay ? (
+				<span
+					className={`pointer-events-none absolute left-1.5 top-1 z-[2] inline-flex items-center justify-center rounded-full border px-1 py-0.5 backdrop-blur-sm ${statusUi.badgeClass}`}
+					aria-label={t(`bookingStatus.${statusUi.i18nKey}`)}
+					title={t(`bookingStatus.${statusUi.i18nKey}`)}
+				>
+					<statusUi.icon
+						className={`h-2.5 w-2.5 ${statusUi.iconClass}`}
+						strokeWidth={2.25}
+						aria-hidden
+					/>
+				</span>
 			) : null}
 			{showHoverActions ? (
 				<div className='absolute right-1 top-1 z-[4] flex items-center gap-1 opacity-0 transition-opacity duration-150 focus-within:opacity-100 group-hover:opacity-100'>

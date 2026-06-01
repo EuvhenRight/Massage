@@ -34,6 +34,7 @@ import {
 	notifyCustomerWhatsAppReEngagement,
 	notifyCustomerWhatsAppReminder2Days,
 	notifyCustomerWhatsAppReminder1Day,
+	notifyCustomerWhatsAppReminder1DayConfirmed,
 	notifyCustomerWhatsAppReminderSameDay,
 	parseWhatsappE164,
 } from '@/lib/whatsapp-admin-notify'
@@ -96,6 +97,61 @@ function sentFlagField(w: Window): string {
 	return 'reminder0DaySentAt'
 }
 
+interface ReminderDispatchInput {
+	window: Window
+	isConfirmed: boolean
+	phone: string
+	customerName: string
+	service: string
+	date: string
+	time: string
+	actionToken: string
+}
+
+type ReminderHelperResult = Awaited<
+	ReturnType<typeof notifyCustomerWhatsAppReminder1Day>
+>
+
+/**
+ * Pick the right reminder helper for the window + confirmation state and
+ * gracefully fall back when the confirmed-variant template SID isn't
+ * configured. Returning the same shape every time keeps the calling loop
+ * simple.
+ */
+async function sendReminder(
+	input: ReminderDispatchInput,
+): Promise<ReminderHelperResult> {
+	const payload = {
+		customerPhone: input.phone,
+		customerName: input.customerName,
+		service: input.service,
+		date: input.date,
+		time: input.time,
+		actionToken: input.actionToken,
+	}
+
+	if (input.window === '2day') {
+		return notifyCustomerWhatsAppReminder2Days(payload)
+	}
+
+	if (input.window === '1day') {
+		if (input.isConfirmed) {
+			const r = await notifyCustomerWhatsAppReminder1DayConfirmed(payload)
+			if (r.status === 'skipped' && r.skipReason === 'missing_content_sid') {
+				return notifyCustomerWhatsAppReminder1Day(payload)
+			}
+			return r
+		}
+		return notifyCustomerWhatsAppReminder1Day(payload)
+	}
+
+	// 0-day reminder: same template for confirmed and unconfirmed bookings.
+	// The Twilio button-stripping optimization is only worthwhile for the
+	// 1-day window where there's still a meaningful action gap; on the day
+	// itself the standard reminder with both buttons is fine.
+	return notifyCustomerWhatsAppReminderSameDay(payload)
+}
+
 function authorized(request: Request): boolean {
 	const expected = process.env.CRON_SECRET?.trim()
 	if (!expected) {
@@ -140,6 +196,13 @@ export async function GET(request: Request) {
 		const id = docSnap.id
 
 		if (data.scheduleTbd === true) {
+			summary.skipped += 1
+			continue
+		}
+
+		// Soft-cancelled bookings keep their doc for audit history but must not
+		// receive further reminders.
+		if (data.bookingStatus === 'cancelled') {
 			summary.skipped += 1
 			continue
 		}
@@ -195,17 +258,36 @@ export async function GET(request: Request) {
 				: '—'
 		const dateStr = formatBratislavaDate(start)
 		const timeStr = formatBratislavaTime(start)
-		const actionToken = signTokenForAppointment(id, start)
+		// Sign the reminder window into the token so the confirm/cancel routes
+		// can attribute the customer's response to the right reminder without
+		// trusting unsigned URL params.
+		const tokenSource =
+			window === '2day' ? 'r2' : window === '1day' ? 'r1' : 'r0'
+		const actionToken = signTokenForAppointment(
+			id,
+			start,
+			undefined,
+			tokenSource,
+		)
+
+		// Confirmed-variant reminders drop the "Confirm" button — once the
+		// customer has confirmed (typically via the 2-day reminder), pinging
+		// them to confirm again is noise. The Cancel button stays.
+		//
+		// 2-day reminder always uses the standard template (it's the first
+		// touch). 1-day and 0-day check the booking status and swap to the
+		// confirmed variant when available. If the env var for the variant
+		// is missing the helper returns `missing_content_sid`; we fall back
+		// to the standard template so deployments without the new SIDs keep
+		// reminders flowing (the customer just sees both buttons again,
+		// no functional regression).
+		const isConfirmed = data.bookingStatus === 'confirmed'
 
 		try {
-			const fn =
-				window === '2day'
-					? notifyCustomerWhatsAppReminder2Days
-					: window === '1day'
-						? notifyCustomerWhatsAppReminder1Day
-						: notifyCustomerWhatsAppReminderSameDay
-			const r = await fn({
-				customerPhone: phoneRaw,
+			const r = await sendReminder({
+				window,
+				isConfirmed,
+				phone: phoneRaw,
 				customerName,
 				service,
 				date: dateStr,

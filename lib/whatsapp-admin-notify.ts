@@ -27,10 +27,30 @@ export { parseWhatsappE164 }
 const CONTENT_SID_ENV = {
 	bookingNew: 'TWILIO_CONTENT_SID_BOOKING_NEW',
 	bookingCancelled: 'TWILIO_CONTENT_SID_BOOKING_CANCELLED',
+	bookingConfirmed: 'TWILIO_CONTENT_SID_BOOKING_CONFIRMED',
 	bookingRescheduled: 'TWILIO_CONTENT_SID_BOOKING_RESCHEDULED',
 	reminder2Days: 'TWILIO_CONTENT_SID_REMINDER_2D',
 	reminder1Day: 'TWILIO_CONTENT_SID_REMINDER_1D',
 	reminderSameDay: 'TWILIO_CONTENT_SID_REMINDER_0D',
+	/**
+	 * "Already confirmed" 1-day reminder. Same trigger window as the
+	 * standard 1-day reminder, but the approved Twilio Content Template
+	 * body must show ONLY the Cancel button — the Confirm button is
+	 * stripped because the customer already confirmed earlier in the cycle.
+	 *
+	 * Variables: same as the standard reminders (`{{1}}` first name,
+	 * `{{2}}` service, `{{3}}` date, `{{4}}` time, `{{5}}` actionToken).
+	 * The token is still required because the Cancel button URL embeds it.
+	 *
+	 * Fallback: when the env var is missing, the cron falls back to the
+	 * standard 1-day reminder template — so deployments without the new SID
+	 * keep working, the customer just sees the Confirm button again.
+	 *
+	 * Same-day (0-day) reminders intentionally do NOT have a confirmed
+	 * variant — on the day itself the standard reminder with both buttons
+	 * is fine, so we save the extra template approval round-trip.
+	 */
+	reminder1DayConfirmed: 'TWILIO_CONTENT_SID_REMINDER_1D_CONFIRMED',
 	staffNew: 'TWILIO_CONTENT_SID_STAFF_NEW',
 	staffCancelled: 'TWILIO_CONTENT_SID_STAFF_CANCELLED',
 	staffCustomerConfirmed: 'TWILIO_CONTENT_SID_STAFF_CUSTOMER_CONFIRMED',
@@ -540,6 +560,49 @@ export async function notifyCustomerWhatsAppRescheduled(payload: {
 	return { status: 'sent' }
 }
 
+/**
+ * "Thanks — your appointment is confirmed" message sent to the customer
+ * right after they click the confirm link on a reminder. Variables match
+ * the approved Content Template for `TWILIO_CONTENT_SID_BOOKING_CONFIRMED`:
+ *   {{1}} first name · {{2}} service · {{3}} date · {{4}} time
+ */
+export async function notifyCustomerWhatsAppConfirmed(payload: {
+	customerPhone: string
+	customerName: string
+	service: string
+	date: string
+	time: string
+}): Promise<{
+	status: WhatsAppNotifyResult
+	twilioCode?: number
+	skipReason?: 'twilio_env' | 'unparseable_phone' | 'missing_content_sid'
+}> {
+	const e164 = parseWhatsappE164(payload.customerPhone)
+	if (!e164) return { status: 'skipped', skipReason: 'unparseable_phone' }
+	if (!twilioMessagingCoreConfigured()) {
+		return { status: 'skipped', skipReason: 'twilio_env' }
+	}
+	if (!getContentSid('bookingConfirmed')) {
+		return { status: 'skipped', skipReason: 'missing_content_sid' }
+	}
+	const result = await sendTwilioWhatsAppTemplate(
+		e164,
+		'bookingConfirmed',
+		{
+			'1': firstName(payload.customerName),
+			'2': serviceLineTitle(payload.service),
+			'3': payload.date,
+			'4': payload.time,
+		},
+		'customer',
+	)
+	if (!result.ok) {
+		console.error('[whatsapp-customer] Twilio error:', result.error)
+		return { status: 'failed', twilioCode: result.twilioCode }
+	}
+	return { status: 'sent' }
+}
+
 export async function notifyCustomerWhatsAppCancelled(payload: {
 	customerPhone: string
 	customerName: string
@@ -649,13 +712,22 @@ export async function notifyCustomerWhatsAppReminder1Day(payload: {
 	return { status: 'sent' }
 }
 
+/**
+ * Same-day reminder. The approved Twilio template has NO action buttons,
+ * so we don't pass an action token — variable count must match the
+ * template's `{{n}}` placeholders exactly or Twilio rejects with error 63018.
+ *
+ * `actionToken` is accepted (and ignored) so callers can share a single
+ * reminder payload shape across all windows without per-window branching.
+ */
 export async function notifyCustomerWhatsAppReminderSameDay(payload: {
 	customerPhone: string
 	customerName: string
 	service: string
 	date: string
 	time: string
-	actionToken: string
+	/** Ignored — same-day template has no buttons. Kept for caller convenience. */
+	actionToken?: string
 }): Promise<{
 	status: WhatsAppNotifyResult
 	twilioCode?: number
@@ -672,6 +744,55 @@ export async function notifyCustomerWhatsAppReminderSameDay(payload: {
 	const result = await sendTwilioWhatsAppTemplate(
 		e164,
 		'reminderSameDay',
+		{
+			'1': firstName(payload.customerName),
+			'2': serviceLineTitle(payload.service),
+			'3': payload.date,
+			'4': payload.time,
+		},
+		'customer',
+	)
+	if (!result.ok) {
+		console.error('[whatsapp-customer] Twilio error:', result.error)
+		return { status: 'failed', twilioCode: result.twilioCode }
+	}
+	return { status: 'sent' }
+}
+
+/* ---------- Confirmed-variant reminders (Cancel button only) ---------- */
+
+/**
+ * 1-day reminder for bookings the customer has already confirmed. Same payload
+ * shape as the standard 1-day reminder, but it goes through a different
+ * Twilio Content Template whose body strips the "Confirm" button — the
+ * customer already confirmed, asking again is noise.
+ *
+ * The action token is still required: the remaining Cancel button URL needs
+ * it to authenticate the cancellation.
+ */
+export async function notifyCustomerWhatsAppReminder1DayConfirmed(payload: {
+	customerPhone: string
+	customerName: string
+	service: string
+	date: string
+	time: string
+	actionToken: string
+}): Promise<{
+	status: WhatsAppNotifyResult
+	twilioCode?: number
+	skipReason?: 'twilio_env' | 'unparseable_phone' | 'missing_content_sid'
+}> {
+	const e164 = parseWhatsappE164(payload.customerPhone)
+	if (!e164) return { status: 'skipped', skipReason: 'unparseable_phone' }
+	if (!twilioMessagingCoreConfigured()) {
+		return { status: 'skipped', skipReason: 'twilio_env' }
+	}
+	if (!getContentSid('reminder1DayConfirmed')) {
+		return { status: 'skipped', skipReason: 'missing_content_sid' }
+	}
+	const result = await sendTwilioWhatsAppTemplate(
+		e164,
+		'reminder1DayConfirmed',
 		{
 			'1': firstName(payload.customerName),
 			'2': serviceLineTitle(payload.service),
@@ -700,10 +821,20 @@ export function bookingUrlFor(place: 'massage' | 'depilation' | null): string {
 	return `${base}/sk/${segment}/booking`
 }
 
+/**
+ * Birthday greeting. The approved template hardcodes the booking URL in its
+ * body (a single fixed link, currently pointing at `/sk/depilation/booking`),
+ * so it only declares `{{1}}` — the customer's first name. We accept
+ * `bookingUrl` in the signature for caller convenience and forward
+ * compatibility but ignore it; sending an unused `{{2}}` would land in
+ * Twilio's ContentVariables as junk and risk error 63018 on stricter
+ * template revisions.
+ */
 export async function notifyCustomerWhatsAppBirthday(payload: {
 	customerPhone: string
 	customerName: string
-	bookingUrl: string
+	/** Ignored — template hardcodes the booking link. Kept for caller parity. */
+	bookingUrl?: string
 }): Promise<{
 	status: WhatsAppNotifyResult
 	twilioCode?: number
@@ -722,7 +853,6 @@ export async function notifyCustomerWhatsAppBirthday(payload: {
 		'birthday',
 		{
 			'1': firstName(payload.customerName),
-			'2': payload.bookingUrl,
 		},
 		'customer',
 	)
@@ -733,10 +863,16 @@ export async function notifyCustomerWhatsAppBirthday(payload: {
 	return { status: 'sent' }
 }
 
+/**
+ * Re-engagement (dormant client). Same shape as the birthday template —
+ * booking URL is hardcoded in the approved body, so only `{{1}}` is sent.
+ * See `notifyCustomerWhatsAppBirthday` for the rationale.
+ */
 export async function notifyCustomerWhatsAppReEngagement(payload: {
 	customerPhone: string
 	customerName: string
-	bookingUrl: string
+	/** Ignored — template hardcodes the booking link. */
+	bookingUrl?: string
 }): Promise<{
 	status: WhatsAppNotifyResult
 	twilioCode?: number
@@ -755,7 +891,6 @@ export async function notifyCustomerWhatsAppReEngagement(payload: {
 		'reEngagement',
 		{
 			'1': firstName(payload.customerName),
-			'2': payload.bookingUrl,
 		},
 		'customer',
 	)

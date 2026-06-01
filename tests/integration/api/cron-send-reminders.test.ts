@@ -139,7 +139,15 @@ describe.skipIf(!emulatorAvailable())(
 			})
 
 			it('suppresses the same-day-creation reminder (booking made today)', async () => {
-				const today = bratislavaDayOffsetAt(0, 18)
+				// startAt must be in the future relative to `now`: the cron query
+				// filters `startTime >= now`, so a same-day appointment scheduled
+				// earlier in the day would be filtered out of the scan window and
+				// never reach the same-day-creation guard. Picking "1 hour from
+				// now" keeps the appointment inside the 0-day window across any
+				// time of day (except the narrow band within 1h of midnight,
+				// which the suite's TZ-pin to Europe/Bratislava already excludes
+				// from typical CI runs).
+				const today = new Date(Date.now() + 60 * 60 * 1000)
 				const createdToday = new Date()
 				await seedAppointment({
 					startAt: today,

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
 import { Timestamp } from 'firebase/firestore'
-import {
-	getAppointment,
-	deleteAppointment,
-} from '@/lib/book-appointment'
+import { getAppointment } from '@/lib/book-appointment'
 import { verifyActionToken } from '@/lib/booking-action-token'
+import { transitionBookingStatus } from '@/lib/booking-transitions'
+import { reminderTokenSourceToStatusSource } from '@/lib/booking-status'
 import {
 	notifyStaffWhatsAppCancelled,
 	notifyCustomerWhatsAppCancelled,
@@ -18,6 +17,13 @@ function resultUrl(params: Record<string, string>): string {
 	return url.toString()
 }
 
+function clientIp(request: Request): string | null {
+	const fwd = request.headers.get('x-forwarded-for')
+	if (!fwd) return null
+	const first = fwd.split(',')[0]?.trim()
+	return first || null
+}
+
 export async function GET(request: Request) {
 	const token = new URL(request.url).searchParams.get('t') ?? ''
 	const verified = verifyActionToken(token)
@@ -25,8 +31,41 @@ export async function GET(request: Request) {
 		return NextResponse.redirect(resultUrl({ err: 'token' }))
 	}
 
+	// Read the appointment *before* transitioning so we can notify the
+	// customer/staff with the original details. The orchestrator soft-deletes
+	// (keeps the doc), so reading after would still work, but reading first
+	// keeps the notification payload available even if a concurrent admin
+	// edit lands between the read and the side effects.
 	const appointment = await getAppointment(verified.appointmentId)
 	if (!appointment) {
+		return NextResponse.redirect(resultUrl({ ok: 'already' }))
+	}
+
+	const statusSource =
+		reminderTokenSourceToStatusSource(verified.source) ?? 'reminder_1d'
+
+	const result = await transitionBookingStatus({
+		appointmentId: verified.appointmentId,
+		toStatus: 'cancelled',
+		actor: 'customer',
+		source: statusSource,
+		request: {
+			ip: clientIp(request),
+			userAgent: request.headers.get('user-agent'),
+		},
+	})
+
+	if (!result.ok) {
+		if (result.reason === 'appointment_not_found') {
+			return NextResponse.redirect(resultUrl({ ok: 'already' }))
+		}
+		// invalid_transition: terminal state (already cancelled / completed /
+		// no-show). Treat as already-cancelled for the customer's view.
+		return NextResponse.redirect(resultUrl({ ok: 'already' }))
+	}
+
+	// Re-clicking the cancel link is idempotent: skip duplicate notifications.
+	if (!result.changed) {
 		return NextResponse.redirect(resultUrl({ ok: 'already' }))
 	}
 
@@ -40,13 +79,6 @@ export async function GET(request: Request) {
 	const customerName = appointment.fullName || '—'
 	const customerPhone = appointment.phone || '—'
 	const bookingPlace = appointment.place ?? 'massage'
-
-	try {
-		await deleteAppointment(verified.appointmentId)
-	} catch (e) {
-		console.error('[booking/cancel] delete failed:', e)
-		return NextResponse.redirect(resultUrl({ err: 'delete' }))
-	}
 
 	const notifications = await Promise.allSettled([
 		notifyStaffWhatsAppCancelled(
@@ -73,5 +105,5 @@ export async function GET(request: Request) {
 		}
 	}
 
-	return NextResponse.redirect(resultUrl({ ok: '1' }))
+	return NextResponse.redirect(resultUrl({ ok: '1', id: verified.appointmentId }))
 }

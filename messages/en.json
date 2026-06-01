@@ -910,6 +910,30 @@
   "admin": {
     "signIn": "Sign in",
     "admin": "Admin",
+    "bookingStatus": {
+      "pending": "Pending confirmation",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "noShow": "No show"
+    },
+    "bookingStatusActions": "Change status",
+    "bookingStatusBusy": "Saving…",
+    "bookingStatusButton": {
+      "pending": "Mark as pending",
+      "confirmed": "Mark as confirmed",
+      "cancelled": "Cancel booking",
+      "completed": "Mark as completed",
+      "noShow": "Mark as no-show"
+    },
+    "bookingStatusToast": {
+      "confirmed": "Marked as confirmed",
+      "cancelled": "Booking cancelled",
+      "completed": "Marked as completed",
+      "noShow": "Marked as no-show",
+      "pending": "Marked as pending",
+      "failed": "Couldn't change status"
+    },
     "chooseBookingSystem": "Choose which booking system to manage",
     "drawerPlaces": "Studios",
     "drawerSections": "Sections",
@@ -1453,5 +1477,30 @@
     "confirmed": "Confirmed",
     "hi": "Hi",
     "luxurySalon": "Luxury Salon"
+  },
+  "bookingLanding": {
+    "confirmedTitle": "Appointment Confirmed",
+    "confirmedBody": "Thank you for confirming your appointment. We look forward to seeing you.",
+    "confirmedAlreadyTitle": "Appointment is Confirmed",
+    "confirmedAlreadyBody": "This appointment is already marked as confirmed. We look forward to seeing you.",
+    "cancelledTitle": "Appointment Cancelled",
+    "cancelledBody": "Your appointment has been cancelled. Thank you for letting us know — we hope to see you again soon.",
+    "cancelledAlreadyTitle": "Appointment Already Cancelled",
+    "cancelledAlreadyBody": "We couldn't find this appointment in our system — it was probably cancelled earlier.",
+    "tokenErrTitleConfirm": "Link Expired",
+    "tokenErrBodyConfirm": "This link is invalid or has expired. To confirm your appointment, please contact us directly.",
+    "tokenErrTitleCancel": "Link Expired",
+    "tokenErrBodyCancel": "This link is invalid or has expired. To cancel your appointment, please contact us directly.",
+    "missingTitle": "Appointment Not Found",
+    "missingBody": "We couldn't find your appointment in our system. It may have been cancelled already. Reach out if you have any questions.",
+    "summaryHeading": "Appointment details",
+    "summaryService": "Service",
+    "summaryDate": "Date",
+    "summaryTime": "Time",
+    "summaryLocation": "Location",
+    "actionBackHome": "Back to home",
+    "actionBookAnother": "Book another appointment",
+    "actionGetDirections": "Get directions",
+    "needHelp": "Need to change something? Contact us:"
   }
 }

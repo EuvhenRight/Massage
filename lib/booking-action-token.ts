@@ -9,10 +9,21 @@
 
 import { createHmac, timingSafeEqual } from 'node:crypto'
 
+/**
+ * Compact reminder-window tag baked into the token by the cron job. Lets the
+ * confirm/cancel routes record *which* reminder the customer responded to
+ * ("they confirmed from the 1-day reminder") without trusting unsigned URL
+ * params. Optional for backward compatibility with tokens minted before the
+ * field existed — verify treats missing as `undefined`.
+ */
+export type BookingActionTokenSource = 'r2' | 'r1' | 'r0'
+
 export type BookingActionTokenPayload = {
 	appointmentId: string
 	/** Unix ms — token rejected after this instant */
 	expiresAt: number
+	/** Which reminder window minted this token, when known. */
+	source?: BookingActionTokenSource
 }
 
 function getSecret(): string {
@@ -49,7 +60,14 @@ function hmac(payloadBuf: Buffer, secret: string): Buffer {
 
 export function signActionToken(input: BookingActionTokenPayload): string {
 	const secret = getSecret()
-	const json = JSON.stringify({ id: input.appointmentId, e: input.expiresAt })
+	const payload: Record<string, unknown> = {
+		id: input.appointmentId,
+		e: input.expiresAt,
+	}
+	// Only include `s` when set so unchanged callers (and previously-minted
+	// tokens replayed through a signing test) produce identical bytes.
+	if (input.source) payload.s = input.source
+	const json = JSON.stringify(payload)
 	const payloadBuf = Buffer.from(json, 'utf8')
 	const sig = hmac(payloadBuf, secret)
 	return `${b64urlEncode(payloadBuf)}.${b64urlEncode(sig)}`
@@ -78,7 +96,7 @@ export function verifyActionToken(
 	if (expected.length !== sigBuf.length) return null
 	if (!timingSafeEqual(expected, sigBuf)) return null
 
-	let parsed: { id?: unknown; e?: unknown }
+	let parsed: { id?: unknown; e?: unknown; s?: unknown }
 	try {
 		parsed = JSON.parse(payloadBuf.toString('utf8'))
 	} catch {
@@ -88,7 +106,16 @@ export function verifyActionToken(
 	if (typeof parsed.e !== 'number' || !Number.isFinite(parsed.e)) return null
 	if (Date.now() >= parsed.e) return null
 
-	return { appointmentId: parsed.id, expiresAt: parsed.e }
+	const source =
+		parsed.s === 'r2' || parsed.s === 'r1' || parsed.s === 'r0'
+			? (parsed.s as BookingActionTokenSource)
+			: undefined
+
+	return {
+		appointmentId: parsed.id,
+		expiresAt: parsed.e,
+		...(source ? { source } : {}),
+	}
 }
 
 /** Convenience: token whose expiry is the appointment start + a small grace period. */
@@ -96,9 +123,11 @@ export function signTokenForAppointment(
 	appointmentId: string,
 	appointmentStart: Date,
 	gracePeriodMs: number = 6 * 60 * 60 * 1000,
+	source?: BookingActionTokenSource,
 ): string {
 	return signActionToken({
 		appointmentId,
 		expiresAt: appointmentStart.getTime() + gracePeriodMs,
+		...(source ? { source } : {}),
 	})
 }
