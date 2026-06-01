@@ -159,7 +159,11 @@ export default function AdminClientCardModal({
 		return () => unsub()
 	}, [isCreate, client])
 
-	const now = useMemo(() => new Date(), [appointments.length])
+	// Stable "now" reference: computed once when the modal mounts. Slight clock
+	// drift while the modal is open is acceptable for upcoming/completed
+	// classification — a stable reference avoids cascading recomputes of the
+	// dependent useMemos on every render.
+	const now = useMemo(() => new Date(), [])
 	const upcomingApt = useMemo(
 		() =>
 			[...appointments]

@@ -386,6 +386,8 @@ function BookingFlowInner({
 			phone,
 			notifyByEmail,
 			notifyByWhatsApp,
+			birthday,
+			optInMarketing,
 			onSuccess,
 			place,
 			t,

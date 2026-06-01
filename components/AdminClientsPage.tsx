@@ -88,7 +88,10 @@ export default function AdminClientsPage({ place }: AdminClientsPageProps) {
 		return () => unsub()
 	}, [place])
 
-	const now = useMemo(() => new Date(), [clients])
+	// Stable "now" reference: computed once when the page mounts. The clients
+	// list refreshes via onSnapshot; minor clock drift while the page is open
+	// is fine for the birthday-soon filter (uses day granularity).
+	const now = useMemo(() => new Date(), [])
 
 	const filtered = useMemo(() => {
 		const q = searchQuery.trim().toLowerCase()
