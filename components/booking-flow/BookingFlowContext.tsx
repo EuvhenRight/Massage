@@ -92,8 +92,12 @@ const initialState: BookingFlowState = {
   phone: "",
   birthday: "",
   optInMarketing: false,
-  notifyByEmail: true,
-  notifyByWhatsApp: false,
+  // Public booking is WhatsApp-only by product decision. Email is still
+  // collected (in case staff needs an alternate contact channel) but no
+  // automated email goes out for customer-initiated bookings. Admin
+  // manual booking has its own checkbox UI in `AdminAppointmentModal`.
+  notifyByEmail: false,
+  notifyByWhatsApp: true,
   catalogSex: null,
 };
 
@@ -215,10 +219,10 @@ export function BookingFlowProvider({
         phone: parsed.phone,
         birthday: parsed.birthday ?? "",
         optInMarketing: parsed.optInMarketing === true,
-        // Channels are mutually exclusive now; only keep WhatsApp-only drafts,
-        // otherwise fall back to email (covers legacy both-on / both-off drafts).
-        notifyByEmail: !(parsed.notifyByWhatsApp === true && parsed.notifyByEmail === false),
-        notifyByWhatsApp: parsed.notifyByWhatsApp === true && parsed.notifyByEmail === false,
+        // Public booking is WhatsApp-only — ignore any channel choice the
+        // legacy draft persisted and force the canonical values.
+        notifyByEmail: false,
+        notifyByWhatsApp: true,
         catalogSex: parsed.catalogSex ?? null,
       };
     }
@@ -274,8 +278,8 @@ export function BookingFlowProvider({
             ? (first?.scheduleTbdAdminNote ?? "")
             : "",
         catalogSex: null,
-        notifyByEmail: true,
-        notifyByWhatsApp: false,
+        notifyByEmail: false,
+        notifyByWhatsApp: true,
       };
     });
   }, [services, place, defaultDuration, defaultService]);
@@ -484,8 +488,8 @@ export function BookingFlowProvider({
           ? (first?.scheduleTbdAdminNote ?? "")
           : "",
       catalogSex: null,
-      notifyByEmail: true,
-      notifyByWhatsApp: false,
+      notifyByEmail: false,
+      notifyByWhatsApp: true,
     });
   }, [defaultDuration, services]);
 

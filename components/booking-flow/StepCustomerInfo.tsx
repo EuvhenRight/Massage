@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, MessageCircle } from "lucide-react";
+import { Check } from "lucide-react";
 
 export interface StepCustomerInfoHandle {
   submitForSave: () => Promise<boolean>;
@@ -58,10 +58,6 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
     setCustomerInfo,
     setBirthday,
     setOptInMarketing,
-    notifyByEmail,
-    notifyByWhatsApp,
-    setNotifyByEmail,
-    setNotifyByWhatsApp,
     bookingGranularity,
     service,
     bookingDayCount,
@@ -98,14 +94,13 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
     return formatPhoneInternationalDisplay(e164) ?? e164;
   }, [phoneValue]);
 
-  const notifySelectionOk =
-    (notifyByEmail || notifyByWhatsApp) &&
-    (!notifyByWhatsApp || phoneE164Ok);
-
+  // WhatsApp is the only automated channel for public bookings. We still
+  // require a valid international phone number because every customer-
+  // facing notification (reminders, confirmation) goes through it.
   const isValid = form.formState.isValid;
   useEffect(() => {
-    onValidityChange?.(isValid && notifySelectionOk);
-  }, [isValid, notifySelectionOk, onValidityChange]);
+    onValidityChange?.(isValid && phoneE164Ok);
+  }, [isValid, phoneE164Ok, onValidityChange]);
 
   const submitForSave = useCallback(async () => {
     const ok = await form.trigger();
@@ -126,11 +121,7 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
       const values = form.getValues();
       const ok = await form.trigger();
       if (!ok) return;
-      if (!notifyByEmail && !notifyByWhatsApp) {
-        toast.error(t("notifyChannelsRequired"));
-        return;
-      }
-      if (notifyByWhatsApp && !parseWhatsappE164(values.phone || "")) {
+      if (!parseWhatsappE164(values.phone || "")) {
         toast.error(tValidation("invalidPhone"));
         return;
       }
@@ -148,9 +139,6 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
       setCustomerInfo,
       setBirthday,
       setOptInMarketing,
-      notifyByEmail,
-      notifyByWhatsApp,
-      t,
       tValidation,
     ],
   );
@@ -272,21 +260,10 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
             control={form.control}
             name="phone"
             render={({ field }) => (
-              <FormItem className="space-y-3">
+              <FormItem>
                 <FormLabel className="text-icyWhite/90 text-sm font-medium">
                   {t("phone")}
                 </FormLabel>
-                <div
-                  className={`flex gap-3 rounded-xl p-3.5 sm:p-4 ${accent.inputBorder} bg-white/[0.04]`}
-                >
-                  <MessageCircle
-                    className="h-5 w-5 shrink-0 text-emerald-400/85 mt-0.5"
-                    aria-hidden
-                  />
-                  <p className="text-[13px] sm:text-sm text-icyWhite/65 leading-relaxed">
-                    {t("phoneWhatsAppHint")}
-                  </p>
-                </div>
                 <FormControl>
                   <Input
                     variant="booking"
@@ -299,6 +276,9 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
                     {...field}
                   />
                 </FormControl>
+                <p className="text-xs text-icyWhite/45 leading-relaxed">
+                  {t("phoneWhatsAppHint")}
+                </p>
                 {phoneParsedPreview && !form.formState.errors.phone && (
                   <p
                     className="flex items-center gap-2 text-xs text-emerald-400/90"
@@ -312,41 +292,6 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
               </FormItem>
             )}
           />
-
-          <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-            <p className="text-sm font-medium text-icyWhite/90">{t("notifyTitle")}</p>
-            <label className="flex cursor-pointer items-start gap-3">
-              <Checkbox
-                checked={notifyByEmail}
-                onCheckedChange={(c) => setNotifyByEmail(c === true)}
-                className="mt-0.5"
-                aria-label={t("notifyEmailLabel")}
-              />
-              <span className="text-sm text-icyWhite/80 leading-snug">{t("notifyEmailLabel")}</span>
-            </label>
-            <label className="flex cursor-pointer items-start gap-3">
-              <Checkbox
-                checked={notifyByWhatsApp}
-                onCheckedChange={(c) => setNotifyByWhatsApp(c === true)}
-                className="mt-0.5"
-                aria-label={t("notifyWhatsAppLabel")}
-              />
-              <span className="text-sm text-icyWhite/80 leading-snug">
-                {t("notifyWhatsAppLabel")}
-                {notifyByWhatsApp && !phoneE164Ok && (
-                  <span className="mt-1 block text-xs text-amber-200/90">
-                    {t("notifyWhatsAppMustFixPhone")}
-                  </span>
-                )}
-                {!notifyByWhatsApp && !phoneE164Ok && (
-                  <span className="mt-1 block text-xs text-icyWhite/45">
-                    {t("notifyWhatsAppNeedsPhone")}
-                  </span>
-                )}
-              </span>
-            </label>
-            <p className="text-xs text-icyWhite/45 leading-relaxed">{t("notifyHint")}</p>
-          </div>
 
           <FormField
             control={form.control}

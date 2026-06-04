@@ -119,7 +119,7 @@ describe.skipIf(!emulatorAvailable())(
 				await seed({
 					id: 'apt-confirmed-past',
 					bookingStatus: 'confirmed',
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: -48,
 				})
 
 				const res = await finalizeGET(withAuth())
@@ -152,7 +152,7 @@ describe.skipIf(!emulatorAvailable())(
 				await seed({
 					id: 'apt-pending-past',
 					bookingStatus: 'pending',
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: -48,
 				})
 
 				const res = await finalizeGET(withAuth())
@@ -184,7 +184,7 @@ describe.skipIf(!emulatorAvailable())(
 				await seed({
 					id: 'apt-cancelled',
 					bookingStatus: 'cancelled',
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: -48,
 				})
 
 				await finalizeGET(withAuth())
@@ -195,7 +195,7 @@ describe.skipIf(!emulatorAvailable())(
 				await seed({
 					id: 'apt-already-completed',
 					bookingStatus: 'completed',
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: -48,
 				})
 
 				await finalizeGET(withAuth())
@@ -206,7 +206,7 @@ describe.skipIf(!emulatorAvailable())(
 				await seed({
 					id: 'apt-already-noshow',
 					bookingStatus: 'no_show',
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: -48,
 				})
 
 				await finalizeGET(withAuth())
@@ -234,7 +234,7 @@ describe.skipIf(!emulatorAvailable())(
 					// TBD lives at 2099 in production; we use a past offset here
 					// only to ensure the `scheduleTbd === true` guard alone is
 					// sufficient to skip the doc.
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: -48,
 				})
 
 				await finalizeGET(withAuth())
@@ -247,12 +247,12 @@ describe.skipIf(!emulatorAvailable())(
 				await seed({
 					id: 'apt-audit-confirmed',
 					bookingStatus: 'confirmed',
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: -48,
 				})
 				await seed({
 					id: 'apt-audit-pending',
 					bookingStatus: 'pending',
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: -48,
 				})
 
 				await finalizeGET(withAuth())
@@ -277,15 +277,18 @@ describe.skipIf(!emulatorAvailable())(
 
 		describe('summary payload', () => {
 			it('returns counts and the cutoff timestamp', async () => {
+				// Far enough in the past that even an aggressive (large)
+				// `AUTO_FINALIZE_GRACE_HOURS` override still selects these.
+				const farPastOffset = -240 // 10 days ago
 				await seed({
 					id: 'a',
 					bookingStatus: 'confirmed',
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: farPastOffset,
 				})
 				await seed({
 					id: 'b',
 					bookingStatus: 'pending',
-					endTimeOffsetHours: -24,
+					endTimeOffsetHours: farPastOffset,
 				})
 
 				const res = await finalizeGET(withAuth())
@@ -297,7 +300,12 @@ describe.skipIf(!emulatorAvailable())(
 					noShow: { updated: number; scanned: number }
 				}
 				expect(body.ok).toBe(true)
-				expect(body.gracePeriodHours).toBe(12)
+				// Grace defaults to 12h; tests run against the local env so we
+				// accept whatever AUTO_FINALIZE_GRACE_HOURS is configured to.
+				const envGrace = Number(process.env.AUTO_FINALIZE_GRACE_HOURS)
+				const expectedGrace =
+					Number.isFinite(envGrace) && envGrace >= 0 ? envGrace : 12
+				expect(body.gracePeriodHours).toBe(expectedGrace)
 				expect(body.completed.updated).toBe(1)
 				expect(body.noShow.updated).toBe(1)
 				expect(typeof body.cutoffIso).toBe('string')
