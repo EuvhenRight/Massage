@@ -32,7 +32,12 @@ import { Timestamp } from 'firebase/firestore'
 import {
 	appointmentPrice,
 	appointmentServiceLabel,
+	bookingBehaviorBreakdown,
+	bookingStatusTotals,
+	cancellationRate,
+	confirmationRate,
 	dayCountFor,
+	everConfirmedRate,
 	flattenCatalogPrices,
 	formatMoney,
 	formatPercent,
@@ -40,6 +45,7 @@ import {
 	parsePriceValue,
 	resolveCatalogEntry,
 	resolvePeriod,
+	responseRate,
 	tsToDate,
 } from '@/lib/analytics-helpers'
 import type { AppointmentData } from '@/lib/book-appointment'
@@ -508,5 +514,265 @@ describe('tsToDate', () => {
 	it('accepts any object with a toDate() method', () => {
 		const fake = { toDate: () => new Date('2026-05-15') }
 		expect(tsToDate(fake)?.getFullYear()).toBe(2026)
+	})
+})
+
+describe('bookingStatusTotals', () => {
+	function apt(status: AppointmentData['bookingStatus']): AppointmentData {
+		return {
+			id: `apt-${Math.random()}`,
+			startTime: new Date(),
+			endTime: new Date(),
+			service: 'x',
+			fullName: 'x',
+			email: 'x',
+			phone: 'x',
+			bookingStatus: status,
+		}
+	}
+
+	it('returns zeroes for an empty list', () => {
+		expect(bookingStatusTotals([])).toEqual({
+			total: 0,
+			pending: 0,
+			confirmed: 0,
+			cancelled: 0,
+			completed: 0,
+			noShow: 0,
+		})
+	})
+
+	it('buckets each status into its own counter', () => {
+		const list: AppointmentData[] = [
+			apt('confirmed'),
+			apt('confirmed'),
+			apt('cancelled'),
+			apt('completed'),
+			apt('no_show'),
+			apt('pending'),
+		]
+		expect(bookingStatusTotals(list)).toEqual({
+			total: 6,
+			pending: 1,
+			confirmed: 2,
+			cancelled: 1,
+			completed: 1,
+			noShow: 1,
+		})
+	})
+
+	it('treats docs without bookingStatus as pending', () => {
+		const list: AppointmentData[] = [apt(undefined), apt(undefined)]
+		expect(bookingStatusTotals(list)).toMatchObject({
+			total: 2,
+			pending: 2,
+		})
+	})
+})
+
+describe('cancellationRate', () => {
+	function apt(status: AppointmentData['bookingStatus']): AppointmentData {
+		return {
+			id: `apt-${Math.random()}`,
+			startTime: new Date(),
+			endTime: new Date(),
+			service: 'x',
+			fullName: 'x',
+			email: 'x',
+			phone: 'x',
+			bookingStatus: status,
+		}
+	}
+
+	it('is 0 for an empty cohort (no division by zero)', () => {
+		expect(cancellationRate([])).toBe(0)
+	})
+
+	it('is 0 when no bookings are cancelled', () => {
+		expect(
+			cancellationRate([apt('confirmed'), apt('completed'), apt('pending')]),
+		).toBe(0)
+	})
+
+	it('returns the cancelled fraction', () => {
+		// 1 of 4 → 0.25
+		expect(
+			cancellationRate([
+				apt('cancelled'),
+				apt('confirmed'),
+				apt('completed'),
+				apt('pending'),
+			]),
+		).toBe(0.25)
+	})
+
+	it('is 1 when every booking was cancelled', () => {
+		expect(cancellationRate([apt('cancelled'), apt('cancelled')])).toBe(1)
+	})
+})
+
+describe('confirmationRate', () => {
+	function apt(status: AppointmentData['bookingStatus']): AppointmentData {
+		return {
+			id: `apt-${Math.random()}`,
+			startTime: new Date(),
+			endTime: new Date(),
+			service: 'x',
+			fullName: 'x',
+			email: 'x',
+			phone: 'x',
+			bookingStatus: status,
+		}
+	}
+
+	it('is 0 for an empty cohort', () => {
+		expect(confirmationRate([])).toBe(0)
+	})
+
+	it('counts only current `confirmed` status (not completed)', () => {
+		// `completed` was once `confirmed` but is now a different state;
+		// confirmationRate is a current-state metric.
+		expect(
+			confirmationRate([
+				apt('confirmed'),
+				apt('completed'),
+				apt('pending'),
+				apt('cancelled'),
+			]),
+		).toBe(0.25)
+	})
+})
+
+describe('responseRate', () => {
+	function apt(status: AppointmentData['bookingStatus']): AppointmentData {
+		return {
+			id: `apt-${Math.random()}`,
+			startTime: new Date(),
+			endTime: new Date(),
+			service: 'x',
+			fullName: 'x',
+			email: 'x',
+			phone: 'x',
+			bookingStatus: status,
+		}
+	}
+
+	it('counts confirmed + cancelled as engaged', () => {
+		// 2 confirmed + 1 cancelled out of 5 = 0.6
+		expect(
+			responseRate([
+				apt('confirmed'),
+				apt('confirmed'),
+				apt('cancelled'),
+				apt('pending'),
+				apt('pending'),
+			]),
+		).toBe(0.6)
+	})
+
+	it('treats completed/no_show as non-responses (post-appointment states)', () => {
+		// Even though completed implies engagement, by the time it's
+		// completed we're past the reminder window — we want this metric to
+		// signal "did the customer respond to the reminder loop?", not
+		// "did the customer ever engage with the booking?".
+		expect(
+			responseRate([apt('completed'), apt('no_show'), apt('pending')]),
+		).toBe(0)
+	})
+
+	it('is 1 when every booking responded', () => {
+		expect(
+			responseRate([apt('confirmed'), apt('cancelled'), apt('cancelled')]),
+		).toBe(1)
+	})
+})
+
+describe('everConfirmedRate', () => {
+	function aptWithConfirm(confirmedAt: Date | null): AppointmentData {
+		return {
+			id: `apt-${Math.random()}`,
+			startTime: new Date(),
+			endTime: new Date(),
+			service: 'x',
+			fullName: 'x',
+			email: 'x',
+			phone: 'x',
+			confirmedAt: confirmedAt
+				? Timestamp.fromDate(confirmedAt)
+				: undefined,
+		}
+	}
+
+	it('is 0 for an empty cohort', () => {
+		expect(everConfirmedRate([])).toBe(0)
+	})
+
+	it('counts any booking that has a confirmedAt timestamp', () => {
+		// Includes bookings that have moved past confirmed (since the
+		// timestamp is monotonic and preserved through later transitions).
+		expect(
+			everConfirmedRate([
+				aptWithConfirm(new Date()),
+				aptWithConfirm(new Date()),
+				aptWithConfirm(null),
+				aptWithConfirm(null),
+			]),
+		).toBe(0.5)
+	})
+})
+
+describe('bookingBehaviorBreakdown', () => {
+	function apt(status: AppointmentData['bookingStatus']): AppointmentData {
+		return {
+			id: `apt-${Math.random()}`,
+			startTime: new Date(),
+			endTime: new Date(),
+			service: 'x',
+			fullName: 'x',
+			email: 'x',
+			phone: 'x',
+			bookingStatus: status,
+		}
+	}
+
+	it('returns one row per status in funnel order', () => {
+		const result = bookingBehaviorBreakdown([
+			apt('confirmed'),
+			apt('cancelled'),
+			apt('pending'),
+			apt('completed'),
+			apt('no_show'),
+		])
+		expect(result.total).toBe(5)
+		expect(result.rows.map(r => r.status)).toEqual([
+			'pending',
+			'confirmed',
+			'cancelled',
+			'completed',
+			'no_show',
+		])
+		for (const r of result.rows) {
+			expect(r.count).toBe(1)
+			expect(r.share).toBeCloseTo(0.2, 5)
+		}
+	})
+
+	it('handles empty input without dividing by zero', () => {
+		const result = bookingBehaviorBreakdown([])
+		expect(result.total).toBe(0)
+		for (const r of result.rows) {
+			expect(r.count).toBe(0)
+			expect(r.share).toBe(0)
+		}
+	})
+
+	it('sums shares to ~1 for non-empty cohorts', () => {
+		const result = bookingBehaviorBreakdown([
+			apt('confirmed'),
+			apt('confirmed'),
+			apt('cancelled'),
+		])
+		const totalShare = result.rows.reduce((s, r) => s + r.share, 0)
+		expect(totalShare).toBeCloseTo(1, 5)
 	})
 })

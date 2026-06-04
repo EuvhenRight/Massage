@@ -1,17 +1,17 @@
 /**
- * Post-confirmation landing page. The route handler at `/api/booking/confirm`
- * redirects here after running the booking status transition; the only
- * server-side work left is fetching the appointment for the summary card
- * (the `id` URL param is set by the route handler after a successful
- * transition — i.e. the customer already passed the token check).
+ * Post-confirmation landing page. Slovak only — by product decision, the
+ * confirmation/cancellation flow doesn't offer a language switch; whichever
+ * locale the customer's site session is in, this page always shows the
+ * salon's Slovak copy. The `[locale]` segment is kept so the existing URLs
+ * minted by the route handler (`/booking/confirmed`) keep working through
+ * next-intl's middleware redirect.
  *
- * For error/missing/token-invalid states the route handler appends an `err=…`
- * param and we render a neutral fallback. The page never re-runs the token
- * verification — that already happened at the handler.
+ * The route handler at `/api/booking/confirm` redirects here after running
+ * the booking-status transition and (when the URL carries `?id=`) we do a
+ * best-effort summary load to render the appointment details card.
  */
 
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
 import { Timestamp } from 'firebase/firestore'
 import BookingActionLanding, {
 	type BookingActionLandingSummary,
@@ -29,40 +29,73 @@ type SearchParams = Promise<{
 	ok?: string
 	err?: string
 	id?: string
+	preview?: string
 }>
+
+const SK = {
+	confirmedTitle: 'Ďakujeme za potvrdenie',
+	confirmedBody: 'Tešíme sa na Vašu návštevu.',
+	confirmedAlreadyTitle: 'Rezervácia je potvrdená',
+	confirmedAlreadyBody:
+		'Túto rezerváciu sme už evidovali ako potvrdenú. Tešíme sa na Vašu návštevu.',
+	tokenErrTitle: 'Odkaz vypršal',
+	tokenErrBody:
+		'Tento odkaz je neplatný alebo už vypršal. Ak potrebujete potvrdiť rezerváciu, kontaktujte nás prosím priamo.',
+	missingTitle: 'Rezerváciu sme nenašli',
+	missingBody:
+		'Vašu rezerváciu sme v systéme nenašli. Možno bola už zrušená. Ak máte otázky, ozvite sa nám.',
+	previewTitle: 'Potvrdenie rezervácie',
+	previewBody:
+		'Otvorte odkaz na svojom telefóne, aby ste potvrdili rezerváciu.',
+	summaryHeading: 'Detaily rezervácie',
+	summaryService: 'Služba',
+	summaryDate: 'Dátum',
+	summaryTime: 'Čas',
+	summaryLocation: 'Miesto',
+	actionBackHome: 'Späť na úvod',
+	actionBookAnother: 'Rezervovať ďalší termín',
+	actionGetDirections: 'Zobraziť na mape',
+	needHelp: 'Potrebujete zmenu? Kontaktujte nás:',
+} as const
 
 type Copy = { title: string; body: string; showSummary: boolean }
 
-async function resolveCopy(
-	locale: string,
+function resolveCopy(
 	ok: string | undefined,
 	err: string | undefined,
-): Promise<Copy> {
-	const t = await getTranslations({ locale, namespace: 'bookingLanding' })
+	preview: string | undefined,
+): Copy {
+	if (preview === '1') {
+		return {
+			title: SK.previewTitle,
+			body: SK.previewBody,
+			showSummary: false,
+		}
+	}
 	if (err === 'token') {
 		return {
-			title: t('tokenErrTitleConfirm'),
-			body: t('tokenErrBodyConfirm'),
+			title: SK.tokenErrTitle,
+			body: SK.tokenErrBody,
 			showSummary: false,
 		}
 	}
 	if (err === 'missing') {
 		return {
-			title: t('missingTitle'),
-			body: t('missingBody'),
+			title: SK.missingTitle,
+			body: SK.missingBody,
 			showSummary: false,
 		}
 	}
 	if (ok === '1') {
 		return {
-			title: t('confirmedTitle'),
-			body: t('confirmedBody'),
+			title: SK.confirmedTitle,
+			body: SK.confirmedBody,
 			showSummary: true,
 		}
 	}
 	return {
-		title: t('confirmedAlreadyTitle'),
-		body: t('confirmedAlreadyBody'),
+		title: SK.confirmedAlreadyTitle,
+		body: SK.confirmedAlreadyBody,
 		showSummary: false,
 	}
 }
@@ -74,7 +107,6 @@ async function resolveCopy(
  */
 async function loadSummary(
 	id: string | undefined,
-	locale: string,
 ): Promise<{ summary: BookingActionLandingSummary | null; place: Place | null }> {
 	if (!id) return { summary: null, place: null }
 	try {
@@ -87,8 +119,8 @@ async function loadSummary(
 		return {
 			summary: {
 				service: appointment.service || '—',
-				date: formatDate(start, { locale }),
-				time: formatTime(start, { locale }),
+				date: formatDate(start, { locale: 'sk' }),
+				time: formatTime(start, { locale: 'sk' }),
 			},
 			place: appointment.place ?? null,
 		}
@@ -99,48 +131,42 @@ async function loadSummary(
 }
 
 export default async function BookingConfirmedPage({
-	params,
 	searchParams,
 }: {
-	params: Promise<{ locale: string }>
 	searchParams: SearchParams
 }) {
-	const { locale } = await params
-	const { ok, err, id } = await searchParams
-	const [copy, t, summaryRes] = await Promise.all([
-		resolveCopy(locale, ok, err),
-		getTranslations({ locale, namespace: 'bookingLanding' }),
-		loadSummary(id, locale),
-	])
+	const { ok, err, id, preview } = await searchParams
+	const copy = resolveCopy(ok, err, preview)
+	const summaryRes = await loadSummary(id)
 
 	const summary = copy.showSummary ? summaryRes.summary : null
 	const place = summaryRes.place ?? 'massage'
 
 	return (
 		<BookingActionLanding
-			variant={err ? 'error' : 'confirmed'}
+			variant={err || preview ? 'error' : 'confirmed'}
 			title={copy.title}
 			body={copy.body}
 			summary={summary}
 			summaryLabels={
 				summary
 					? {
-							heading: t('summaryHeading'),
-							service: t('summaryService'),
-							date: t('summaryDate'),
-							time: t('summaryTime'),
-							location: t('summaryLocation'),
+							heading: SK.summaryHeading,
+							service: SK.summaryService,
+							date: SK.summaryDate,
+							time: SK.summaryTime,
+							location: SK.summaryLocation,
 						}
 					: undefined
 			}
 			actionLabels={{
-				backHome: t('actionBackHome'),
-				bookAnother: t('actionBookAnother'),
-				getDirections: t('actionGetDirections'),
-				needHelp: t('needHelp'),
+				backHome: SK.actionBackHome,
+				bookAnother: SK.actionBookAnother,
+				getDirections: SK.actionGetDirections,
+				needHelp: SK.needHelp,
 			}}
-			homeHref={`/${locale}`}
-			bookAnotherHref={`/${locale}/${place}/booking`}
+			homeHref='/sk'
+			bookAnotherHref={`/sk/${place}/booking`}
 		/>
 	)
 }

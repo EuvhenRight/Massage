@@ -431,15 +431,14 @@ export default function AdminPlacePage({
 			orderBy('startTime', 'asc'),
 		)
 		const unsub = onSnapshot(q, snapshot => {
-			const list = snapshot.docs
-				// History view also hides cancelled by default to match the agenda
-				// behavior; cancelled bookings are still readable individually
-				// (admin can find them via the client card timeline once that
-				// lands in a later phase).
-				.filter(doc => doc.data().bookingStatus !== 'cancelled')
-				.map(doc =>
-					toAppointmentData({ id: doc.id, data: () => doc.data() }),
-				)
+			// allAppointments feeds the analytics panel and the client card
+			// timeline — both need cancelled bookings to compute totals and
+			// surface "the booking existed, was cancelled on <date>". The
+			// active calendar/agenda hide cancelled rows via their own
+			// listeners (see below + BookingCalendarGrid).
+			const list = snapshot.docs.map(doc =>
+				toAppointmentData({ id: doc.id, data: () => doc.data() }),
+			)
 			setAllAppointments([...list].reverse())
 		})
 		return () => unsub()

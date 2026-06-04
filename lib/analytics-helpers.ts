@@ -260,6 +260,162 @@ export function formatPercent(n: number): string {
 	return `${Math.round(n * 100)}%`
 }
 
+export interface BookingStatusTotals {
+	total: number
+	pending: number
+	confirmed: number
+	cancelled: number
+	completed: number
+	noShow: number
+}
+
+/**
+ * Count appointments by lifecycle status. Legacy docs without a
+ * `bookingStatus` field are bucketed as `pending` (matching the read-side
+ * fallback in `lib/booking-status.ts`), so totals stay consistent across
+ * the migration boundary.
+ *
+ * Caller is responsible for any filtering it wants first (e.g. period,
+ * place) — this function is a pure aggregator and treats the input list
+ * as the universe to count.
+ */
+export function bookingStatusTotals(
+	appointments: AppointmentData[],
+): BookingStatusTotals {
+	const totals: BookingStatusTotals = {
+		total: 0,
+		pending: 0,
+		confirmed: 0,
+		cancelled: 0,
+		completed: 0,
+		noShow: 0,
+	}
+	for (const apt of appointments) {
+		totals.total += 1
+		switch (apt.bookingStatus) {
+			case 'confirmed':
+				totals.confirmed += 1
+				break
+			case 'cancelled':
+				totals.cancelled += 1
+				break
+			case 'completed':
+				totals.completed += 1
+				break
+			case 'no_show':
+				totals.noShow += 1
+				break
+			default:
+				totals.pending += 1
+		}
+	}
+	return totals
+}
+
+/**
+ * Cancellation rate as a 0–1 fraction. Returns 0 for empty / all-pending
+ * cohorts so `formatPercent` renders `0%` rather than `—`. Pass the same
+ * filtered list you'd pass to `bookingStatusTotals`.
+ */
+export function cancellationRate(appointments: AppointmentData[]): number {
+	const t = bookingStatusTotals(appointments)
+	if (t.total === 0) return 0
+	return t.cancelled / t.total
+}
+
+/**
+ * Confirmation rate as a 0–1 fraction: how many bookings the customer
+ * actively confirmed via a reminder click (or admin set to confirmed).
+ *
+ * Counts the *current* status `confirmed` — does NOT include bookings that
+ * moved on to `completed` or `no_show` after confirmation. For "ever
+ * confirmed" reporting (incl. those that moved past confirmed), use
+ * `everConfirmedRate`.
+ */
+export function confirmationRate(appointments: AppointmentData[]): number {
+	const t = bookingStatusTotals(appointments)
+	if (t.total === 0) return 0
+	return t.confirmed / t.total
+}
+
+/**
+ * Customer-response rate: fraction of bookings where the customer engaged
+ * with the reminder (either confirmed or cancelled). The complement —
+ * `pending` rows — represents customers who got reminders but never
+ * responded. A low response rate is a useful signal that reminders are
+ * being ignored / undelivered.
+ */
+export function responseRate(appointments: AppointmentData[]): number {
+	const t = bookingStatusTotals(appointments)
+	if (t.total === 0) return 0
+	return (t.confirmed + t.cancelled) / t.total
+}
+
+/**
+ * Cumulative "ever confirmed" rate using the monotonic `confirmedAt`
+ * timestamp. Includes bookings that have since moved on (completed,
+ * no_show). Useful for retroactive reporting like "of all bookings last
+ * month, what fraction did the customer actively confirm at some point".
+ */
+export function everConfirmedRate(appointments: AppointmentData[]): number {
+	if (appointments.length === 0) return 0
+	let everConfirmed = 0
+	for (const apt of appointments) {
+		if (apt.confirmedAt) everConfirmed += 1
+	}
+	return everConfirmed / appointments.length
+}
+
+export interface BookingBehaviorRow {
+	status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show'
+	count: number
+	/** 0–1 fraction of `total` for this status. */
+	share: number
+}
+
+export interface BookingBehaviorBreakdown {
+	total: number
+	rows: BookingBehaviorRow[]
+}
+
+/**
+ * Status breakdown for the "customer behavior" admin panel. Returns one
+ * row per current status with both a raw count and a fractional share —
+ * the UI plots that share as a horizontal bar. Rows are ordered by
+ * narrative meaning (pending → confirmed → cancelled → completed →
+ * no_show) so the bar chart reads top-down like a funnel.
+ */
+export function bookingBehaviorBreakdown(
+	appointments: AppointmentData[],
+): BookingBehaviorBreakdown {
+	const totals = bookingStatusTotals(appointments)
+	const order: BookingBehaviorRow['status'][] = [
+		'pending',
+		'confirmed',
+		'cancelled',
+		'completed',
+		'no_show',
+	]
+	const rows: BookingBehaviorRow[] = order.map(status => {
+		const count =
+			status === 'pending'
+				? totals.pending
+				: status === 'confirmed'
+					? totals.confirmed
+					: status === 'cancelled'
+						? totals.cancelled
+						: status === 'completed'
+							? totals.completed
+							: totals.noShow
+		return {
+			status,
+			count,
+			share: totals.total > 0 ? count / totals.total : 0,
+		}
+	})
+	return { total: totals.total, rows }
+}
+
 export function formatMoney(n: number | null, locale: string): string {
 	if (n == null || !Number.isFinite(n)) return '—'
 	return new Intl.NumberFormat(locale, {

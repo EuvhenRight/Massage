@@ -1,9 +1,30 @@
-import { NextResponse } from 'next/server'
+/**
+ * Booking confirmation endpoint.
+ *
+ *   GET  /api/booking/confirm?t=<token>
+ *     → 302 to `/sk/booking/confirm-action?t=<token>` (no state change).
+ *       The reminder template URL points here; redirecting to the action
+ *       page means link-preview crawlers, security scanners, and any other
+ *       GET-only fetcher can hit the URL without triggering a transition.
+ *
+ *   POST /api/booking/confirm   body: t=<token>
+ *     → runs `transitionBookingStatus` and redirects to the landing page.
+ *       Only the form on the action page POSTs here, so state changes are
+ *       gated behind an explicit human submit.
+ *
+ * The split is the defense against the WhatsApp/Meta link-preview bug
+ * documented in `lib/link-preview-guard.ts` — that guard still runs on the
+ * POST handler as a belt-and-suspenders measure (a misconfigured bot could
+ * in principle submit forms; the UA filter shuts that down too).
+ */
+
+import { NextResponse, type NextRequest } from 'next/server'
 import { Timestamp } from 'firebase/firestore'
 import { getAppointment } from '@/lib/book-appointment'
 import { verifyActionToken } from '@/lib/booking-action-token'
 import { transitionBookingStatus } from '@/lib/booking-transitions'
 import { reminderTokenSourceToStatusSource } from '@/lib/booking-status'
+import { isLinkPreviewUserAgent } from '@/lib/link-preview-guard'
 import {
 	notifyCustomerWhatsAppConfirmed,
 	notifyStaffWhatsAppCustomerConfirmed,
@@ -11,17 +32,18 @@ import {
 import { getSiteUrl } from '@/lib/site-url'
 import { formatBratislavaDate, formatBratislavaTime } from '@/lib/format-date'
 
-function resultUrl(params: Record<string, string>): string {
+function landingUrl(params: Record<string, string>): string {
 	const url = new URL('/booking/confirmed', getSiteUrl())
 	for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
 	return url.toString()
 }
 
-/**
- * First IP in `x-forwarded-for` (Vercel's chain) for audit metadata.
- * The request object itself doesn't expose a client IP in the Next.js
- * route-handler runtime, so we fall back to the proxied header.
- */
+function actionPageUrl(token: string): string {
+	const url = new URL('/sk/booking/confirm-action', getSiteUrl())
+	url.searchParams.set('t', token)
+	return url.toString()
+}
+
 function clientIp(request: Request): string | null {
 	const fwd = request.headers.get('x-forwarded-for')
 	if (!fwd) return null
@@ -29,15 +51,38 @@ function clientIp(request: Request): string | null {
 	return first || null
 }
 
-export async function GET(request: Request) {
+/**
+ * Read-only: redirect every GET (real user, bot, scanner, security probe)
+ * to the action page. The action page verifies the token and renders a
+ * confirmation form; only that form's POST can mutate state.
+ */
+export async function GET(request: Request): Promise<Response> {
 	const token = new URL(request.url).searchParams.get('t') ?? ''
-	const verified = verifyActionToken(token)
-	if (!verified) {
-		return NextResponse.redirect(resultUrl({ err: 'token' }))
+	if (!token) {
+		return NextResponse.redirect(landingUrl({ err: 'token' }))
+	}
+	return NextResponse.redirect(actionPageUrl(token))
+}
+
+/**
+ * Stateful: read the token from form data, run the transition through the
+ * orchestrator, fire customer + staff notifications, redirect to the
+ * landing page. The link-preview UA guard stays as a second line of
+ * defence in case an automated agent ever POSTs to this endpoint.
+ */
+export async function POST(request: NextRequest): Promise<Response> {
+	const userAgent = request.headers.get('user-agent')
+	if (isLinkPreviewUserAgent(userAgent)) {
+		return NextResponse.redirect(landingUrl({ preview: '1' }))
 	}
 
-	// Tokens minted before the reminder-source field default to `reminder_1d`
-	// for reporting; tokens minted by the new cron carry the exact window.
+	const form = await request.formData().catch(() => null)
+	const token = (form?.get('t') ?? '').toString()
+	const verified = verifyActionToken(token)
+	if (!verified) {
+		return NextResponse.redirect(landingUrl({ err: 'token' }))
+	}
+
 	const statusSource =
 		reminderTokenSourceToStatusSource(verified.source) ?? 'reminder_1d'
 
@@ -48,24 +93,25 @@ export async function GET(request: Request) {
 		source: statusSource,
 		request: {
 			ip: clientIp(request),
-			userAgent: request.headers.get('user-agent'),
+			userAgent,
 		},
 	})
 
 	if (!result.ok) {
 		if (result.reason === 'appointment_not_found') {
-			return NextResponse.redirect(resultUrl({ err: 'missing' }))
+			return NextResponse.redirect(landingUrl({ err: 'missing' }))
 		}
-		// invalid_transition: appointment exists but is already cancelled /
-		// completed / no-show. Show the success page anyway — re-clicking a
-		// confirmation link should never look like a hard failure.
-		return NextResponse.redirect(resultUrl({ ok: '1', id: verified.appointmentId }))
+		// invalid_transition: terminal state. Treat as success — re-clicking
+		// a confirmation link should never look like a hard failure.
+		return NextResponse.redirect(
+			landingUrl({ ok: '1', id: verified.appointmentId }),
+		)
 	}
 
-	// `changed: false` means the customer re-clicked — skip notifications and
-	// redirect to the success page so the second click feels normal.
 	if (!result.changed) {
-		return NextResponse.redirect(resultUrl({ ok: '1', id: verified.appointmentId }))
+		return NextResponse.redirect(
+			landingUrl({ ok: '1', id: verified.appointmentId }),
+		)
 	}
 
 	const appointment = await getAppointment(verified.appointmentId)
@@ -107,5 +153,7 @@ export async function GET(request: Request) {
 		}
 	}
 
-	return NextResponse.redirect(resultUrl({ ok: '1', id: verified.appointmentId }))
+	return NextResponse.redirect(
+		landingUrl({ ok: '1', id: verified.appointmentId }),
+	)
 }

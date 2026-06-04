@@ -1,9 +1,18 @@
-import { NextResponse } from 'next/server'
+/**
+ * Booking cancellation endpoint. See `app/api/booking/confirm/route.ts` for
+ * the GET-redirect / POST-mutate split rationale.
+ *
+ *   GET  /api/booking/cancel?t=<token> → 302 to `/sk/booking/cancel-action`
+ *   POST /api/booking/cancel body t=<token> → soft-cancel + notify + landing
+ */
+
+import { NextResponse, type NextRequest } from 'next/server'
 import { Timestamp } from 'firebase/firestore'
 import { getAppointment } from '@/lib/book-appointment'
 import { verifyActionToken } from '@/lib/booking-action-token'
 import { transitionBookingStatus } from '@/lib/booking-transitions'
 import { reminderTokenSourceToStatusSource } from '@/lib/booking-status'
+import { isLinkPreviewUserAgent } from '@/lib/link-preview-guard'
 import {
 	notifyStaffWhatsAppCancelled,
 	notifyCustomerWhatsAppCancelled,
@@ -11,9 +20,15 @@ import {
 import { getSiteUrl } from '@/lib/site-url'
 import { formatBratislavaDate, formatBratislavaTime } from '@/lib/format-date'
 
-function resultUrl(params: Record<string, string>): string {
+function landingUrl(params: Record<string, string>): string {
 	const url = new URL('/booking/cancelled', getSiteUrl())
 	for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
+	return url.toString()
+}
+
+function actionPageUrl(token: string): string {
+	const url = new URL('/sk/booking/cancel-action', getSiteUrl())
+	url.searchParams.set('t', token)
 	return url.toString()
 }
 
@@ -24,21 +39,35 @@ function clientIp(request: Request): string | null {
 	return first || null
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
 	const token = new URL(request.url).searchParams.get('t') ?? ''
-	const verified = verifyActionToken(token)
-	if (!verified) {
-		return NextResponse.redirect(resultUrl({ err: 'token' }))
+	if (!token) {
+		return NextResponse.redirect(landingUrl({ err: 'token' }))
+	}
+	return NextResponse.redirect(actionPageUrl(token))
+}
+
+export async function POST(request: NextRequest): Promise<Response> {
+	const userAgent = request.headers.get('user-agent')
+	if (isLinkPreviewUserAgent(userAgent)) {
+		return NextResponse.redirect(landingUrl({ preview: '1' }))
 	}
 
-	// Read the appointment *before* transitioning so we can notify the
+	const form = await request.formData().catch(() => null)
+	const token = (form?.get('t') ?? '').toString()
+	const verified = verifyActionToken(token)
+	if (!verified) {
+		return NextResponse.redirect(landingUrl({ err: 'token' }))
+	}
+
+	// Read the appointment *before* the transition so we can notify the
 	// customer/staff with the original details. The orchestrator soft-deletes
-	// (keeps the doc), so reading after would still work, but reading first
-	// keeps the notification payload available even if a concurrent admin
-	// edit lands between the read and the side effects.
+	// (keeps the doc) so reading after would also work, but reading first
+	// keeps the payload available even if a concurrent admin edit lands
+	// between the read and the side effects.
 	const appointment = await getAppointment(verified.appointmentId)
 	if (!appointment) {
-		return NextResponse.redirect(resultUrl({ ok: 'already' }))
+		return NextResponse.redirect(landingUrl({ ok: 'already' }))
 	}
 
 	const statusSource =
@@ -51,22 +80,19 @@ export async function GET(request: Request) {
 		source: statusSource,
 		request: {
 			ip: clientIp(request),
-			userAgent: request.headers.get('user-agent'),
+			userAgent,
 		},
 	})
 
 	if (!result.ok) {
 		if (result.reason === 'appointment_not_found') {
-			return NextResponse.redirect(resultUrl({ ok: 'already' }))
+			return NextResponse.redirect(landingUrl({ ok: 'already' }))
 		}
-		// invalid_transition: terminal state (already cancelled / completed /
-		// no-show). Treat as already-cancelled for the customer's view.
-		return NextResponse.redirect(resultUrl({ ok: 'already' }))
+		return NextResponse.redirect(landingUrl({ ok: 'already' }))
 	}
 
-	// Re-clicking the cancel link is idempotent: skip duplicate notifications.
 	if (!result.changed) {
-		return NextResponse.redirect(resultUrl({ ok: 'already' }))
+		return NextResponse.redirect(landingUrl({ ok: 'already' }))
 	}
 
 	const start =
@@ -105,5 +131,7 @@ export async function GET(request: Request) {
 		}
 	}
 
-	return NextResponse.redirect(resultUrl({ ok: '1', id: verified.appointmentId }))
+	return NextResponse.redirect(
+		landingUrl({ ok: '1', id: verified.appointmentId }),
+	)
 }

@@ -30,12 +30,18 @@ import type { PriceCatalogStructure } from '@/types/price-catalog'
 import {
 	appointmentPrice,
 	appointmentServiceLabel,
+	bookingBehaviorBreakdown,
+	bookingStatusTotals,
+	cancellationRate,
+	confirmationRate,
 	flattenCatalogPrices,
 	formatMoney,
 	formatPercent,
 	normalizeShortLocale,
 	resolvePeriod,
+	responseRate,
 	tsToDate,
+	type BookingBehaviorRow,
 	type PeriodKey,
 } from '@/lib/analytics-helpers'
 import { clsx } from 'clsx'
@@ -43,9 +49,13 @@ import { collection, onSnapshot, query } from 'firebase/firestore'
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
 import {
+	AlertTriangle,
 	ArrowDownRight,
 	ArrowUpRight,
 	BarChart2,
+	CheckCircle2,
+	Circle,
+	Clock,
 	FileDown,
 	Search,
 	Sparkles,
@@ -53,6 +63,7 @@ import {
 	UserPlus,
 	Users,
 	Wallet,
+	XCircle,
 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState, type ElementType } from 'react'
@@ -146,10 +157,21 @@ export default function AdminAnalyticsPanel({
 		})
 	}, [allAppointments, from, to])
 
-	/** Per-appointment revenue (null when no price match). */
+	/**
+	 * Per-appointment revenue (null when no price match).
+	 *
+	 * Cancelled bookings are excluded — even though the catalog price is
+	 * known, the salon didn't earn it. The customer "still in period" stats
+	 * keep cancelled bookings (a cancelled booking is still a customer
+	 * interaction); only money-shaped metrics treat them as zero.
+	 */
 	const appointmentRevenue = useMemo(() => {
 		const map = new Map<string, number | null>()
 		for (const apt of periodAppointments) {
+			if (apt.bookingStatus === 'cancelled') {
+				map.set(apt.id, null)
+				continue
+			}
 			map.set(
 				apt.id,
 				appointmentPrice(apt, calendarColorServices, priceById, priceByTitle),
@@ -157,6 +179,30 @@ export default function AdminAnalyticsPanel({
 		}
 		return map
 	}, [periodAppointments, calendarColorServices, priceById, priceByTitle])
+
+	/**
+	 * Customer-behavior aggregates for the period:
+	 *
+	 *   - `totals`              raw counts per current status
+	 *   - `cancellationRate`    cancelled / total
+	 *   - `confirmationRate`    confirmed / total (current state only)
+	 *   - `responseRate`        (confirmed + cancelled) / total — fraction
+	 *                           of customers who engaged with the reminder
+	 *   - `breakdown`           ordered rows for the bar-chart panel
+	 *
+	 * All metrics share the same `periodAppointments` cohort so percentages
+	 * stay consistent across the panel.
+	 */
+	const behaviorStats = useMemo(
+		() => ({
+			totals: bookingStatusTotals(periodAppointments),
+			cancellationRate: cancellationRate(periodAppointments),
+			confirmationRate: confirmationRate(periodAppointments),
+			responseRate: responseRate(periodAppointments),
+			breakdown: bookingBehaviorBreakdown(periodAppointments),
+		}),
+		[periodAppointments],
+	)
 
 	const kpis = useMemo(() => {
 		const totalBookings = periodAppointments.length
@@ -499,6 +545,25 @@ export default function AdminAnalyticsPanel({
 					icon={BarChart2}
 					label={t('analyticsKpiBookings')}
 					value={String(kpis.totalBookings)}
+					secondary={
+						behaviorStats.totals.cancelled > 0
+							? t('analyticsKpiCancellationRate', {
+									pct: formatPercent(behaviorStats.cancellationRate),
+								})
+							: undefined
+					}
+				/>
+				<KpiTile
+					icon={CheckCircle2}
+					label={t('analyticsKpiConfirmed')}
+					value={`${behaviorStats.totals.confirmed} · ${formatPercent(behaviorStats.confirmationRate)}`}
+					tone={behaviorStats.totals.confirmed > 0 ? 'emerald' : undefined}
+				/>
+				<KpiTile
+					icon={ArrowDownRight}
+					label={t('analyticsKpiCancelled')}
+					value={`${behaviorStats.totals.cancelled} · ${formatPercent(behaviorStats.cancellationRate)}`}
+					tone={behaviorStats.totals.cancelled > 0 ? 'rose' : undefined}
 				/>
 				<KpiTile
 					icon={Users}
@@ -553,6 +618,70 @@ export default function AdminAnalyticsPanel({
 					value={formatPercent(kpis.returningRate)}
 					tone={kpis.returningRate >= 0.5 ? 'emerald' : 'amber'}
 				/>
+			</div>
+
+			{/* Customer behavior breakdown */}
+			<div className='rounded-2xl border border-white/10 bg-white/[0.02] p-4'>
+				<div className='mb-3 flex flex-wrap items-baseline justify-between gap-2'>
+					<h3 className='text-sm font-semibold uppercase tracking-wider text-icyWhite/65'>
+						{t('analyticsBehaviorTitle')}
+					</h3>
+					<p className='text-xs text-icyWhite/55'>
+						{t('analyticsBehaviorResponseRate', {
+							pct: formatPercent(behaviorStats.responseRate),
+						})}
+					</p>
+				</div>
+				{behaviorStats.totals.total === 0 ? (
+					<p className='text-sm text-icyWhite/50'>{t('analyticsNoData')}</p>
+				) : (
+					<ul className='space-y-2.5'>
+						{behaviorStats.breakdown.rows.map(row => {
+							const widthPct = Math.max(2, Math.round(row.share * 100))
+							const isEmpty = row.count === 0
+							const styling = behaviorRowStyling(row.status)
+							const StatusIcon = styling.icon
+							return (
+								<li key={row.status} className='space-y-1'>
+									<div className='flex items-center justify-between gap-3 text-xs'>
+										<span className='inline-flex items-center gap-1.5 text-icyWhite/85'>
+											<StatusIcon
+												className={`h-3.5 w-3.5 ${styling.iconClass}`}
+												strokeWidth={2.25}
+												aria-hidden
+											/>
+											{t(`analyticsBehaviorStatus_${row.status}`)}
+										</span>
+										<span
+											className={`shrink-0 tabular-nums ${
+												isEmpty ? 'text-icyWhite/35' : 'text-icyWhite/80'
+											}`}
+										>
+											{row.count}
+											<span className='ml-1.5 text-icyWhite/45'>
+												· {formatPercent(row.share)}
+											</span>
+										</span>
+									</div>
+									<div className='h-1.5 overflow-hidden rounded-full bg-white/[0.04]'>
+										<div
+											className={`h-full rounded-full transition-[width] ${styling.barClass}`}
+											style={{
+												width: isEmpty ? '0%' : `${widthPct}%`,
+											}}
+											aria-hidden
+										/>
+									</div>
+								</li>
+							)
+						})}
+					</ul>
+				)}
+				<p className='mt-3 text-[11px] text-icyWhite/50'>
+					{t('analyticsBehaviorFooter', {
+						total: behaviorStats.totals.total,
+					})}
+				</p>
 			</div>
 
 			{/* Service mix + daily trend */}
@@ -758,6 +887,52 @@ export default function AdminAnalyticsPanel({
 	)
 }
 
+/**
+ * Per-status visual styling for the customer-behavior breakdown bars.
+ * Matches the rail/badge palette used on calendar blocks
+ * (`lib/booking-status-ui.ts`) so the same status reads the same color
+ * everywhere in the admin.
+ */
+function behaviorRowStyling(status: BookingBehaviorRow['status']): {
+	icon: ElementType
+	iconClass: string
+	barClass: string
+} {
+	switch (status) {
+		case 'confirmed':
+			return {
+				icon: CheckCircle2,
+				iconClass: 'text-emerald-300',
+				barClass: 'bg-emerald-500/70',
+			}
+		case 'cancelled':
+			return {
+				icon: XCircle,
+				iconClass: 'text-rose-300',
+				barClass: 'bg-rose-500/70',
+			}
+		case 'completed':
+			return {
+				icon: Circle,
+				iconClass: 'text-sky-300',
+				barClass: 'bg-sky-500/70',
+			}
+		case 'no_show':
+			return {
+				icon: AlertTriangle,
+				iconClass: 'text-amber-300',
+				barClass: 'bg-amber-500/70',
+			}
+		case 'pending':
+		default:
+			return {
+				icon: Clock,
+				iconClass: 'text-icyWhite/55',
+				barClass: 'bg-white/30',
+			}
+	}
+}
+
 function Th({
 	children,
 	className,
@@ -788,7 +963,7 @@ function KpiTile({
 	label: string
 	value: string
 	secondary?: string
-	tone?: 'gold' | 'emerald' | 'amber'
+	tone?: 'gold' | 'emerald' | 'amber' | 'rose'
 }) {
 	const toneRingClass =
 		tone === 'emerald'
@@ -797,7 +972,9 @@ function KpiTile({
 				? 'border-amber-500/30'
 				: tone === 'gold'
 					? 'border-gold-soft/35'
-					: 'border-white/10'
+					: tone === 'rose'
+						? 'border-rose-500/30'
+						: 'border-white/10'
 	const toneIconColor =
 		tone === 'emerald'
 			? 'text-emerald-300'
@@ -805,7 +982,9 @@ function KpiTile({
 				? 'text-amber-200'
 				: tone === 'gold'
 					? 'text-gold-glow'
-					: 'text-icyWhite/70'
+					: tone === 'rose'
+						? 'text-rose-300'
+						: 'text-icyWhite/70'
 	return (
 		<div
 			className={clsx(

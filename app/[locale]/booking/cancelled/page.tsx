@@ -1,18 +1,11 @@
 /**
- * Post-cancellation landing page. Reaches this URL after the customer clicks
- * the cancel link in a WhatsApp reminder; the route handler at
- * `/api/booking/cancel` has already soft-cancelled the appointment and fired
- * the notifications by the time we render here.
- *
- * `?ok=1`        — first-time cancellation (shows the variant message).
- * `?ok=already`  — re-click on a link that was already cancelled (we don't
- *                  re-fire notifications and the page acknowledges the prior
- *                  state).
- * `?err=token`   — invalid / expired signed token.
+ * Post-cancellation landing page. Slovak only — see the matching note in
+ * `confirmed/page.tsx` for rationale. The route handler at
+ * `/api/booking/cancel` has already soft-cancelled the appointment and
+ * fired the notifications by the time we render here.
  */
 
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
 import BookingActionLanding from '@/components/BookingActionLanding'
 
 export const metadata: Metadata = {
@@ -20,61 +13,74 @@ export const metadata: Metadata = {
 	robots: { index: false, follow: false },
 }
 
-type SearchParams = Promise<{ ok?: string; err?: string; id?: string }>
+type SearchParams = Promise<{
+	ok?: string
+	err?: string
+	id?: string
+	preview?: string
+}>
+
+const SK = {
+	cancelledTitle: 'Rezervácia bola zrušená',
+	cancelledBody: 'Vaša rezervácia bola úspešne zrušená. Ďakujeme, že ste nám dali vedieť.',
+	cancelledAlreadyTitle: 'Rezervácia bola už zrušená',
+	cancelledAlreadyBody:
+		'Túto rezerváciu sme v systéme nenašli — pravdepodobne bola zrušená skôr.',
+	tokenErrTitle: 'Odkaz vypršal',
+	tokenErrBody:
+		'Tento odkaz je neplatný alebo už vypršal. Ak chcete rezerváciu zrušiť, kontaktujte nás priamo.',
+	previewTitle: 'Zrušenie rezervácie',
+	previewBody:
+		'Otvorte odkaz na svojom telefóne, aby ste zrušili rezerváciu.',
+	actionBackHome: 'Späť na úvod',
+	actionBookAnother: 'Rezervovať nový termín',
+	actionGetDirections: 'Zobraziť na mape',
+	needHelp: 'Máte otázku? Kontaktujte nás:',
+} as const
 
 type Copy = { title: string; body: string }
 
-async function resolveCopy(
-	locale: string,
+function resolveCopy(
 	ok: string | undefined,
 	err: string | undefined,
-): Promise<Copy> {
-	const t = await getTranslations({ locale, namespace: 'bookingLanding' })
+	preview: string | undefined,
+): Copy {
+	if (preview === '1') {
+		return { title: SK.previewTitle, body: SK.previewBody }
+	}
 	if (err === 'token') {
-		return {
-			title: t('tokenErrTitleCancel'),
-			body: t('tokenErrBodyCancel'),
-		}
+		return { title: SK.tokenErrTitle, body: SK.tokenErrBody }
 	}
 	if (ok === 'already') {
 		return {
-			title: t('cancelledAlreadyTitle'),
-			body: t('cancelledAlreadyBody'),
+			title: SK.cancelledAlreadyTitle,
+			body: SK.cancelledAlreadyBody,
 		}
 	}
-	return {
-		title: t('cancelledTitle'),
-		body: t('cancelledBody'),
-	}
+	return { title: SK.cancelledTitle, body: SK.cancelledBody }
 }
 
 export default async function BookingCancelledPage({
-	params,
 	searchParams,
 }: {
-	params: Promise<{ locale: string }>
 	searchParams: SearchParams
 }) {
-	const { locale } = await params
-	const { ok, err } = await searchParams
-	const [copy, t] = await Promise.all([
-		resolveCopy(locale, ok, err),
-		getTranslations({ locale, namespace: 'bookingLanding' }),
-	])
+	const { ok, err, preview } = await searchParams
+	const copy = resolveCopy(ok, err, preview)
 
 	return (
 		<BookingActionLanding
-			variant={err ? 'error' : 'cancelled'}
+			variant={err || preview ? 'error' : 'cancelled'}
 			title={copy.title}
 			body={copy.body}
 			actionLabels={{
-				backHome: t('actionBackHome'),
-				bookAnother: t('actionBookAnother'),
-				getDirections: t('actionGetDirections'),
-				needHelp: t('needHelp'),
+				backHome: SK.actionBackHome,
+				bookAnother: SK.actionBookAnother,
+				getDirections: SK.actionGetDirections,
+				needHelp: SK.needHelp,
 			}}
-			homeHref={`/${locale}`}
-			bookAnotherHref={`/${locale}/massage/booking`}
+			homeHref='/sk'
+			bookAnotherHref='/sk/massage/booking'
 		/>
 	)
 }

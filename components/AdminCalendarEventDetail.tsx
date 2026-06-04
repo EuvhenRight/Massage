@@ -135,6 +135,23 @@ export default function AdminCalendarEventDetail({
 	)
 
 	/**
+	 * "Outcome unresolved" detection: past appointments still sitting in
+	 * `pending` or `confirmed` are the ones admins need to triage so the
+	 * analytics breakdown reflects reality (came vs no-show). For these,
+	 * we surface a prominent two-button CTA at the top of the popover, so
+	 * the admin's first action when clicking a past booking is to set the
+	 * outcome — no hunting through the smaller transition row below.
+	 *
+	 * TBD bookings don't have a real start time yet, so they're excluded
+	 * from the prompt.
+	 */
+	const isPastAppointment =
+		!isTbd && endDate.getTime() < Date.now()
+	const needsOutcomeMark =
+		isPastAppointment &&
+		(bookingStatusValue === 'pending' || bookingStatusValue === 'confirmed')
+
+	/**
 	 * Per-status transition map: only show buttons that the state machine in
 	 * `lib/booking-status.ts` will accept. Keeps the UI from offering moves
 	 * the API would immediately reject (terminal-state combinations).
@@ -285,35 +302,79 @@ export default function AdminCalendarEventDetail({
 							</div>
 						) : null}
 
+						{!readOnly && needsOutcomeMark ? (
+							<div className='rounded-xl border border-amber-400/30 bg-amber-500/[0.06] p-3'>
+								<p className='mb-2 text-[11px] font-medium uppercase tracking-wider text-amber-200/90'>
+									{t('bookingOutcomeTitle')}
+								</p>
+								<p className='mb-3 text-xs leading-snug text-icyWhite/75'>
+									{t('bookingOutcomeBody')}
+								</p>
+								<div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
+									<button
+										type='button'
+										onClick={() => applyTransition('completed')}
+										disabled={submittingStatus !== null}
+										className='inline-flex items-center justify-center gap-1.5 rounded-lg border border-sky-300/40 bg-sky-500/25 px-3 py-2 text-sm font-medium text-sky-50 transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60'
+									>
+										{submittingStatus === 'completed'
+											? t('bookingStatusBusy')
+											: t('bookingOutcomeCame')}
+									</button>
+									<button
+										type='button'
+										onClick={() => applyTransition('no_show')}
+										disabled={submittingStatus !== null}
+										className='inline-flex items-center justify-center gap-1.5 rounded-lg border border-amber-300/40 bg-amber-500/25 px-3 py-2 text-sm font-medium text-amber-50 transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60'
+									>
+										{submittingStatus === 'no_show'
+											? t('bookingStatusBusy')
+											: t('bookingOutcomeNoShow')}
+									</button>
+								</div>
+							</div>
+						) : null}
+
 						{!readOnly && allowedNextStatuses.length > 0 ? (
 							<div className='border-t border-white/10 pt-4'>
 								<p className='mb-2 text-[11px] font-medium uppercase tracking-wider text-icyWhite/45'>
-									{t('bookingStatusActions')}
+									{needsOutcomeMark
+										? t('bookingStatusOtherActions')
+										: t('bookingStatusActions')}
 								</p>
 								<div className='flex flex-wrap gap-2'>
-									{allowedNextStatuses.map(next => {
-										const nextUi = getBookingStatusUi(next)
-										const NextIcon = nextUi.icon
-										const busy = submittingStatus === next
-										return (
-											<button
-												key={next}
-												type='button'
-												onClick={() => applyTransition(next)}
-												disabled={submittingStatus !== null}
-												className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${nextUi.badgeClass} hover:brightness-110`}
-											>
-												<NextIcon
-													className={`h-3.5 w-3.5 ${nextUi.iconClass}`}
-													strokeWidth={2.25}
-													aria-hidden
-												/>
-												{busy
-													? t('bookingStatusBusy')
-													: t(`bookingStatusButton.${nextUi.i18nKey}`)}
-											</button>
+									{allowedNextStatuses
+										// When the prominent outcome prompt is showing, hide
+										// completed/no_show from the secondary chip row so the
+										// admin isn't faced with the same action twice.
+										.filter(next =>
+											needsOutcomeMark
+												? next !== 'completed' && next !== 'no_show'
+												: true,
 										)
-									})}
+										.map(next => {
+											const nextUi = getBookingStatusUi(next)
+											const NextIcon = nextUi.icon
+											const busy = submittingStatus === next
+											return (
+												<button
+													key={next}
+													type='button'
+													onClick={() => applyTransition(next)}
+													disabled={submittingStatus !== null}
+													className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${nextUi.badgeClass} hover:brightness-110`}
+												>
+													<NextIcon
+														className={`h-3.5 w-3.5 ${nextUi.iconClass}`}
+														strokeWidth={2.25}
+														aria-hidden
+													/>
+													{busy
+														? t('bookingStatusBusy')
+														: t(`bookingStatusButton.${nextUi.i18nKey}`)}
+												</button>
+											)
+										})}
 								</div>
 							</div>
 						) : null}

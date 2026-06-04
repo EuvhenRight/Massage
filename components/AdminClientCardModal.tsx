@@ -61,9 +61,20 @@ function inputToBirthday(value: string): ClientDoc['birthday'] {
 	return { year: y, month: m, day: d }
 }
 
-type BookingStatus = 'upcoming' | 'completed' | 'tbd'
+/**
+ * Visit-history derived status (computed locally for the customer card UI).
+ * Distinct from the lifecycle `bookingStatus` field on the appointment doc:
+ *
+ *   - `cancelled`: lifecycle field is `'cancelled'`. Keep visible in history
+ *     so admins see "the customer had a booking, it was cancelled, when".
+ *   - `tbd`: customer booked, admin hasn't placed the slot yet.
+ *   - `upcoming`: scheduled and not in the past.
+ *   - `completed`: scheduled and the end time has passed.
+ */
+type BookingStatus = 'upcoming' | 'completed' | 'tbd' | 'cancelled'
 
 function bookingStatus(apt: AppointmentData, now: Date): BookingStatus {
+	if (apt.bookingStatus === 'cancelled') return 'cancelled'
 	if (apt.scheduleTbd) return 'tbd'
 	const start = ts(apt.startTime)
 	if (!start) return 'tbd'
@@ -136,6 +147,7 @@ export default function AdminClientCardModal({
 		const unsub = onSnapshot(q, snap => {
 			const list: AppointmentData[] = snap.docs.map(doc => {
 				const d = doc.data() as Record<string, unknown>
+				const status = d.bookingStatus
 				return {
 					id: doc.id,
 					startTime: (d.startTime as Timestamp) ?? new Date(),
@@ -147,6 +159,21 @@ export default function AdminClientCardModal({
 					phone: (d.phone as string) ?? '',
 					place: (d.place as AppointmentData['place']) ?? 'massage',
 					scheduleTbd: d.scheduleTbd === true,
+					// Lifecycle fields — needed so the visit-history list can
+					// surface "cancelled on <date>" instead of silently dropping
+					// cancelled bookings from the client card.
+					bookingStatus:
+						status === 'pending' ||
+						status === 'confirmed' ||
+						status === 'cancelled' ||
+						status === 'completed' ||
+						status === 'no_show'
+							? status
+							: undefined,
+					confirmedAt: d.confirmedAt as Timestamp | undefined,
+					cancelledAt: d.cancelledAt as Timestamp | undefined,
+					completedAt: d.completedAt as Timestamp | undefined,
+					noShowAt: d.noShowAt as Timestamp | undefined,
 				}
 			})
 			list.sort((a, b) => {
@@ -603,6 +630,10 @@ export default function AdminClientCardModal({
 									{appointments.map(apt => {
 										const start = ts(apt.startTime)
 										const status = bookingStatus(apt, now)
+										const cancelledAt =
+											status === 'cancelled'
+												? ts(apt.cancelledAt as Timestamp | undefined)
+												: null
 										return (
 											<li
 												key={apt.id}
@@ -610,10 +641,23 @@ export default function AdminClientCardModal({
 											>
 												<StatusChip status={status} />
 												<span className='min-w-0 flex-1 truncate text-icyWhite/85'>
-													{apt.service || '—'}
+													<span
+														className={
+															status === 'cancelled' ? 'line-through opacity-75' : ''
+														}
+													>
+														{apt.service || '—'}
+													</span>
 													{apt.place && (
 														<span className='ml-1 text-icyWhite/45'>
 															· {tCommon(apt.place)}
+														</span>
+													)}
+													{cancelledAt && (
+														<span className='ml-1 text-rose-300/75'>
+															· {t('clientsBookingCancelledOn', {
+																date: formatBratislavaDate(cancelledAt),
+															})}
 														</span>
 													)}
 												</span>
@@ -674,7 +718,9 @@ function StatusChip({ status }: { status: BookingStatus }) {
 			? t('clientsBookingStatusUpcoming')
 			: status === 'completed'
 				? t('clientsBookingStatusCompleted')
-				: t('clientsBookingStatusTbd')
+				: status === 'cancelled'
+					? t('clientsBookingStatusCancelled')
+					: t('clientsBookingStatusTbd')
 	return (
 		<span
 			className={clsx(
@@ -684,6 +730,8 @@ function StatusChip({ status }: { status: BookingStatus }) {
 				status === 'completed' &&
 					'border-white/15 bg-white/[0.04] text-icyWhite/55',
 				status === 'tbd' && 'border-sky-500/35 bg-sky-500/10 text-sky-200',
+				status === 'cancelled' &&
+					'border-rose-500/35 bg-rose-500/10 text-rose-200',
 			)}
 		>
 			{label}
