@@ -193,23 +193,25 @@ export async function POST(request: Request) {
       }
     } else if (type === "rescheduled") {
       const { to, customerName, service, oldDate, oldTime, newDate, newTime } = body;
-      if (!to || !customerName || !oldDate || !oldTime || !newDate || !newTime) {
-        return NextResponse.json(
-          { error: "Missing required fields: to, customerName, oldDate, oldTime, newDate, newTime" },
-          { status: 400 }
-        );
-      }
-      const toStr = String(to);
-      const nameStr = String(customerName);
-      const oldDateStr = String(oldDate);
-      const oldTimeStr = String(oldTime);
-      const newDateStr = String(newDate);
-      const newTimeStr = String(newTime);
-      const serviceStr = service ? String(service) : "";
 
+      // Resolve channels first so required-field checks know whether email
+      // is actually being used. Admin reschedules for WhatsApp-only customers
+      // legitimately have no `to`.
       const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
         resolveNotifyChannels(body);
 
+      if (!customerName || !oldDate || !oldTime || !newDate || !newTime) {
+        return NextResponse.json(
+          { error: "Missing required fields: customerName, oldDate, oldTime, newDate, newTime" },
+          { status: 400 }
+        );
+      }
+      if (notifyByEmail && !to) {
+        return NextResponse.json(
+          { error: "Email channel selected but no recipient email" },
+          { status: 400 }
+        );
+      }
       if (!notifyByEmail && !notifyByWhatsApp) {
         return NextResponse.json(
           { error: "Select at least one notification channel" },
@@ -222,6 +224,14 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
+
+      const toStr = to ? String(to) : "";
+      const nameStr = String(customerName);
+      const oldDateStr = String(oldDate);
+      const oldTimeStr = String(oldTime);
+      const newDateStr = String(newDate);
+      const newTimeStr = String(newTime);
+      const serviceStr = service ? String(service) : "";
 
       if (notifyByEmail) {
         const customerResult = await resend.emails.send({
@@ -271,29 +281,36 @@ export async function POST(request: Request) {
     } else if (type === "cancelled") {
       const bookingPlace = parseBookingPlace(body);
       const { to, customerName, date, time, service } = body;
-      if (!to || !customerName || !date || !time) {
-        return NextResponse.json(
-          { error: "Missing required fields: to, customerName, date, time" },
-          { status: 400 }
-        );
-      }
-      const toStr = String(to);
-      const nameStr = String(customerName);
-      const dateStr = String(date);
-      const timeStr = String(time);
-      const serviceStr = service ? String(service) : "";
 
       // Respect the customer's chosen channel (email by default, WhatsApp opt-in),
       // same as the "rescheduled" branch. The admin/staff copies always go out.
       const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
         resolveNotifyChannels(body);
 
+      if (!customerName || !date || !time) {
+        return NextResponse.json(
+          { error: "Missing required fields: customerName, date, time" },
+          { status: 400 }
+        );
+      }
+      if (notifyByEmail && !to) {
+        return NextResponse.json(
+          { error: "Email channel selected but no recipient email" },
+          { status: 400 }
+        );
+      }
       if (notifyByWhatsApp && !parseWhatsappE164(customerPhoneRaw)) {
         return NextResponse.json(
           { error: "Invalid phone for WhatsApp notifications" },
           { status: 400 }
         );
       }
+
+      const toStr = to ? String(to) : "";
+      const nameStr = String(customerName);
+      const dateStr = String(date);
+      const timeStr = String(time);
+      const serviceStr = service ? String(service) : "";
 
       const [customerResult, adminResult] = await Promise.all([
         notifyByEmail

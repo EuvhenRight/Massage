@@ -1,9 +1,9 @@
 "use client";
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { getBookingAccent } from "@/lib/booking-accent";
@@ -25,7 +25,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check } from "lucide-react";
+import { WheelDatePicker } from "@/components/ui/WheelDatePicker";
+import { Calendar, Check } from "lucide-react";
 
 export interface StepCustomerInfoHandle {
   submitForSave: () => Promise<boolean>;
@@ -49,6 +50,22 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
   const accent = useMemo(() => getBookingAccent(place), [place]);
   const t = useTranslations("booking");
   const tValidation = useTranslations("validation");
+  const locale = useLocale();
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+
+  const formatBirthdayDisplay = useCallback(
+    (iso: string): string => {
+      const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return "";
+      const date = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      return date.toLocaleDateString(locale, {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+    },
+    [locale],
+  );
   const {
     fullName,
     email,
@@ -220,40 +237,50 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
           <FormField
             control={form.control}
             name="birthday"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-icyWhite/90 text-sm font-medium">
-                  {t("birthdayLabel")}{" "}
-                  <span className="text-icyWhite/45 font-normal">
-                    ({t("optionalSuffix")})
-                  </span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    variant="booking"
-                    type="date"
-                    autoComplete="bday"
+            render={({ field }) => {
+              const display = formatBirthdayDisplay(field.value ?? "");
+              return (
+                <FormItem>
+                  <FormLabel className="text-icyWhite/90 text-sm font-medium">
+                    {t("birthdayLabel")}{" "}
+                    <span className="text-icyWhite/45 font-normal">
+                      ({t("optionalSuffix")})
+                    </span>
+                  </FormLabel>
+                  <FormControl>
+                    <button
+                      type="button"
+                      onClick={() => setDatePickerOpen(true)}
+                      aria-haspopup="dialog"
+                      className="flex w-full min-w-0 min-h-[48px] sm:min-h-[44px] items-center justify-between rounded-xl border-2 border-white/10 bg-white/[0.04] px-4 py-3 text-base sm:text-sm text-icyWhite transition-colors hover:border-white/20 focus:outline-none focus:border-gold-soft touch-manipulation"
+                    >
+                      <span className={display ? "text-icyWhite" : "text-icyWhite/25"}>
+                        {display || t("birthdayPlaceholder")}
+                      </span>
+                      <Calendar
+                        className="ml-3 h-5 w-5 shrink-0 text-icyWhite/55"
+                        aria-hidden
+                      />
+                    </button>
+                  </FormControl>
+                  <WheelDatePicker
+                    open={datePickerOpen}
                     value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    onClick={(e) => {
-                      const input = e.currentTarget as HTMLInputElement & {
-                        showPicker?: () => void;
-                      };
-                      try {
-                        input.showPicker?.();
-                      } catch {
-                        /* unsupported / not in a user-gesture frame */
-                      }
-                    }}
-                    className="cursor-pointer"
+                    onChange={(v) => field.onChange(v)}
+                    onClose={() => setDatePickerOpen(false)}
+                    locale={locale}
+                    title={t("birthdayLabel")}
+                    cancelLabel={t("cancel")}
+                    confirmLabel={t("datePickerDone")}
+                    clearLabel={t("datePickerClear")}
                   />
-                </FormControl>
-                <p className="text-xs text-icyWhite/45 leading-relaxed">
-                  {t("birthdayHint")}
-                </p>
-                <FormMessage className="text-red-400 text-xs" />
-              </FormItem>
-            )}
+                  <p className="text-xs text-icyWhite/45 leading-relaxed">
+                    {t("birthdayHint")}
+                  </p>
+                  <FormMessage className="text-red-400 text-xs" />
+                </FormItem>
+              );
+            }}
           />
 
           <FormField

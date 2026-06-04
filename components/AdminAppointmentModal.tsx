@@ -239,11 +239,15 @@ export default function AdminAppointmentModal({
 	const [email, setEmail] = useState(appointment?.email ?? '')
 	const [phone, setPhone] = useState(appointment?.phone ?? '')
 	const [adminNote, setAdminNote] = useState(appointment?.adminNote ?? '')
+	// Create mode: default both channels ON so the admin opts out instead of opting
+	// in. Effective send is still gated by valid email / phone (see
+	// `effectiveNotifyByEmail/WhatsApp` below), so a blank field never sends.
+	// Edit mode: preserve whatever the appointment had stored.
 	const [notifyByEmail, setNotifyByEmail] = useState<boolean>(
-		appointment?.notifyByEmail ?? false,
+		appointment?.notifyByEmail ?? !appointment,
 	)
 	const [notifyByWhatsApp, setNotifyByWhatsApp] = useState<boolean>(
-		appointment?.notifyByWhatsApp ?? false,
+		appointment?.notifyByWhatsApp ?? !appointment,
 	)
 
 	/**
@@ -292,8 +296,10 @@ export default function AdminAppointmentModal({
 			setEmail('')
 			setPhone('')
 			setAdminNote('')
-			setNotifyByEmail(false)
-			setNotifyByWhatsApp(false)
+			// Create mode default = both channels ON; effective send still gated by
+			// valid email / phone so empty fields don't trigger sends.
+			setNotifyByEmail(true)
+			setNotifyByWhatsApp(true)
 		}
 	}, [
 		isEdit,
@@ -635,8 +641,9 @@ export default function AdminAppointmentModal({
 			setEmail('')
 			setPhone('')
 			setAdminNote('')
-			setNotifyByEmail(false)
-			setNotifyByWhatsApp(false)
+			// Create mode default = both channels ON; see note in resetForm.
+			setNotifyByEmail(true)
+			setNotifyByWhatsApp(true)
 		}
 	}, [
 		isOpen,
@@ -814,29 +821,58 @@ export default function AdminAppointmentModal({
 					timeChanged &&
 					(effectiveNotifyByEmail || effectiveNotifyByWhatsApp)
 				) {
-					{
-						try {
-							await fetch('/api/send-confirmation', {
-								method: 'POST',
-								headers: { 'Content-Type': 'application/json' },
-								body: JSON.stringify({
-									type: 'rescheduled',
-									to: email.trim() || undefined,
-									customerName: fullName?.trim() || t('customer'),
-									customerPhone: phone?.trim() || undefined,
-									service: service || undefined,
-									oldDate: formatDateForEmail(oldStart),
-									oldTime: formatTimeForEmail(oldStart),
-									newDate: formatDateForEmail(newStart),
-									newTime: formatTimeForEmail(newStart),
-									bookingPlace: place,
-									notifyByEmail: effectiveNotifyByEmail,
-									notifyByWhatsApp: effectiveNotifyByWhatsApp,
-								}),
-							})
-						} catch {
-							/* notification is best-effort — reschedule already saved */
+					try {
+						const res = await fetch('/api/send-confirmation', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								type: 'rescheduled',
+								to: email.trim() || undefined,
+								customerName: fullName?.trim() || t('customer'),
+								customerPhone: phone?.trim() || undefined,
+								service: service || undefined,
+								oldDate: formatDateForEmail(oldStart),
+								oldTime: formatTimeForEmail(oldStart),
+								newDate: formatDateForEmail(newStart),
+								newTime: formatTimeForEmail(newStart),
+								bookingPlace: place,
+								notifyByEmail: effectiveNotifyByEmail,
+								notifyByWhatsApp: effectiveNotifyByWhatsApp,
+							}),
+						})
+						const data = (await res.json().catch(() => ({}))) as {
+							error?: string
+							whatsapp?: { customer?: string }
+							whatsappCustomerMeta?: {
+								twilioCode?: number
+								skipReason?: string
+							}
 						}
+						if (!res.ok) {
+							toast.warning(
+								t('appointmentAddedEmailFailed', {
+									error: data?.error ?? t('couldNotSend'),
+								}),
+							)
+						} else if (
+							effectiveNotifyByWhatsApp &&
+							data?.whatsapp?.customer !== 'sent'
+						) {
+							const meta = data?.whatsappCustomerMeta
+							if (meta?.twilioCode === 63016) {
+								toast.warning(t('whatsappError63016'))
+							} else if (meta?.skipReason === 'twilio_env') {
+								toast.warning(t('whatsappErrorEnvMissing'))
+							} else {
+								toast.warning(
+									effectiveNotifyByEmail
+										? t('whatsappNotDeliveredWithEmail')
+										: t('whatsappNotDeliveredNoEmail'),
+								)
+							}
+						}
+					} catch {
+						/* notification is best-effort — reschedule already saved */
 					}
 				}
 				toast.success(t('appointmentUpdated'))
@@ -878,13 +914,37 @@ export default function AdminAppointmentModal({
 								notifyByWhatsApp: effectiveNotifyByWhatsApp,
 							}),
 						})
+						const data = (await res.json().catch(() => ({}))) as {
+							error?: string
+							whatsapp?: { customer?: string }
+							whatsappCustomerMeta?: {
+								twilioCode?: number
+								skipReason?: string
+							}
+						}
 						if (!res.ok) {
-							const data = await res.json().catch(() => ({}))
 							toast.error(
 								t('appointmentAddedEmailFailed', {
 									error: data?.error ?? t('couldNotSend'),
 								}),
 							)
+						} else if (
+							effectiveNotifyByWhatsApp &&
+							data?.whatsapp?.customer !== 'sent'
+						) {
+							const meta = data?.whatsappCustomerMeta
+							if (meta?.twilioCode === 63016) {
+								toast.warning(t('whatsappError63016'))
+							} else if (meta?.skipReason === 'twilio_env') {
+								toast.warning(t('whatsappErrorEnvMissing'))
+							} else {
+								toast.warning(
+									effectiveNotifyByEmail
+										? t('whatsappNotDeliveredWithEmail')
+										: t('whatsappNotDeliveredNoEmail'),
+								)
+							}
+							toast.success(t('appointmentAdded'))
 						} else {
 							toast.success(t('appointmentAddedNotified'))
 						}

@@ -19,16 +19,28 @@ import {
 } from '@/types/price-catalog'
 import { clsx } from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Undo2 } from 'lucide-react'
 import { getEffectivePriceForBooking } from '@/lib/price-catalog-price-display'
 import { findBookableServiceForSelection } from '@/lib/services'
 import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+	forwardRef,
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useMemo,
+	useRef,
+	useState,
+} from 'react'
 import { useBookingFlow } from './BookingFlowContext'
 import PublicDatePicker from './PublicDatePicker'
 import TbdBookingRecap from './TbdBookingRecap'
 import TimeSlotPicker from './TimeSlotPicker'
+
+export interface StepServiceFromPriceCatalogHandle {
+	/** Walk back one sub-step within step 1; returns true when the catalog handled it. */
+	handleSubStepBack: () => boolean
+}
 
 interface StepServiceFromPriceCatalogProps {
 	place: Place
@@ -153,14 +165,13 @@ function buildSectionsWithZones(
 	return sections
 }
 
-export default function StepServiceFromPriceCatalog({
-	place,
-	accent,
-	catalog,
-	services,
-	searchQuery,
-	setSearchQuery,
-}: StepServiceFromPriceCatalogProps) {
+const StepServiceFromPriceCatalog = forwardRef<
+	StepServiceFromPriceCatalogHandle,
+	StepServiceFromPriceCatalogProps
+>(function StepServiceFromPriceCatalog(
+	{ place, accent, catalog, services, searchQuery, setSearchQuery },
+	ref,
+) {
 	const t = useTranslations('booking')
 	const tPrice = useTranslations('price')
 	const priceLocale = (useLocale() || 'en') as PriceLocale
@@ -303,7 +314,16 @@ export default function StepServiceFromPriceCatalog({
 		)
 	}, [catalog, priceLocale, selectedSex, activeServiceId])
 
-	const effectiveSectionId = activeSectionId || sections[0]?.sectionId || ''
+	const activeServiceTitle = useMemo(() => {
+		if (!activeServiceId) return ''
+		const svc = servicesForSex.find(s => s.id === activeServiceId)
+		return svc ? getTitleForLocale(svc, priceLocale) : ''
+	}, [activeServiceId, servicesForSex, priceLocale])
+
+	const activeSectionTitle = useMemo(() => {
+		const sec = sections.find(s => s.sectionId === activeSectionId)
+		return sec?.sectionTitle ?? ''
+	}, [sections, activeSectionId])
 
 	const filteredSections = useMemo(() => {
 		if (!searchQuery.trim()) {
@@ -329,11 +349,37 @@ export default function StepServiceFromPriceCatalog({
 			.filter(sec => sec.zones.length > 0)
 	}, [sections, searchQuery, priceLocale])
 
+	/**
+	 * Tracks the substeps the user explicitly backed out of, so auto-skips don't
+	 * immediately throw them forward into the substep they just left.
+	 * Reset when the user makes a forward pick on the upstream substep.
+	 */
+	const userBackedRef = useRef<{
+		service: boolean
+		section: boolean
+		zone: boolean
+	}>({ service: false, section: false, zone: false })
+
+	// Auto-pick the only section so we don't make the user tap a single tile.
 	useEffect(() => {
-		if (sections.length > 0 && !activeSectionId) {
+		if (userBackedRef.current.section) return
+		if (sections.length === 1 && !activeSectionId) {
 			setActiveSectionId(sections[0].sectionId)
 		}
 	}, [sections, activeSectionId])
+
+	// Auto-open the only zone in the active section.
+	const activeSection = useMemo(
+		() => sections.find(s => s.sectionId === activeSectionId) ?? null,
+		[sections, activeSectionId],
+	)
+	useEffect(() => {
+		if (userBackedRef.current.zone) return
+		if (!activeSection || openZoneId) return
+		if (activeSection.zones.length === 1) {
+			setOpenZoneId(`${activeSection.sectionId}-${activeSection.zones[0].zoneId}`)
+		}
+	}, [activeSection, openZoneId])
 
 	useEffect(() => {
 		if (!catalog) return
@@ -475,15 +521,126 @@ export default function StepServiceFromPriceCatalog({
 	// Mobile: 1 col; tablet/laptop: 2 cols (same layout for tablet as laptop)
 	const sectionGridCols = 'grid-cols-1 md:grid-cols-2'
 
+	const hasMan = (catalog?.man.services?.length ?? 0) > 0
+	const hasWoman = (catalog?.woman.services?.length ?? 0) > 0
+	const needsSexPick = hasMan && hasWoman
+
+	/**
+	 * Progressive disclosure: one sub-step is visible at a time so users aren't
+	 * overwhelmed with the full sex → service → section → zone tree. Search
+	 * bypasses this and shows all matching items inline.
+	 */
+	type SubStep = 'sex' | 'service' | 'section' | 'zone'
+	const subStep: SubStep = isSearching
+		? 'zone'
+		: needsSexPick && !selectedSex
+			? 'sex'
+			: !activeServiceId && servicesForSex.length > 1
+				? 'service'
+				: !activeSectionId && sections.length > 1
+					? 'section'
+					: 'zone'
+
+	// Auto-pick the only service so single-service catalogs don't show a 1-tile picker.
+	useEffect(() => {
+		if (userBackedRef.current.service) return
+		if (!selectedSex) return
+		if (activeServiceId) return
+		if (servicesForSex.length === 1) {
+			setActiveServiceId(servicesForSex[0].id)
+		}
+	}, [selectedSex, activeServiceId, servicesForSex])
+
+	useImperativeHandle(
+		ref,
+		() => ({
+			handleSubStepBack: () => {
+				if (isSearching) {
+					setSearchQuery('')
+					return true
+				}
+				const requiresSectionPick = sections.length > 1
+				const requiresServicePick = servicesForSex.length > 1
+				const requiresSexPick = needsSexPick
+
+				// Determine the conceptual prior substep based on what's currently visible.
+				type Target = 'sex' | 'service' | 'section' | 'zone' | 'cancel'
+				let target: Target = 'cancel'
+				if (subStep === 'zone') {
+					// Mid-step interaction: close the open zone first when there are siblings.
+					if (
+						openZoneId &&
+						activeSection &&
+						activeSection.zones.length > 1
+					) {
+						setOpenZoneId(null)
+						return true
+					}
+					target = requiresSectionPick
+						? 'section'
+						: requiresServicePick
+							? 'service'
+							: requiresSexPick
+								? 'sex'
+								: 'cancel'
+				} else if (subStep === 'section') {
+					target = requiresServicePick
+						? 'service'
+						: requiresSexPick
+							? 'sex'
+							: 'cancel'
+				} else if (subStep === 'service') {
+					target = requiresSexPick ? 'sex' : 'cancel'
+				}
+
+				if (target === 'cancel') return false
+
+				if (target === 'sex') {
+					userBackedRef.current.service = true
+					userBackedRef.current.section = true
+					userBackedRef.current.zone = true
+					setSelectedSex(null)
+					setActiveServiceId(null)
+					setService('')
+					setActiveSectionId('')
+					setOpenZoneId(null)
+					return true
+				}
+				if (target === 'service') {
+					userBackedRef.current.section = true
+					userBackedRef.current.zone = true
+					setActiveServiceId(null)
+					setService('')
+					setActiveSectionId('')
+					setOpenZoneId(null)
+					return true
+				}
+				// target === 'section'
+				userBackedRef.current.zone = true
+				setActiveSectionId('')
+				setOpenZoneId(null)
+				return true
+			},
+		}),
+		[
+			isSearching,
+			openZoneId,
+			activeSection,
+			subStep,
+			needsSexPick,
+			sections.length,
+			servicesForSex.length,
+			setSearchQuery,
+			setService,
+		],
+	)
+
 	if (
 		!catalog ||
 		(catalog.man.services.length === 0 && catalog.woman.services.length === 0)
 	) {
 		return null
 	}
-
-	const hasMan = (catalog.man.services?.length ?? 0) > 0
-	const hasWoman = (catalog.woman.services?.length ?? 0) > 0
 
 	return (
 		<motion.div
@@ -492,19 +649,95 @@ export default function StepServiceFromPriceCatalog({
 			transition={{ duration: 0.2 }}
 			className='flex flex-col flex-1 min-h-0'
 		>
-			{/* Step 1: Service selection
-						Layout: Man/Woman + Choose + Section + Zone = fixed (flex-shrink-0)
-						Items list = only scrollable area (flex-1 overflow-y-auto) */}
+			{/* Step 1: Service selection — one substep visible at a time.
+						Layout: header pickers = fixed (flex-shrink-0);
+						items list = only scrollable area (flex-1 overflow-y-auto). */}
 			{step === 1 && (
 				<div className='flex flex-col flex-1 min-h-0'>
-					{/* Man/Woman: shown when zone closed; hidden when zone open to free space */}
-					<div className='flex-shrink-0 space-y-4'>
-						{(hasMan || hasWoman) && !openZoneId && (
+					{/* Breadcrumb of the user's prior picks. Only segments where the
+					     user had a real choice are shown; tapping a segment jumps back
+					     to that substep to change the pick. */}
+					{!isSearching &&
+						(subStep === 'service' ||
+							subStep === 'section' ||
+							subStep === 'zone') && (
+							<nav
+								aria-label={t('bookingProgress')}
+								className='flex-shrink-0 mb-3 flex items-center gap-1.5 text-xs sm:text-sm flex-wrap text-icyWhite/70'
+							>
+								{selectedSex && needsSexPick && (
+									<button
+										type='button'
+										onClick={() => {
+											userBackedRef.current.service = true
+											userBackedRef.current.section = true
+											userBackedRef.current.zone = true
+											setSelectedSex(null)
+											setActiveServiceId(null)
+											setService('')
+											setActiveSectionId('')
+											setOpenZoneId(null)
+										}}
+										className='underline-offset-2 hover:underline hover:text-icyWhite transition-colors min-h-[28px] px-1 -mx-1'
+									>
+										{tPrice(selectedSex)}
+									</button>
+								)}
+								{activeServiceTitle && servicesForSex.length > 1 && (
+									<>
+										{selectedSex && needsSexPick && (
+											<span className='text-icyWhite/40' aria-hidden>
+												›
+											</span>
+										)}
+										<button
+											type='button'
+											onClick={() => {
+												userBackedRef.current.section = true
+												userBackedRef.current.zone = true
+												setActiveServiceId(null)
+												setService('')
+												setActiveSectionId('')
+												setOpenZoneId(null)
+											}}
+											className='underline-offset-2 hover:underline hover:text-icyWhite transition-colors min-h-[28px] px-1 -mx-1 truncate max-w-[40vw] sm:max-w-none'
+										>
+											{activeServiceTitle}
+										</button>
+									</>
+								)}
+								{activeSectionTitle && sections.length > 1 && (
+									<>
+										<span className='text-icyWhite/40' aria-hidden>
+											›
+										</span>
+										<button
+											type='button'
+											onClick={() => {
+												userBackedRef.current.zone = true
+												setActiveSectionId('')
+												setOpenZoneId(null)
+											}}
+											className='underline-offset-2 hover:underline hover:text-icyWhite transition-colors min-h-[28px] px-1 -mx-1 truncate max-w-[40vw] sm:max-w-none'
+										>
+											{activeSectionTitle}
+										</button>
+									</>
+								)}
+							</nav>
+						)}
+
+					{/* SEX substep */}
+					{subStep === 'sex' && (
+						<div className='flex-shrink-0 space-y-2'>
 							<div className='grid grid-cols-2 gap-2 sm:gap-3'>
 								{hasWoman && (
 									<button
 										type='button'
 										onClick={() => {
+											userBackedRef.current.service = false
+											userBackedRef.current.section = false
+											userBackedRef.current.zone = false
 											setSelectedSex('woman')
 											setActiveServiceId(null)
 											setService('')
@@ -524,6 +757,9 @@ export default function StepServiceFromPriceCatalog({
 									<button
 										type='button'
 										onClick={() => {
+											userBackedRef.current.service = false
+											userBackedRef.current.section = false
+											userBackedRef.current.zone = false
 											setSelectedSex('man')
 											setActiveServiceId(null)
 											setService('')
@@ -540,100 +776,99 @@ export default function StepServiceFromPriceCatalog({
 									</button>
 								)}
 							</div>
-						)}
+						</div>
+					)}
 
-						{/*
-						 * Service grid stays visible after a selection so the
-						 * customer can always see siblings and switch without
-						 * having to navigate back. The active service gets the
-						 * same accent treatment as the Man/Woman tiles above.
-						 * Hidden only while searching (results take over) or
-						 * while a zone is open on mobile (vertical space is at
-						 * a premium then).
-						 */}
-						{servicesForSex.length > 0 && !isSearching && !openZoneId && (
-							<div className='space-y-2'>
-								<label className='block text-sm font-medium text-icyWhite/90'>
-									{t('chooseServiceLabel')}
-								</label>
-								<div className={`grid ${sectionGridCols} gap-2 sm:gap-3`}>
-									{servicesForSex.map(svc => {
-										const isActive = activeServiceId === svc.id
-										return (
-											<button
-												key={svc.id}
-												type='button'
-												onClick={() => {
-													setActiveServiceId(svc.id)
-													setService('')
-													setActiveSectionId('')
-													setOpenZoneId(null)
-												}}
-												className={`min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] flex items-center ${
-													isActive
-														? accent.pillActive
-														: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
-												}`}
-												aria-pressed={isActive}
-											>
-												<TruncateText
-													className='text-left flex-1 min-w-0'
-													tooltipThreshold={25}
-												>
-													{getTitleForLocale(svc, priceLocale)}
-												</TruncateText>
-											</button>
-										)
-									})}
-								</div>
-							</div>
-						)}
-					</div>
-
-					{/* Section + Zone: scrollable on mobile so zone picker + items fit */}
-					{selectedSex && (activeServiceId || isSearching) && (
-						<div className='flex-1 min-h-0 flex flex-col mt-4 overflow-y-auto'>
-							{/* Sections — hidden on mobile when zone open (show only zones + items) */}
-							{!isSearching && (
-								<div
-									className={`${openZoneId ? 'hidden md:grid' : 'grid'} ${sectionGridCols} gap-2 sm:gap-3 flex-shrink-0 mb-3`}
-								>
-									{filteredSections.map(sec => (
-										<motion.button
-											key={sec.sectionId}
+					{/* SERVICE substep */}
+					{subStep === 'service' && servicesForSex.length > 0 && (
+						<div className='flex-shrink-0 space-y-2'>
+							<label className='block text-sm font-medium text-icyWhite/90'>
+								{t('chooseServiceLabel')}
+							</label>
+							<div className={`grid ${sectionGridCols} gap-2 sm:gap-3`}>
+								{servicesForSex.map(svc => {
+									const isActive = activeServiceId === svc.id
+									return (
+										<button
+											key={svc.id}
 											type='button'
 											onClick={() => {
-												setActiveSectionId(sec.sectionId)
+												userBackedRef.current.section = false
+												userBackedRef.current.zone = false
+												setActiveServiceId(svc.id)
+												setService('')
+												setActiveSectionId('')
 												setOpenZoneId(null)
 											}}
-											initial={{ opacity: 0, y: 8 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ duration: 0.2 }}
-											className={clsx(
-												'min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] flex items-center',
-												effectiveSectionId === sec.sectionId
-													? accent.sectionPillActive
-													: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]',
-											)}
+											className={`min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] flex items-center ${
+												isActive
+													? accent.pillActive
+													: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
+											}`}
+											aria-pressed={isActive}
 										>
 											<TruncateText
 												className='text-left flex-1 min-w-0'
 												tooltipThreshold={25}
 											>
-												{sec.sectionTitle}
+												{getTitleForLocale(svc, priceLocale)}
 											</TruncateText>
-										</motion.button>
-									))}
-								</div>
-							)}
+										</button>
+									)
+								})}
+							</div>
+						</div>
+					)}
 
-							{/* Zones: header fixed; items list = only scrollable area */}
+					{/* SECTION substep */}
+					{subStep === 'section' && (
+						<div className='flex-1 min-h-0 flex flex-col overflow-y-auto'>
+							<div
+								className={`grid ${sectionGridCols} gap-2 sm:gap-3 flex-shrink-0`}
+							>
+								{filteredSections.map(sec => (
+									<motion.button
+										key={sec.sectionId}
+										type='button'
+										onClick={() => {
+											userBackedRef.current.zone = false
+											setActiveSectionId(sec.sectionId)
+											setOpenZoneId(null)
+										}}
+										initial={{ opacity: 0, y: 8 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ duration: 0.2 }}
+										className={clsx(
+											'min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] flex items-center',
+											activeSectionId === sec.sectionId
+												? accent.sectionPillActive
+												: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]',
+										)}
+									>
+										<TruncateText
+											className='text-left flex-1 min-w-0'
+											tooltipThreshold={25}
+										>
+											{sec.sectionTitle}
+										</TruncateText>
+									</motion.button>
+								))}
+							</div>
+							{filteredSections.length === 0 && (
+								<p className='text-sm text-icyWhite/60 py-4 text-center'>
+									{t('noServicesInCategory')}
+								</p>
+							)}
+						</div>
+					)}
+
+					{/* ZONE substep (also used for search results) */}
+					{subStep === 'zone' && (
+						<div className='flex-1 min-h-0 flex flex-col overflow-y-auto'>
 							<AnimatePresence mode='wait'>
 								{(isSearching
 									? filteredSections
-									: filteredSections.filter(
-											s => s.sectionId === effectiveSectionId,
-										)
+									: filteredSections.filter(s => s.sectionId === activeSectionId)
 								)
 									.filter(
 										sec =>
@@ -731,6 +966,7 @@ export default function StepServiceFromPriceCatalog({
 																	onClick={() =>
 																		setOpenZoneId(isOpen ? null : zoneValue)
 																	}
+																	aria-expanded={isOpen}
 																	className='w-full min-h-[48px] flex items-center justify-between px-3 sm:px-4 py-3 sm:py-2.5 hover:bg-white/5 active:bg-white/[0.07] text-icyWhite text-left text-sm font-medium flex-shrink-0 transition-colors touch-manipulation'
 																>
 																	<span className='flex-1 min-w-0 text-left'>
@@ -738,13 +974,11 @@ export default function StepServiceFromPriceCatalog({
 																			{zone.zoneTitle}
 																		</TruncateText>
 																	</span>
-																	<span className='text-icyWhite/70 shrink-0'>
-																		{isOpen ? (
-																			<Undo2 className='w-5 h-5' aria-hidden />
-																		) : (
-																			<span className='text-base'>+</span>
-																		)}
-																	</span>
+																	{!isOpen && (
+																		<span className='text-icyWhite/70 shrink-0 text-base'>
+																			+
+																		</span>
+																	)}
 																</button>
 																{isOpen && (
 																	<div className='flex-1 min-h-0 overflow-y-auto pt-3 pb-2 px-2'>
@@ -977,4 +1211,6 @@ export default function StepServiceFromPriceCatalog({
 			)}
 		</motion.div>
 	)
-}
+})
+
+export default StepServiceFromPriceCatalog

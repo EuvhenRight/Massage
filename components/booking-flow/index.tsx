@@ -26,7 +26,9 @@ import StepCustomerInfo, {
 	type StepCustomerInfoHandle,
 } from './StepCustomerInfo'
 import StepServiceAndDate from './StepServiceAndDate'
-import StepServiceFromPriceCatalog from './StepServiceFromPriceCatalog'
+import StepServiceFromPriceCatalog, {
+	type StepServiceFromPriceCatalogHandle,
+} from './StepServiceFromPriceCatalog'
 
 export interface BookingFlowProps {
 	services: {
@@ -91,6 +93,7 @@ function BookingFlowInner({
 	const [successMessage, setSuccessMessage] = useState<string | null>(null)
 	const [formValid, setFormValid] = useState(false)
 	const stepCustomerRef = useRef<StepCustomerInfoHandle | null>(null)
+	const stepCatalogRef = useRef<StepServiceFromPriceCatalogHandle | null>(null)
 
 	const canNextStep12 =
 		(step === 1 && !!service) ||
@@ -109,6 +112,9 @@ function BookingFlowInner({
 		: formValid
 
 	const handleBack = useCallback(() => {
+		if (step === 1 && stepCatalogRef.current?.handleSubStepBack()) {
+			return
+		}
 		if (step > 1) {
 			prevStep()
 			return
@@ -581,6 +587,7 @@ function BookingFlowInner({
 										className='flex-1 min-h-0 w-full min-w-0 flex flex-col overflow-x-hidden'
 									>
 										<StepServiceFromPriceCatalog
+											ref={stepCatalogRef}
 											place={place}
 											accent={accent}
 											catalog={priceCatalog}
