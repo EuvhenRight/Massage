@@ -542,32 +542,49 @@ export default function StepServiceFromPriceCatalog({
 							</div>
 						)}
 
-						{servicesForSex.length > 0 && !activeServiceId && !isSearching && (
+						{/*
+						 * Service grid stays visible after a selection so the
+						 * customer can always see siblings and switch without
+						 * having to navigate back. The active service gets the
+						 * same accent treatment as the Man/Woman tiles above.
+						 * Hidden only while searching (results take over) or
+						 * while a zone is open on mobile (vertical space is at
+						 * a premium then).
+						 */}
+						{servicesForSex.length > 0 && !isSearching && !openZoneId && (
 							<div className='space-y-2'>
 								<label className='block text-sm font-medium text-icyWhite/90'>
 									{t('chooseServiceLabel')}
 								</label>
 								<div className={`grid ${sectionGridCols} gap-2 sm:gap-3`}>
-									{servicesForSex.map(svc => (
-										<button
-											key={svc.id}
-											type='button'
-											onClick={() => {
-												setActiveServiceId(svc.id)
-												setService('')
-												setActiveSectionId('')
-												setOpenZoneId(null)
-											}}
-											className='min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12] flex items-center'
-										>
-											<TruncateText
-												className='text-left flex-1 min-w-0'
-												tooltipThreshold={25}
+									{servicesForSex.map(svc => {
+										const isActive = activeServiceId === svc.id
+										return (
+											<button
+												key={svc.id}
+												type='button'
+												onClick={() => {
+													setActiveServiceId(svc.id)
+													setService('')
+													setActiveSectionId('')
+													setOpenZoneId(null)
+												}}
+												className={`min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] flex items-center ${
+													isActive
+														? accent.pillActive
+														: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]'
+												}`}
+												aria-pressed={isActive}
 											>
-												{getTitleForLocale(svc, priceLocale)}
-											</TruncateText>
-										</button>
-									))}
+												<TruncateText
+													className='text-left flex-1 min-w-0'
+													tooltipThreshold={25}
+												>
+													{getTitleForLocale(svc, priceLocale)}
+												</TruncateText>
+											</button>
+										)
+									})}
 								</div>
 							</div>
 						)}

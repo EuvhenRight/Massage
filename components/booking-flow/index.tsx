@@ -578,7 +578,7 @@ function BookingFlowInner({
 											duration: 0.2,
 											ease: [0.25, 0.46, 0.45, 0.94],
 										}}
-										className='flex-1 min-h-0 flex flex-col'
+										className='flex-1 min-h-0 w-full min-w-0 flex flex-col overflow-x-hidden'
 									>
 										<StepServiceFromPriceCatalog
 											place={place}
@@ -599,7 +599,7 @@ function BookingFlowInner({
 											duration: 0.2,
 											ease: [0.25, 0.46, 0.45, 0.94],
 										}}
-										className='flex-1 min-h-0 flex flex-col'
+										className='flex-1 min-h-0 w-full min-w-0 flex flex-col overflow-x-hidden'
 									>
 										<StepServiceAndDate services={services} place={place} />
 									</motion.div>
@@ -613,7 +613,11 @@ function BookingFlowInner({
 											duration: 0.25,
 											ease: [0.25, 0.46, 0.45, 0.94],
 										}}
-										className='flex flex-col min-h-0 overflow-y-auto'
+										// `min-w-0` + explicit `overflow-x-hidden` stop long labels/
+										// translations (notably English copy on narrow phones) from
+										// pushing the form wider than the viewport and clipping
+										// content on the left edge.
+										className='flex flex-col min-h-0 w-full min-w-0 overflow-y-auto overflow-x-hidden'
 									>
 										<StepCustomerInfo
 											ref={stepCustomerRef}
@@ -634,7 +638,7 @@ function BookingFlowInner({
 											duration: 0.25,
 											ease: [0.25, 0.46, 0.45, 0.94],
 										}}
-										className='flex-1 min-h-0 overflow-y-auto md:hidden'
+										className='flex-1 min-h-0 w-full min-w-0 overflow-y-auto overflow-x-hidden md:hidden'
 									>
 										<BookingSidebar />
 									</motion.div>

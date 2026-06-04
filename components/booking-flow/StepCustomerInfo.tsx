@@ -157,13 +157,13 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
 
   return (
     <motion.div
-      className="space-y-5 sm:space-y-6"
+      className="w-full min-w-0 space-y-5 sm:space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
       <Form {...form}>
-        <form className="space-y-5 sm:space-y-6" onSubmit={(e) => e.preventDefault()}>
+        <form className="w-full min-w-0 space-y-5 sm:space-y-6" onSubmit={(e) => e.preventDefault()}>
           {bookingGranularity === "tbd" && service && (
             <TbdBookingRecap
               accent={accent}
