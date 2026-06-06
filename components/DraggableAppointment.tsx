@@ -441,7 +441,11 @@ export default function DraggableAppointment({
 				/>
 			) : null}
 			<div
-				className={`relative z-[1] flex h-full min-h-[18px] w-full flex-col ${innerColumnJustify}`}
+				className={`relative z-[1] flex h-full min-h-[18px] w-full flex-col ${innerColumnJustify} ${
+					hasExplicitStatus && !showAwaitingListChrome && !isDragOverlay
+						? 'pl-5'
+						: ''
+				} ${showChannelBadge ? 'pr-6' : ''}`}
 			>
 				{isList ? (
 					<>
@@ -580,20 +584,20 @@ export default function DraggableAppointment({
 			{showChannelBadge ? (
 				<NotificationChannelBadge
 					appointment={appointment}
-					className={`pointer-events-none absolute right-1 top-1 z-[2] rounded-full bg-nearBlack/45 px-1 py-0.5 backdrop-blur-sm ${
+					className={`pointer-events-none absolute right-1 top-1 z-[2] ${
 						showHoverActions ? 'transition-opacity group-hover:opacity-0' : ''
 					}`}
 				/>
 			) : null}
 			{hasExplicitStatus && !showAwaitingListChrome && !isDragOverlay ? (
 				<span
-					className={`pointer-events-none absolute left-1.5 top-1 z-[2] inline-flex items-center justify-center rounded-full border px-1 py-0.5 backdrop-blur-sm ${statusUi.badgeClass}`}
+					className={`pointer-events-none absolute left-1 top-1 z-[2] inline-flex h-[18px] w-[18px] items-center justify-center rounded-full border ${statusUi.badgeClass}`}
 					aria-label={t(`bookingStatus.${statusUi.i18nKey}`)}
 					title={t(`bookingStatus.${statusUi.i18nKey}`)}
 				>
 					<statusUi.icon
 						className={`h-2.5 w-2.5 ${statusUi.iconClass}`}
-						strokeWidth={2.25}
+						strokeWidth={2.5}
 						aria-hidden
 					/>
 				</span>

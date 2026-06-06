@@ -52,10 +52,17 @@ export interface BookingStatusUi {
 	muted: boolean
 }
 
+/**
+ * Badges render as solid filled pills (not translucent chips), so they read
+ * as a deliberate status marker on top of any service-colored block surface.
+ * Pattern: border-<color>-300/60 bg-<color>-500 text-white with a subtle
+ * shadow + inner highlight that mimics a real "verified"/"approved" badge.
+ */
 const PENDING_UI: BookingStatusUi = {
 	railClass: 'bg-white/40',
-	badgeClass: 'border-white/30 bg-white/15 text-white/90',
-	iconClass: 'text-white/80',
+	badgeClass:
+		'border-white/40 bg-white/85 text-nearBlack shadow-[0_1px_4px_-1px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.6)]',
+	iconClass: 'text-nearBlack',
 	icon: Clock,
 	i18nKey: 'pending',
 	muted: false,
@@ -63,8 +70,9 @@ const PENDING_UI: BookingStatusUi = {
 
 const CONFIRMED_UI: BookingStatusUi = {
 	railClass: 'bg-emerald-400',
-	badgeClass: 'border-emerald-300/40 bg-emerald-500/25 text-emerald-50',
-	iconClass: 'text-emerald-100',
+	badgeClass:
+		'border-emerald-300/60 bg-emerald-500 text-white shadow-[0_1px_4px_-1px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.25)]',
+	iconClass: 'text-white',
 	icon: CheckCircle2,
 	i18nKey: 'confirmed',
 	muted: false,
@@ -72,8 +80,9 @@ const CONFIRMED_UI: BookingStatusUi = {
 
 const CANCELLED_UI: BookingStatusUi = {
 	railClass: 'bg-rose-500',
-	badgeClass: 'border-rose-300/40 bg-rose-500/25 text-rose-50',
-	iconClass: 'text-rose-100',
+	badgeClass:
+		'border-rose-300/60 bg-rose-500 text-white shadow-[0_1px_4px_-1px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.25)]',
+	iconClass: 'text-white',
 	icon: XCircle,
 	i18nKey: 'cancelled',
 	muted: true,
@@ -81,8 +90,9 @@ const CANCELLED_UI: BookingStatusUi = {
 
 const COMPLETED_UI: BookingStatusUi = {
 	railClass: 'bg-sky-400',
-	badgeClass: 'border-sky-300/40 bg-sky-500/25 text-sky-50',
-	iconClass: 'text-sky-100',
+	badgeClass:
+		'border-sky-300/60 bg-sky-500 text-white shadow-[0_1px_4px_-1px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.25)]',
+	iconClass: 'text-white',
 	icon: Circle,
 	i18nKey: 'completed',
 	muted: false,
@@ -90,8 +100,9 @@ const COMPLETED_UI: BookingStatusUi = {
 
 const NO_SHOW_UI: BookingStatusUi = {
 	railClass: 'bg-amber-500',
-	badgeClass: 'border-amber-300/40 bg-amber-500/25 text-amber-50',
-	iconClass: 'text-amber-100',
+	badgeClass:
+		'border-amber-300/60 bg-amber-500 text-white shadow-[0_1px_4px_-1px_rgba(0,0,0,0.45),inset_0_0_0_1px_rgba(255,255,255,0.25)]',
+	iconClass: 'text-white',
 	icon: AlertTriangle,
 	i18nKey: 'noShow',
 	muted: false,
