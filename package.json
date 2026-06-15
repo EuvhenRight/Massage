@@ -11,6 +11,7 @@
 		"clear:test-data": "tsx scripts/clear-test-data.ts",
 		"rebuild-days": "tsx scripts/rebuild-days-from-appointments.ts",
 		"seed:price-catalog": "tsx scripts/seed-price-catalog.ts",
+		"seed:studio-video": "tsx scripts/seed-studio-video.ts",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",

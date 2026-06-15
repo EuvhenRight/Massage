@@ -43,5 +43,11 @@ service cloud.firestore {
     match /booking_audit/{document} {
       allow read, write: if true;
     }
+
+    // Studio video: single doc `studioVideo/current` powers the "Our Studio"
+    // section. Public read for the marketing page, write from the admin manager.
+    match /studioVideo/{document} {
+      allow read, write: if true;
+    }
   }
 }

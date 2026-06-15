@@ -943,6 +943,9 @@
       "failed": "Stav sa nepodarilo zmeniť"
     },
     "chooseBookingSystem": "Vyberte systém rezervácií",
+    "studioVideoTitle": "Video štúdia",
+    "studioVideoHeading": "Video sekcie \"O Našom Štúdiu\"",
+    "studioVideoSubtitle": "Spravujte video zobrazené v sekcii \"O Našom Štúdiu\"",
     "drawerPlaces": "Štúdiá",
     "drawerSections": "Sekcie",
     "drawerGlobal": "Všetky štúdiá",

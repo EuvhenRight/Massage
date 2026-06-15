@@ -16,6 +16,11 @@ const nextConfig = {
 				hostname: 'images.pexels.com',
 				pathname: '/**',
 			},
+			{
+				protocol: 'https',
+				hostname: 'firebasestorage.googleapis.com',
+				pathname: '/**',
+			},
 		],
 	},
 	webpack: config => {

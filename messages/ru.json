@@ -944,6 +944,9 @@
       "failed": "Не удалось изменить статус"
     },
     "chooseBookingSystem": "Выберите систему бронирования",
+    "studioVideoTitle": "Видео студии",
+    "studioVideoHeading": "Видео секции «О Нашей Студии»",
+    "studioVideoSubtitle": "Управляйте видео в секции «О Нашей Студии»",
     "drawerPlaces": "Студии",
     "drawerSections": "Разделы",
     "drawerGlobal": "Все студии",

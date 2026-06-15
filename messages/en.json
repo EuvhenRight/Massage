@@ -943,6 +943,9 @@
       "failed": "Couldn't change status"
     },
     "chooseBookingSystem": "Choose which booking system to manage",
+    "studioVideoTitle": "Studio video",
+    "studioVideoHeading": "Our Studio video",
+    "studioVideoSubtitle": "Manage the video shown in the \"Our Studio\" section",
     "drawerPlaces": "Studios",
     "drawerSections": "Sections",
     "drawerGlobal": "All studios",

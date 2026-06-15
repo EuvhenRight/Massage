@@ -6,6 +6,7 @@ import GlowText from '@/components/GlowText'
 import Marquee from '@/components/Marquee'
 import Navbar from '@/components/Navbar'
 import SectionDivider from '@/components/SectionDivider'
+import StudioVideo from '@/components/StudioVideo'
 import {
 	Accordion,
 	AccordionContent,
@@ -851,9 +852,35 @@ export default function DepilationPage() {
 								</div>
 							</motion.article>
 
-							{/* Massage specialist — same studio */}
+							{/* Workspace card */}
 							<motion.article
 								{...revealUp(minimal, { y: 28, delay: 0.08, duration: 0.7 })}
+								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
+							>
+								<div className='relative aspect-[3/4] overflow-hidden'>
+									<StudioVideo
+										lightbox
+										hideWatchLabel
+										containerClassName='absolute inset-0 rounded-none border-0'
+										fallbackLabel={t('team.workspace.title')}
+										fallbackPoster={IMG.comfort}
+									/>
+									<div className='pointer-events-none absolute inset-x-0 bottom-0 p-7 bg-gradient-to-t from-nearBlack via-nearBlack/30 to-transparent'>
+										<h3 className='font-serif text-xl text-icyWhite'>
+											{t('team.workspace.title')}
+										</h3>
+									</div>
+								</div>
+								<div className='p-7'>
+									<p className='text-icyWhite/65 text-sm leading-relaxed'>
+										{t('team.workspace.desc')}
+									</p>
+								</div>
+							</motion.article>
+
+							{/* Massage specialist — same studio */}
+							<motion.article
+								{...revealUp(minimal, { y: 28, delay: 0.12, duration: 0.7 })}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4] overflow-hidden'>
@@ -880,33 +907,6 @@ export default function DepilationPage() {
 									</p>
 									<p className='text-icyWhite/65 text-sm leading-relaxed'>
 										{t('team.serhiy.bio')}
-									</p>
-								</div>
-							</motion.article>
-
-							{/* Workspace card */}
-							<motion.article
-								{...revealUp(minimal, { y: 28, delay: 0.12, duration: 0.7 })}
-								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
-							>
-								<div className='relative aspect-[3/4] overflow-hidden'>
-									<Image
-										src={IMG.comfort}
-										alt={t('team.workspace.title')}
-										fill
-										className='object-cover group-hover:scale-105 transition-transform duration-700'
-										sizes='380px'
-									/>
-									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/30 to-transparent' />
-									<div className='absolute bottom-0 left-0 right-0 p-7'>
-										<h3 className='font-serif text-xl text-icyWhite'>
-											{t('team.workspace.title')}
-										</h3>
-									</div>
-								</div>
-								<div className='p-7'>
-									<p className='text-icyWhite/65 text-sm leading-relaxed'>
-										{t('team.workspace.desc')}
 									</p>
 								</div>
 							</motion.article>
