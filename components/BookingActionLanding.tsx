@@ -162,7 +162,7 @@ export default function BookingActionLanding({
 							href={SITE_CONFIG.googleMaps}
 							target='_blank'
 							rel='noopener noreferrer'
-							className='group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-br from-gold-glow via-gold-soft to-gold-soft px-4 py-3.5 text-sm font-semibold tracking-wide text-nearBlack shadow-[0_4px_24px_-6px_rgba(232,184,0,0.6)] transition-all duration-300 hover:shadow-[0_6px_32px_-6px_rgba(232,184,0,0.8)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-glow focus-visible:ring-offset-2 focus-visible:ring-offset-nearBlack'
+							className='group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-br from-gold-glow via-gold-soft to-gold-soft px-4 py-3.5 text-sm font-semibold tracking-wide text-nearBlack shadow-[0_4px_24px_-6px_rgba(232,184,0,0.6)] transition-[background-color,border-color,color,box-shadow] duration-300 hover:shadow-[0_6px_32px_-6px_rgba(232,184,0,0.8)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-glow focus-visible:ring-offset-2 focus-visible:ring-offset-nearBlack'
 						>
 							<span className='pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full' />
 							<MapPin className='relative h-4 w-4' />
@@ -172,7 +172,7 @@ export default function BookingActionLanding({
 					{variant === 'cancelled' ? (
 						<Link
 							href={bookAnotherHref}
-							className='group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-gold-glow via-gold-soft to-gold-soft px-4 py-3.5 text-sm font-semibold tracking-wide text-nearBlack shadow-[0_4px_24px_-6px_rgba(232,184,0,0.6)] transition-all duration-300 hover:shadow-[0_6px_32px_-6px_rgba(232,184,0,0.8)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-glow focus-visible:ring-offset-2 focus-visible:ring-offset-nearBlack'
+							className='group relative inline-flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-gold-glow via-gold-soft to-gold-soft px-4 py-3.5 text-sm font-semibold tracking-wide text-nearBlack shadow-[0_4px_24px_-6px_rgba(232,184,0,0.6)] transition-[background-color,border-color,color,box-shadow] duration-300 hover:shadow-[0_6px_32px_-6px_rgba(232,184,0,0.8)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-glow focus-visible:ring-offset-2 focus-visible:ring-offset-nearBlack'
 						>
 							<span className='pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full' />
 							<span className='relative'>{actionLabels.bookAnother}</span>

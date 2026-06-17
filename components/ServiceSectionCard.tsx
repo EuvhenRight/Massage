@@ -35,12 +35,12 @@ export function ServiceSectionCard({
 	animationIndex = 0,
 	imageSizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
 }: ServiceSectionCardProps) {
-	const { minimal } = useSiteMotion()
+	const { minimal, compact } = useSiteMotion()
 
 	return (
 		<motion.button
 			type='button'
-			initial={minimal ? false : { opacity: 0, y: 32 }}
+			initial={minimal ? false : { opacity: 0, y: compact ? 20 : 32 }}
 			whileInView={{ opacity: 1, y: 0 }}
 			viewport={{ once: true, margin: '-40px' }}
 			transition={
@@ -48,13 +48,13 @@ export function ServiceSectionCard({
 					? { duration: 0 }
 					: {
 							...TRANSITION.enter,
-							delay: animationIndex * 0.1,
-							duration: 0.6,
+							delay: animationIndex * (compact ? 0.07 : 0.1),
+							duration: compact ? 0.45 : 0.6,
 							ease: [0.22, 1, 0.36, 1],
 						}
 			}
 			onClick={onClick}
-			className='group text-left rounded-3xl overflow-hidden border border-white/[0.08] bg-white/[0.02] hover:border-gold-soft/35 hover:bg-white/[0.04] hover:shadow-[0_0_40px_-12px_rgba(232,184,0,0.18)] transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/40'
+			className='group text-left rounded-3xl overflow-hidden border border-white/[0.08] bg-white/[0.02] hover:border-gold-soft/35 hover:bg-white/[0.04] hover:shadow-[0_0_40px_-12px_rgba(232,184,0,0.18)] transition-[border-color,background-color,box-shadow] duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/40'
 		>
 			<div className='relative aspect-[4/4] overflow-hidden'>
 				<Image

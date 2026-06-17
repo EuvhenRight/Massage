@@ -4,7 +4,6 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useSt
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { getBookingAccent } from "@/lib/booking-accent";
 import { getBookingSchema, type BookingFormData } from "@/lib/booking-schema";
@@ -172,13 +171,12 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
     [submitForSave, submitForConfirm, form.formState.isValid],
   );
 
+  // Wrapper больше не делает свою opacity-анимацию — родительский
+  // `AnimatePresence` в booking-flow/index.tsx уже кросс-фейдит шаги.
+  // Двойной motion.div давал двухступенчатый fade-in (родитель 0.15s +
+  // дочерний 0.2s = 0.35s "проступания" формы вместо ровного 0.15s).
   return (
-    <motion.div
-      className="w-full min-w-0 space-y-5 sm:space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-    >
+    <div className="w-full min-w-0 space-y-5 sm:space-y-6">
       <Form {...form}>
         <form className="w-full min-w-0 space-y-5 sm:space-y-6" onSubmit={(e) => e.preventDefault()}>
           {bookingGranularity === "tbd" && service && (
@@ -346,7 +344,7 @@ const StepCustomerInfo = forwardRef<StepCustomerInfoHandle, StepCustomerInfoProp
           <p className="text-xs text-icyWhite/50 leading-relaxed">{t("bookingInfo")}</p>
         </form>
       </Form>
-    </motion.div>
+    </div>
   );
 });
 

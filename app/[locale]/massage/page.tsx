@@ -162,15 +162,24 @@ export default function MassagePage() {
 	const showMobileBook = !footerInView
 	const [contactSent, setContactSent] = useState(false)
 
-	const { minimal, prefersReducedMotion } = useSiteMotion()
+	// Минимум — только prefers-reduced-motion (полное отключение анимации).
+	// `compact` — узкий телефон: те же эффекты, но дистанции уменьшены чтобы
+	// вписать в 320-414px viewport без визуального дрейфа всего блока.
+	const { minimal, compact, prefersReducedMotion } = useSiteMotion()
 	const reduced = prefersReducedMotion
-	const ry = useMemo(() => scrollRevealY(minimal), [minimal])
-	const rxLeft = useMemo(() => scrollRevealX(minimal, 'left'), [minimal])
-	const rxRight = useMemo(() => scrollRevealX(minimal, 'right'), [minimal])
-	const rf = useMemo(() => scrollFade(minimal), [minimal])
-	const ryAbout = useMemo(() => scrollRevealY(reduced), [reduced])
-	const rxAbout = useMemo(() => scrollRevealX(reduced, 'left'), [reduced])
-	const rfAbout = useMemo(() => scrollFade(reduced), [reduced])
+	const ry = useMemo(() => scrollRevealY(minimal, compact), [minimal, compact])
+	const rxLeft = useMemo(
+		() => scrollRevealX(minimal, 'left', compact),
+		[minimal, compact],
+	)
+	const rxRight = useMemo(
+		() => scrollRevealX(minimal, 'right', compact),
+		[minimal, compact],
+	)
+	const rf = useMemo(() => scrollFade(minimal, compact), [minimal, compact])
+	const ryAbout = ry
+	const rxAbout = rxLeft
+	const rfAbout = rf
 	const heroMotion = useMemo(() => heroEnter(reduced), [reduced])
 	const heroMotionDelayed = useMemo(
 		() => heroEnter(reduced, { delay: reduced ? 0 : 0.06 }),
@@ -291,14 +300,14 @@ export default function MassagePage() {
 						<div className='mt-4 flex flex-wrap justify-center gap-3'>
 							<Link
 								href={`/${locale}/massage/booking`}
-								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-glow text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300'
+								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-glow text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-[background-color,border-color,color,box-shadow] duration-300'
 							>
 								{t('heroBookButton')}
 								<ChevronRight className='w-4 h-4' />
 							</Link>
 							<a
 								href='#services'
-								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/15 text-icyWhite/70 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/40 hover:text-gold-glow transition-all duration-300'
+								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/15 text-icyWhite/70 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/40 hover:text-gold-glow transition-[background-color,border-color,color,box-shadow] duration-300'
 							>
 								{t('heroPricesButton')}
 							</a>
@@ -455,7 +464,7 @@ export default function MassagePage() {
 									<motion.li
 										key={key}
 										{...rxRight}
-								transition={staggerTransition(minimal, i, 0.03)}
+								transition={staggerTransition(minimal, i, 0.03, compact)}
 										className='flex items-start gap-3 text-icyWhite/80'
 									>
 										<span className='text-gold-soft shrink-0 mt-0.5'>
@@ -497,8 +506,8 @@ export default function MassagePage() {
 							<motion.div
 								key={key}
 								{...ry}
-							transition={staggerTransition(minimal, i, 0.04)}
-								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/30 hover:bg-white/[0.04] transition-all duration-300'
+							transition={staggerTransition(minimal, i, 0.04, compact)}
+								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/30 hover:bg-white/[0.04] transition-[background-color,border-color,color,box-shadow] duration-300'
 							>
 								<Icon
 									className='w-8 h-8 text-gold-glow/90 mb-3'
@@ -539,7 +548,7 @@ export default function MassagePage() {
 							<motion.div
 								key={zoneKey}
 								{...ry}
-								transition={staggerTransition(minimal, zi, 0.06)}
+								transition={staggerTransition(minimal, zi, 0.06, compact)}
 								className='rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden'
 							>
 								<div className='px-6 py-5 border-b border-white/10'>
@@ -616,7 +625,7 @@ export default function MassagePage() {
 							<motion.div
 								key={key}
 								{...ry}
-							transition={staggerTransition(minimal, i, 0.06)}
+							transition={staggerTransition(minimal, i, 0.06, compact)}
 								className='relative p-6 rounded-2xl border border-white/10 bg-white/[0.02]'
 							>
 								<span className='text-gold-soft/30 font-serif text-5xl absolute top-4 right-5'>
@@ -706,7 +715,7 @@ export default function MassagePage() {
 
 							<motion.article
 								{...ry}
-								transition={enterDelay(minimal, 0.08)}
+								transition={enterDelay(minimal, 0.08, compact)}
 								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
 							>
 								<div className='relative aspect-[3/4]'>
@@ -780,8 +789,8 @@ export default function MassagePage() {
 							<motion.div
 								key={key}
 								{...ry}
-							transition={staggerTransition(minimal, i, 0.05)}
-								className='p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/25 transition-all duration-300'
+							transition={staggerTransition(minimal, i, 0.05, compact)}
+								className='p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/25 transition-[background-color,border-color,color,box-shadow] duration-300'
 							>
 								<Icon
 									className='w-8 h-8 text-gold-glow/90 mb-4'
@@ -831,7 +840,7 @@ export default function MassagePage() {
 								<motion.blockquote
 									key={key}
 									{...ry}
-							transition={staggerTransition(minimal, i, 0.04)}
+							transition={staggerTransition(minimal, i, 0.04, compact)}
 									className='shrink-0 w-[300px] sm:w-[340px] snap-center p-6 rounded-2xl border border-white/10 bg-white/[0.02]'
 								>
 									<div className='flex gap-1 mb-4'>
@@ -988,7 +997,7 @@ export default function MassagePage() {
 
 						<motion.div
 							{...ry}
-							transition={enterDelay(minimal, 0.05)}
+							transition={enterDelay(minimal, 0.05, compact)}
 							className='flex min-h-0 flex-col lg:h-full'
 						>
 							<div className='flex h-full min-h-0 flex-col rounded-2xl bg-white/[0.04] p-6 ring-1 ring-white/10'>
@@ -1056,7 +1065,7 @@ export default function MassagePage() {
 									<DialogTrigger asChild>
 										<button
 											type='button'
-											className='w-full flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wide hover:bg-gold-soft/90 focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all duration-300'
+											className='w-full flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wide hover:bg-gold-soft/90 focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-[background-color,border-color,color,box-shadow] duration-300'
 										>
 											<Send className='w-4 h-4' />
 											{t('contact.formTitle')}
@@ -1148,7 +1157,7 @@ export default function MassagePage() {
 												</div>
 												<button
 													type='submit'
-													className='w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-all duration-300'
+													className='w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-[background-color,border-color,color,box-shadow] duration-300'
 												>
 													<Send className='w-4 h-4' />
 													{t('contact.submit')}
@@ -1189,7 +1198,7 @@ export default function MassagePage() {
 					<div className='grid w-full max-w-xl mx-auto grid-cols-1 sm:grid-cols-2 gap-4'>
 						<Link
 							href={`/${locale}/massage/booking`}
-							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-glow text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-all duration-300'
+							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-glow text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-[background-color,border-color,color,box-shadow] duration-300'
 						>
 							{t('bookNow')}
 							<ChevronRight className='w-4 h-4 shrink-0' />

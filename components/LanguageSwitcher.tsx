@@ -99,7 +99,7 @@ export default function LanguageSwitcher({
         aria-label="Select language"
       >
         <SelectTrigger
-          className={`relative flex h-auto w-auto min-w-0 cursor-pointer flex-col items-center gap-0.5 rounded-xl border-0 border-none bg-transparent px-2 py-1 shadow-none outline-none text-icyWhite hover:opacity-80 transition-all duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-offset-nearBlack [&>svg]:hidden ${ui.langFocus}`}
+          className={`relative flex h-auto w-auto min-w-0 cursor-pointer flex-col items-center gap-0.5 rounded-xl border-0 border-none bg-transparent px-2 py-1 shadow-none outline-none text-icyWhite hover:opacity-80 transition-[background-color,border-color,color,box-shadow] duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-offset-nearBlack [&>svg]:hidden ${ui.langFocus}`}
         >
           {isNavigating && (
             <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2" aria-hidden>

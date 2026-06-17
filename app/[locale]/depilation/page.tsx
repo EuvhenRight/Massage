@@ -24,14 +24,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { SITE_CONFIG } from '@/lib/site-config'
-import { EASE_EXPO_OUT, revealUp, useSiteMotion } from '@/lib/site-motion'
+import { EASE_EXPO_OUT, revealUp, useSiteMotion, useStandardVariants } from '@/lib/site-motion'
+import { useInViewPause } from '@/lib/use-in-view-pause'
 import { useIntersectionVisible } from '@/lib/use-intersection-visible'
-import {
-	motion,
-	useMotionValueEvent,
-	useScroll,
-	useTransform,
-} from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import {
 	BadgeCheck,
 	Calendar,
@@ -180,133 +176,83 @@ export default function DepilationPage() {
 		return () => mq.removeEventListener('change', apply)
 	}, [])
 
-	const { minimal, prefersReducedMotion, narrowPhone } = useSiteMotion()
-	const heroScrollFx = !minimal && heroParallaxDesktop
+	// Mobile/laptop parity: те же эффекты на телефоне, что и на лэптопе.
+	// `compact` тюнит дистанции/задержки под 320-414px, не глушит анимацию.
+	// `lite` всё ещё гейтит parallax (на iOS Safari useScroll моргает при
+	// прыжках dvh с показом/скрытием URL-бара).
+	const {
+		minimal,
+		compact,
+		lite,
+		prefersReducedMotion,
+		narrowPhone,
+		tablet,
+	} = useSiteMotion()
+	const heroScrollFx = !lite && heroParallaxDesktop
 
 	/*
 	 * Hero entrances are TRANSFORM-ONLY (no opacity). The content must never be
 	 * SSR-rendered at opacity:0: on a hard load, iOS Safari can fail to kick off
 	 * the post-hydration entrance animation, leaving the block stuck invisible
-	 * until a re-render (e.g. navigating away and back). With transform-only, the
-	 * worst case is content that's slightly offset — never hidden.
+	 * until a re-render. With transform-only, the worst case is content that's
+	 * slightly offset — never hidden.
+	 *
+	 * Timing (canon 2026: total ≤800ms):
+	 *   logo:  0.05s delay + 0.55s  → settles at 0.60s
+	 *   block: 0.18s delay + 0.50s  → settles at 0.68s
+	 *   badge: 0.10s delay + 0.42s  → settles at 0.52s
+	 *   line2: 0.28s delay + 0.42s  → settles at 0.70s
+	 *   cta:   0.34s delay + 0.42s  → settles at 0.76s
+	 * Раньше последний элемент (CTA-кнопки) досаживался к 1.0+s от mount —
+	 * слишком долго по канону 2026, ощущалось «тяжёлым».
 	 */
 	const heroBlock = prefersReducedMotion
 		? { initial: false as const }
 		: {
-				initial: { y: 18 },
+				initial: { y: 14 },
 				animate: { y: 0 },
-				transition: { duration: 0.8, delay: 0.25, ease: EASE_EXPO_OUT },
+				transition: { duration: 0.5, delay: 0.18, ease: EASE_EXPO_OUT },
 			}
 	/** Logo descends from above and settles just over the wordmark. */
 	const logoIntro = prefersReducedMotion
 		? { initial: false as const }
 		: {
-				initial: { y: -28, scale: 0.94 },
+				initial: { y: -22, scale: 0.96 },
 				animate: { y: 0, scale: 1 },
-				transition: { duration: 0.9, delay: 0.15, ease: EASE_EXPO_OUT },
+				transition: { duration: 0.55, delay: 0.05, ease: EASE_EXPO_OUT },
 			}
 
-	const aboutStagger = useMemo(
-		() =>
-			prefersReducedMotion
-				? { hidden: {}, show: { transition: { staggerChildren: 0 } } }
-				: { hidden: {}, show: { transition: { staggerChildren: 0.04 } } },
-		[prefersReducedMotion],
-	)
-	const aboutFadeUp = useMemo(
-		() =>
-			prefersReducedMotion
-				? {
-						hidden: { opacity: 1, y: 0 },
-						show: {
-							opacity: 1,
-							y: 0,
-							transition: { duration: 0 },
-						},
-					}
-				: {
-						hidden: { opacity: 0, y: 12 },
-						show: {
-							opacity: 1,
-							y: 0,
-							transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
-						},
-					},
-		[prefersReducedMotion],
-	)
-
-	const stagger = useMemo(
-		() =>
-			minimal
-				? { hidden: {}, show: { transition: { staggerChildren: 0 } } }
-				: { hidden: {}, show: { transition: { staggerChildren: 0.04 } } },
-		[minimal],
-	)
-	const fadeUp = useMemo(
-		() =>
-			minimal
-				? {
-						hidden: { opacity: 1, y: 0 },
-						show: {
-							opacity: 1,
-							y: 0,
-							transition: { duration: 0 },
-						},
-					}
-				: {
-						hidden: { opacity: 0, y: 12 },
-						show: {
-							opacity: 1,
-							y: 0,
-							transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
-						},
-					},
-		[minimal],
-	)
-	const fadeIn = useMemo(
-		() =>
-			minimal
-				? {
-						hidden: { opacity: 1 },
-						show: { opacity: 1, transition: { duration: 0 } },
-					}
-				: {
-						hidden: { opacity: 0 },
-						show: { opacity: 1, transition: { duration: 0.4 } },
-					},
-		[minimal],
-	)
-	const scaleUp = useMemo(
-		() =>
-			minimal
-				? {
-						hidden: { opacity: 1, scale: 1 },
-						show: { opacity: 1, scale: 1, transition: { duration: 0 } },
-					}
-				: {
-						hidden: { opacity: 0, scale: 0.96 },
-						show: {
-							opacity: 1,
-							scale: 1,
-							transition: { duration: 0.36, ease: [0.25, 0.1, 0.25, 1] },
-						},
-					},
-		[minimal],
-	)
+	// Стандартные варианты с mobile-tuning через `compact`. На узком телефоне
+	// получаем меньшую дистанцию (y:8 вместо 12), более короткий stagger (0.03
+	// вместо 0.04) — те же визуальные эффекты, без перегруза маленького экрана.
+	const { stagger, fadeUp, scaleUp } = useStandardVariants(minimal, compact)
 
 	const heroRef = useRef<HTMLElement>(null)
 	const { scrollYProgress } = useScroll({
 		target: heroRef,
 		offset: ['start start', 'end start'],
 	})
+	// Лёгкий parallax только на десктопе (heroScrollFx). Раньше тут был ещё
+	// и opacity 1 → 0 — провоцировал «призрак» героя при остановке скролла на
+	// середине секции и моргал при прыжках dvh на iOS Safari. Убрано: герой
+	// сам уезжает из вьюпорта, дополнительный fade избыточен.
 	const heroImgY = useTransform(scrollYProgress, [0, 1], ['0%', '25%'])
-	const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
 
 	const [showFloatingCTA, setShowFloatingCTA] = useState(false)
 	const [footerRef, footerInView] = useIntersectionVisible()
-	useMotionValueEvent(scrollYProgress, 'change', v => {
-		setShowFloatingCTA(v > 0.85)
-	})
+	// Отдельный IntersectionObserver на героя — показывает мобильный CTA, когда
+	// герой ушёл из вьюпорта. Раньше был useMotionValueEvent('change'), который
+	// дергал setState на каждом кадре скролла → лишние ре-рендеры всего листинга.
+	useEffect(() => {
+		const el = heroRef.current
+		if (!el) return
+		const io = new IntersectionObserver(
+			([entry]) => setShowFloatingCTA(entry ? !entry.isIntersecting : false),
+			{ rootMargin: '-15% 0px 0px 0px' },
+		)
+		io.observe(el)
+		return () => io.disconnect()
+	}, [])
 	const visibleMobileBook = showFloatingCTA && !footerInView
 
 	const scrollSlider = (
@@ -394,28 +340,22 @@ export default function DepilationPage() {
 					<div className='absolute inset-x-0 bottom-0 h-[55%] hidden lg:block bg-gradient-to-b from-transparent via-nearBlack/55 to-nearBlack' />
 				</motion.div>
 
-				{/* Ambient glow orbs */}
-				<div className='absolute inset-0 overflow-hidden pointer-events-none'>
-					<div className='absolute -top-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-gold-soft/[0.04] blur-[120px] animate-float' />
-					<div className='absolute -bottom-1/4 -left-1/4 w-[500px] h-[500px] rounded-full bg-gold-soft/[0.03] blur-[100px] animate-float-delayed' />
-				</div>
+				{/* Ambient glow orbs (paused off-screen via useInViewPause) */}
+				<HeroOrbs />
 
 				{/* Badge line */}
 				<motion.p
-					initial={prefersReducedMotion ? false : { y: -12 }}
+					initial={prefersReducedMotion ? false : { y: -10 }}
 					animate={{ y: 0 }}
-					transition={{ duration: 0.6, delay: 0.2, ease: EASE_EXPO_OUT }}
+					transition={{ duration: 0.42, delay: 0.1, ease: EASE_EXPO_OUT }}
 					className='relative z-10 w-full shrink-0 text-center text-gold-soft text-[10px] sm:text-xs font-medium tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28 [text-shadow:0_2px_12px_rgba(0,0,0,0.75)]'
 				>
 					{t.rich('heroBadge', richStudioBrand)}
 				</motion.p>
 
 				{/* Main hero content — bottom-weighted on mobile to reveal the portrait's
-				    face; centered on lg+. Scroll-linked fade only with parallax (lg+). */}
-				<motion.div
-					style={heroScrollFx ? { opacity: heroOpacity } : undefined}
-					className='relative z-10 flex-1 min-h-0 flex flex-col items-center justify-end pb-6 sm:pb-10 lg:pb-16 xl:pb-20 px-6 overflow-hidden'
-				>
+				    face; centered on lg+. */}
+				<div className='relative z-10 flex-1 min-h-0 flex flex-col items-center justify-end pb-6 sm:pb-10 lg:pb-16 xl:pb-20 px-6 overflow-hidden'>
 					<motion.div {...heroBlock} className='text-center'>
 						<motion.div
 							{...logoIntro}
@@ -438,42 +378,44 @@ export default function DepilationPage() {
 						/>
 
 						<motion.p
-							initial={prefersReducedMotion ? false : { y: 8 }}
+							initial={prefersReducedMotion ? false : { y: 6 }}
 							animate={{ y: 0 }}
-							transition={{ delay: 0.45, duration: 0.6, ease: EASE_EXPO_OUT }}
+							transition={{ delay: 0.28, duration: 0.42, ease: EASE_EXPO_OUT }}
 							className='-mt-1 text-gold-soft text-xs sm:text-sm tracking-wider uppercase max-w-lg mx-auto leading-relaxed [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]'
 						>
 							{t('heroLine2')}
 						</motion.p>
 
 						<motion.div
-							initial={prefersReducedMotion ? false : { y: 16 }}
+							initial={prefersReducedMotion ? false : { y: 12 }}
 							animate={{ y: 0 }}
-							transition={{ delay: 0.5, duration: 0.6, ease: EASE_EXPO_OUT }}
+							transition={{ delay: 0.34, duration: 0.42, ease: EASE_EXPO_OUT }}
 							className='mt-6 flex flex-wrap justify-center gap-3'
 						>
 							<Link
 								href={`/${locale}/depilation/booking`}
-								className='group inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-all duration-500'
+								className='group inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-colors duration-300'
 							>
 								{t('heroBookButton')}
 								<ChevronRight className='w-4 h-4 group-hover:translate-x-0.5 transition-transform' />
 							</Link>
 							<Link
 								href={`/${locale}/depilation/price`}
-								className='inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-all duration-500'
+								className='inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-colors duration-300'
 							>
 								{t('heroPricesButton')}
 							</Link>
 						</motion.div>
 					</motion.div>
 
-				</motion.div>
+				</div>
 
 				{/* Trust bar — seamless marquee. iOS-safe: pixel-measured WAAPI transform
-				    with the blurred backdrop as a sibling (not an ancestor) of the track. */}
+				    with the blurred backdrop as a sibling (not an ancestor) of the track.
+				    Speed по уровням: телефон 36 (узкий экран, текст должен успеть
+				    прочитаться), планшет 48 (промежуточный), десктоп 60. */}
 				<Marquee
-					speed={narrowPhone ? 36 : 60}
+					speed={narrowPhone ? 36 : tablet ? 48 : 60}
 					gradientEdges
 					pauseOnHover
 					ariaLabel={t('trustBarLabel')}
@@ -508,16 +450,19 @@ export default function DepilationPage() {
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-stretch'>
 						<motion.div
 							initial={
-								prefersReducedMotion
+								minimal
 									? { opacity: 1, x: 0, scale: 1 }
-									: { opacity: 0, x: -40, scale: 0.96 }
+									: { opacity: 0, x: compact ? -22 : -40, scale: compact ? 0.98 : 0.96 }
 							}
 							whileInView={{ opacity: 1, x: 0, scale: 1 }}
 							viewport={{ once: true, margin: '-80px' }}
 							transition={
-								prefersReducedMotion
+								minimal
 									? { duration: 0 }
-									: { duration: 0.8, ease: EASE_EXPO_OUT }
+									: {
+											duration: compact ? 0.55 : 0.8,
+											ease: EASE_EXPO_OUT,
+										}
 							}
 							className='relative order-1 md:h-full md:min-h-0'
 						>
@@ -536,13 +481,13 @@ export default function DepilationPage() {
 						</motion.div>
 
 						<motion.div
-							variants={aboutStagger}
+							variants={stagger}
 							initial='hidden'
 							whileInView='show'
 							viewport={{ once: true, margin: '-80px' }}
 							className='flex flex-col md:h-full md:min-h-0 order-2 lg:pl-2 max-w-[40rem] md:max-w-none gap-5 sm:gap-6'
 						>
-							<motion.div variants={aboutFadeUp}>
+							<motion.div variants={fadeUp}>
 								<h2
 									id='about-heading'
 									className='font-serif text-3xl sm:text-4xl md:text-[2.125rem] lg:text-[2.375rem] text-icyWhite tracking-tight leading-[1.15]'
@@ -551,19 +496,19 @@ export default function DepilationPage() {
 								</h2>
 							</motion.div>
 							<motion.p
-								variants={aboutFadeUp}
+								variants={fadeUp}
 								className='text-base sm:text-[1.0625rem] text-gold-soft/88 font-medium leading-[1.65]'
 							>
 								{t.rich('aboutIntro', richStudioBrand)}
 							</motion.p>
 							<motion.p
-								variants={aboutFadeUp}
+								variants={fadeUp}
 								className='text-base sm:text-[1.0625rem] text-icyWhite/72 leading-[1.65]'
 							>
 								{t('aboutJourney')}
 							</motion.p>
 							<motion.div
-								variants={aboutFadeUp}
+								variants={fadeUp}
 								className='border-l-2 border-gold-soft/45 pl-4 sm:pl-5 py-0.5'
 							>
 								<p className='text-base sm:text-[1.0625rem] text-icyWhite/78 leading-[1.65] font-medium'>
@@ -571,13 +516,13 @@ export default function DepilationPage() {
 								</p>
 							</motion.div>
 							<motion.p
-								variants={aboutFadeUp}
+								variants={fadeUp}
 								className='text-base sm:text-[1.0625rem] text-icyWhite/72 leading-[1.65]'
 							>
 								{t('aboutMedical')}
 							</motion.p>
 							<motion.p
-								variants={aboutFadeUp}
+								variants={fadeUp}
 								className='text-base sm:text-[1.0625rem] text-icyWhite/62 leading-[1.65] italic pt-5 sm:pt-6 mt-1 border-t border-white/[0.08] md:mt-auto'
 							>
 								{t('aboutContinuous')}
@@ -600,10 +545,15 @@ export default function DepilationPage() {
 				<div className='relative max-w-6xl mx-auto'>
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-stretch'>
 						<motion.div
-							initial={minimal ? false : { opacity: 0, x: -40 }}
+							initial={
+								minimal ? false : { opacity: 0, x: compact ? -22 : -40 }
+							}
 							whileInView={{ opacity: 1, x: 0 }}
 							viewport={{ once: true, margin: '-60px' }}
-							transition={{ duration: 0.8, ease: EASE_EXPO_OUT }}
+							transition={{
+								duration: compact ? 0.55 : 0.8,
+								ease: EASE_EXPO_OUT,
+							}}
 							className='relative order-2 md:order-1 md:h-full md:min-h-0'
 						>
 							<div className='relative w-full aspect-[4/3] rounded-3xl overflow-hidden md:aspect-auto md:h-full md:min-h-0'>
@@ -641,7 +591,7 @@ export default function DepilationPage() {
 									<motion.li
 										key={key}
 										variants={fadeUp}
-										className='group relative flex items-start gap-3.5 overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent px-4 py-3.5 transition-all duration-300 hover:border-gold-soft/25 hover:shadow-[0_0_28px_-8px_rgba(232,184,0,0.15)] sm:gap-4 sm:px-5 sm:py-4'
+										className='group relative flex items-start gap-3.5 overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent px-4 py-3.5 transition-[background-color,border-color,color,box-shadow] duration-300 hover:border-gold-soft/25 hover:shadow-[0_0_28px_-8px_rgba(232,184,0,0.15)] sm:gap-4 sm:px-5 sm:py-4'
 									>
 										<span
 											className='mt-0.5 select-none font-serif text-base leading-none text-gold-glow drop-shadow-[0_0_14px_rgba(255,214,51,0.45)] sm:mt-1 sm:text-lg'
@@ -695,9 +645,9 @@ export default function DepilationPage() {
 							<motion.div
 								key={key}
 								variants={scaleUp}
-								className='group relative p-6 sm:p-7 rounded-2xl glass-card hover:shadow-card-hover transition-all duration-500 cursor-default'
+								className='group relative p-6 sm:p-7 rounded-2xl glass-card hover:shadow-card-hover transition-[border-color,box-shadow] duration-300 cursor-default'
 							>
-								<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-4 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-all duration-500'>
+								<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-4 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-[background-color,transform] duration-300'>
 									<Icon className='w-6 h-6 text-gold-soft/90' aria-hidden />
 								</div>
 								<p className='text-icyWhite font-medium text-sm leading-snug'>
@@ -757,12 +707,14 @@ export default function DepilationPage() {
 						{PROCESS_STEPS.map(({ key, step }, i) => (
 							<motion.div
 								key={key}
-								initial={minimal ? false : { opacity: 0, y: 32 }}
+								initial={
+									minimal ? false : { opacity: 0, y: compact ? 18 : 32 }
+								}
 								whileInView={{ opacity: 1, y: 0 }}
 								viewport={{ once: true, margin: '-40px' }}
 								transition={{
-									delay: minimal ? 0 : i * 0.1,
-									duration: minimal ? 0 : 0.6,
+									delay: minimal ? 0 : i * (compact ? 0.07 : 0.1),
+									duration: minimal ? 0 : compact ? 0.45 : 0.6,
 									ease: EASE_EXPO_OUT,
 								}}
 								className='relative p-7 rounded-3xl glass-card group'
@@ -772,7 +724,7 @@ export default function DepilationPage() {
 									{step}
 								</span>
 								{/* Gold top accent line */}
-								<div className='w-8 h-0.5 bg-gold-soft/40 rounded-full mb-5 group-hover:w-12 transition-all duration-500' />
+								<div className='w-8 h-0.5 bg-gold-soft/40 rounded-full mb-5 group-hover:w-12 transition-[width] duration-300' />
 								<h3 className='font-serif text-xl text-icyWhite mb-3 relative'>
 									{t(`process.${key}.title`)}
 								</h3>
@@ -821,7 +773,7 @@ export default function DepilationPage() {
 						>
 							{/* Natalie card */}
 							<motion.article
-								{...revealUp(minimal, { y: 28, duration: 0.7 })}
+								{...revealUp(minimal, { y: 28, duration: 0.7, compact })}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4] overflow-hidden'>
@@ -854,7 +806,7 @@ export default function DepilationPage() {
 
 							{/* Workspace card */}
 							<motion.article
-								{...revealUp(minimal, { y: 28, delay: 0.08, duration: 0.7 })}
+								{...revealUp(minimal, { y: 28, delay: 0.08, duration: 0.7, compact })}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4] overflow-hidden'>
@@ -880,7 +832,7 @@ export default function DepilationPage() {
 
 							{/* Massage specialist — same studio */}
 							<motion.article
-								{...revealUp(minimal, { y: 28, delay: 0.12, duration: 0.7 })}
+								{...revealUp(minimal, { y: 28, delay: 0.12, duration: 0.7, compact })}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4] overflow-hidden'>
@@ -915,7 +867,7 @@ export default function DepilationPage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(sliderRef, 'left')}
-							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-all duration-300 backdrop-blur-sm'
+							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-[background-color,border-color,color,box-shadow] duration-300 backdrop-blur-sm'
 							aria-label='Previous'
 						>
 							<ChevronLeft className='w-5 h-5' />
@@ -923,7 +875,7 @@ export default function DepilationPage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(sliderRef, 'right')}
-							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-all duration-300 backdrop-blur-sm'
+							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-[background-color,border-color,color,box-shadow] duration-300 backdrop-blur-sm'
 							aria-label='Next'
 						>
 							<ChevronRight className='w-5 h-5' />
@@ -965,10 +917,10 @@ export default function DepilationPage() {
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-5'>
 						{HYGIENE_ITEMS.map(({ key, icon: Icon }, i) => {
 							const cardClass =
-								'relative p-7 rounded-3xl glass-card group hover:shadow-card-hover transition-all duration-500'
+								'relative p-7 rounded-3xl glass-card group hover:shadow-card-hover transition-[border-color,box-shadow] duration-300'
 							const inner = (
 								<>
-									<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-5 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-all duration-500'>
+									<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-5 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-[background-color,transform] duration-300'>
 										<Icon className='w-6 h-6 text-gold-soft/80' aria-hidden />
 									</div>
 									<h3 className='text-icyWhite font-semibold text-sm mb-2'>
@@ -979,17 +931,12 @@ export default function DepilationPage() {
 									</p>
 								</>
 							)
-							if (narrowPhone) {
-								return (
-									<div key={key} className={cardClass}>
-										{inner}
-									</div>
-								)
-							}
+							// Mobile parity: убран narrowPhone-шорткат, теперь все устройства
+							// получают одинаковую анимацию через `compact`-варианты.
 							return (
 								<motion.div
 									key={key}
-									{...revealUp(minimal, { y: 24, delay: i * 0.08 })}
+									{...revealUp(minimal, { y: 24, delay: i * 0.08, compact })}
 									className={cardClass}
 								>
 									{inner}
@@ -1036,7 +983,7 @@ export default function DepilationPage() {
 							{TESTIMONIALS.map((key, i) => (
 								<motion.blockquote
 									key={key}
-									{...revealUp(minimal, { y: 24, delay: Math.min(i, 8) * 0.06 })}
+									{...revealUp(minimal, { y: 24, delay: Math.min(i, 8) * 0.06, compact })}
 									className='group shrink-0 w-[300px] sm:w-[380px] snap-center overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent p-6 sm:p-7 transition-[border-color,box-shadow] duration-300 hover:border-gold-soft/25 hover:shadow-[0_0_28px_-8px_rgba(232,184,0,0.15)]'
 								>
 									<div className='flex gap-1 mb-4'>
@@ -1072,7 +1019,7 @@ export default function DepilationPage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(testimonialRef, 'left')}
-							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-all duration-300 backdrop-blur-sm'
+							className='absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-[background-color,border-color,color,box-shadow] duration-300 backdrop-blur-sm'
 							aria-label='Previous'
 						>
 							<ChevronLeft className='w-5 h-5' />
@@ -1080,7 +1027,7 @@ export default function DepilationPage() {
 						<button
 							type='button'
 							onClick={() => scrollSlider(testimonialRef, 'right')}
-							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-all duration-300 backdrop-blur-sm'
+							className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 hidden lg:flex w-11 h-11 items-center justify-center rounded-full bg-nearBlack/80 border border-white/10 text-icyWhite/50 hover:text-gold-soft hover:border-gold-soft/30 transition-[background-color,border-color,color,box-shadow] duration-300 backdrop-blur-sm'
 							aria-label='Next'
 						>
 							<ChevronRight className='w-5 h-5' />
@@ -1126,7 +1073,7 @@ export default function DepilationPage() {
 						{FAQ_ITEMS.map((key, i) => (
 							<motion.div
 								key={key}
-								{...revealUp(minimal, { y: 16, delay: i * 0.04, duration: 0.5 })}
+								{...revealUp(minimal, { y: 16, delay: i * 0.04, duration: 0.5, compact })}
 							>
 								<AccordionItem
 									value={key}
@@ -1178,7 +1125,7 @@ export default function DepilationPage() {
 
 					<div className='grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-12 lg:items-stretch'>
 						<motion.div
-							{...revealUp(minimal, { y: 20 })}
+							{...revealUp(minimal, { y: 20, compact })}
 							className='flex min-h-0 flex-col lg:h-full'
 						>
 							<div className='relative min-h-[260px] flex-1 overflow-hidden rounded-3xl ring-1 ring-white/[0.06] sm:min-h-[280px] lg:min-h-0'>
@@ -1216,7 +1163,7 @@ export default function DepilationPage() {
 						</motion.div>
 
 						<motion.div
-							{...revealUp(minimal, { y: 20, delay: 0.1 })}
+							{...revealUp(minimal, { y: 20, delay: 0.1, compact })}
 							className='flex min-h-0 flex-col lg:h-full'
 						>
 							<div className='flex h-full min-h-0 flex-col rounded-3xl glass-card p-7'>
@@ -1284,7 +1231,7 @@ export default function DepilationPage() {
 										<DialogTrigger asChild>
 											<button
 												type='button'
-												className='w-full flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wide hover:bg-gold-soft/90 focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-all duration-300'
+												className='w-full flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-gold-soft text-nearBlack font-semibold text-sm tracking-wide hover:bg-gold-soft/90 focus:outline-none focus:ring-2 focus:ring-gold-soft/50 focus:ring-offset-2 focus:ring-offset-nearBlack transition-[background-color,border-color,color,box-shadow] duration-300'
 											>
 												<Send className='w-4 h-4' />
 												{t('contact.formTitle')}
@@ -1375,7 +1322,7 @@ export default function DepilationPage() {
 													</div>
 													<button
 														type='submit'
-														className='w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-all duration-300'
+														className='w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft font-medium text-sm tracking-wider uppercase hover:bg-gold-soft/25 hover:shadow-glow transition-[background-color,border-color,color,box-shadow] duration-300'
 													>
 														<Send className='w-4 h-4' />
 														{t('contact.submit')}
@@ -1430,14 +1377,14 @@ export default function DepilationPage() {
 						>
 							<Link
 								href={`/${locale}/depilation/booking`}
-								className='group inline-flex w-full min-h-[3.5rem] items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft text-sm font-semibold tracking-wider uppercase hover:bg-gold-soft/25 hover:border-gold-soft/60 hover:shadow-glow transition-all duration-500'
+								className='group inline-flex w-full min-h-[3.5rem] items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft text-sm font-semibold tracking-wider uppercase hover:bg-gold-soft/25 hover:border-gold-soft/60 hover:shadow-glow transition-[background-color,border-color,box-shadow] duration-300'
 							>
 								{t('bookNow')}
 								<ChevronRight className='w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform' />
 							</Link>
 							<a
 								href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
-								className='inline-flex w-full min-h-[3.5rem] items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-white/10 text-icyWhite/60 text-sm font-semibold tracking-wider uppercase hover:border-gold-soft/30 hover:text-gold-soft/80 transition-all duration-500'
+								className='inline-flex w-full min-h-[3.5rem] items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-white/10 text-icyWhite/60 text-sm font-semibold tracking-wider uppercase hover:border-gold-soft/30 hover:text-gold-soft/80 transition-colors duration-300'
 							>
 								<Phone className='w-4 h-4 shrink-0' />
 								{t('callNow')}
@@ -1529,7 +1476,7 @@ export default function DepilationPage() {
 									href={SITE_CONFIG.instagram}
 									target='_blank'
 									rel='noopener noreferrer'
-									className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-icyWhite/40 hover:text-[#E4405F] hover:bg-[#E4405F]/10 transition-all duration-300'
+									className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-icyWhite/40 hover:text-[#E4405F] hover:bg-[#E4405F]/10 transition-[background-color,border-color,color,box-shadow] duration-300'
 									aria-label='Instagram'
 								>
 									<Instagram className='w-5 h-5' />
@@ -1538,7 +1485,7 @@ export default function DepilationPage() {
 									href={SITE_CONFIG.facebook}
 									target='_blank'
 									rel='noopener noreferrer'
-									className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-icyWhite/40 hover:text-[#1877F2] hover:bg-[#1877F2]/10 transition-all duration-300'
+									className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-icyWhite/40 hover:text-[#1877F2] hover:bg-[#1877F2]/10 transition-[background-color,border-color,color,box-shadow] duration-300'
 									aria-label='Facebook'
 								>
 									<Facebook className='w-5 h-5' />
@@ -1547,7 +1494,7 @@ export default function DepilationPage() {
 									href={SITE_CONFIG.whatsapp}
 									target='_blank'
 									rel='noopener noreferrer'
-									className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-icyWhite/40 hover:text-[#25D366] hover:bg-[#25D366]/10 transition-all duration-300'
+									className='flex w-10 h-10 items-center justify-center rounded-xl bg-white/[0.04] text-icyWhite/40 hover:text-[#25D366] hover:bg-[#25D366]/10 transition-[background-color,border-color,color,box-shadow] duration-300'
 									aria-label='WhatsApp'
 								>
 									<MessageCircle className='w-5 h-5' />
@@ -1585,5 +1532,26 @@ export default function DepilationPage() {
 				</div>
 			</footer>
 		</>
+	)
+}
+
+/** Декоративные glow-orbs, паузятся за пределами вьюпорта (экономия батареи на мобильных). */
+function HeroOrbs() {
+	const { ref, style } = useInViewPause<HTMLDivElement>()
+	return (
+		<div
+			ref={ref}
+			className='absolute inset-0 overflow-hidden pointer-events-none'
+			aria-hidden
+		>
+			<div
+				className='absolute -top-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-gold-soft/[0.04] blur-[120px] animate-float'
+				style={style}
+			/>
+			<div
+				className='absolute -bottom-1/4 -left-1/4 w-[500px] h-[500px] rounded-full bg-gold-soft/[0.03] blur-[100px] animate-float-delayed'
+				style={style}
+			/>
+		</div>
 	)
 }

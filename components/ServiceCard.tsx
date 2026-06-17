@@ -50,7 +50,7 @@ export default function ServiceCard({
       className={cn(
         "group relative overflow-hidden rounded-2xl border border-white/5",
         "bg-nearBlack/80 backdrop-blur-sm",
-        "transition-all duration-500 hover:border-gold-soft/30 hover:shadow-card-hover",
+        "transition-[border-color,background-color,box-shadow] duration-300 hover:border-gold-soft/30 hover:shadow-card-hover",
         "cursor-default"
       )}
       style={{

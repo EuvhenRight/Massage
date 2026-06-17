@@ -138,7 +138,7 @@ export default function Navbar() {
 				<button
 					type='button'
 					onClick={closeMenu}
-					className={`flex h-10 w-10 items-center justify-center rounded-xl border bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-300 ${ui.burgerBorder}`}
+					className={`flex h-10 w-10 items-center justify-center rounded-xl border bg-white/[0.03] hover:bg-white/[0.06] transition-[background-color,border-color,color,box-shadow] duration-300 ${ui.burgerBorder}`}
 					aria-label={t('closeMenu')}
 				>
 					<svg
@@ -271,26 +271,39 @@ export default function Navbar() {
 						<button
 							type='button'
 							onClick={() => setOpen(v => !v)}
-							className={`relative w-10 h-10 flex items-center justify-center rounded-xl border bg-white/[0.03] hover:bg-white/[0.06] transition-all duration-300 ${ui.burgerBorder}`}
+							className={`relative w-10 h-10 flex items-center justify-center rounded-xl border bg-white/[0.03] hover:bg-white/[0.06] transition-[background-color,border-color] duration-300 ${ui.burgerBorder}`}
 							aria-expanded={open}
 							aria-controls='nav-menu'
 							aria-label={open ? t('closeMenu') : t('openMenu')}
+							data-open={open}
 						>
-							<div className='w-5 h-4 flex flex-col justify-between'>
-								<motion.span
-									animate={open ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-									transition={{ duration: 0.3, ease: 'easeInOut' }}
-									className='block h-[1.5px] w-full bg-icyWhite rounded-full origin-left'
+							{/*
+							  Burger → close: CSS-only transitions через data-open. Раньше тут
+							  было 3 motion.span с разными duration (0.3 / 0.2 / 0.3) — при
+							  быстром тапе они расходились по фазам, выглядело как джиттер.
+							  Один origin-center transform на всех трёх линиях даёт строгий
+							  «крест» без двойной интерполяции framer-motion.
+							*/}
+							<div className='relative w-5 h-4'>
+								<span
+									className='absolute left-0 right-0 top-0 h-[1.5px] w-full bg-icyWhite rounded-full origin-center transition-transform duration-300 ease-out group-data-[open=true]:translate-y-[7px] group-data-[open=true]:rotate-45'
+									style={{
+										transform: open
+											? 'translateY(7px) rotate(45deg)'
+											: 'translateY(0) rotate(0)',
+									}}
 								/>
-								<motion.span
-									animate={open ? { opacity: 0, x: 10 } : { opacity: 1, x: 0 }}
-									transition={{ duration: 0.2 }}
-									className='block h-[1.5px] w-3/4 bg-icyWhite/70 rounded-full'
+								<span
+									className='absolute left-0 top-1/2 -translate-y-1/2 h-[1.5px] w-3/4 bg-icyWhite/70 rounded-full transition-opacity duration-200 ease-out'
+									style={{ opacity: open ? 0 : 1 }}
 								/>
-								<motion.span
-									animate={open ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-									transition={{ duration: 0.3, ease: 'easeInOut' }}
-									className='block h-[1.5px] w-full bg-icyWhite rounded-full origin-left'
+								<span
+									className='absolute left-0 right-0 bottom-0 h-[1.5px] w-full bg-icyWhite rounded-full origin-center transition-transform duration-300 ease-out'
+									style={{
+										transform: open
+											? 'translateY(-7px) rotate(-45deg)'
+											: 'translateY(0) rotate(0)',
+									}}
 								/>
 							</div>
 						</button>

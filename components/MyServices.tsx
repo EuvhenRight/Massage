@@ -89,7 +89,7 @@ export default function MyServices() {
 								delay: minimal ? 0 : i * 0.05,
 							}}
 							viewport={{ once: true, margin: '-48px' }}
-							className="group overflow-hidden rounded-2xl border border-white/5 bg-nearBlack/60 backdrop-blur-sm hover:border-gold-soft/25 hover:shadow-card transition-all duration-500"
+							className="group overflow-hidden rounded-2xl border border-white/5 bg-nearBlack/60 backdrop-blur-sm hover:border-gold-soft/25 hover:shadow-card transition-[border-color,background-color,box-shadow] duration-300"
 						>
 							<div className="aspect-[4/3] relative overflow-hidden">
 								<Image

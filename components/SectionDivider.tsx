@@ -2,26 +2,27 @@
 
 import { useSiteMotion } from '@/lib/site-motion'
 import { useInView, useReducedMotion } from 'framer-motion'
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { useId, useRef } from 'react'
 import { cn } from '@/lib/utils'
 
 /** Studio divider — metallic wave line + centered gold orb (single unit). */
 const LINE_GOLD = '#a68b4d'
 const ORB_GOLD = '#d4af37'
 
-/** Wave path shared for measurement + render (must match `d`). */
 const WAVE_PATH_D =
 	'M0 32 C 60 12, 100 12, 160 32 S 280 52, 320 32 S 420 12, 480 32'
 
+/**
+ * Хардкод длины пути (заранее измерено через `getTotalLength()` на этом `d`).
+ * Раньше тут был 32-попыточный RAF retry — избыточно, путь не меняется.
+ */
+const WAVE_PATH_LEN = 575
+
 export type SectionDividerProps = {
 	className?: string
-	/** Full-width between sections (default). `inline` fits under headings; `vertical` is the entry-portal column. */
 	size?: 'full' | 'inline'
 	orientation?: 'horizontal' | 'vertical'
 }
-
-/** Fallback length when `getTotalLength()` is 0 (rare WebKit timing). Matches `WAVE_PATH_D`. */
-const WAVE_PATH_LEN_FALLBACK = 575
 
 export default function SectionDivider({
 	className,
@@ -53,10 +54,7 @@ export default function SectionDivider({
 					isInline ? 'max-w-[4.5rem]' : 'max-w-5xl',
 				)}
 			>
-				<WaveStroke
-					reduce={calm}
-					compact={isInline}
-				/>
+				<WaveStroke reduce={calm} compact={isInline} />
 			</div>
 		</div>
 	)
@@ -101,101 +99,13 @@ function WaveStroke({
 	const uid = useId().replace(/:/g, '')
 	const gradId = `sd-w-${uid}`
 	const wrapRef = useRef<HTMLDivElement>(null)
-	const pathRef = useRef<SVGPathElement>(null)
-	const [strokeDriver, setStrokeDriver] = useState<'css' | 'raf'>('css')
 	const isInView = useInView(wrapRef, {
 		once: true,
 		amount: 'some',
 		margin: '120px 0px 120px 0px',
 	})
 
-	const [dashLen, setDashLen] = useState(0)
-	const [drawReady, setDrawReady] = useState(false)
-
-	useLayoutEffect(() => {
-		const mq = window.matchMedia('(max-width: 768px)')
-		const apply = () => setStrokeDriver(mq.matches ? 'raf' : 'css')
-		apply()
-		mq.addEventListener('change', apply)
-		return () => mq.removeEventListener('change', apply)
-	}, [])
-
-	useLayoutEffect(() => {
-		let cancelled = false
-		let attempts = 0
-		const maxAttempts = 32
-
-		const measure = () => {
-			if (cancelled || !pathRef.current) return
-			try {
-				const L = pathRef.current.getTotalLength()
-				if (L > 0) {
-					setDashLen(L)
-					return
-				}
-			} catch {
-				/* Safari / older engines */
-			}
-			attempts += 1
-			if (attempts < maxAttempts) {
-				requestAnimationFrame(measure)
-			} else {
-				setDashLen(WAVE_PATH_LEN_FALLBACK)
-			}
-		}
-
-		measure()
-		return () => {
-			cancelled = true
-		}
-	}, [])
-
-	useEffect(() => {
-		if (!dashLen || !isInView) return
-		let raf2: number | undefined
-		const raf1 = requestAnimationFrame(() => {
-			raf2 = requestAnimationFrame(() => setDrawReady(true))
-		})
-		return () => {
-			cancelAnimationFrame(raf1)
-			if (raf2 !== undefined) cancelAnimationFrame(raf2)
-		}
-	}, [dashLen, isInView])
-
-	useEffect(() => {
-		if (strokeDriver !== 'raf') return
-		if (!drawReady || !dashLen || !pathRef.current) return
-		const path = pathRef.current
-		const L = dashLen
-		const drawMs = reduce ? 400 : 1350
-		const easeOut = (t: number) => 1 - (1 - t) ** 3
-		let cancelled = false
-		const t0 = performance.now()
-
-		let rafId = 0
-		const tick = (now: number) => {
-			if (cancelled || !pathRef.current) return
-			const t = Math.min(1, (now - t0) / drawMs)
-			const e = easeOut(t)
-			pathRef.current.style.strokeDasharray = `${L}`
-			pathRef.current.style.strokeDashoffset = `${L * (1 - e)}`
-			if (t < 1) rafId = requestAnimationFrame(tick)
-			else pathRef.current.style.strokeDashoffset = '0'
-		}
-		path.style.strokeDasharray = `${L}`
-		path.style.strokeDashoffset = `${L}`
-		rafId = requestAnimationFrame(tick)
-		return () => {
-			cancelled = true
-			cancelAnimationFrame(rafId)
-		}
-	}, [drawReady, dashLen, reduce, strokeDriver])
-
-	const useCssStroke = strokeDriver === 'css'
-	const pathClassName = cn(
-		useCssStroke && 'sd-wave-path',
-		useCssStroke && drawReady && 'sd-wave-path--play',
-	)
+	const play = isInView
 
 	return (
 		<div
@@ -221,25 +131,20 @@ function WaveStroke({
 					</linearGradient>
 				</defs>
 				<path
-					ref={pathRef}
 					d={WAVE_PATH_D}
 					fill='none'
 					stroke={`url(#${gradId})`}
 					strokeWidth={compact ? 1.15 : 1.35}
 					strokeLinecap='round'
 					vectorEffect='non-scaling-stroke'
-					className={pathClassName || undefined}
+					className={cn('sd-wave-path', play && 'sd-wave-path--play')}
 					style={{
-						opacity: dashLen > 0 ? 1 : 0,
-						['--sd-wave-len' as string]: useCssStroke ? dashLen : undefined,
-						strokeDasharray: dashLen,
-						...(strokeDriver === 'raf' && !drawReady
-							? { strokeDashoffset: dashLen }
-							: {}),
+						['--sd-wave-len' as string]: WAVE_PATH_LEN,
+						strokeDasharray: WAVE_PATH_LEN,
+						animationDuration: reduce ? '0.4s' : undefined,
 					}}
 				/>
 			</svg>
-			{/* Center orb (HTML, not SVG) — pairs with the wave line above. */}
 			<div
 				aria-hidden
 				className='pointer-events-none absolute left-1/2 z-[2] size-[11px] rounded-full sm:size-[13px]'

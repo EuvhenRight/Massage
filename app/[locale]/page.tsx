@@ -46,6 +46,8 @@ export default function EntryPortal() {
           <motion.h2
             className="relative z-10 font-serif text-5xl md:text-7xl lg:text-8xl font-normal text-icyWhite tracking-tight"
             whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
             {tCommon("massage")}
           </motion.h2>
@@ -79,6 +81,8 @@ export default function EntryPortal() {
           <motion.h2
             className="relative z-10 font-serif text-5xl md:text-7xl lg:text-8xl font-normal text-icyWhite tracking-tight"
             whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
             {tCommon("depilation")}
           </motion.h2>

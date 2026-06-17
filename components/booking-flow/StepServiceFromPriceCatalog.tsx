@@ -642,13 +642,11 @@ const StepServiceFromPriceCatalog = forwardRef<
 		return null
 	}
 
+	// Outer wrapper больше не делает свою opacity-анимацию: parent
+	// AnimatePresence в booking-flow/index.tsx уже cross-fade'ит шаги.
+	// Двойной мотион давал растянутый ramp вместо ровного 0.15s переходa.
 	return (
-		<motion.div
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.2 }}
-			className='flex flex-col flex-1 min-h-0'
-		>
+		<div className='flex flex-col flex-1 min-h-0'>
 			{/* Step 1: Service selection — one substep visible at a time.
 						Layout: header pickers = fixed (flex-shrink-0);
 						items list = only scrollable area (flex-1 overflow-y-auto). */}
@@ -835,11 +833,11 @@ const StepServiceFromPriceCatalog = forwardRef<
 											setActiveSectionId(sec.sectionId)
 											setOpenZoneId(null)
 										}}
-										initial={{ opacity: 0, y: 8 }}
+										initial={{ opacity: 0, y: 6 }}
 										animate={{ opacity: 1, y: 0 }}
-										transition={{ duration: 0.2 }}
+										transition={{ duration: 0.18, ease: 'easeOut' }}
 										className={clsx(
-											'min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-all touch-manipulation active:scale-[0.99] flex items-center',
+											'min-h-[44px] sm:min-h-0 py-3 px-3 sm:px-4 rounded-xl text-sm font-medium text-left transition-[background-color,color,box-shadow] duration-200 touch-manipulation active:scale-[0.99] flex items-center',
 											activeSectionId === sec.sectionId
 												? accent.sectionPillActive
 												: 'bg-white/5 text-icyWhite/80 hover:bg-white/10 active:bg-white/[0.12]',
@@ -862,10 +860,14 @@ const StepServiceFromPriceCatalog = forwardRef<
 						</div>
 					)}
 
-					{/* ZONE substep (also used for search results) */}
+					{/* ZONE substep (also used for search results)
+					    `mode='wait'` снят: вложенный AnimatePresence внутри уже
+					    cross-fade'ящегося шага 1↔2 (booking-flow/index.tsx) давал
+					    двойной gap, заметный при смене поискового запроса. Теперь
+					    overlap — секции просто плавно меняются. */}
 					{subStep === 'zone' && (
 						<div className='flex-1 min-h-0 flex flex-col overflow-y-auto'>
-							<AnimatePresence mode='wait'>
+							<AnimatePresence initial={false}>
 								{(isSearching
 									? filteredSections
 									: filteredSections.filter(s => s.sectionId === activeSectionId)
@@ -883,7 +885,7 @@ const StepServiceFromPriceCatalog = forwardRef<
 											initial={{ opacity: 0 }}
 											animate={{ opacity: 1 }}
 											exit={{ opacity: 0 }}
-											transition={{ duration: 0.2 }}
+											transition={{ duration: 0.18, ease: 'easeOut' }}
 											className='flex-1 min-h-0 flex flex-col gap-2'
 										>
 											{sec.sectionDescription && (
@@ -1143,14 +1145,11 @@ const StepServiceFromPriceCatalog = forwardRef<
 				</div>
 			)}
 
-			{/* Calendar + time — step 2, fits in height, scrolls if needed */}
+			{/* Calendar + time — step 2. Inner fades удалены: parent AnimatePresence
+			    в booking-flow/index.tsx уже cross-fade'ит шаги 1↔2, дублирующая
+			    inner-opacity растягивала переход. */}
 			{step === 2 && service && bookingGranularity === 'tbd' && (
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ duration: 0.2 }}
-					className='flex flex-col flex-1 min-h-0'
-				>
+				<div className='flex flex-col flex-1 min-h-0'>
 					<TbdBookingRecap
 						accent={accent}
 						service={service}
@@ -1166,16 +1165,11 @@ const StepServiceFromPriceCatalog = forwardRef<
 							? scheduleTbdCustomerMessage
 							: t('scheduleTbdEmptyMessage')}
 					</div>
-				</motion.div>
+				</div>
 			)}
 
 			{step === 2 && service && bookingGranularity !== 'tbd' && (
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ duration: 0.2 }}
-					className='flex flex-col flex-1 min-h-0'
-				>
+				<div className='flex flex-col flex-1 min-h-0'>
 					<div className='flex-1 min-h-0 flex flex-col overflow-hidden'>
 						<PublicDatePicker
 							accent={accent}
@@ -1203,13 +1197,13 @@ const StepServiceFromPriceCatalog = forwardRef<
 							/>
 						</div>
 					)}
-				</motion.div>
+				</div>
 			)}
 
 			{loading && bookingGranularity !== 'tbd' && (
 				<p className='text-xs text-icyWhite/50'>{t('loadingAvailability')}</p>
 			)}
-		</motion.div>
+		</div>
 	)
 })
 

@@ -61,7 +61,7 @@ export default function MembershipCard({
         styles.gradient,
         styles.border,
         styles.hover,
-        "transition-all duration-500",
+        "transition-[border-color,background-color,box-shadow] duration-300",
         highlighted && "ring-1 ring-gold-soft/30 shadow-glow"
       )}
     >
@@ -103,7 +103,7 @@ export default function MembershipCard({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className={cn(
-            "mt-8 w-full py-3 px-6 rounded-lg font-medium text-sm tracking-wider uppercase transition-all duration-300",
+            "mt-8 w-full py-3 px-6 rounded-lg font-medium text-sm tracking-wider uppercase transition-[background-color,border-color,color,box-shadow] duration-300",
             tier === "Silver" &&
               "bg-white/10 text-icyWhite hover:bg-white/20",
             tier === "Black" &&

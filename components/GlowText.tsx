@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 type ColorScheme = 'gold' | 'purple'
 
@@ -12,6 +12,49 @@ interface GlowTextProps {
 	colorScheme?: ColorScheme
 	/** Must match parent section `aria-labelledby` (visible title is canvas; this is sr-only). */
 	srOnlyHeadingId?: string
+}
+
+/**
+ * CSS text-shadow fallback. Used on узких телефонах (≤640px) и при
+ * prefers-reduced-motion — там canvas с многослойным blur «съедает» 30-80мс
+ * на первой отрисовке и моргает на iOS. Визуально близко к canvas, но без
+ * mouse-tracking glow.
+ */
+function GlowTextCss({
+	text,
+	accessibleHeading,
+	srOnlyHeadingId,
+	colorScheme,
+}: {
+	text: string
+	accessibleHeading?: string
+	srOnlyHeadingId: string
+	colorScheme: ColorScheme
+}) {
+	const palette =
+		colorScheme === 'gold'
+			? '232,184,0'
+			: '147,51,234'
+	const lightPalette =
+		colorScheme === 'gold'
+			? '255,214,51'
+			: '192,132,252'
+	return (
+		<span className='relative inline-flex justify-center'>
+			<span
+				aria-hidden
+				className='font-serif text-[2.625rem] sm:text-[3.5rem] md:text-[4.5rem] lg:text-[5.625rem] xl:text-[6.875rem] leading-[1.1] text-white'
+				style={{
+					textShadow: `0 0 4px rgba(${palette},0.6), 0 0 15px rgba(${palette},0.4), 0 0 40px rgba(${lightPalette},0.3)`,
+				}}
+			>
+				{text}
+			</span>
+			<h1 id={srOnlyHeadingId} className='sr-only'>
+				{accessibleHeading ?? text}
+			</h1>
+		</span>
+	)
 }
 
 const PALETTES: Record<
@@ -39,6 +82,18 @@ export default function GlowText({
 	const mouse = useRef({ x: 0.5, y: 0.5, active: false })
 	const raf = useRef<number>(0)
 	const containerRef = useRef<HTMLDivElement>(null)
+	// Mobile/laptop parity: canvas рендерится и на телефоне (3-слойный blur
+	// быстро отрисовывается на современных мобильных GPU). CSS-fallback оставлен
+	// только для `prefers-reduced-motion` — там пользователь явно отказался от
+	// многослойных визуальных эффектов.
+	const [useCss, setUseCss] = useState(false)
+	useEffect(() => {
+		const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+		const apply = () => setUseCss(mq.matches)
+		apply()
+		mq.addEventListener('change', apply)
+		return () => mq.removeEventListener('change', apply)
+	}, [])
 
 	const getFontSize = useCallback(() => {
 		const w = window.innerWidth
@@ -94,13 +149,12 @@ export default function GlowText({
 
 		const { primary: PRIM, light: LITE } = PALETTES[colorScheme]
 
+		// 3 слоя вместо 6: визуально неотличимо, но первая отрисовка
+		// быстрее в 2× (каждый blur — отдельный рендер-проход).
 		const glowLayers = [
-			{ blur: 60, alpha: 0.12, color: PRIM },
-			{ blur: 40, alpha: 0.2, color: PRIM },
-			{ blur: 25, alpha: 0.3, color: LITE },
-			{ blur: 15, alpha: 0.4, color: PRIM },
-			{ blur: 8, alpha: 0.5, color: LITE },
-			{ blur: 4, alpha: 0.6, color: PRIM },
+			{ blur: 40, alpha: 0.25, color: PRIM },
+			{ blur: 18, alpha: 0.4, color: LITE },
+			{ blur: 6, alpha: 0.55, color: PRIM },
 		]
 
 		for (const layer of glowLayers) {
@@ -198,6 +252,17 @@ export default function GlowText({
 		raf.current = 0
 		draw()
 	}, [draw])
+
+	if (useCss) {
+		return (
+			<GlowTextCss
+				text={text}
+				accessibleHeading={accessibleHeading}
+				srOnlyHeadingId={srOnlyHeadingId}
+				colorScheme={colorScheme}
+			/>
+		)
+	}
 
 	return (
 		<div

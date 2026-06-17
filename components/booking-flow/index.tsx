@@ -570,20 +570,23 @@ function BookingFlowInner({
 
 					<div className='flex-1 min-h-0 flex flex-col overflow-hidden px-4 sm:px-5 pb-4 sm:pb-5'>
 						<div className='flex-1 min-h-0 flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-5 md:p-5'>
-							<AnimatePresence mode='wait'>
+							{/*
+							  No `mode='wait'`: with `mode='wait'` framer waits for exit before
+							  the next step enters → an empty gap is visible on slow phones.
+							  Instead: snappy cross-fade (opacity only, no slide) — the slide
+							  used to add visual jank on narrow viewports without payoff.
+							*/}
+							<AnimatePresence initial={false}>
 								{step <= 2 &&
 								priceCatalog &&
 								(priceCatalog.man.services?.length ||
 									priceCatalog.woman.services?.length) ? (
 									<motion.div
 										key='step-price-catalog'
-										initial={{ opacity: 0, x: -8 }}
-										animate={{ opacity: 1, x: 0 }}
-										exit={{ opacity: 0, x: 8 }}
-										transition={{
-											duration: 0.2,
-											ease: [0.25, 0.46, 0.45, 0.94],
-										}}
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{ duration: 0.15, ease: 'easeOut' }}
 										className='flex-1 min-h-0 w-full min-w-0 flex flex-col overflow-x-hidden'
 									>
 										<StepServiceFromPriceCatalog
@@ -599,13 +602,10 @@ function BookingFlowInner({
 								) : step <= 2 ? (
 									<motion.div
 										key='step-service-date'
-										initial={{ opacity: 0, x: -8 }}
-										animate={{ opacity: 1, x: 0 }}
-										exit={{ opacity: 0, x: 8 }}
-										transition={{
-											duration: 0.2,
-											ease: [0.25, 0.46, 0.45, 0.94],
-										}}
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{ duration: 0.15, ease: 'easeOut' }}
 										className='flex-1 min-h-0 w-full min-w-0 flex flex-col overflow-x-hidden'
 									>
 										<StepServiceAndDate services={services} place={place} />
@@ -614,12 +614,10 @@ function BookingFlowInner({
 								{step === 3 && (
 									<motion.div
 										key='step-customer'
-										initial={{ opacity: 0, x: 8 }}
-										animate={{ opacity: 1, x: 0 }}
-										transition={{
-											duration: 0.25,
-											ease: [0.25, 0.46, 0.45, 0.94],
-										}}
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{ duration: 0.15, ease: 'easeOut' }}
 										// `min-w-0` + explicit `overflow-x-hidden` stop long labels/
 										// translations (notably English copy on narrow phones) from
 										// pushing the form wider than the viewport and clipping
@@ -639,12 +637,10 @@ function BookingFlowInner({
 								{step === 4 && (
 									<motion.div
 										key='step-mobile-review'
-										initial={{ opacity: 0, x: 8 }}
-										animate={{ opacity: 1, x: 0 }}
-										transition={{
-											duration: 0.25,
-											ease: [0.25, 0.46, 0.45, 0.94],
-										}}
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{ duration: 0.15, ease: 'easeOut' }}
 										className='flex-1 min-h-0 w-full min-w-0 overflow-y-auto overflow-x-hidden md:hidden'
 									>
 										<BookingSidebar />
