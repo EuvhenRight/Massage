@@ -36,23 +36,20 @@ const SHOWN: Reveal = {
 /**
  * Motion gating with **mobile/laptop parity** as a design goal.
  *
- * `minimal` is now driven ONLY by the system `prefers-reduced-motion` flag.
- * Mobile users get the same animations as laptop users — we never silently
- * gut the experience based on screen width. Instead, three modifiers tune
- * intensity for specific device classes:
+ * `minimal` теперь ВСЕГДА false — анимация играет независимо от системного
+ * prefers-reduced-motion. Раньше это глушило iPhone-юзеров с Low Power Mode
+ * (он автоматически включает reduce-motion) и macOS с включённым Display →
+ * Reduce Motion в Accessibility — даже когда у самого framer-motion
+ * reducedMotion="never". `prefersReducedMotion` всё ещё доступен отдельно,
+ * если нужно гейтить тяжёлые декоративные циклы (animate-float и т.п.) — но
+ * не основные scroll-reveal анимации.
  *
- *   - `compact`  — narrow phones (≤639px). Same effects, smaller distances
- *                  (y:8 vs y:12), shorter staggers, slightly faster duration.
- *                  Keeps the look without overshooting a 375-414px viewport.
- *   - `tablet`   — 640–1023px with no hover. Drops hover-only flourishes
- *                  (multi-shadow cards, `whileHover` scale).
- *   - `lite`     — `narrowPhone || tablet`. Used to skip effects that don't
- *                  survive touch-device quirks well (scroll-linked parallax
- *                  via `useScroll` glitches on iOS Safari when dvh changes
- *                  with URL-bar show/hide).
- *   - `iosSafari` — explicit UA flag. Use to avoid backdrop-filter combined
- *                   with transform animations (known WebKit compositor bug)
- *                   and to skip `position:fixed` + framer `y` collisions.
+ * Модификаторы tuning:
+ *   - `compact`  — narrow phones (≤639px). Те же эффекты, чуть меньший stagger.
+ *   - `tablet`   — 640–1023px с no hover. Drops hover-only flourishes.
+ *   - `lite`     — narrowPhone || tablet. Skip scroll-linked parallax
+ *                  (на iOS Safari он моргает при прыжках dvh).
+ *   - `iosSafari` — explicit UA flag (workarounds для backdrop-filter, fixed).
  */
 export function useSiteMotion() {
 	const reduced = useReducedMotion()
@@ -82,18 +79,20 @@ export function useSiteMotion() {
 		}
 	}, [])
 
-	const minimal = Boolean(reduced)
-	const lite = Boolean(minimal || narrowPhone || tablet)
+	// `minimal` принудительно false. Если нужен честный a11y — поменяй на
+	// `Boolean(reduced)` и тогда reveals будут гасится при системном reduce-motion.
+	const minimal = false
+	const lite = Boolean(narrowPhone || tablet)
 	return {
-		/** The kill-switch: only set when the user opted into reduced motion. */
+		/** No-op kill-switch (всегда false). Для гейтинга декоративных циклов используй `prefersReducedMotion`. */
 		minimal,
-		/** Narrow-phone tuning flag. Same animations, smaller distances/durations. */
+		/** Narrow-phone tuning flag. Same animations, slightly shorter stagger. */
 		compact: narrowPhone,
-		/** Touch devices ≤1023px — skip parallax & hover-only flourishes. */
+		/** Touch devices ≤1023px — skip parallax. */
 		lite,
 		/** Use when working around iOS Safari quirks (dvh, backdrop-filter, fixed). */
 		iosSafari,
-		/** Alias for system reduced-motion. Use it explicitly when the intent is "honour OS pref". */
+		/** System pref. Доступен для optional a11y-гейтов на декоративных циклах. */
 		prefersReducedMotion: Boolean(reduced),
 		narrowPhone,
 		tablet,

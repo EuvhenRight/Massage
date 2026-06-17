@@ -162,11 +162,9 @@ export default function MassagePage() {
 	const showMobileBook = !footerInView
 	const [contactSent, setContactSent] = useState(false)
 
-	// Минимум — только prefers-reduced-motion (полное отключение анимации).
-	// `compact` — узкий телефон: те же эффекты, но дистанции уменьшены чтобы
-	// вписать в 320-414px viewport без визуального дрейфа всего блока.
-	const { minimal, compact, prefersReducedMotion } = useSiteMotion()
-	const reduced = prefersReducedMotion
+	// `minimal` теперь всегда false (см. site-motion.ts) — анимация играет
+	// независимо от системного Reduce Motion. `compact` тюнит мобильные дистанции.
+	const { minimal, compact } = useSiteMotion()
 	const ry = useMemo(() => scrollRevealY(minimal, compact), [minimal, compact])
 	const rxLeft = useMemo(
 		() => scrollRevealX(minimal, 'left', compact),
@@ -180,11 +178,9 @@ export default function MassagePage() {
 	const ryAbout = ry
 	const rxAbout = rxLeft
 	const rfAbout = rf
-	const heroMotion = useMemo(() => heroEnter(reduced), [reduced])
-	const heroMotionDelayed = useMemo(
-		() => heroEnter(reduced, { delay: reduced ? 0 : 0.06 }),
-		[reduced],
-	)
+	// Hero без gating — играет на iPhone с Low Power Mode тоже.
+	const heroMotion = useMemo(() => heroEnter(false), [])
+	const heroMotionDelayed = useMemo(() => heroEnter(false, { delay: 0.06 }), [])
 
 	const scrollSlider = (
 		ref: React.RefObject<HTMLDivElement | null>,

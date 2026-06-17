@@ -184,7 +184,6 @@ export default function DepilationPage() {
 		minimal,
 		compact,
 		lite,
-		prefersReducedMotion,
 		narrowPhone,
 		tablet,
 	} = useSiteMotion()
@@ -206,21 +205,20 @@ export default function DepilationPage() {
 	 * Раньше последний элемент (CTA-кнопки) досаживался к 1.0+s от mount —
 	 * слишком долго по канону 2026, ощущалось «тяжёлым».
 	 */
-	const heroBlock = prefersReducedMotion
-		? { initial: false as const }
-		: {
-				initial: { y: 18 },
-				animate: { y: 0 },
-				transition: { duration: 0.55, delay: 0.15, ease: EASE_EXPO_OUT },
-			}
+	// Hero entrances больше не гейтятся по prefersReducedMotion — иначе на
+	// iPhone с Low Power Mode или macOS Reduce Motion hero оставался статичным,
+	// пока остальной сайт пытался анимировать. Теперь играет всегда.
+	const heroBlock = {
+		initial: { y: 18 },
+		animate: { y: 0 },
+		transition: { duration: 0.55, delay: 0.15, ease: EASE_EXPO_OUT },
+	}
 	/** Logo descends from above and settles just over the wordmark. */
-	const logoIntro = prefersReducedMotion
-		? { initial: false as const }
-		: {
-				initial: { y: -28, scale: 0.94 },
-				animate: { y: 0, scale: 1 },
-				transition: { duration: 0.6, delay: 0.05, ease: EASE_EXPO_OUT },
-			}
+	const logoIntro = {
+		initial: { y: -28, scale: 0.94 },
+		animate: { y: 0, scale: 1 },
+		transition: { duration: 0.6, delay: 0.05, ease: EASE_EXPO_OUT },
+	}
 
 	// Стандартные варианты с mobile-tuning через `compact`. На узком телефоне
 	// получаем меньшую дистанцию (y:8 вместо 12), более короткий stagger (0.03
@@ -345,7 +343,7 @@ export default function DepilationPage() {
 
 				{/* Badge line */}
 				<motion.p
-					initial={prefersReducedMotion ? false : { y: -14 }}
+					initial={{ y: -14 }}
 					animate={{ y: 0 }}
 					transition={{ duration: 0.5, delay: 0.1, ease: EASE_EXPO_OUT }}
 					className='relative z-10 w-full shrink-0 text-center text-gold-soft text-[10px] sm:text-xs font-medium tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28 [text-shadow:0_2px_12px_rgba(0,0,0,0.75)]'
@@ -378,7 +376,7 @@ export default function DepilationPage() {
 						/>
 
 						<motion.p
-							initial={prefersReducedMotion ? false : { y: 10 }}
+							initial={{ y: 10 }}
 							animate={{ y: 0 }}
 							transition={{ delay: 0.3, duration: 0.5, ease: EASE_EXPO_OUT }}
 							className='-mt-1 text-gold-soft text-xs sm:text-sm tracking-wider uppercase max-w-lg mx-auto leading-relaxed [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]'
@@ -387,7 +385,7 @@ export default function DepilationPage() {
 						</motion.p>
 
 						<motion.div
-							initial={prefersReducedMotion ? false : { y: 16 }}
+							initial={{ y: 16 }}
 							animate={{ y: 0 }}
 							transition={{ delay: 0.38, duration: 0.5, ease: EASE_EXPO_OUT }}
 							className='mt-6 flex flex-wrap justify-center gap-3'

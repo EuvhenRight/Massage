@@ -2,7 +2,7 @@
 
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import SectionDivider from "@/components/SectionDivider";
-import { heroEnter, useSiteMotion } from "@/lib/site-motion";
+import { heroEnter } from "@/lib/site-motion";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -14,12 +14,11 @@ export default function EntryPortal() {
   const tCommon = useTranslations("common");
   const params = useParams();
   const locale = (params?.locale as string) ?? "sk";
-  const { prefersReducedMotion: reduced } = useSiteMotion();
-  const panelL = useMemo(() => heroEnter(reduced), [reduced]);
-  const panelR = useMemo(
-    () => heroEnter(reduced, { delay: reduced ? 0 : 0.06 }),
-    [reduced],
-  );
+  // Раньше heroEnter гейтился на prefersReducedMotion — на iPhone с Low
+  // Power Mode / macOS Reduce Motion панели не анимировались. Теперь играет
+  // всегда (false вместо reduced). Если нужен честный a11y — верни reduced.
+  const panelL = useMemo(() => heroEnter(false), []);
+  const panelR = useMemo(() => heroEnter(false, { delay: 0.06 }), []);
 
   return (
     <main
@@ -53,7 +52,7 @@ export default function EntryPortal() {
           </motion.h2>
           <motion.span
             className="relative z-10 mt-4 text-icyWhite/70 text-sm tracking-[0.3em] uppercase"
-            {...heroEnter(reduced, { delay: reduced ? 0 : 0.12 })}
+            {...heroEnter(false, { delay: 0.12 })}
           >
             {tCommon("enter")}
           </motion.span>
@@ -88,7 +87,7 @@ export default function EntryPortal() {
           </motion.h2>
           <motion.span
             className="relative z-10 mt-4 text-icyWhite/70 text-sm tracking-[0.3em] uppercase"
-            {...heroEnter(reduced, { delay: reduced ? 0 : 0.14 })}
+            {...heroEnter(false, { delay: 0.14 })}
           >
             {tCommon("enter")}
           </motion.span>
