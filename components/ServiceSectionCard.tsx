@@ -40,7 +40,7 @@ export function ServiceSectionCard({
 	return (
 		<motion.button
 			type='button'
-			initial={minimal ? false : { opacity: 0, y: compact ? 20 : 32 }}
+			initial={minimal ? false : { opacity: 0, y: 32 }}
 			whileInView={{ opacity: 1, y: 0 }}
 			viewport={{ once: true, margin: '-40px' }}
 			transition={
@@ -49,7 +49,7 @@ export function ServiceSectionCard({
 					: {
 							...TRANSITION.enter,
 							delay: animationIndex * (compact ? 0.07 : 0.1),
-							duration: compact ? 0.45 : 0.6,
+							duration: 0.6,
 							ease: [0.22, 1, 0.36, 1],
 						}
 			}

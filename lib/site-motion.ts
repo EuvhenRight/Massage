@@ -125,12 +125,15 @@ export function enterDelay(minimal: boolean, delaySec: number, compact = false) 
 
 export function scrollRevealY(minimal: boolean, compact = false): Reveal {
 	if (minimal) return SHOWN
+	// Mobile parity: тот же y/duration, что и на лэптопе. Раньше тут было
+	// `y: compact ? 8 : 10` — разница 2px за 0.32s на телефоне визуально
+	// не отличалась от «нет анимации». Теперь компактен только stagger.
 	return {
-		initial: { opacity: 0, y: compact ? 8 : 10 },
+		initial: { opacity: 0, y: compact ? 14 : 12 },
 		whileInView: { opacity: 1, y: 0 },
 		viewport: VIEWPORT_SCROLL,
 		transition: compact
-			? { ...TRANSITION.enter, duration: 0.32 }
+			? { ...TRANSITION.enter, duration: 0.42 }
 			: TRANSITION.enter,
 	}
 }
@@ -141,14 +144,14 @@ export function scrollRevealX(
 	compact = false,
 ): Reveal {
 	if (minimal) return SHOWN
-	const base = compact ? 10 : 14
+	const base = compact ? 18 : 14
 	const x = dir === 'left' ? -base : base
 	return {
 		initial: { opacity: 0, x },
 		whileInView: { opacity: 1, x: 0 },
 		viewport: VIEWPORT_SCROLL,
 		transition: compact
-			? { ...TRANSITION.enter, duration: 0.32 }
+			? { ...TRANSITION.enter, duration: 0.42 }
 			: TRANSITION.enter,
 	}
 }
@@ -163,32 +166,31 @@ export function revealUp(
 	opts?: { y?: number; delay?: number; duration?: number; compact?: boolean },
 ): Reveal {
 	if (minimal) return SHOWN
+	// Mobile parity: y и duration не уменьшаем на телефоне — иначе анимация
+	// неотличима от no-op. Только delay чуть короче для длинных каскадов.
 	const compact = opts?.compact ?? false
-	const yDefault = compact ? 12 : 16
-	const y = opts?.y ?? yDefault
-	const yScaled = compact && !opts?.y ? y : opts?.y ? (compact ? Math.round(opts.y * 0.7) : opts.y) : yDefault
-	const durationDefault = compact ? 0.45 : 0.6
+	const y = opts?.y ?? 16
+	const duration = opts?.duration ?? 0.6
+	const delay = opts?.delay ?? 0
 	return {
-		initial: { opacity: 0, y: yScaled },
+		initial: { opacity: 0, y },
 		whileInView: { opacity: 1, y: 0 },
 		viewport: VIEWPORT_SCROLL,
 		transition: {
-			duration: opts?.duration ?? durationDefault,
+			duration,
 			ease: EASE_EXPO_OUT,
-			delay: opts?.delay ?? 0,
+			delay: compact ? delay * 0.75 : delay,
 		},
 	}
 }
 
-export function scrollFade(minimal: boolean, compact = false): Reveal {
+export function scrollFade(minimal: boolean, _compact = false): Reveal {
 	if (minimal) return SHOWN
 	return {
 		initial: { opacity: 0 },
 		whileInView: { opacity: 1 },
 		viewport: VIEWPORT_SCROLL,
-		transition: compact
-			? { ...TRANSITION.base, duration: 0.3 }
-			: TRANSITION.base,
+		transition: TRANSITION.base,
 	}
 }
 
@@ -220,29 +222,31 @@ export function useStandardVariants(minimal: boolean, compact = false) {
 			} as const
 		}
 		if (compact) {
-			// Мобильный: те же эффекты, но смещение меньше (y:8 вместо y:12),
-			// stagger короче (0.03 vs 0.04), длительность чуть меньше — чтобы
-			// весь блок не «дрейфил» на 320-414px viewport.
+			// Mobile parity: visible на телефоне = visible на лэптопе. Раньше
+			// здесь было y:8 / duration:0.32 — слишком близко к «нет анимации»,
+			// пользователь не отличал от no-op. Теперь y и duration как на
+			// десктопе, только stagger чуть короче (0.03 vs 0.04), чтобы длинный
+			// каскад не «тянулся» дольше скролла на маленьком экране.
 			return {
 				stagger: { hidden: {}, show: { transition: { staggerChildren: 0.03 } } },
 				fadeUp: {
-					hidden: { opacity: 0, y: 8 },
+					hidden: { opacity: 0, y: 14 },
 					show: {
 						opacity: 1,
 						y: 0,
-						transition: { duration: 0.32, ease: [0.25, 0.1, 0.25, 1] },
+						transition: { duration: 0.42, ease: [0.25, 0.1, 0.25, 1] },
 					},
 				},
 				fadeIn: {
 					hidden: { opacity: 0 },
-					show: { opacity: 1, transition: { duration: 0.32 } },
+					show: { opacity: 1, transition: { duration: 0.42 } },
 				},
 				scaleUp: {
-					hidden: { opacity: 0, scale: 0.97 },
+					hidden: { opacity: 0, scale: 0.94 },
 					show: {
 						opacity: 1,
 						scale: 1,
-						transition: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+						transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] },
 					},
 				},
 			} as const

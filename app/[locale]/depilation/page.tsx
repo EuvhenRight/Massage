@@ -209,17 +209,17 @@ export default function DepilationPage() {
 	const heroBlock = prefersReducedMotion
 		? { initial: false as const }
 		: {
-				initial: { y: 14 },
+				initial: { y: 18 },
 				animate: { y: 0 },
-				transition: { duration: 0.5, delay: 0.18, ease: EASE_EXPO_OUT },
+				transition: { duration: 0.55, delay: 0.15, ease: EASE_EXPO_OUT },
 			}
 	/** Logo descends from above and settles just over the wordmark. */
 	const logoIntro = prefersReducedMotion
 		? { initial: false as const }
 		: {
-				initial: { y: -22, scale: 0.96 },
+				initial: { y: -28, scale: 0.94 },
 				animate: { y: 0, scale: 1 },
-				transition: { duration: 0.55, delay: 0.05, ease: EASE_EXPO_OUT },
+				transition: { duration: 0.6, delay: 0.05, ease: EASE_EXPO_OUT },
 			}
 
 	// Стандартные варианты с mobile-tuning через `compact`. На узком телефоне
@@ -345,9 +345,9 @@ export default function DepilationPage() {
 
 				{/* Badge line */}
 				<motion.p
-					initial={prefersReducedMotion ? false : { y: -10 }}
+					initial={prefersReducedMotion ? false : { y: -14 }}
 					animate={{ y: 0 }}
-					transition={{ duration: 0.42, delay: 0.1, ease: EASE_EXPO_OUT }}
+					transition={{ duration: 0.5, delay: 0.1, ease: EASE_EXPO_OUT }}
 					className='relative z-10 w-full shrink-0 text-center text-gold-soft text-[10px] sm:text-xs font-medium tracking-[0.3em] sm:tracking-[0.35em] uppercase px-6 pt-20 sm:pt-24 md:pt-28 [text-shadow:0_2px_12px_rgba(0,0,0,0.75)]'
 				>
 					{t.rich('heroBadge', richStudioBrand)}
@@ -378,18 +378,18 @@ export default function DepilationPage() {
 						/>
 
 						<motion.p
-							initial={prefersReducedMotion ? false : { y: 6 }}
+							initial={prefersReducedMotion ? false : { y: 10 }}
 							animate={{ y: 0 }}
-							transition={{ delay: 0.28, duration: 0.42, ease: EASE_EXPO_OUT }}
+							transition={{ delay: 0.3, duration: 0.5, ease: EASE_EXPO_OUT }}
 							className='-mt-1 text-gold-soft text-xs sm:text-sm tracking-wider uppercase max-w-lg mx-auto leading-relaxed [text-shadow:0_2px_12px_rgba(0,0,0,0.65)]'
 						>
 							{t('heroLine2')}
 						</motion.p>
 
 						<motion.div
-							initial={prefersReducedMotion ? false : { y: 12 }}
+							initial={prefersReducedMotion ? false : { y: 16 }}
 							animate={{ y: 0 }}
-							transition={{ delay: 0.34, duration: 0.42, ease: EASE_EXPO_OUT }}
+							transition={{ delay: 0.38, duration: 0.5, ease: EASE_EXPO_OUT }}
 							className='mt-6 flex flex-wrap justify-center gap-3'
 						>
 							<Link
@@ -452,17 +452,14 @@ export default function DepilationPage() {
 							initial={
 								minimal
 									? { opacity: 1, x: 0, scale: 1 }
-									: { opacity: 0, x: compact ? -22 : -40, scale: compact ? 0.98 : 0.96 }
+									: { opacity: 0, x: -40, scale: 0.96 }
 							}
 							whileInView={{ opacity: 1, x: 0, scale: 1 }}
 							viewport={{ once: true, margin: '-80px' }}
 							transition={
 								minimal
 									? { duration: 0 }
-									: {
-											duration: compact ? 0.55 : 0.8,
-											ease: EASE_EXPO_OUT,
-										}
+									: { duration: 0.8, ease: EASE_EXPO_OUT }
 							}
 							className='relative order-1 md:h-full md:min-h-0'
 						>
@@ -545,15 +542,10 @@ export default function DepilationPage() {
 				<div className='relative max-w-6xl mx-auto'>
 					<div className='grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 lg:gap-16 items-stretch'>
 						<motion.div
-							initial={
-								minimal ? false : { opacity: 0, x: compact ? -22 : -40 }
-							}
+							initial={minimal ? false : { opacity: 0, x: -40 }}
 							whileInView={{ opacity: 1, x: 0 }}
 							viewport={{ once: true, margin: '-60px' }}
-							transition={{
-								duration: compact ? 0.55 : 0.8,
-								ease: EASE_EXPO_OUT,
-							}}
+							transition={{ duration: 0.8, ease: EASE_EXPO_OUT }}
 							className='relative order-2 md:order-1 md:h-full md:min-h-0'
 						>
 							<div className='relative w-full aspect-[4/3] rounded-3xl overflow-hidden md:aspect-auto md:h-full md:min-h-0'>
@@ -707,14 +699,12 @@ export default function DepilationPage() {
 						{PROCESS_STEPS.map(({ key, step }, i) => (
 							<motion.div
 								key={key}
-								initial={
-									minimal ? false : { opacity: 0, y: compact ? 18 : 32 }
-								}
+								initial={minimal ? false : { opacity: 0, y: 32 }}
 								whileInView={{ opacity: 1, y: 0 }}
 								viewport={{ once: true, margin: '-40px' }}
 								transition={{
 									delay: minimal ? 0 : i * (compact ? 0.07 : 0.1),
-									duration: minimal ? 0 : compact ? 0.45 : 0.6,
+									duration: minimal ? 0 : 0.6,
 									ease: EASE_EXPO_OUT,
 								}}
 								className='relative p-7 rounded-3xl glass-card group'
