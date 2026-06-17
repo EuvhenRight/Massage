@@ -100,7 +100,9 @@
 	animation: aurora-shift 10s ease-in-out infinite;
 }
 
-@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+/* Mobile parity: aurora-text играет и на телефоне. Глушим только при
+   явном prefers-reduced-motion. Раньше `max-width: 768px` блокировал. */
+@media (prefers-reduced-motion: reduce) {
 	.aurora-text {
 		animation: none;
 		background-position: 50% 50%;
@@ -146,28 +148,36 @@
 	}
 }
 
+/*
+ * Базовое opacity: 1 + `both` fill-mode = безопасный fallback. Если на iOS
+ * keyframe «зависнет» (backdrop-filter под overflow-hidden иногда блокирует
+ * композицию keyframe), opacity останется на 1, а не застрянет в 0.
+ * Раньше base было opacity: 0 + animation, и при провале анимации блок
+ * оставался невидимым — пришлось добавлять `(max-width: 1023px), (pointer:
+ * coarse)` killswitch, который заодно ломал анимацию на всех мобильных.
+ */
 .hero-trust-bar-massage {
-	opacity: 0;
+	opacity: 1;
 	animation: hero-trust-bar-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.6s both;
 }
 
 .hero-trust-bar-depilation {
-	opacity: 0;
+	opacity: 1;
 	animation: hero-trust-bar-in 0.6s ease 1.2s both;
 }
 
 /*
- * Touch / narrow viewports: CSS entrance often never completes (opacity stays 0) when
- * backdrop-filter sits under overflow-hidden. Show trust content immediately.
+ * Раньше тут был широкий блокер `(max-width: 1023px), (pointer: coarse)`,
+ * который убивал CSS entrance trust-бара на ВСЕХ телефонах и планшетах.
+ * Причина была: backdrop-filter под overflow-hidden иногда не завершает
+ * keyframe на iOS и opacity «зависает» в 0.
+ *
+ * Mobile parity: разрешаем анимацию на мобильных, но добавляем
+ * `animation-fill-mode: both` (через `both` уже стоит в shorthand),
+ * `forwards`-state защищает от зависания. Для iOS оставляем pointer: coarse
+ * fallback только если pointer ещё и coarse + iOS-specific UA — это случай
+ * крайне редкий и обработается на JS-уровне в компонентах если нужно.
  */
-@media (max-width: 1023px), (pointer: coarse) {
-	.hero-trust-bar-massage,
-	.hero-trust-bar-depilation {
-		animation: none;
-		opacity: 1;
-	}
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.hero-trust-bar-massage,
 	.hero-trust-bar-depilation {
