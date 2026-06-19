@@ -759,9 +759,35 @@ export default function DepilationPage() {
 							ref={sliderRef}
 							className='flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x touch-pan-y snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 						>
-							{/* Natalie card */}
+							{/* Workspace card */}
 							<motion.article
 								{...revealUp(minimal, { y: 28, duration: 0.7, compact })}
+								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
+							>
+								<div className='relative aspect-[3/4] overflow-hidden'>
+									<StudioVideo
+										lightbox
+										hideWatchLabel
+										containerClassName='absolute inset-0 rounded-none border-0'
+										fallbackLabel={t('team.workspace.title')}
+										fallbackPoster={IMG.comfort}
+									/>
+									<div className='pointer-events-none absolute inset-x-0 bottom-0 p-7 bg-gradient-to-t from-nearBlack via-nearBlack/30 to-transparent'>
+										<h3 className='font-serif text-xl text-icyWhite'>
+											{t('team.workspace.title')}
+										</h3>
+									</div>
+								</div>
+								<div className='p-7'>
+									<p className='text-icyWhite/65 text-sm leading-relaxed'>
+										{t('team.workspace.desc')}
+									</p>
+								</div>
+							</motion.article>
+
+							{/* Natalie card */}
+							<motion.article
+								{...revealUp(minimal, { y: 28, delay: 0.08, duration: 0.7, compact })}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4] overflow-hidden'>
@@ -792,63 +818,45 @@ export default function DepilationPage() {
 								</div>
 							</motion.article>
 
-							{/* Workspace card */}
-							<motion.article
-								{...revealUp(minimal, { y: 28, delay: 0.08, duration: 0.7, compact })}
-								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
-							>
-								<div className='relative aspect-[3/4] overflow-hidden'>
-									<StudioVideo
-										lightbox
-										hideWatchLabel
-										containerClassName='absolute inset-0 rounded-none border-0'
-										fallbackLabel={t('team.workspace.title')}
-										fallbackPoster={IMG.comfort}
-									/>
-									<div className='pointer-events-none absolute inset-x-0 bottom-0 p-7 bg-gradient-to-t from-nearBlack via-nearBlack/30 to-transparent'>
-										<h3 className='font-serif text-xl text-icyWhite'>
-											{t('team.workspace.title')}
-										</h3>
-									</div>
-								</div>
-								<div className='p-7'>
-									<p className='text-icyWhite/65 text-sm leading-relaxed'>
-										{t('team.workspace.desc')}
-									</p>
-								</div>
-							</motion.article>
-
-							{/* Massage specialist — same studio */}
+							{/* Massage specialist — cross-link to massage page */}
 							<motion.article
 								{...revealUp(minimal, { y: 28, delay: 0.12, duration: 0.7, compact })}
 								className='shrink-0 w-[320px] sm:w-[380px] snap-center rounded-3xl overflow-hidden glass-card group'
 							>
-								<div className='relative aspect-[3/4] overflow-hidden'>
-									<Image
-										src='/images/massage/serhiy-volyk.png'
-										alt={t('team.serhiy.name')}
-										fill
-										className='object-cover group-hover:scale-105 transition-transform duration-700'
-										sizes='380px'
-									/>
-									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/30 to-transparent' />
-									<div className='absolute bottom-0 left-0 right-0 p-7'>
-										<h3 className='font-serif text-2xl text-icyWhite'>
-											{t('team.serhiy.name')}
-										</h3>
-										<p className='text-gold-soft/80 text-sm mt-1'>
-											{t('team.serhiy.role')}
+								<Link
+									href={`/${locale}/massage`}
+									target='_blank'
+									rel='noopener'
+									aria-label={`${t('team.serhiy.name')} — ${t('team.serhiy.role')}`}
+									className='block'
+								>
+									<div className='relative aspect-[3/4] overflow-hidden'>
+										<Image
+											src='/images/massage/serhiy-volyk.png'
+											alt={t('team.serhiy.name')}
+											fill
+											className='object-cover group-hover:scale-105 transition-transform duration-700'
+											sizes='380px'
+										/>
+										<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/30 to-transparent' />
+										<div className='absolute bottom-0 left-0 right-0 p-7'>
+											<h3 className='font-serif text-2xl text-icyWhite'>
+												{t('team.serhiy.name')}
+											</h3>
+											<p className='text-gold-soft/80 text-sm mt-1'>
+												{t('team.serhiy.role')}
+											</p>
+										</div>
+									</div>
+									<div className='p-7'>
+										<p className='text-icyWhite/40 text-xs tracking-[0.15em] uppercase mb-3'>
+											{t('team.serhiy.specialty')}
+										</p>
+										<p className='text-icyWhite/65 text-sm leading-relaxed'>
+											{t('team.serhiy.bio')}
 										</p>
 									</div>
-								</div>
-								<div className='p-7'>
-									<p className='text-icyWhite/40 text-xs tracking-[0.15em] uppercase mb-3'>
-										{t('team.serhiy.specialty')}
-									</p>
-									<p className='text-icyWhite/65 text-sm leading-relaxed'>
-										{t('team.serhiy.bio')}
-									</p>
-								</div>
+								</Link>
 							</motion.article>
 						</div>
 

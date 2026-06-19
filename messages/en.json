@@ -263,13 +263,19 @@
       "expectation": "Most clients feel immediate relief and deep relaxation. For chronic issues, a course of 4-6 sessions is recommended. We provide personalized aftercare advice to maintain results between visits."
     },
     "team": {
-      "title": "Your specialist",
-      "subtitle": "Every session is performed by a certified professional.",
+      "title": "Your specialists",
+      "subtitle": "Certified studio professionals perform every session.",
       "therapist1": {
         "name": "Serhiy Volyk",
         "role": "Founder & lead massage specialist",
         "specialty": "Classic · Sports · Anti-cellulite · Lymphatic drainage · Device-assisted · Gua sha",
         "bio": "Practicing since 2022. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
+      },
+      "natalie": {
+        "name": "Natalie Volik",
+        "role": "Founder & Lead Depilation Specialist",
+        "specialty": "Laser epilation · Wax epilation · Sugaring · Electroepilation · Piercing · Cosmetology · Training courses · Intimate whitening · Anti-cellulite wraps",
+        "bio": "14 years of experience. Medical education. Champion of Ukraine in depilation. Certified technologist for Terra, Enova, and Biolaif. I treat every client as the only one."
       },
       "workspace": {
         "title": "Our Space",

@@ -263,13 +263,19 @@
       "expectation": "Väčšina klientov pociťuje okamžitú úľavu a hlbokú relaxáciu. Pri chronických problémoch odporúčame kurz 4–6 sedení. Poskytujeme personalizované rady pre udržanie výsledkov."
     },
     "team": {
-      "title": "Váš špecialista",
-      "subtitle": "Každé sedenie vykonáva certifikovaný profesionál.",
+      "title": "Vaši špecialisti",
+      "subtitle": "Zákroky vykonávajú certifikovaní odborníci štúdia.",
       "therapist1": {
         "name": "Serhij Volik",
         "role": "Zakladateľ a hlavný špecialista na masáž",
         "specialty": "Klasická · Športová · Anticelulitídna · Lymfodrenáž · Prístrojová · Gua sha",
         "bio": "Skúsenosti od roku 2022. Medzinárodné certifikáty škôl na Ukrajine a na Slovensku. Všetky masážne techniky."
+      },
+      "natalie": {
+        "name": "Natálie Volik",
+        "role": "Zakladateľka a Hlavná Špecialistka na Depiláciu",
+        "specialty": "Laserová epilácia · Vosková epilácia · Sugaring · Elektroepilácia · Piercing · Kozmetológia · Vzdelávacie kurzy · Intímne bielenie · Anticelulitídne zábaly",
+        "bio": "14 rokov skúseností. Medicínske vzdelanie. Šampiónka Ukrajiny v depilácii. Certifikovaná technologička Terra, Enova, Biolaif."
       },
       "workspace": {
         "title": "Náš Priestor",

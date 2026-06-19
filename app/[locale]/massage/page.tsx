@@ -677,8 +677,37 @@ export default function MassagePage() {
 							className='flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 							style={{ scrollbarWidth: 'none' }}
 						>
+							{/* Workspace card */}
 							<motion.article
 								{...ry}
+								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
+							>
+								<div className='relative aspect-[3/4]'>
+									<Image
+										src='https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&q=80'
+										alt={t('team.workspace.title')}
+										fill
+										className='object-cover'
+										sizes='360px'
+									/>
+									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/20 to-transparent' />
+									<div className='absolute bottom-0 left-0 right-0 p-6'>
+										<h3 className='font-serif text-xl text-icyWhite'>
+											{t('team.workspace.title')}
+										</h3>
+									</div>
+								</div>
+								<div className='p-6'>
+									<p className='text-icyWhite/70 text-sm leading-relaxed'>
+										{t('team.workspace.desc')}
+									</p>
+								</div>
+							</motion.article>
+
+							{/* Massage specialist (Sergiy) — primary */}
+							<motion.article
+								{...ry}
+								transition={enterDelay(minimal, 0.08, compact)}
 								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
 							>
 								<div className='relative aspect-[3/4]'>
@@ -709,31 +738,46 @@ export default function MassagePage() {
 								</div>
 							</motion.article>
 
+							{/* Depilation specialist (Natalia) — cross-link to depilation page */}
 							<motion.article
 								{...ry}
-								transition={enterDelay(minimal, 0.08, compact)}
+								transition={enterDelay(minimal, 0.16, compact)}
 								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
 							>
-								<div className='relative aspect-[3/4]'>
-									<Image
-										src='https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&q=80'
-										alt={t('team.workspace.title')}
-										fill
-										className='object-cover'
-										sizes='360px'
-									/>
-									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/20 to-transparent' />
-									<div className='absolute bottom-0 left-0 right-0 p-6'>
-										<h3 className='font-serif text-xl text-icyWhite'>
-											{t('team.workspace.title')}
-										</h3>
+								<Link
+									href={`/${locale}/depilation`}
+									target='_blank'
+									rel='noopener'
+									aria-label={`${t('team.natalie.name')} — ${t('team.natalie.role')}`}
+									className='block'
+								>
+									<div className='relative aspect-[3/4]'>
+										<Image
+											src='/images/depilation/E9A1D7C4-02D4-4718-9455-AB23672CC127_1_105_c-8ea037d5-0afb-4946-85b7-548eb136ccca.png'
+											alt={t('team.natalie.name')}
+											fill
+											className='object-cover'
+											sizes='360px'
+										/>
+										<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/20 to-transparent' />
+										<div className='absolute bottom-0 left-0 right-0 p-6'>
+											<h3 className='font-serif text-2xl text-icyWhite'>
+												{t('team.natalie.name')}
+											</h3>
+											<p className='text-gold-glow/90 text-sm mt-1'>
+												{t('team.natalie.role')}
+											</p>
+										</div>
 									</div>
-								</div>
-								<div className='p-6'>
-									<p className='text-icyWhite/70 text-sm leading-relaxed'>
-										{t('team.workspace.desc')}
-									</p>
-								</div>
+									<div className='p-6'>
+										<p className='text-icyWhite/50 text-xs tracking-wider uppercase mb-3'>
+											{t('team.natalie.specialty')}
+										</p>
+										<p className='text-icyWhite/70 text-sm leading-relaxed'>
+											{t('team.natalie.bio')}
+										</p>
+									</div>
+								</Link>
 							</motion.article>
 						</div>
 
