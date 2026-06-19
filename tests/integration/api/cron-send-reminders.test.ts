@@ -58,6 +58,7 @@ interface SeedAppointmentInput {
 	service?: string
 	place?: 'massage' | 'depilation'
 	notifyByWhatsApp?: boolean
+	bookingStatus?: 'pending' | 'confirmed' | 'cancelled'
 }
 
 async function seedAppointment(input: SeedAppointmentInput): Promise<string> {
@@ -77,6 +78,7 @@ async function seedAppointment(input: SeedAppointmentInput): Promise<string> {
 		notifyByEmail: false,
 		notifyByWhatsApp: input.notifyByWhatsApp ?? true,
 		createdAt: Timestamp.fromDate(created),
+		...(input.bookingStatus ? { bookingStatus: input.bookingStatus } : {}),
 	})
 	return id
 }
@@ -191,6 +193,69 @@ describe.skipIf(!emulatorAvailable())(
 				const body = (await res.json()) as { sent: Record<string, number> }
 				expect(body.sent['1day']).toBe(0)
 				expect(requestLogs.twilio.length).toBe(0)
+			})
+
+			it('uses the 1-day confirmed-variant template when booking is confirmed', async () => {
+				const tomorrow = bratislavaDayOffsetAt(1, 10)
+				await seedAppointment({
+					startAt: tomorrow,
+					bookingStatus: 'confirmed',
+				})
+
+				const res = await sendRemindersGET(withAuth())
+				const body = (await res.json()) as { sent: Record<string, number> }
+				expect(body.sent['1day']).toBe(1)
+
+				const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
+				expect(lastCall.body.get('ContentSid')).toBe(
+					process.env.TWILIO_CONTENT_SID_REMINDER_1D_CONFIRMED,
+				)
+			})
+
+			it('uses the 0-day confirmed-variant template when booking is confirmed', async () => {
+				// startAt 1h in the future so the booking lands inside the cron's
+				// `startTime >= now` scan window regardless of when the test runs.
+				const today = new Date(Date.now() + 60 * 60 * 1000)
+				const createdYesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+				await seedAppointment({
+					startAt: today,
+					createdAt: createdYesterday,
+					bookingStatus: 'confirmed',
+				})
+
+				const res = await sendRemindersGET(withAuth())
+				const body = (await res.json()) as { sent: Record<string, number> }
+				expect(body.sent['0day']).toBe(1)
+
+				const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
+				expect(lastCall.body.get('ContentSid')).toBe(
+					process.env.TWILIO_CONTENT_SID_REMINDER_0D_CONFIRMED,
+				)
+			})
+
+			it('uses the standard 0-day template (with both buttons) for unconfirmed bookings', async () => {
+				const today = new Date(Date.now() + 60 * 60 * 1000)
+				const createdYesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+				await seedAppointment({
+					startAt: today,
+					createdAt: createdYesterday,
+				})
+
+				const res = await sendRemindersGET(withAuth())
+				const body = (await res.json()) as { sent: Record<string, number> }
+				expect(body.sent['0day']).toBe(1)
+
+				const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
+				expect(lastCall.body.get('ContentSid')).toBe(
+					process.env.TWILIO_CONTENT_SID_REMINDER_0D,
+				)
+				// Same-day reminders now carry an action token in {{5}} for the
+				// Confirm/Cancel buttons — assert the variables are populated so
+				// a future template change can't silently drop the token.
+				const vars = JSON.parse(
+					lastCall.body.get('ContentVariables') ?? '{}',
+				) as Record<string, string>
+				expect(vars['5']).toBeTruthy()
 			})
 		})
 

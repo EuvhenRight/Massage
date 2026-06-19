@@ -33,24 +33,22 @@ const CONTENT_SID_ENV = {
 	reminder1Day: 'TWILIO_CONTENT_SID_REMINDER_1D',
 	reminderSameDay: 'TWILIO_CONTENT_SID_REMINDER_0D',
 	/**
-	 * "Already confirmed" 1-day reminder. Same trigger window as the
-	 * standard 1-day reminder, but the approved Twilio Content Template
-	 * body must show ONLY the Cancel button — the Confirm button is
-	 * stripped because the customer already confirmed earlier in the cycle.
+	 * "Already confirmed" reminders. Same trigger window as the corresponding
+	 * standard reminder, but the approved Twilio Content Template body must
+	 * show ONLY the Cancel button — the Confirm button is stripped because
+	 * the customer already confirmed earlier in the cycle.
 	 *
 	 * Variables: same as the standard reminders (`{{1}}` first name,
 	 * `{{2}}` service, `{{3}}` date, `{{4}}` time, `{{5}}` actionToken).
 	 * The token is still required because the Cancel button URL embeds it.
 	 *
-	 * Fallback: when the env var is missing, the cron falls back to the
-	 * standard 1-day reminder template — so deployments without the new SID
-	 * keep working, the customer just sees the Confirm button again.
-	 *
-	 * Same-day (0-day) reminders intentionally do NOT have a confirmed
-	 * variant — on the day itself the standard reminder with both buttons
-	 * is fine, so we save the extra template approval round-trip.
+	 * Fallback: when an env var is missing, the cron falls back to the
+	 * standard reminder template for that window — so deployments without
+	 * the new SIDs keep working, the customer just sees the Confirm button
+	 * again.
 	 */
 	reminder1DayConfirmed: 'TWILIO_CONTENT_SID_REMINDER_1D_CONFIRMED',
+	reminder0DayConfirmed: 'TWILIO_CONTENT_SID_REMINDER_0D_CONFIRMED',
 	staffNew: 'TWILIO_CONTENT_SID_STAFF_NEW',
 	staffCancelled: 'TWILIO_CONTENT_SID_STAFF_CANCELLED',
 	staffCustomerConfirmed: 'TWILIO_CONTENT_SID_STAFF_CUSTOMER_CONFIRMED',
@@ -713,12 +711,11 @@ export async function notifyCustomerWhatsAppReminder1Day(payload: {
 }
 
 /**
- * Same-day reminder. The approved Twilio template has NO action buttons,
- * so we don't pass an action token — variable count must match the
- * template's `{{n}}` placeholders exactly or Twilio rejects with error 63018.
- *
- * `actionToken` is accepted (and ignored) so callers can share a single
- * reminder payload shape across all windows without per-window branching.
+ * Same-day reminder. The approved template carries Confirm + Cancel action
+ * buttons — same as the 2-day and 1-day reminders — so the action token is
+ * required (`{{5}}`). When the booking is already confirmed, the cron must
+ * use {@link notifyCustomerWhatsAppReminderSameDayConfirmed} instead, which
+ * resolves to a variant template whose body strips the Confirm button.
  */
 export async function notifyCustomerWhatsAppReminderSameDay(payload: {
 	customerPhone: string
@@ -726,8 +723,7 @@ export async function notifyCustomerWhatsAppReminderSameDay(payload: {
 	service: string
 	date: string
 	time: string
-	/** Ignored — same-day template has no buttons. Kept for caller convenience. */
-	actionToken?: string
+	actionToken: string
 }): Promise<{
 	status: WhatsAppNotifyResult
 	twilioCode?: number
@@ -749,6 +745,7 @@ export async function notifyCustomerWhatsAppReminderSameDay(payload: {
 			'2': serviceLineTitle(payload.service),
 			'3': payload.date,
 			'4': payload.time,
+			'5': payload.actionToken,
 		},
 		'customer',
 	)
@@ -793,6 +790,54 @@ export async function notifyCustomerWhatsAppReminder1DayConfirmed(payload: {
 	const result = await sendTwilioWhatsAppTemplate(
 		e164,
 		'reminder1DayConfirmed',
+		{
+			'1': firstName(payload.customerName),
+			'2': serviceLineTitle(payload.service),
+			'3': payload.date,
+			'4': payload.time,
+			'5': payload.actionToken,
+		},
+		'customer',
+	)
+	if (!result.ok) {
+		console.error('[whatsapp-customer] Twilio error:', result.error)
+		return { status: 'failed', twilioCode: result.twilioCode }
+	}
+	return { status: 'sent' }
+}
+
+/**
+ * Same-day reminder for bookings the customer has already confirmed. Same
+ * payload shape as the standard same-day reminder, but it goes through a
+ * different Twilio Content Template whose body strips the "Confirm" button —
+ * the customer already confirmed, asking again is noise.
+ *
+ * The action token is still required: the remaining Cancel button URL needs
+ * it to authenticate the cancellation.
+ */
+export async function notifyCustomerWhatsAppReminderSameDayConfirmed(payload: {
+	customerPhone: string
+	customerName: string
+	service: string
+	date: string
+	time: string
+	actionToken: string
+}): Promise<{
+	status: WhatsAppNotifyResult
+	twilioCode?: number
+	skipReason?: 'twilio_env' | 'unparseable_phone' | 'missing_content_sid'
+}> {
+	const e164 = parseWhatsappE164(payload.customerPhone)
+	if (!e164) return { status: 'skipped', skipReason: 'unparseable_phone' }
+	if (!twilioMessagingCoreConfigured()) {
+		return { status: 'skipped', skipReason: 'twilio_env' }
+	}
+	if (!getContentSid('reminder0DayConfirmed')) {
+		return { status: 'skipped', skipReason: 'missing_content_sid' }
+	}
+	const result = await sendTwilioWhatsAppTemplate(
+		e164,
+		'reminder0DayConfirmed',
 		{
 			'1': firstName(payload.customerName),
 			'2': serviceLineTitle(payload.service),

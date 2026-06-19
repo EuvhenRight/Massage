@@ -36,6 +36,7 @@ import {
 	notifyCustomerWhatsAppReminder1Day,
 	notifyCustomerWhatsAppReminder1DayConfirmed,
 	notifyCustomerWhatsAppReminderSameDay,
+	notifyCustomerWhatsAppReminderSameDayConfirmed,
 	parseWhatsappE164,
 } from '@/lib/whatsapp-admin-notify'
 import {
@@ -145,10 +146,18 @@ async function sendReminder(
 		return notifyCustomerWhatsAppReminder1Day(payload)
 	}
 
-	// 0-day reminder: same template for confirmed and unconfirmed bookings.
-	// The Twilio button-stripping optimization is only worthwhile for the
-	// 1-day window where there's still a meaningful action gap; on the day
-	// itself the standard reminder with both buttons is fine.
+	// 0-day window: same Confirm + Cancel buttons as the earlier reminders for
+	// unconfirmed bookings; a Cancel-only variant for those the customer has
+	// already confirmed (the Confirm button would be noise). Same fallback
+	// shape as the 1-day branch — if the confirmed-variant SID is missing the
+	// standard template still goes out.
+	if (input.isConfirmed) {
+		const r = await notifyCustomerWhatsAppReminderSameDayConfirmed(payload)
+		if (r.status === 'skipped' && r.skipReason === 'missing_content_sid') {
+			return notifyCustomerWhatsAppReminderSameDay(payload)
+		}
+		return r
+	}
 	return notifyCustomerWhatsAppReminderSameDay(payload)
 }
 
@@ -277,9 +286,9 @@ export async function GET(request: Request) {
 		// 2-day reminder always uses the standard template (it's the first
 		// touch). 1-day and 0-day check the booking status and swap to the
 		// confirmed variant when available. If the env var for the variant
-		// is missing the helper returns `missing_content_sid`; we fall back
-		// to the standard template so deployments without the new SIDs keep
-		// reminders flowing (the customer just sees both buttons again,
+		// is missing the helper returns `missing_content_sid` and we fall
+		// back to the standard template — deployments without the new SIDs
+		// keep reminders flowing (the customer just sees both buttons again,
 		// no functional regression).
 		const isConfirmed = data.bookingStatus === 'confirmed'
 
