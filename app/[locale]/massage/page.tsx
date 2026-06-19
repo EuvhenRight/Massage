@@ -680,14 +680,14 @@ export default function MassagePage() {
 							{/* Workspace card */}
 							<motion.article
 								{...ry}
-								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
+								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4]'>
 									<Image
 										src='https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&q=80'
 										alt={t('team.workspace.title')}
 										fill
-										className='object-cover'
+										className='object-cover group-hover:scale-105 transition-transform duration-700'
 										sizes='360px'
 									/>
 									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/20 to-transparent' />
@@ -708,14 +708,14 @@ export default function MassagePage() {
 							<motion.article
 								{...ry}
 								transition={enterDelay(minimal, 0.08, compact)}
-								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
+								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl overflow-hidden glass-card group'
 							>
 								<div className='relative aspect-[3/4]'>
 									<Image
 										src='/images/massage/serhiy-volyk.png'
 										alt={t('team.therapist1.name')}
 										fill
-										className='object-cover'
+										className='object-cover group-hover:scale-105 transition-transform duration-700'
 										sizes='360px'
 									/>
 									<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/20 to-transparent' />
@@ -742,7 +742,7 @@ export default function MassagePage() {
 							<motion.article
 								{...ry}
 								transition={enterDelay(minimal, 0.16, compact)}
-								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl border border-white/10 bg-nearBlack/60 overflow-hidden'
+								className='shrink-0 w-[320px] sm:w-[360px] snap-center rounded-2xl overflow-hidden glass-card group'
 							>
 								<Link
 									href={`/${locale}/depilation`}
@@ -756,7 +756,7 @@ export default function MassagePage() {
 											src='/images/depilation/E9A1D7C4-02D4-4718-9455-AB23672CC127_1_105_c-8ea037d5-0afb-4946-85b7-548eb136ccca.png'
 											alt={t('team.natalie.name')}
 											fill
-											className='object-cover'
+											className='object-cover group-hover:scale-105 transition-transform duration-700'
 											sizes='360px'
 										/>
 										<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/20 to-transparent' />
