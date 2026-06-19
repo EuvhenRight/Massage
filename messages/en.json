@@ -27,7 +27,7 @@
   },
   "home": {
     "chooseExperience": "Choose your experience",
-    "portalH1": "V2studio / Epilroom — premium massage and waxing salon in Bratislava, Križna 22",
+    "portalH1": "V2studio / Epilroom — premium massage and waxing salon in Bratislava, Krížna 36",
     "enterMassage": "Enter Massage experience",
     "enterDepilation": "Enter Depilation experience"
   },
@@ -142,7 +142,7 @@
     "selectMembership": "Select {tier} membership",
     "hero": "Relaxation. Renewal. Deep healing.",
     "heroBadge": "V2Studio — Premium Massage, Bratislava",
-    "heroSeoHeading": "Therapeutic, sports and relaxation massage in Bratislava — V2studio, Križna 22",
+    "heroSeoHeading": "Therapeutic, sports and relaxation massage in Bratislava — V2studio, Krížna 36",
     "heroBookButton": "Book",
     "heroPricesButton": "View Prices",
     "destinations": "Destinations",
@@ -399,7 +399,7 @@
     "heroLine2": "Smoothness you'll want to come back for.",
     "heroSubtitle": "Premium depilation with 14 years of expertise. Medical precision meets comfort.",
     "heroBadge": "<brand>V2Studio</brand> — Premium Depilation, Bratislava",
-    "heroSeoHeading": "Professional waxing and depilation for face and body in Bratislava — V2studio / Epilroom, Križna 22",
+    "heroSeoHeading": "Professional waxing and depilation for face and body in Bratislava — V2studio / Epilroom, Krížna 36",
     "heroBookButton": "Book",
     "heroPricesButton": "View Prices",
     "exploreMassage": "← Explore Massage",
@@ -1454,35 +1454,35 @@
   },
   "metadata": {
     "title": "V2studio Bratislava | Massage & Waxing Salon | Book Online",
-    "description": "Premium massage and waxing salon on Križna 22, Bratislava. V2studio / Epilroom: certified massage therapists, private rooms, face & body waxing by a medically trained specialist. Book online.",
+    "description": "Premium massage and waxing salon on Krížna 36, Bratislava. V2studio / Epilroom: certified massage therapists, private rooms, face & body waxing by a medically trained specialist. Book online.",
     "siteName": "V2studio · Bratislava",
-    "keywords": "V2studio, Epilroom Bratislava, massage salon Bratislava, waxing salon Bratislava, Brazilian wax Bratislava, depilation Bratislava, beauty salon Križna 22, Staré Mesto, online booking, therapeutic massage Slovakia, Natali Volik",
+    "keywords": "V2studio, Epilroom Bratislava, massage salon Bratislava, waxing salon Bratislava, Brazilian wax Bratislava, depilation Bratislava, beauty salon Krížna 36, Staré Mesto, online booking, therapeutic massage Slovakia, Natali Volik",
     "adminTitle": "Admin | V2studio",
     "adminDescription": "Staff sign-in and salon administration. Not indexed by search engines.",
     "pages": {
       "massage": {
         "title": "Massage Bratislava | Sports, Deep Tissue & Relaxation | V2studio",
-        "description": "Sports, deep-tissue and relaxation massage in Bratislava city centre (Križna 22). Certified team, 8+ techniques, memberships—see prices and book online."
+        "description": "Sports, deep-tissue and relaxation massage in Bratislava city centre (Krížna 36). Certified team, 8+ techniques, memberships—see prices and book online."
       },
       "depilation": {
         "title": "Waxing Bratislava | Face & Body | Epilroom / V2studio",
-        "description": "Expert waxing and depilation by a medically trained specialist. Discreet studio on Križna 22, 14+ years experience—services, FAQ & online booking."
+        "description": "Expert waxing and depilation by a medically trained specialist. Discreet studio on Krížna 36, 14+ years experience—services, FAQ & online booking."
       },
       "booking": {
         "title": "Book Massage or Waxing Online | V2studio Bratislava",
-        "description": "Book massage or depilation in minutes: pick a service, choose a time, confirm by email. V2studio, Križna 22, Bratislava—English, SK, RU & UK."
+        "description": "Book massage or depilation in minutes: pick a service, choose a time, confirm by email. V2studio, Krížna 36, Bratislava—English, SK, RU & UK."
       },
       "massageBooking": {
         "title": "Massage Appointment Online | Live Availability | V2studio",
-        "description": "Real-time massage booking at V2studio Bratislava. Select duration and technique, see open slots, get instant confirmation—Križna 22."
+        "description": "Real-time massage booking at V2studio Bratislava. Select duration and technique, see open slots, get instant confirmation—Krížna 36."
       },
       "depilationBooking": {
         "title": "Waxing Appointment Online | V2studio / Epilroom",
-        "description": "Schedule face or body waxing online at V2studio. Choose your zone, pick a slot, receive confirmation—private Epilroom studio, Križna 22."
+        "description": "Schedule face or body waxing online at V2studio. Choose your zone, pick a slot, receive confirmation—private Epilroom studio, Krížna 36."
       },
       "massagePrice": {
         "title": "Massage Price List Bratislava | V2studio Cenník",
-        "description": "Current massage rates at V2studio: durations, modalities and add-ons on Križna 22. Compare options, then book the session that fits you."
+        "description": "Current massage rates at V2studio: durations, modalities and add-ons on Krížna 36. Compare options, then book the session that fits you."
       },
       "depilationPrice": {
         "title": "Waxing Price List Bratislava | Depilation Cenník | V2studio",

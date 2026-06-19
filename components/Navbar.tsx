@@ -230,7 +230,7 @@ export default function Navbar() {
 				className='px-8 sm:px-12 md:px-10 lg:px-14 py-6 border-t border-white/5'
 			>
 				<p className='text-icyWhite/30 text-xs tracking-wider'>
-					V2studio · Križna 22, Bratislava
+					V2studio · Krížna 36, Bratislava
 				</p>
 			</motion.div>
 		</>

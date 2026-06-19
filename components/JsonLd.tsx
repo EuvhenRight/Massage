@@ -54,15 +54,15 @@ export async function JsonLd({ locale }: { locale: string }) {
       email: SITE_CONFIG.email,
       address: {
         "@type": "PostalAddress",
-        streetAddress: "Križna 22",
+        streetAddress: "Krížna 36",
         addressLocality: "Bratislava",
         postalCode: "811 07",
         addressCountry: "SK",
       },
       geo: {
         "@type": "GeoCoordinates",
-        latitude: 48.1486,
-        longitude: 17.1077,
+        latitude: 48.1548,
+        longitude: 17.1241,
       },
       hasMap: SITE_CONFIG.googleMaps,
       areaServed: {
