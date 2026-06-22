@@ -20,12 +20,12 @@ interface PublicDatePickerProps {
 	schedule?: ScheduleData | null
 }
 
-const WEEKDAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
+const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
 
 function getDaysInMonth(year: number, month: number): (Date | null)[] {
 	const first = new Date(year, month, 1)
 	const last = new Date(year, month + 1, 0)
-	const startPad = first.getDay()
+	const startPad = (first.getDay() + 6) % 7
 	const days: (Date | null)[] = Array(startPad).fill(null)
 	for (let d = 1; d <= last.getDate(); d++) {
 		days.push(new Date(year, month, d))

@@ -226,7 +226,21 @@ const AdminAvailabilityManager = forwardRef<
     const current = { ...(overrides[scope] ?? {}) };
     current[day] = value;
     overrides[scope] = current;
-    setSchedule({ ...schedule, monthOverrides: overrides });
+
+    // Sweep redundant force-open dateOverrides for this weekday in this scope so
+    // the new weekly hours apply. Force-closed overrides (null) are preserved.
+    const dateOverrides = { ...(schedule.dateOverrides ?? {}) };
+    for (const key of Object.keys(dateOverrides)) {
+      if (!key.startsWith(`${scope}-`)) continue;
+      if (dateOverrides[key] === null) continue;
+      const [y, m, d] = key.split("-").map(Number);
+      if (!y || !m || !d) continue;
+      const dt = new Date(y, m - 1, d);
+      if (dt.getDay() !== day) continue;
+      delete dateOverrides[key];
+    }
+
+    setSchedule({ ...schedule, monthOverrides: overrides, dateOverrides });
   };
 
   const getDateKey = (d: Date) =>
@@ -235,19 +249,28 @@ const AdminAvailabilityManager = forwardRef<
   const toggleDate = (date: Date) => {
     if (!schedule) return;
     const dateKey = getDateKey(date);
-    const current = getWorkingHoursForDate(schedule, date);
+    const currentlyOpen = getWorkingHoursForDate(schedule, date) !== null;
+    const dayOfWeek = date.getDay();
+    const weekScoped = resolveMonthScopedDaySchedule(schedule, scope, dayOfWeek);
+    const openByWeek = weekScoped !== null;
     const dateOverrides = { ...(schedule.dateOverrides ?? {}) };
-    if (current) {
+
+    if (currentlyOpen) {
       const count = countAppointmentsOnDate(appointments, date);
       if (count > 0 && !window.confirm(t("closeDayWithAppointmentsConfirm", { count }))) {
         return;
       }
-      dateOverrides[dateKey] = null;
+      if (openByWeek) {
+        dateOverrides[dateKey] = null;
+      } else {
+        delete dateOverrides[dateKey];
+      }
     } else {
-      const dayOfWeek = date.getDay();
-      const base = resolveMonthScopedDaySchedule(schedule, scope, dayOfWeek);
-      dateOverrides[dateKey] =
-        base === null ? DEFAULT_OPEN_DAY : coerceToWindowDay(base);
+      if (openByWeek) {
+        delete dateOverrides[dateKey];
+      } else {
+        dateOverrides[dateKey] = DEFAULT_OPEN_DAY;
+      }
     }
     setSchedule({ ...schedule, dateOverrides });
   };
