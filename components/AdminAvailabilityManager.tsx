@@ -12,7 +12,7 @@ import {
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { clsx } from "clsx";
-import { Info, Lock } from "lucide-react";
+import { Info, Loader2, Lock } from "lucide-react";
 import { getPlaceAccentUi } from "@/lib/place-accent-ui";
 import type { Place } from "@/lib/places";
 import {
@@ -89,6 +89,7 @@ interface AdminAvailabilityManagerProps {
   onScheduleChange?: (schedule: ScheduleData | null) => void;
   appointments?: AppointmentForDate[];
   onSavingChange?: (saving: boolean) => void;
+  onSaveResult?: (result: "success" | "error") => void;
 }
 
 function formatMonthLabel(value: string, monthNames: string[]): string {
@@ -183,6 +184,7 @@ const AdminAvailabilityManager = forwardRef<
     onScheduleChange,
     appointments = [],
     onSavingChange,
+    onSaveResult,
   },
   ref,
 ) {
@@ -190,6 +192,7 @@ const AdminAvailabilityManager = forwardRef<
   const tCommon = useTranslations("common");
   const ui = useMemo(() => getPlaceAccentUi(place), [place]);
   const [internalSchedule, setInternalSchedule] = useState<ScheduleData | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const monthNames = MONTH_KEYS.map((k) => t(k));
   const weekHeaders = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map((k) => t(k));
@@ -278,17 +281,21 @@ const AdminAvailabilityManager = forwardRef<
   const handleSave = useCallback(async () => {
     const toSave = scheduleRef.current;
     if (!toSave) return;
+    setSaving(true);
     onSavingChange?.(true);
     try {
       await saveSchedule(toSave, place);
       toast.success(t("availabilitySaved"));
+      onSaveResult?.("success");
     } catch (err) {
       console.error("Save schedule failed:", err);
       toast.error(t("saveFailed"));
+      onSaveResult?.("error");
     } finally {
+      setSaving(false);
       onSavingChange?.(false);
     }
-  }, [place, t, onSavingChange]);
+  }, [place, t, onSavingChange, onSaveResult]);
 
   useImperativeHandle(ref, () => ({ save: handleSave }), [handleSave]);
 
@@ -309,7 +316,17 @@ const AdminAvailabilityManager = forwardRef<
   }
 
   return (
-    <div className={ui.adminNestedPanel}>
+    <div className={clsx(ui.adminNestedPanel, "relative")}>
+      {saving && (
+        <div
+          aria-busy="true"
+          aria-live="polite"
+          className="absolute inset-0 z-20 flex items-center justify-center gap-3 rounded-[inherit] bg-nearBlack/70 backdrop-blur-sm"
+        >
+          <Loader2 className="h-5 w-5 animate-spin text-gold-soft" aria-hidden />
+          <span className="text-sm text-icyWhite/90">{t("saving")}…</span>
+        </div>
+      )}
       {/* Prep time bar */}
       <div className="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-white/10 bg-white/[0.02]">
         <Lock className="h-4 w-4 text-icyWhite/40 shrink-0" />

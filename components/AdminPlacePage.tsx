@@ -33,6 +33,7 @@ import {
 import { resolvedOpaqueCalendarSlotFill } from '@/lib/section-calendar-colors'
 import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { clsx } from 'clsx'
+import { cn } from '@/lib/utils'
 import {
 	collection,
 	onSnapshot,
@@ -42,8 +43,11 @@ import {
 	where,
 } from 'firebase/firestore'
 import {
+	AlertCircle,
 	Calendar,
+	Check,
 	Info,
+	Loader2,
 	Save,
 	Search,
 } from 'lucide-react'
@@ -217,7 +221,16 @@ export default function AdminPlacePage({
 	const [agendaTbd, setAgendaTbd] = useState<AppointmentData[]>([])
 	const [allAppointments, setAllAppointments] = useState<AppointmentData[]>([])
 	const [availabilitySaving, setAvailabilitySaving] = useState(false)
+	const [availabilitySaveResult, setAvailabilitySaveResult] = useState<
+		'success' | 'error' | null
+	>(null)
 	const [priceCatalogSaving, setPriceCatalogSaving] = useState(false)
+
+	useEffect(() => {
+		if (!availabilitySaveResult) return
+		const id = window.setTimeout(() => setAvailabilitySaveResult(null), 2500)
+		return () => window.clearTimeout(id)
+	}, [availabilitySaveResult])
 	const availabilityManagerRef = useRef<AdminAvailabilityManagerHandle | null>(
 		null,
 	)
@@ -965,6 +978,7 @@ export default function AdminPlacePage({
 										schedule={schedule}
 										onScheduleChange={setSchedule}
 										onSavingChange={setAvailabilitySaving}
+										onSaveResult={setAvailabilitySaveResult}
 										appointments={allAppointments.filter(
 											a => a.place === place,
 										)}
@@ -1013,24 +1027,53 @@ export default function AdminPlacePage({
 							</span>
 						</button>
 					)}
-					{section === 'settings' && (
-						<button
-							type='button'
-							disabled={availabilitySaving}
-							onClick={() => void availabilityManagerRef.current?.save()}
-							className={clsx(adminDockFabClass, adminDockFabDisabled)}
-							aria-label={
-								availabilitySaving ? t('saving') : t('saveAvailability')
-							}
-						>
-							<Save className='h-4 w-4 shrink-0' aria-hidden />
-							<span className='truncate hidden sm:inline'>
-								{availabilitySaving
-									? t('saving')
-									: t('saveAvailability')}
-							</span>
-						</button>
-					)}
+					{section === 'settings' && (() => {
+						const fabState = availabilitySaving
+							? 'saving'
+							: availabilitySaveResult ?? 'idle'
+						const fabLabel =
+							fabState === 'saving'
+								? t('saving')
+								: fabState === 'success'
+									? t('availabilitySaved')
+									: fabState === 'error'
+										? t('saveFailed')
+										: t('saveAvailability')
+						const fabStateClass =
+							fabState === 'success'
+								? 'bg-emerald-500 border-emerald-400 text-nearBlack hover:brightness-110 focus:ring-emerald-400'
+								: fabState === 'error'
+									? 'bg-red-500 border-red-400 text-icyWhite hover:brightness-110 focus:ring-red-400'
+									: ''
+						return (
+							<button
+								type='button'
+								disabled={availabilitySaving}
+								onClick={() => void availabilityManagerRef.current?.save()}
+								className={cn(
+									adminDockFabClass,
+									adminDockFabDisabled,
+									fabStateClass,
+								)}
+								aria-label={fabLabel}
+								aria-live='polite'
+							>
+								{fabState === 'saving' ? (
+									<Loader2
+										className='h-4 w-4 shrink-0 animate-spin'
+										aria-hidden
+									/>
+								) : fabState === 'success' ? (
+									<Check className='h-4 w-4 shrink-0' aria-hidden />
+								) : fabState === 'error' ? (
+									<AlertCircle className='h-4 w-4 shrink-0' aria-hidden />
+								) : (
+									<Save className='h-4 w-4 shrink-0' aria-hidden />
+								)}
+								<span className='truncate hidden sm:inline'>{fabLabel}</span>
+							</button>
+						)
+					})()}
 					{section === 'calendar' && (
 						<button
 							type='button'
