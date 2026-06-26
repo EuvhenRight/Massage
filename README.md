@@ -65,6 +65,34 @@ The site is **fully multilingual** (Slovak · English · Russian · Ukrainian), 
 
 ---
 
+## Screenshots
+
+<div align="center">
+  <img src="public/images/Screenshot-home.png" alt="V2studio — Entry portal" width="900" />
+  <p><em>Entry portal — split-screen choice between Massage and Depilation</em></p>
+</div>
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="public/images/Screenshot-laptop.png" alt="Laptop view" width="100%" /><br/>
+      <sub><b>Laptop</b></sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="public/images/Screenshot-tablet.png" alt="Tablet view" width="100%" /><br/>
+      <sub><b>Tablet</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="public/images/Screenshot-mobile.png" alt="Mobile view" width="320" /><br/>
+      <sub><b>Mobile</b></sub>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## Tech stack
 
 | Layer | Tools |
