@@ -6,6 +6,7 @@
 *Solo build for a working salon — in production at [v2studio.sk](https://v2studio.sk).*
 
 [![Live](https://img.shields.io/badge/Live-v2studio.sk-7FA689?style=for-the-badge)](https://v2studio.sk)
+[![Preview](https://img.shields.io/badge/Preview-EN-1A1919?style=for-the-badge)](https://www.v2studio.sk/en)
 [![License](https://img.shields.io/badge/License-MIT-1A1919?style=for-the-badge)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-14-1A1919?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
