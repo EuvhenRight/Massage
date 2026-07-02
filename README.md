@@ -1,22 +1,21 @@
 <div align="center">
 
-<img src="public/images/Gemini_logoNew.png" alt="V2studio · Epilroom" width="180" />
-
 # V2studio · Epilroom
 
-### Premium massage & waxing studio — Bratislava
-**Multilingual booking platform with a full admin back-office, WhatsApp + email notifications, and a custom drag-and-drop calendar.**
+**Booking platform for a premium massage & waxing studio in Bratislava.**
+*Solo build for a working salon — in production at [v2studio.sk](https://v2studio.sk).*
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
-[![NextAuth](https://img.shields.io/badge/Auth-NextAuth%20v5-7C3AED?logo=auth0&logoColor=white)](https://authjs.dev/)
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
-[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](.github/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
+[![Live](https://img.shields.io/badge/Live-v2studio.sk-7FA689?style=for-the-badge)](https://v2studio.sk)
+[![License](https://img.shields.io/badge/License-MIT-1A1919?style=for-the-badge)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-14-1A1919?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-Firestore-1A1919?style=for-the-badge&logo=firebase&logoColor=white)](https://firebase.google.com/)
 
-[**Live site →**](https://v2studio.sk) &nbsp;·&nbsp; [**Instagram**](https://www.instagram.com/epilroom_bratislava) &nbsp;·&nbsp; [**Facebook**](https://www.facebook.com/people/Epilroom-Bratislava/61567948520222/) &nbsp;·&nbsp; [**Google Maps**](https://maps.app.goo.gl/4uaHzXpmc6QCWfH79)
+<br/>
+
+<a href="https://v2studio.sk"><img src="public/images/Screenshot-home.png" alt="V2studio entry portal" width="820" /></a>
+
+<sub>Quadrilingual site · Drag-and-drop admin calendar · WhatsApp + email pipeline</sub>
 
 </div>
 
@@ -24,274 +23,192 @@
 
 ## Overview
 
-**V2studio** is the production booking platform for a high-end massage & depilation studio at *Krížna 36, Bratislava*. It pairs a marketing-grade public site (deep-scroll landings, glass-morphism navbar, aurora gradients) with a battle-tested admin back-office used by master therapists every day.
+A working salon on Krížna 36 needed a booking site its own therapists could run — not a Calendly embed, not a shared Google Sheet. The result is a Slovak / English / Russian / Ukrainian public site tied to a Firestore-backed admin back-office, with WhatsApp reminders driven by Vercel Cron.
 
-The site is **fully multilingual** (Slovak · English · Russian · Ukrainian), bookings are stored in **Firestore**, confirmations go out via **Resend (email)** and **Twilio (WhatsApp templates)**, and **Vercel Cron** drives the reminder + status-finalization pipeline.
+Built solo for V2studio · Epilroom. It's a live business tool, not a portfolio demo — the calendar, price catalog and notification pipeline are what the staff use every day.
 
-<div align="center">
-  <img src="public/images/Gemini_yellow.png" alt="V2studio aurora hero" width="780" />
-</div>
+## Features
 
----
-
-## Highlights
-
-### Public site
-- **Entry portal** — split-screen choice between *Massage* and *Depilation* experiences
-- **Two themed landings** with a glass-morphism navbar, tilt-and-glow service cards, membership tiers (Silver / Black / Obsidian), studio video, marquee and accordion FAQs
-- **Multi-step booking flow** with custom calendar, time-slot picker, occupied-slot guards and per-place accent colors
-- **Public price catalog** (synced from Firestore) with bookable lines, sectioned by zone for depilation
-- **i18n** via `next-intl` — SK / EN / RU / UK, language switcher in the navbar
-- **SEO-grade metadata** — canonical URLs, sitemap.xml, robots.txt, JSON-LD, Open Graph, Twitter cards, GSC verification
-- **Cookie consent** banner with granular toggles and `next/analytics` gated behind opt-in
-
-### Admin back-office (`/[locale]/admin`)
-- **Drag-and-drop calendar** (week / month / agenda) built on `@dnd-kit`
-- **TBD queue** — appointments that still need a date/time stay in a separate list until scheduled
-- **Multi-day & full-day** bookings (e.g. cosmetology courses)
-- **Inline price catalog editor** — sections, zones, prices, multilingual labels, "bookable" toggles auto-sync to Firestore services
-- **Client cards** — phone, opt-ins, birthday, visit timeline (CRM-style activity feed)
-- **Analytics & PDF export** (`jspdf-autotable`)
-- **Working-hours & prep-buffer** management per place
-- **Studio video manager**, language switcher, sign-in via NextAuth v5 (email/password + Google)
-
-### Notifications & automation
-- **Resend** — branded HTML emails on booking, cancellation, reschedule
-- **Twilio WhatsApp Content Templates** — approved transactional messages to customer **and** the right master phone (massage vs depilation routing)
-- **Signed action tokens** (HMAC) — one-tap *Confirm* / *Cancel* buttons inside WhatsApp reminders
-- **Vercel Cron**
-  - `0 6 * * *` → reminders (2 days out · 1 day out · day-of)
-  - `0 3 * * *` → finalize booking statuses (no-show, completed)
-
----
+| | |
+| :--- | :--- |
+| **Multilingual public site** | SK / EN / RU / UK via `next-intl`, switcher in the navbar. |
+| **Multi-step booking flow** | Custom calendar, occupied-slot guards, per-place accent colors. |
+| **Admin drag-and-drop calendar** | Week / month / agenda views on `@dnd-kit`, TBD queue for unscheduled work. |
+| **Inline price catalog editor** | Sections, zones and bookable toggles auto-sync to Firestore services. |
+| **Signed action tokens** | HMAC one-tap confirm/cancel links delivered inside WhatsApp reminders. |
+| **Automated reminders** | Vercel Cron fires reminders (2d / 1d / day-of) and closes stale bookings. |
+| **Twilio Content Templates** | Approved WhatsApp messages routed to the right master per service. |
+| **Client cards** | Phone, opt-ins, birthday and visit timeline as a CRM-style feed. |
+| **Analytics + PDF export** | `jspdf-autotable` reports; `@vercel/analytics` gated behind cookie consent. |
 
 ## Screenshots
 
-<div align="center">
-  <img src="public/images/Screenshot-home.png" alt="V2studio — Entry portal" width="900" />
-  <p><em>Entry portal — split-screen choice between Massage and Depilation</em></p>
-</div>
+| | |
+| :--- | :--- |
+| [![Entry portal](public/images/Screenshot-home.png)](public/images/Screenshot-home.png) | [![Admin & landing](public/images/Screenshot-laptop.png)](public/images/Screenshot-laptop.png) |
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <img src="public/images/Screenshot-laptop.png" alt="Laptop view" width="100%" /><br/>
-      <sub><b>Laptop</b></sub>
-    </td>
-    <td align="center" width="50%">
-      <img src="public/images/Screenshot-tablet.png" alt="Tablet view" width="100%" /><br/>
-      <sub><b>Tablet</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2">
-      <img src="public/images/Screenshot-mobile.png" alt="Mobile view" width="320" /><br/>
-      <sub><b>Mobile</b></sub>
-    </td>
-  </tr>
-</table>
+## Tech Stack
 
----
+**Framework:** Next.js 14 (App Router, RSC) · React 18 · TypeScript 5
+**UI:** Tailwind CSS 3.4 · Radix UI · shadcn/ui patterns · Lucide
+**Motion:** Framer Motion · Sonner · Unicorn Studio hero
+**Forms:** react-hook-form · Zod · libphonenumber-js
+**Data:** Firebase / Firestore (web SDK v12) · Firestore emulator for local + CI
+**Auth:** NextAuth v5 (credentials + Google)
+**i18n:** next-intl (SK · EN · RU · UK)
+**Notifications:** Resend · Twilio WhatsApp Content Templates
+**Ops:** Vercel · Vercel Cron · GitHub Actions
+**Testing:** Vitest · React Testing Library · Playwright · MSW
 
-## Tech stack
+## Architecture
 
-| Layer | Tools |
-|---|---|
-| **Framework** | [Next.js 14](https://nextjs.org/) (App Router, RSC) · [React 18](https://react.dev/) · [TypeScript 5](https://www.typescriptlang.org/) |
-| **Styling** | [Tailwind CSS](https://tailwindcss.com/) · [tailwind-merge](https://github.com/dcastil/tailwind-merge) · [class-variance-authority](https://cva.style/) · custom design tokens (aurora gradients, gold/purple glows) |
-| **UI primitives** | [Radix UI](https://www.radix-ui.com/) (Dialog · Select · Accordion · Checkbox · Label) · [shadcn/ui](https://ui.shadcn.com/) patterns · [Lucide](https://lucide.dev/) icons |
-| **Motion & UX** | [Framer Motion](https://www.framer.com/motion/) · [Sonner](https://sonner.emilkowal.ski/) toasts · [Unicorn Studio](https://www.unicorn.studio/) hero · custom Wheel date picker |
-| **Forms & validation** | [react-hook-form](https://react-hook-form.com/) · [Zod](https://zod.dev/) · [@hookform/resolvers](https://github.com/react-hook-form/resolvers) · [libphonenumber-js](https://gitlab.com/catamphetamine/libphonenumber-js) |
-| **Drag & drop** | [@dnd-kit/core](https://dndkit.com/) + sortable + utilities |
-| **Backend & data** | [Firebase / Firestore](https://firebase.google.com/) (web SDK v12) · [Firestore emulator](https://firebase.google.com/docs/emulator-suite) for local + CI |
-| **Auth** | [NextAuth v5 (Auth.js)](https://authjs.dev/) — credentials + Google |
-| **i18n** | [next-intl](https://next-intl-docs.vercel.app/) — SK · EN · RU · UK |
-| **Notifications** | [Resend](https://resend.com/) (email) · [Twilio WhatsApp Content Templates](https://www.twilio.com/docs/content) |
-| **PDF** | [jsPDF](https://github.com/parallax/jsPDF) + [jspdf-autotable](https://github.com/simonbengtsson/jsPDF-AutoTable) |
-| **Analytics** | [@vercel/analytics](https://vercel.com/docs/analytics) (gated by cookie consent) |
-| **Testing** | [Vitest](https://vitest.dev/) · [React Testing Library](https://testing-library.com/) · [Playwright](https://playwright.dev/) · [MSW](https://mswjs.io/) |
-| **Hosting & ops** | [Vercel](https://vercel.com/) (production) + [Vercel Cron](https://vercel.com/docs/cron-jobs) · [GitHub Actions](https://github.com/features/actions) CI |
+Next.js App Router serves the multilingual public site and the `/admin` back-office from the same origin. Firestore holds appointments, clients and the price catalog; the admin calendar subscribes to snapshot listeners for live updates. Vercel Cron hits two internal API routes daily, which fan out through a single notification channel to Resend and Twilio.
 
----
-
-## Project structure
-
+```mermaid
+flowchart LR
+  subgraph Client
+    Site[Public site]
+    Admin[Admin calendar]
+  end
+  subgraph Server[Next.js API]
+    Booking[/api/booking/]
+    Cron[/api/cron/]
+    Notify[notify-channels]
+  end
+  subgraph External
+    FS[(Firestore)]
+    Resend
+    Twilio[Twilio WhatsApp]
+  end
+  Site --> Booking
+  Admin --> FS
+  Booking --> FS
+  Booking --> Notify
+  Cron --> FS
+  Cron --> Notify
+  Notify --> Resend
+  Notify --> Twilio
 ```
+
+### Key decisions
+
+<details><summary><strong>Why Firestore instead of Postgres?</strong></summary>
+
+Staff keep the admin calendar open all day and expect new customer bookings to appear without refreshing. Firestore snapshot listeners give that for free. Reaching the same with Postgres would have meant standing up a WebSocket layer and a change-feed on top — infrastructure a two-therapist salon does not want to operate.
+</details>
+
+<details><summary><strong>Why Vercel Cron instead of a message queue?</strong></summary>
+
+Reminders are deterministic (2 days out, 1 day out, day-of) and each appointment carries its own send-log, so re-runs are idempotent. A daily 06:00 scan over Firestore is easier to reason about than QStash delays with dead-letter retries — and cheaper, because there is no burst load to smooth out.
+</details>
+
+## Project Structure
+
+```text
 luxe-salon/
 ├── app/
-│   ├── [locale]/                 # next-intl routed pages
-│   │   ├── page.tsx              # Entry portal (Massage | Depilation)
-│   │   ├── massage/              # Landing + /price + /booking
-│   │   ├── depilation/           # Landing + /price + /booking
-│   │   ├── booking/              # Confirm / cancel landings & action tokens
-│   │   ├── admin/                # Sign-in, calendar, price catalog, studio video
-│   │   ├── cookies/  privacy/    # Legal pages
-│   ├── api/
-│   │   ├── admin/                # Appointments + clients CRUD
-│   │   ├── auth/                 # NextAuth v5 routes
-│   │   ├── booking/              # Confirm / cancel (signed tokens)
-│   │   ├── cron/                 # send-reminders · finalize-statuses (Vercel Cron)
-│   │   ├── price-catalog/  services/  schedule/  send-confirmation/
-│   ├── sitemap.ts  robots.ts     # SEO
-│   └── layout.tsx                # Root layout (fonts, metadata, OG)
-├── components/                   # ~50 feature components
-│   ├── booking-flow/             # Multi-step booking (Service → Date → Time → Customer)
-│   ├── ui/                       # shadcn-style primitives
-│   └── Admin*.tsx                # Calendar, modals, drag/drop, analytics
-├── lib/                          # Domain logic (60+ modules)
-│   ├── firebase.ts               # Firestore client
-│   ├── book-appointment.ts       # End-to-end booking transaction
+│   ├── [locale]/                 # next-intl routes
+│   │   ├── massage/ depilation/  # Themed landings + /price + /booking
+│   │   ├── admin/                # Calendar, price editor, studio video
+│   │   └── booking/              # Confirm / cancel action landings
+│   └── api/
+│       ├── admin/                # Appointments + clients CRUD
+│       ├── booking/              # Signed confirm / cancel routes
+│       ├── cron/                 # send-reminders · finalize-statuses
+│       └── auth/                 # NextAuth v5
+├── components/                   # Feature components + shadcn primitives
+├── lib/                          # Domain logic (~60 modules)
+│   ├── book-appointment.ts       # Booking transaction
 │   ├── booking-store.ts          # Booking state machine
-│   ├── price-catalog-*.ts        # Catalog model, normalize, seed, sync
+│   ├── notify-channels.ts        # Resend + WhatsApp fan-out
 │   ├── whatsapp-admin-notify.ts  # Twilio integration
-│   ├── booking-action-token.ts   # HMAC-signed action links
-│   ├── seo.ts  social-seo.ts     # Metadata builders
-│   └── notify-channels.ts        # Resend + WhatsApp orchestration
-├── i18n/                         # next-intl routing + request config
-├── messages/                     # sk · en · ru · uk
-├── scripts/                      # tsx maintenance scripts (seed, rebuild, test)
+│   └── booking-action-token.ts   # HMAC-signed action links
+├── i18n/  messages/              # next-intl config + SK / EN / RU / UK
+├── scripts/                      # Seed, rebuild, smoke-test tsx scripts
 ├── tests/  e2e/                  # Vitest + Playwright
-├── firestore.rules  firestore.indexes.json
-├── vercel.json                   # Cron schedule
-└── .github/workflows/ci.yml      # typecheck+lint · unit (Firestore emulator) · Playwright smoke
+└── firestore.rules  vercel.json  # Security rules + cron schedule
 ```
 
----
+## API
 
-## Design system
-
-| Token | Value |
-|---|---|
-| **Background** | `nearBlack` `#0a0a0a` |
-| **Foreground** | `icyWhite` `#f8fafc` |
-| **Accent — aurora** | `white → yellow #fbbf24 → magenta #ec4899` |
-| **Accent — gold** | `soft #E8B800` / `glow #FFD633` |
-| **Accent — purple** | `soft #9333EA` / `glow #C084FC` |
-| **Typography** | `DM Serif Display` (headings) + `Outfit` (body) |
-| **Motion** | Aurora pulse, shimmer sweep, glow pulse, marquee, float, slide-up-fade |
-| **Effects** | Glass-morphism, neon borders, glow rings, soft-pulse CTAs |
-
-Defined in [tailwind.config.ts](tailwind.config.ts) and the safelist for runtime calendar colors.
-
----
-
-## Getting started
-
-```bash
-git clone git@github.com:EuvhenRight/Massage.git
-cd luxe-salon
-npm install
-cp .env.example .env.local       # then fill in the keys you need
-npm run dev                      # http://localhost:3000
+```http
+POST /api/booking/confirm
 ```
 
-### Run with the Firestore emulator
+Signed HMAC token in query. Returns the confirmed appointment, or `410` when the token is stale.
 
-```bash
-npm run emulators                # starts firestore on :8080
-# in a second shell
-npm run dev
+```http
+POST /api/booking/cancel
 ```
 
----
+Same signing scheme, idempotent — repeat calls return the already-cancelled state.
 
-## Environment variables
+```http
+POST /api/cron/send-reminders
+```
 
-The full reference lives in [.env.example](.env.example). The essentials:
+Auth by `CRON_SECRET`. Scans appointments due 2d / 1d / same-day and dispatches WhatsApp + email through `notify-channels`.
 
-| Variable | Purpose |
-|---|---|
-| `NEXT_PUBLIC_SITE_URL` | Canonical site URL — required in production for SEO, OG, sitemap |
-| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional Google Search Console verification |
-| `RESEND_API_KEY` · `RESEND_FROM_EMAIL` · `ADMIN_EMAIL` | Booking confirmation emails |
-| `TWILIO_ACCOUNT_SID` · `TWILIO_AUTH_TOKEN` · `TWILIO_MESSAGING_SERVICE_SID` | WhatsApp transport |
-| `TWILIO_CONTENT_SID_*` | Approved Content Template SIDs (booking new/cancelled/rescheduled, reminders, staff alerts) |
-| `ADMIN_WHATSAPP_PHONE` · `MASSAGE_MASTER_WHATSAPP_PHONE` · `DEPILATION_MASTER_WHATSAPP_PHONE` | E.164 numbers — routing depends on `bookingPlace` |
-| `BOOKING_ACTION_SECRET` | HMAC secret for signed confirm/cancel links — `openssl rand -hex 32` |
-| `CRON_SECRET` | Shared secret Vercel Cron attaches to scheduled calls |
-| `NEXT_PUBLIC_FACEBOOK_APP_ID` · `NEXT_PUBLIC_TWITTER_SITE` · `NEXT_PUBLIC_TWITTER_CREATOR` | Social link previews |
+```http
+POST /api/cron/finalize-statuses
+```
 
-> **Twilio sandbox:** every receiving handset must first send `join <sandbox-keyword>` from WhatsApp to the Twilio sandbox number. Production uses an approved WhatsApp sender — swap `TWILIO_MESSAGING_SERVICE_SID` accordingly.
+Auth by `CRON_SECRET`. Marks past appointments as `completed` or `no_show` based on the last known status.
 
----
+```http
+GET|POST|PATCH|DELETE /api/admin/appointments
+GET|POST|PATCH|DELETE /api/admin/clients
+```
 
-## Scripts
-
-| Command | What it does |
-|---|---|
-| `npm run dev` | Next.js dev server |
-| `npm run build` / `npm run start` | Production build / serve |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | `next lint` |
-| `npm test` / `npm run test:watch` / `npm run test:coverage` | Vitest |
-| `npm run test:e2e` / `test:e2e:headed` / `test:e2e:ui` | Playwright |
-| `npm run emulators` / `emulators:exec` | Firestore emulator |
-| `npm run seed:price-catalog` | Seed Firestore with the price catalog |
-| `npm run seed:studio-video` | Seed the studio-video doc |
-| `npm run rebuild-days` | Rebuild `/days` aggregates from `/appointments` |
-| `npm run test:whatsapp` | Smoke-test the Twilio admin alert |
-| `npm run test:notify` | Smoke-test the notification channel pipeline |
-| `npm run test:crud` | End-to-end CRUD against Firestore |
-
----
-
-## Continuous integration
-
-[.github/workflows/ci.yml](.github/workflows/ci.yml) runs three jobs on Node 22:
-
-1. **Static** — `typecheck` + `lint`
-2. **Unit + integration** — Vitest under the Firestore emulator (Java 17 / temurin); coverage uploaded as artifact
-3. **E2E smoke** — Playwright
-
-CI runs on `pull_request` and `push` to `master` / `main`.
-
----
+Admin CRUD, guarded by the NextAuth session.
 
 ## Deployment
 
-- **Production:** Vercel — `master` → auto-deploy. Cron jobs are configured in [vercel.json](vercel.json).
-- **Firebase:** Firestore (rules in [firestore.rules](firestore.rules), composite indexes in [firestore.indexes.json](firestore.indexes.json)).
-- **Domain:** [v2studio.sk](https://v2studio.sk)
+Vercel from `master`; production URL is [v2studio.sk](https://v2studio.sk). Two cron jobs (reminders at 06:00 UTC, status finalization at 03:00 UTC) are declared in [vercel.json](vercel.json); Firestore rules and composite indexes ship from the repo root.
 
----
+## Security & Privacy
 
-## Documentation
+- Confirm and cancel links carry an HMAC signature over `{appointmentId, action, exp}` — no session cookie, safe to tap from WhatsApp on any device.
+- Firestore rules restrict admin collections to the authenticated admin role; public reads are limited to the price catalog and published studio content.
+- Twilio Content SIDs point to approved templates; customer PII never lands in variables outside what the template requires.
+- `@vercel/analytics` is gated behind a granular cookie consent banner (functional / analytics / marketing).
+- WhatsApp sandbox requires each recipient handset to opt in with `join <keyword>` before receiving reminders in dev.
 
-Operational and staff-facing docs live under [docs/](docs/):
+## Roadmap
 
-- [ADMIN_MANUAL.md](docs/ADMIN_MANUAL.md) — staff guide (mirrored in the in-app `/admin/help` page)
-- [ADMIN_AUTH_SETUP.md](docs/ADMIN_AUTH_SETUP.md) — NextAuth provisioning
-- [FIRESTORE_INDEXES.md](docs/FIRESTORE_INDEXES.md) — composite index reference
-- [TWILIO_TEMPLATES.md](docs/TWILIO_TEMPLATES.md) — WhatsApp Content Template authoring guide
-- [TESTING.md](docs/TESTING.md) — local test workflow
+**Done:** Quadrilingual public site · admin drag-and-drop calendar · WhatsApp + Resend notification pipeline · Vercel Cron reminders and status finalization · Firestore emulator CI (typecheck + Vitest + Playwright smoke).
 
----
+**Next:** TODO — confirm with author.
 
-## Accessibility
+**Later:** TODO — confirm with author.
 
-- Semantic HTML (`<main>`, `<section>`, `<nav>`, `<article>`)
-- ARIA labels on all interactive elements
-- Visible focus states across buttons, links and form fields
-- WCAG AA contrast on body text and CTAs
-- `prefers-reduced-motion` honored where it does not break iOS Low-Power-Mode panels
+## FAQ
 
----
+<details><summary><strong>Can customers cancel a booking themselves?</strong></summary>
 
-## Contact
+Yes. Every confirmation email and WhatsApp reminder carries a signed cancel link that flips the appointment status on tap — no login, no support ticket.
+</details>
 
-| | |
-|---|---|
-| **Studio** | V2studio · Epilroom |
-| **Address** | Krížna 36, 811 07 Bratislava, Slovakia |
-| **Phone** | [+421 95 213 32 58](tel:+421952133258) |
-| **Email** | [V2studiosk@gmail.com](mailto:V2studiosk@gmail.com) |
-| **WhatsApp** | [wa.me/421952133258](https://wa.me/421952133258) |
-| **Instagram** | [@epilroom_bratislava](https://www.instagram.com/epilroom_bratislava) |
-| **Facebook** | [Epilroom Bratislava](https://www.facebook.com/people/Epilroom-Bratislava/61567948520222/) |
-| **Maps** | [Google Maps](https://maps.app.goo.gl/4uaHzXpmc6QCWfH79) |
+<details><summary><strong>Why WhatsApp templates instead of freeform messages?</strong></summary>
 
----
+WhatsApp only allows freeform business-to-customer messages inside a 24-hour session that the customer initiated. Reminders fire at 06:00 outside any session, so they have to use pre-approved Twilio Content Templates.
+</details>
+
+<details><summary><strong>How does routing between the massage and depilation masters work?</strong></summary>
+
+Each service belongs to a `bookingPlace`. The notification channel reads that field and picks between `MASSAGE_MASTER_WHATSAPP_PHONE` and `DEPILATION_MASTER_WHATSAPP_PHONE` — the customer message always goes to the customer, the staff alert to the right therapist.
+</details>
+
+## Acknowledgements
+
+Built on the work of [Next.js](https://nextjs.org/) · [Radix UI](https://www.radix-ui.com/) · [shadcn/ui](https://ui.shadcn.com/) · [next-intl](https://next-intl-docs.vercel.app/) · [Auth.js](https://authjs.dev/) · [dnd kit](https://dndkit.com/) · [Firebase](https://firebase.google.com/) · [Resend](https://resend.com/) · [Twilio Content Templates](https://www.twilio.com/docs/content). Thanks to the V2studio therapists for road-testing the admin flow daily.
+
+## Author
+
+Built by [@EuvhenRight](https://github.com/EuvhenRight) — solo full-stack developer. Design, frontend, backend, Firestore modeling, the notification pipeline and staff training were all done in-house.
+
+**GitHub:** [@EuvhenRight](https://github.com/EuvhenRight) · **Email:** [ugnivenko.ea@gmail.com](mailto:ugnivenko.ea@gmail.com)
 
 ## License
 
-[MIT](LICENSE) · Copyright (c) 2026 V2studio · Built with ❤️ by [@EuvhenRight](https://github.com/EuvhenRight)
+[MIT](LICENSE) © [@EuvhenRight](https://github.com/EuvhenRight) · built for V2studio · Epilroom, Bratislava.
