@@ -54,7 +54,10 @@
       "Bash(npm --version)",
       "Bash(docker --version)",
       "Bash(npm view *)",
-      "Bash(firebase --version)"
+      "Bash(firebase --version)",
+      "Bash(sips -g pixelHeight -g pixelWidth /Users/yevhenright/Documents/luxe-salon/public/images/Gemini_yellow.png)",
+      "Bash(sips -Z 630 --padToHeightWidth 630 1200 --padColor FFFFFF -s format jpeg -s formatOptions 90 public/images/Gemini_yellow.png --out public/images/social-og-1200x630.jpg)",
+      "Bash(sips -g pixelHeight -g pixelWidth public/images/social-og-1200x630.jpg)"
     ],
     "additionalDirectories": [
       "/Users/yevhenright/Documents/luxe-salon/.next/types/app/[locale]/admin/clients"

@@ -8,25 +8,22 @@ import {
   getTwitterSiteHandle,
 } from "@/lib/social-seo";
 
-/** 1200×630 crops for Open Graph / Twitter / link previews (JPEG). */
-function ogUnsplash(photoId: string): string {
-  return `https://images.unsplash.com/${photoId}?w=1200&h=630&fit=crop&q=80`;
-}
+/**
+ * Shared branded 1200×630 social preview.
+ *
+ * One image across all pages so Facebook, LinkedIn, X, WhatsApp, and Telegram
+ * render an identical preview. LinkedIn requires ≥1200×627 with 1.91:1 aspect
+ * for its large card; the smaller portrait `Gemini_yellow.png` would degrade
+ * to a square thumbnail there.
+ */
+const BRANDED_SOCIAL_IMAGE = "/images/social-og-1200x630.jpg";
 
-/** Shared branded social image for massage / depilation previews. */
-const BRANDED_SOCIAL_IMAGE = "/images/Gemini_yellow.png";
-
-/** Home: neutral wellness / spa — works for massage + depilation portal. */
-export const OG_IMAGE_HOME = ogUnsplash("photo-1519494026892-80bbd2d6fd0d");
-
-/** Massage landing, massage booking & price. */
+export const OG_IMAGE_HOME = BRANDED_SOCIAL_IMAGE;
 export const OG_IMAGE_MASSAGE = BRANDED_SOCIAL_IMAGE;
-
-/** Depilation landing, booking & price — matches portal / depilation mood. */
 export const OG_IMAGE_DEPILATION = BRANDED_SOCIAL_IMAGE;
 
-/** @deprecated Use OG_IMAGE_HOME — kept for JSON-LD and imports. */
-export const DEFAULT_OG_IMAGE = OG_IMAGE_HOME;
+/** JSON-LD `image` field for BeautySalon entity. */
+export const DEFAULT_OG_IMAGE = BRANDED_SOCIAL_IMAGE;
 
 export type SeoPageKey =
   | "home"
