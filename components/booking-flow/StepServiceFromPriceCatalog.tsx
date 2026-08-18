@@ -19,7 +19,7 @@ import {
 } from '@/types/price-catalog'
 import { clsx } from 'clsx'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ChevronDown } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { getEffectivePriceForBooking } from '@/lib/price-catalog-price-display'
 import {
 	bookingItemFromCatalogItem,
@@ -39,11 +39,6 @@ import {
 	useState,
 } from 'react'
 import { useBookingFlow } from './BookingFlowContext'
-import {
-	BookingCartList,
-	BookingCartSummaryLine,
-	BookingCartTotals,
-} from './BookingCart'
 import PublicDatePicker from './PublicDatePicker'
 import TbdBookingRecap from './TbdBookingRecap'
 import TimeSlotPicker from './TimeSlotPicker'
@@ -218,7 +213,6 @@ const StepServiceFromPriceCatalog = forwardRef<
 		removeItem,
 		hasItem,
 		canAddItem,
-		priceTotal,
 		setCatalogSex,
 		setStep,
 		date,
@@ -282,8 +276,6 @@ const StepServiceFromPriceCatalog = forwardRef<
 	)
 	const [expandedSectionDescriptions, setExpandedSectionDescriptions] =
 		useState<Set<string>>(new Set())
-	/** Cart strip starts collapsed — it is a status line first, an editor second. */
-	const [cartOpen, setCartOpen] = useState(false)
 
 	const year = month.getFullYear()
 	const monthNum = month.getMonth()
@@ -714,59 +706,6 @@ const StepServiceFromPriceCatalog = forwardRef<
 						items list = only scrollable area (flex-1 overflow-y-auto). */}
 			{step === 1 && (
 				<div className='flex flex-col flex-1 min-h-0'>
-					{/* Cart strip — the answer to "what have I picked so far?". Collapsed
-					    it is one line; expanded it lists every service with a remove
-					    button. Sits above the catalog so it is the first thing seen
-					    after adding a service, on phones especially. */}
-					{items.length > 0 && (
-						<div className='flex-shrink-0 mb-3 rounded-xl border border-white/12 bg-white/[0.04] overflow-hidden'>
-							<button
-								type='button'
-								onClick={() => setCartOpen(o => !o)}
-								aria-expanded={cartOpen}
-								className='w-full flex items-center justify-between gap-3 px-3 py-2.5 min-h-[44px] text-left hover:bg-white/[0.03] active:bg-white/[0.06] transition-colors touch-manipulation'
-							>
-								<span className='flex items-center gap-2 min-w-0 text-sm text-icyWhite'>
-									<span
-										className={`shrink-0 inline-flex items-center justify-center size-5 rounded-full text-[11px] font-bold ${accent.pillActive}`}
-									>
-										{items.length}
-									</span>
-									<BookingCartSummaryLine
-										items={items}
-										durationMinutes={durationMinutes}
-									/>
-								</span>
-								<ChevronDown
-									className={`size-4 shrink-0 text-icyWhite/50 transition-transform ${
-										cartOpen ? 'rotate-180' : ''
-									}`}
-									aria-hidden
-								/>
-							</button>
-							<AnimatePresence initial={false}>
-								{cartOpen && (
-									<motion.div
-										initial={{ height: 0, opacity: 0 }}
-										animate={{ height: 'auto', opacity: 1 }}
-										exit={{ height: 0, opacity: 0 }}
-										transition={{ duration: 0.18, ease: 'easeOut' }}
-										className='overflow-hidden'
-									>
-										<div className='px-3 pb-3 space-y-3 max-h-[38vh] overflow-y-auto'>
-											<BookingCartList items={items} onRemove={removeItem} />
-											<BookingCartTotals
-												items={items}
-												durationMinutes={durationMinutes}
-												priceTotal={priceTotal}
-												className='pt-1 border-t border-white/10'
-											/>
-										</div>
-									</motion.div>
-								)}
-							</AnimatePresence>
-						</div>
-					)}
 
 					{/* Breadcrumb of the user's prior picks. Only segments where the
 					     user had a real choice are shown; tapping a segment jumps back
