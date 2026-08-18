@@ -1,11 +1,16 @@
 import * as fs from "fs";
 import * as path from "path";
 import { chromium } from "@playwright/test";
+import { seedEmulator } from "./helpers/seed-emulator";
 
 /**
  * Authenticate once and save session for reuse in tests.
  */
 async function globalSetup() {
+  // Under the emulator the database starts empty — put the working hours and
+  // price catalog the specs read in place before any test runs.
+  await seedEmulator();
+
   const authDir = path.join(__dirname, ".auth");
   fs.mkdirSync(authDir, { recursive: true });
   const authPath = path.join(authDir, "admin.json");

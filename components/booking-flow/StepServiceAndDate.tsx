@@ -1,30 +1,37 @@
 'use client'
 
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select'
 import type { OccupiedSlot } from '@/lib/availability-firestore'
 import { fetchMergedPublicOccupiedSlots } from '@/lib/booking-occupied-slots'
 import { getBookingAccent } from '@/lib/booking-accent'
+import {
+	bookingItemFromServiceRow,
+	MAX_BOOKING_ITEMS,
+} from '@/lib/booking-items'
 import type { Place } from '@/lib/places'
 import { getSchedule } from '@/lib/schedule-firestore'
+import { Check } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useBookingFlow } from './BookingFlowContext'
+import { BookingCartTotals } from './BookingCart'
 import PublicDatePicker from './PublicDatePicker'
 import TbdBookingRecap from './TbdBookingRecap'
 import TimeSlotPicker from './TimeSlotPicker'
 
 interface StepServiceAndDateProps {
 	services: {
+		id?: string
 		title: string
 		durationMinutes?: number
 		bookingGranularity?: 'time' | 'day' | 'tbd'
 		bookingDayCount?: number
+		scheduleTbdMessage?: string
+		scheduleTbdAdminNote?: string
+		titleSk?: string
+		titleEn?: string
+		titleRu?: string
+		titleUk?: string
 	}[]
 	place?: Place
 }
@@ -36,10 +43,16 @@ export default function StepServiceAndDate({
 	const accent = useMemo(() => getBookingAccent(place), [place])
 	const t = useTranslations('booking')
 	const tCommon = useTranslations('common')
+	const tPrice = useTranslations('price')
 	const {
 		step,
 		service,
-		setService,
+		items,
+		addItem,
+		removeItem,
+		hasItem,
+		canAddItem,
+		priceTotal,
 		date,
 		setDate,
 		setTime,
@@ -75,6 +88,32 @@ export default function StepServiceAndDate({
 			setDate(d)
 		},
 		[setDate],
+	)
+
+	/** Same add/remove rules as the catalog step, including the TBD-mix refusal. */
+	const handleToggleService = useCallback(
+		(row: StepServiceAndDateProps['services'][number]) => {
+			const candidate = bookingItemFromServiceRow(row)
+			if (hasItem(candidate.key)) {
+				removeItem(candidate.key)
+				return
+			}
+			const check = canAddItem(candidate)
+			if (!check.ok) {
+				if (check.reason === 'max-items') {
+					toast.error(t('cartMaxItems', { count: MAX_BOOKING_ITEMS }))
+				} else if (check.reason === 'tbd-into-timed') {
+					toast.error(t('cartTbdCannotJoin'))
+				} else if (check.reason === 'timed-into-tbd') {
+					toast.error(t('cartCannotJoinTbd'))
+				} else if (check.reason === 'tbd-into-tbd') {
+					toast.error(t('cartTbdOnlyOne'))
+				}
+				return
+			}
+			addItem(candidate)
+		},
+		[addItem, removeItem, hasItem, canAddItem, t],
 	)
 
 	const year = month.getFullYear()
@@ -127,33 +166,61 @@ export default function StepServiceAndDate({
 						<label className='block text-sm font-medium text-icyWhite/90'>
 							{tCommon('services')}
 						</label>
-						<Select value={service} onValueChange={setService}>
-							<SelectTrigger
-								className={`h-11 bg-white/5 border-0 ${accent.inputBorder} text-icyWhite hover:bg-white/[0.07] ${accent.selectTriggerRing}`}
-							>
-								<SelectValue placeholder={t('selectService')} />
-							</SelectTrigger>
-							<SelectContent>
-								{services.map(s => (
-									<SelectItem key={s.title} value={s.title}>
-										{s.title}
-										{s.bookingGranularity === 'tbd' ||
-										s.bookingGranularity === 'day' ? (
-											<span className='text-icyWhite/55 ml-1'>
-												({t('scheduleTbdBookingBadge')}) ·{' '}
-												{t('allDayBadge', {
-													count: s.bookingDayCount ?? 1,
-												})}
+						{/* Checkbox list rather than a dropdown: a booking can hold several
+						    services, and a single-select control would hide that entirely. */}
+						<ul className='space-y-2'>
+							{services.map(s => {
+								const candidate = bookingItemFromServiceRow(s)
+								const isSelected = hasItem(candidate.key)
+								const isTbd =
+									s.bookingGranularity === 'tbd' || s.bookingGranularity === 'day'
+								return (
+									<li key={candidate.key}>
+										<button
+											type='button'
+											aria-pressed={isSelected}
+											onClick={() => handleToggleService(s)}
+											className={`w-full flex items-center gap-3 px-3 py-3 min-h-[48px] rounded-xl border text-left transition-all touch-manipulation active:scale-[0.99] ${
+												isSelected
+													? accent.itemSelected
+													: 'border-white/10 bg-white/5 hover:border-white/20 active:border-white/25'
+											}`}
+										>
+											<span
+												className={`shrink-0 size-4 rounded-[5px] border flex items-center justify-center transition-colors ${
+													isSelected
+														? 'bg-icyWhite border-icyWhite text-nearBlack'
+														: 'border-white/25 text-transparent'
+												}`}
+												aria-hidden
+											>
+												<Check className='size-3' strokeWidth={3} />
 											</span>
-										) : s.durationMinutes ? (
-											<span className='text-icyWhite/55 ml-1'>
-												({s.durationMinutes} min)
+											<span className='flex-1 min-w-0'>
+												<span className='block text-sm font-medium text-icyWhite truncate'>
+													{s.title}
+												</span>
+												<span className='block text-xs text-icyWhite/55 mt-0.5'>
+													{isTbd
+														? `${t('scheduleTbdBookingBadge')} · ${t('allDayBadge', {
+																count: s.bookingDayCount ?? 1,
+															})}`
+														: `${s.durationMinutes ?? 60} ${tPrice('min')}`}
+												</span>
 											</span>
-										) : null}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+										</button>
+									</li>
+								)
+							})}
+						</ul>
+						{items.length > 0 && (
+							<BookingCartTotals
+								items={items}
+								durationMinutes={durationMinutes}
+								priceTotal={priceTotal}
+								className='pt-3 mt-1 border-t border-white/10'
+							/>
+						)}
 					</div>
 				)}
 

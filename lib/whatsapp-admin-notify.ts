@@ -12,12 +12,13 @@
  */
 
 import { parseWhatsappE164 } from './phone-e164'
-import { splitCatalogServiceTitle } from './split-catalog-service-title'
+import { flattenServiceTitlesForWhatsApp } from './split-catalog-service-title'
 
-/** WhatsApp messages show only the booked line, not the full catalog path —
- *  e.g. "Cosmetology › Hygienic cleaning › Body › Back" → "Back". */
+/** WhatsApp messages show only the booked lines, not the full catalog path —
+ *  e.g. "Cosmetology › Hygienic cleaning › Body › Back" → "Back", and a
+ *  multi-service booking → "Back, Legs, Arms". */
 function serviceLineTitle(service: string): string {
-	return splitCatalogServiceTitle(service).lineTitle || service
+	return flattenServiceTitlesForWhatsApp(service)
 }
 
 export type WhatsAppNotifyResult = 'skipped' | 'sent' | 'failed'

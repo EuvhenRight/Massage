@@ -9,6 +9,32 @@ import { test, expect } from "@playwright/test";
  * Or:  npx playwright test e2e/drag-reschedule.spec.ts
  */
 test.describe("Admin calendar drag reschedule", () => {
+  /**
+   * Appointments this spec seeded, cleared after every test.
+   *
+   * These specs write to the shared Firestore, not an emulator. Each seeded
+   * row is 60 minutes and the 15-minute prep buffer blocks the hour on either
+   * side, so five leftovers saturate all ten candidate hours the drag test
+   * tries — after which it failed with "All seed slots occupied (OVERLAP)"
+   * until the calendar date rolled over. Cleaning up keeps the spec repeatable.
+   */
+  const seededAppointmentIds: string[] = [];
+
+  test.afterEach(async ({ request }) => {
+    const secret = process.env.E2E_SECRET;
+    const ids = seededAppointmentIds.splice(0, seededAppointmentIds.length);
+    if (!secret) return;
+    for (const id of ids) {
+      await request
+        .post("/api/e2e/delete-appointment", {
+          headers: { "x-e2e-secret": secret },
+          data: { appointmentId: id },
+        })
+        // Never let cleanup mask the real assertion failure.
+        .catch(() => undefined);
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
     const email = process.env.E2E_ADMIN_EMAIL ?? process.env.AUTH_ADMIN_EMAIL;
     const password = process.env.E2E_ADMIN_PASSWORD ?? process.env.AUTH_ADMIN_PASSWORD;
@@ -38,22 +64,42 @@ test.describe("Admin calendar drag reschedule", () => {
       test.skip(true, "Set E2E_SECRET in .env.local to auto-seed an appointment.");
       return;
     }
-    // The booking calendar grid renders only the current visible week —
-    // appointments outside that range never appear in the DOM and the
-    // visibility assertion below fails. So we must seed inside the
-    // currently-visible window. Today (or tomorrow when it's past 18h)
-    // is what the calendar opens on by default.
+    // The booking calendar grid renders only the current visible week, and
+    // within it only the salon's working hours. Both the seed slot and the
+    // move target must therefore be cells the grid actually draws — so read
+    // them out of the DOM instead of guessing. A hardcoded hour list used to
+    // start at 08:00, which is before opening: the API happily booked it
+    // (admin bookings ignore working hours) but the grid never rendered that
+    // row, so the final assertion looked for a cell that cannot exist.
+    await page.goto("/ru/admin/massage", { waitUntil: "load" });
+    await expect(page.getByRole("heading", { name: /appointments|rezervácie|записи/i })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator("[data-cell-id]").first()).toBeVisible({ timeout: 15000 });
+
+    /** Cell ids the grid renders for one day, ascending. Format: `YYYYMMDD-HHmm`. */
+    const renderedCellIds = async (datePart: string): Promise<string[]> => {
+      const ids = await page
+        .locator(`[data-cell-id^="${datePart}-"]`)
+        .evaluateAll(nodes =>
+          nodes.map(n => (n as HTMLElement).dataset.cellId ?? "")
+        );
+      return Array.from(new Set(ids.filter(Boolean))).sort();
+    };
+
     const t = new Date();
     const dayOffset = t.getHours() >= 18 ? 1 : 0;
     t.setDate(t.getDate() + dayOffset);
     const dateStr = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
+    const sourceDatePart = dateStr.replace(/-/g, "");
+
+    const sourceCells = await renderedCellIds(sourceDatePart);
+    expect(
+      sourceCells.length,
+      `Calendar rendered no cells for ${dateStr} — is the salon open that day?`
+    ).toBeGreaterThan(0);
+
     let appointmentId: string | undefined;
-    let startTime = "10:00";
-    // Broader hour list so accumulated E2E rows from prior runs are less
-    // likely to saturate every working slot. When even this fills up, run
-    // `npm run delete-appointments` to clear test data.
-    for (const hour of [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]) {
-      startTime = `${String(hour).padStart(2, "0")}:00`;
+    for (const cellId of sourceCells) {
+      const startTime = `${cellId.slice(9, 11)}:${cellId.slice(11, 13)}`;
       const seedRes = await request.post("/api/e2e/seed-appointment", {
         headers: { "x-e2e-secret": secret },
         data: { date: dateStr, startTime, place: "massage" },
@@ -61,16 +107,16 @@ test.describe("Admin calendar drag reschedule", () => {
       const seedData = await seedRes.json().catch(() => ({}));
       if (seedData.id) {
         appointmentId = seedData.id;
+        seededAppointmentIds.push(seedData.id);
         break;
       }
       if (seedData.error !== "OVERLAP") {
         expect(seedData.id, `Seed failed: ${JSON.stringify(seedData)}`).toBeDefined();
       }
     }
-    expect(appointmentId, "All seed slots occupied (OVERLAP). Try deleting test appointments.").toBeDefined();
-    await page.waitForTimeout(800);
+    expect(appointmentId, "Every rendered slot is occupied — clear test appointments.").toBeDefined();
 
-    // Target: another day in the same visible week
+    // Target: another rendered day in the same visible week.
     const sourceDay = new Date(dateStr + "T12:00:00");
     const dayOfWeek = sourceDay.getDay();
     const dayDelta = dayOfWeek === 6 ? -1 : 1;
@@ -80,10 +126,16 @@ test.describe("Admin calendar drag reschedule", () => {
     const td = String(sourceDay.getDate()).padStart(2, "0");
     const datePart = `${ty}${tm}${td}`;
 
+    const targetCells = await renderedCellIds(datePart);
+    expect(
+      targetCells.length,
+      `Calendar rendered no cells for ${ty}-${tm}-${td} — is the salon open that day?`
+    ).toBeGreaterThan(0);
+
     let moveSucceeded = false;
     let newCellId = "";
-    for (const hour of [8, 9, 10, 11, 12, 13, 14, 15, 16, 17]) {
-      newCellId = `${datePart}-${String(hour).padStart(2, "0")}00`;
+    for (const cellId of targetCells) {
+      newCellId = cellId;
       const moveRes = await request.post("/api/e2e/move-appointment", {
         headers: { "x-e2e-secret": secret },
         data: { appointmentId, newCellId },
@@ -97,7 +149,7 @@ test.describe("Admin calendar drag reschedule", () => {
         expect(moveRes.ok(), `Move failed: ${JSON.stringify(moveData)}`).toBe(true);
       }
     }
-    expect(moveSucceeded, "All target slots occupied (OVERLAP). Try deleting test appointments.").toBe(true);
+    expect(moveSucceeded, "Every rendered target slot is occupied — clear test appointments.").toBe(true);
 
     await page.goto("/ru/admin/massage", { waitUntil: "load" });
     await expect(page.getByRole("heading", { name: /appointments|rezervácie|записи/i })).toBeVisible({ timeout: 15000 });

@@ -293,17 +293,17 @@ export default function MassagePage() {
 							{t('hero')}
 						</p>
 
-						<div className='mt-4 flex flex-wrap justify-center gap-3'>
+						<div className='mt-4 flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-3 w-full max-w-[17rem] sm:max-w-none mx-auto'>
 							<Link
 								href={`/${locale}/massage/booking`}
-								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-glow text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-[background-color,border-color,color,box-shadow] duration-300'
+								className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-glow text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-[background-color,border-color,color,box-shadow] duration-300'
 							>
 								{t('heroBookButton')}
 								<ChevronRight className='w-4 h-4' />
 							</Link>
 							<a
 								href='#services'
-								className='inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/15 text-icyWhite/70 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/40 hover:text-gold-glow transition-[background-color,border-color,color,box-shadow] duration-300'
+								className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/15 text-icyWhite/70 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/40 hover:text-gold-glow transition-[background-color,border-color,color,box-shadow] duration-300'
 							>
 								{t('heroPricesButton')}
 							</a>

@@ -25,9 +25,11 @@ import { Timestamp, doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import {
 	bookAppointment,
+	bookAppointmentAdmin,
 	bookScheduleTbdAppointment,
 	deleteAppointment,
 	getAppointment,
+	updateAppointment,
 	updateAppointmentTime,
 } from '@/lib/book-appointment'
 import { getClient } from '@/lib/clients-firestore'
@@ -319,6 +321,262 @@ describe.skipIf(!emulatorAvailable())('book-appointment (emulator)', () => {
 			expect(end.getTime() - start.getTime()).toBe(45 * 60 * 1000)
 			expect(start.getHours()).toBe(13)
 			expect(start.getMinutes()).toBe(30)
+		})
+	})
+
+	describe('multi-service booking', () => {
+		it('stores every line and reserves one contiguous block for the sum', async () => {
+			const result = await bookAppointment(
+				{
+					date: A_WORKING_DAY,
+					startTime: '10:00',
+					// 45 + 30 = the block the customer actually occupies.
+					durationMinutes: 75,
+					service: 'Legs + Arms',
+					items: [
+						{
+							key: 'legs',
+							title: 'Depilation › Legs',
+							durationMinutes: 45,
+							granularity: 'time',
+							price: 30,
+						},
+						{
+							key: 'arms',
+							title: 'Depilation › Arms',
+							durationMinutes: 30,
+							granularity: 'time',
+							price: 20,
+						},
+					],
+					fullName: 'Andrea Nováková',
+					email: 'andrea@example.test',
+					phone: '+421912345678',
+				},
+				'massage',
+			)
+
+			const snap = await getDoc(doc(db, 'appointments', result.id))
+			const data = snap.data() as {
+				startTime: Timestamp
+				endTime: Timestamp
+				service: string
+				items: { key: string; title: string; durationMinutes: number }[]
+			}
+
+			expect(data.items).toHaveLength(2)
+			expect(data.items.map(i => i.key)).toEqual(['legs', 'arms'])
+			// The denormalized string still carries the whole booking for legacy readers.
+			expect(data.service).toBe('Legs + Arms')
+
+			const start = data.startTime.toDate()
+			const end = data.endTime.toDate()
+			expect(end.getTime() - start.getTime()).toBe(75 * 60 * 1000)
+
+			// One slot row, not one per service — the calendar shows a single visit.
+			const daySnap = await getDoc(doc(db, 'days', `massage_${A_WORKING_DAY}`))
+			const slots = (daySnap.data()?.slots ?? []) as { id: string }[]
+			expect(slots).toHaveLength(1)
+			expect(slots[0]!.id).toBe(result.id)
+		})
+
+		it('blocks the whole summed block against a later booking', async () => {
+			await bookAppointment(
+				{
+					date: A_WORKING_DAY,
+					startTime: '10:00',
+					durationMinutes: 75,
+					service: 'Legs + Arms',
+					items: [
+						{ key: 'legs', title: 'Legs', durationMinutes: 45, granularity: 'time' },
+						{ key: 'arms', title: 'Arms', durationMinutes: 30, granularity: 'time' },
+					],
+					fullName: 'Andrea Nováková',
+					email: 'andrea@example.test',
+					phone: '+421912345678',
+				},
+				'massage',
+			)
+
+			// 11:00 sits inside 10:00–11:15; a single-service booking would have
+			// ended at 10:45 and left this free, so this asserts the sum is honoured.
+			await expect(
+				bookAppointment(
+					{
+						date: A_WORKING_DAY,
+						startTime: '11:00',
+						durationMinutes: 30,
+						service: 'Other',
+						fullName: 'Iveta Kováčová',
+						email: 'iveta@example.test',
+						phone: '+421911222333',
+					},
+					'massage',
+				),
+			).rejects.toThrow('OVERLAP')
+		})
+
+		it('getAppointment reads items back', async () => {
+			const result = await bookAppointment(
+				{
+					date: A_WORKING_DAY,
+					startTime: '14:00',
+					durationMinutes: 75,
+					service: 'Legs + Arms',
+					items: [
+						{ key: 'legs', title: 'Legs', durationMinutes: 45, granularity: 'time' },
+						{ key: 'arms', title: 'Arms', durationMinutes: 30, granularity: 'time' },
+					],
+					fullName: 'Andrea Nováková',
+					email: 'andrea@example.test',
+					phone: '+421912345678',
+				},
+				'massage',
+			)
+			const read = await getAppointment(result.id)
+			expect(read?.items).toHaveLength(2)
+		})
+
+		it('omits the items field entirely for a single-service booking', async () => {
+			const result = await bookAppointment(
+				{
+					date: A_WORKING_DAY,
+					startTime: '09:00',
+					durationMinutes: 30,
+					service: 'Legs',
+					fullName: 'Andrea Nováková',
+					email: 'andrea@example.test',
+					phone: '+421912345678',
+				},
+				'massage',
+			)
+			const snap = await getDoc(doc(db, 'appointments', result.id))
+			expect(snap.data()).not.toHaveProperty('items')
+		})
+	})
+
+	describe('admin multi-service booking', () => {
+		it('reserves one contiguous block with NO gap between services', async () => {
+			const items = [
+				{ key: 'a', title: 'Massage', durationMinutes: 45, granularity: 'time' as const },
+				{ key: 'b', title: 'Waxing', durationMinutes: 30, granularity: 'time' as const },
+				{ key: 'c', title: 'Piercing', durationMinutes: 20, granularity: 'time' as const },
+			]
+			const result = await bookAppointmentAdmin(
+				{
+					date: A_WORKING_DAY,
+					startTime: '10:00',
+					durationMinutes: 45 + 30 + 20,
+					service: 'Massage + Waxing + Piercing',
+					items,
+					fullName: 'Admin Walk-in',
+				},
+				'massage',
+			)
+
+			const snap = await getDoc(doc(db, 'appointments', result.id))
+			const data = snap.data() as {
+				startTime: Timestamp
+				endTime: Timestamp
+				items: { durationMinutes: number }[]
+			}
+			const start = data.startTime.toDate()
+			const end = data.endTime.toDate()
+
+			// The block is exactly the sum — no padding, no break inserted.
+			const blockMinutes = (end.getTime() - start.getTime()) / 60000
+			const sumOfServices = data.items.reduce((a, i) => a + i.durationMinutes, 0)
+			expect(sumOfServices).toBe(95)
+			expect(blockMinutes).toBe(sumOfServices)
+			expect(start.getHours()).toBe(10)
+			expect(end.getHours()).toBe(11)
+			expect(end.getMinutes()).toBe(35)
+
+			// One slot row: the calendar shows a single uninterrupted visit.
+			const daySnap = await getDoc(doc(db, 'days', `massage_${A_WORKING_DAY}`))
+			expect((daySnap.data()?.slots ?? []).length).toBe(1)
+		})
+
+		it('keeps a duration beyond the old 240-minute cap intact', async () => {
+			// Six 45-minute services = 270 min. The previous admin clamp cut this
+			// to 240, leaving the calendar 30 minutes shorter than the real visit.
+			const items = Array.from({ length: 6 }, (_, i) => ({
+				key: `s${i}`,
+				title: `Service ${i}`,
+				durationMinutes: 45,
+				granularity: 'time' as const,
+			}))
+			const result = await bookAppointmentAdmin(
+				{
+					date: A_WORKING_DAY,
+					startTime: '09:00',
+					durationMinutes: 270,
+					service: items.map(i => i.title).join(' + '),
+					items,
+				},
+				'massage',
+			)
+			const snap = await getDoc(doc(db, 'appointments', result.id))
+			const data = snap.data() as { startTime: Timestamp; endTime: Timestamp }
+			const minutes =
+				(data.endTime.toDate().getTime() - data.startTime.toDate().getTime()) / 60000
+			expect(minutes).toBe(270)
+		})
+
+		it('blocks the full summed span against the next booking', async () => {
+			await bookAppointmentAdmin(
+				{
+					date: A_WORKING_DAY,
+					startTime: '10:00',
+					durationMinutes: 95,
+					service: 'Massage + Waxing + Piercing',
+					items: [
+						{ key: 'a', title: 'Massage', durationMinutes: 45, granularity: 'time' },
+						{ key: 'b', title: 'Waxing', durationMinutes: 30, granularity: 'time' },
+						{ key: 'c', title: 'Piercing', durationMinutes: 20, granularity: 'time' },
+					],
+				},
+				'massage',
+			)
+			// 11:00 falls inside 10:00–11:35. A single 45-min service would have
+			// ended at 10:45 and left this free.
+			await expect(
+				bookAppointment(
+					{
+						date: A_WORKING_DAY,
+						startTime: '11:00',
+						durationMinutes: 30,
+						service: 'Other',
+						fullName: 'Iveta Kováčová',
+						email: 'iveta@example.test',
+						phone: '+421911222333',
+					},
+					'massage',
+				),
+			).rejects.toThrow('OVERLAP')
+		})
+
+		it('drops a stale breakdown when an edit reduces it to one service', async () => {
+			const created = await bookAppointmentAdmin(
+				{
+					date: A_WORKING_DAY,
+					startTime: '10:00',
+					durationMinutes: 75,
+					service: 'Massage + Waxing',
+					items: [
+						{ key: 'a', title: 'Massage', durationMinutes: 45, granularity: 'time' },
+						{ key: 'b', title: 'Waxing', durationMinutes: 30, granularity: 'time' },
+					],
+				},
+				'massage',
+			)
+			expect((await getAppointment(created.id))?.items).toHaveLength(2)
+
+			await updateAppointment(created.id, { service: 'Massage', items: [] }, 'massage')
+
+			const after = await getDoc(doc(db, 'appointments', created.id))
+			expect(after.data()).not.toHaveProperty('items')
+			expect(after.data()?.service).toBe('Massage')
 		})
 	})
 })

@@ -11,6 +11,7 @@ import {
 	resolveAppointmentRequiredFullDayCount,
 	type ServiceData,
 } from '@/lib/services'
+import { bookingItemsFromFirestore } from '@/lib/booking-items'
 import {
 	DEFAULT_SECTION_CALENDAR_COLOR,
 	resolvedOpaqueCalendarSlotFill,
@@ -61,6 +62,11 @@ export default function AdminCalendarEventDetail({
 	const locale = useLocale()
 	const t = useTranslations('admin')
 	const ui = useMemo(() => getPlaceAccentUi(place), [place])
+	/** Per-service breakdown; empty for pre-multi-service appointments. */
+	const bookedItems = useMemo(
+		() => bookingItemsFromFirestore(appointment.items),
+		[appointment.items],
+	)
 
 	const startDate =
 		appointment.startTime && 'toDate' in appointment.startTime
@@ -249,7 +255,9 @@ export default function AdminCalendarEventDetail({
 									id='admin-cal-event-detail-title'
 									className='font-serif text-lg leading-snug text-icyWhite sm:text-xl'
 								>
-									{appointment.service?.trim() || '—'}
+									{bookedItems.length > 0
+										? bookedItems[0]!.title
+										: appointment.service?.trim() || '—'}
 								</h2>
 								<span
 									className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${statusUi.badgeClass}`}
@@ -263,6 +271,25 @@ export default function AdminCalendarEventDetail({
 									{statusLabel}
 								</span>
 							</div>
+							{/* Multi-service booking: the heading shows the first line, so
+							    list the rest with their individual durations. */}
+							{bookedItems.length > 1 ? (
+								<ul className='mt-2 space-y-1'>
+									{bookedItems.slice(1).map(item => (
+										<li
+											key={item.key}
+											className='flex items-baseline justify-between gap-2 text-sm text-icyWhite/80'
+										>
+											<span className='min-w-0 break-words'>+ {item.title}</span>
+											{item.granularity === 'time' ? (
+												<span className='shrink-0 tabular-nums text-icyWhite/45'>
+													{item.durationMinutes} min
+												</span>
+											) : null}
+										</li>
+									))}
+								</ul>
+							) : null}
 							<p className='mt-1.5 text-sm leading-relaxed text-icyWhite/75'>
 								{dateHeading}
 								<span className='text-icyWhite/40'> · </span>

@@ -214,12 +214,15 @@ export function getAvailableTimeSlots(
 
   const wh = dayScheduleToWorkingWindow(raw);
   const closeM = timeToMinutes(wh.close);
-  const allSlots =
+  // Both modes must reject starts the booking cannot finish before closing.
+  // The grid generator only guarantees one SLOT_INTERVAL fits, which was close
+  // enough for single 30–60 min services but silently offers e.g. 17:30 for a
+  // three-hour multi-service booking at a salon that shuts at 18:00.
+  const allSlots = (
     raw.mode === "slotBegins"
-      ? (raw.slotBegins ?? []).filter(
-          (t) => timeToMinutes(t) + dur <= closeM
-        )
-      : getSlotTimesInRange(wh.open, wh.close);
+      ? (raw.slotBegins ?? [])
+      : getSlotTimesInRange(wh.open, wh.close)
+  ).filter((t) => timeToMinutes(t) + dur <= closeM);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const slotDate = new Date(date);

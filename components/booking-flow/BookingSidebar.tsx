@@ -4,7 +4,7 @@ import { formatTimeFromSlotString } from '@/lib/format-date'
 import { useLocale, useTranslations } from 'next-intl'
 import { useBookingFlow } from './BookingFlowContext'
 import { TruncateText } from '@/components/ui/truncate-text'
-import BookingServiceTitleDisplay from './BookingServiceTitleDisplay'
+import { BookingCartList, BookingCartTotals } from './BookingCart'
 
 const sectionLabelClass = 'text-[11px] font-medium text-icyWhite/50 uppercase tracking-wider block'
 
@@ -14,7 +14,9 @@ export default function BookingSidebar() {
 	const tCommon = useTranslations('common')
 	const tPrice = useTranslations('price')
 	const {
-		service,
+		items,
+		removeItem,
+		priceTotal,
 		catalogSex,
 		date,
 		time,
@@ -45,37 +47,40 @@ export default function BookingSidebar() {
 			</div>
 
 			<div className="flex-1 min-h-0 space-y-5">
-				{/* Services */}
+				{/* Services — the cart. Editable while the customer is still picking
+				    (steps 1–2); locked to a read-only recap once they are entering
+				    contact details, so a stray tap cannot silently change the price. */}
 				<div className="min-w-0 space-y-1.5">
-					<span className={sectionLabelClass}>{tCommon('services')}</span>
-				{service ? (
-					<div className="min-w-0 space-y-2">
-						<div className="flex items-start justify-between gap-2 min-w-0">
-							<BookingServiceTitleDisplay
-								service={service}
-								variant="sidebar"
-								className="flex-1 min-w-0"
-							/>
-							{bookingGranularity !== 'tbd' && durationMinutes > 0 && (
-								<span className="text-xs text-icyWhite/50 shrink-0 tabular-nums self-start pt-0.5">
-									{durationMinutes} min
-								</span>
-							)}
-						</div>
-						{bookingGranularity === 'tbd' && (
-							<div className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5 space-y-1.5">
-								<p className="text-[10px] font-semibold uppercase tracking-wider text-icyWhite/40">
-									{t('tbdSidebarMetaTitle')}
-								</p>
-								<p className="text-xs text-icyWhite/60">{t('scheduleTbdBookingBadge')}</p>
-								<p className="text-sm text-icyWhite font-medium">
-									{t('tbdYourSelectionDays', { count: bookingDayCount })}
-								</p>
-							</div>
+					<div className="flex items-baseline justify-between gap-2">
+						<span className={sectionLabelClass}>{tCommon('services')}</span>
+						{items.length > 1 && (
+							<span className="text-[11px] text-icyWhite/40 tabular-nums">
+								{t('cartServiceCount', { count: items.length })}
+							</span>
 						)}
 					</div>
-					) : (
-						<p className="text-sm text-icyWhite/40">—</p>
+					<BookingCartList
+						items={items}
+						onRemove={step <= 2 ? removeItem : undefined}
+					/>
+					{items.length > 0 && (
+						<BookingCartTotals
+							items={items}
+							durationMinutes={durationMinutes}
+							priceTotal={priceTotal}
+							className="pt-2.5 mt-2.5 border-t border-white/10"
+						/>
+					)}
+					{bookingGranularity === 'tbd' && (
+						<div className="mt-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5 space-y-1.5">
+							<p className="text-[10px] font-semibold uppercase tracking-wider text-icyWhite/40">
+								{t('tbdSidebarMetaTitle')}
+							</p>
+							<p className="text-xs text-icyWhite/60">{t('scheduleTbdBookingBadge')}</p>
+							<p className="text-sm text-icyWhite font-medium">
+								{t('tbdYourSelectionDays', { count: bookingDayCount })}
+							</p>
+						</div>
 					)}
 					{catalogSex && (
 						<div className="pt-2 space-y-1">

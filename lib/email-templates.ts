@@ -33,6 +33,8 @@ const T = {
 	contactUs:
 		'Kontaktujte nás na presun alebo zrušenie. Odporúčame prijsť o 10 minút skôr.',
 	appointment: 'Rezervácia',
+	/** Plural label used when a booking holds several services. */
+	services: 'Služby',
 	/** Full calendar days (customer TBD / multi-day service) */
 	fullDayScope: 'Rozsah',
 } as const
@@ -121,6 +123,61 @@ function detailRow(label: string, value: string): string {
     </tr>`
 }
 
+/**
+ * Escape a value before it is interpolated into email HTML. Customer names and
+ * service titles are author- and visitor-supplied; without this an apostrophe
+ * or angle bracket lands raw in the markup.
+ *
+ * `detailRow` deliberately accepts HTML (the mailto anchor), so escaping is the
+ * caller's job — always escape the *value*, never the wrapper.
+ */
+function esc(value: string): string {
+	return value
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;')
+}
+
+/**
+ * Services block. A single-service booking keeps the plain one-line row it has
+ * always had; a multi-service booking gets one line per service so "legs + arms
+ * + piercing" is readable instead of one long run-on string.
+ */
+/** Accepts the legacy single string or the per-service list. */
+function toServiceList(service: string | string[]): string[] {
+	return Array.isArray(service) ? service : service ? [service] : []
+}
+
+function servicesRow(services: string[]): string {
+	const clean = services.map(s => s.trim()).filter(Boolean)
+	if (clean.length === 0) return detailRow(T.service, T.appointment)
+	if (clean.length === 1) return detailRow(T.service, esc(clean[0]!))
+
+	const list = clean
+		.map(
+			(title, i) => `
+        <tr>
+          <td style="padding: 2px 8px 2px 0; font-size: 14px; color: ${BRAND.muted}; vertical-align: top; width: 18px;">${i + 1}.</td>
+          <td style="padding: 2px 0; font-size: 14px; font-weight: 500; color: ${BRAND.text};">${esc(title)}</td>
+        </tr>`,
+		)
+		.join('')
+
+	return `
+    <tr>
+      <td style="padding: 12px 0; border-bottom: 1px solid ${BRAND.border}; font-size: 14px; color: ${BRAND.muted}; width: 40%; vertical-align: top;">
+        ${T.services}
+      </td>
+      <td style="padding: 12px 0; border-bottom: 1px solid ${BRAND.border};">
+        <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+          ${list}
+        </table>
+      </td>
+    </tr>`
+}
+
 function footerSection(): string {
 	return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 8px;">
@@ -141,7 +198,8 @@ export function buildConfirmationEmail(
 	customerName: string,
 	date: string,
 	time: string,
-	service: string,
+	/** One entry per booked service; a bare string is treated as a single service. */
+	service: string | string[],
 	fullCalendarDayCount?: number,
 ): string {
 	const scopeRow =
@@ -156,16 +214,16 @@ export function buildConfirmationEmail(
       <tr>
         <td>
           <p style="margin: 0 0 24px 0; font-size: 16px; color: ${BRAND.text};">
-            ${T.hi} ${customerName},
+            ${T.hi} ${esc(customerName)},
           </p>
           <p style="margin: 0 0 28px 0; font-size: 15px; color: ${BRAND.text};">
             ${T.confirmedBody}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow(T.date, date)}
-            ${detailRow(T.time, time)}
+            ${detailRow(T.date, esc(date))}
+            ${detailRow(T.time, esc(time))}
             ${scopeRow}
-            ${detailRow(T.service, service || T.appointment)}
+            ${servicesRow(toServiceList(service))}
           </table>
           <p style="margin: 24px 0 0 0; font-size: 14px; color: ${BRAND.muted};">
             ${T.arriveEarly}
@@ -180,7 +238,7 @@ export function buildConfirmationEmail(
 
 export function buildRescheduledEmail(
 	customerName: string,
-	service: string,
+	service: string | string[],
 	oldDate: string,
 	oldTime: string,
 	newDate: string,
@@ -192,15 +250,15 @@ export function buildRescheduledEmail(
       <tr>
         <td>
           <p style="margin: 0 0 24px 0; font-size: 16px; color: ${BRAND.text};">
-            ${T.hi} ${customerName},
+            ${T.hi} ${esc(customerName)},
           </p>
           <p style="margin: 0 0 28px 0; font-size: 15px; color: ${BRAND.text};">
             ${T.rescheduledBody}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow(T.service, service || T.appointment)}
-            ${detailRow(T.previousTime, `${oldDate} o ${oldTime}`)}
-            ${detailRow(T.newTime, `${newDate} o ${newTime}`)}
+            ${servicesRow(toServiceList(service))}
+            ${detailRow(T.previousTime, `${esc(oldDate)} o ${esc(oldTime)}`)}
+            ${detailRow(T.newTime, `${esc(newDate)} o ${esc(newTime)}`)}
           </table>
           <p style="margin: 24px 0 0 0; font-size: 14px; color: ${BRAND.muted};">
             ${T.arriveEarlyResched}
@@ -217,7 +275,7 @@ export function buildCancelledEmail(
 	customerName: string,
 	date: string,
 	time: string,
-	service: string,
+	service: string | string[],
 ): string {
 	const inner = `
     ${header(T.cancelled, '#6b7280')}
@@ -225,15 +283,15 @@ export function buildCancelledEmail(
       <tr>
         <td>
           <p style="margin: 0 0 24px 0; font-size: 16px; color: ${BRAND.text};">
-            ${T.hi} ${customerName},
+            ${T.hi} ${esc(customerName)},
           </p>
           <p style="margin: 0 0 28px 0; font-size: 15px; color: ${BRAND.text};">
             ${T.cancelledBody}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow(T.date, date)}
-            ${detailRow(T.time, time)}
-            ${detailRow(T.service, service || T.appointment)}
+            ${detailRow(T.date, esc(date))}
+            ${detailRow(T.time, esc(time))}
+            ${servicesRow(toServiceList(service))}
           </table>
           <p style="margin: 24px 0 0 0; font-size: 14px; color: ${BRAND.muted};">
             ${T.hopeToSee}
@@ -251,7 +309,7 @@ export function buildAdminNewBooking(
 	email: string,
 	date: string,
 	time: string,
-	service: string,
+	service: string | string[],
 	fullCalendarDayCount?: number,
 ): string {
 	const scopeRow =
@@ -269,12 +327,12 @@ export function buildAdminNewBooking(
             ${T.newBookingAdmin}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow(T.customer, customerName)}
-            ${detailRow('Email', `<a href="mailto:${email}" style="color: ${BRAND.gold}; text-decoration: none;">${email}</a>`)}
-            ${detailRow(T.date, date)}
-            ${detailRow(T.time, time)}
+            ${detailRow(T.customer, esc(customerName))}
+            ${detailRow('Email', `<a href="mailto:${encodeURIComponent(email)}" style="color: ${BRAND.gold}; text-decoration: none;">${esc(email)}</a>`)}
+            ${detailRow(T.date, esc(date))}
+            ${detailRow(T.time, esc(time))}
             ${scopeRow}
-            ${detailRow(T.service, service || T.appointment)}
+            ${servicesRow(toServiceList(service))}
           </table>
         </td>
       </tr>
@@ -288,7 +346,7 @@ export function buildAdminCancelled(
 	email: string,
 	date: string,
 	time: string,
-	service: string,
+	service: string | string[],
 ): string {
 	const inner = `
     ${header(T.cancelled, '#6b7280')}
@@ -299,11 +357,11 @@ export function buildAdminCancelled(
             ${T.cancelledAdmin}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: ${BRAND.bg}; border-radius: 8px; padding: 20px;">
-            ${detailRow(T.customer, customerName)}
-            ${detailRow('Email', `<a href="mailto:${email}" style="color: ${BRAND.gold}; text-decoration: none;">${email}</a>`)}
-            ${detailRow(T.date, date)}
-            ${detailRow(T.time, time)}
-            ${detailRow(T.service, service || T.appointment)}
+            ${detailRow(T.customer, esc(customerName))}
+            ${detailRow('Email', `<a href="mailto:${encodeURIComponent(email)}" style="color: ${BRAND.gold}; text-decoration: none;">${esc(email)}</a>`)}
+            ${detailRow(T.date, esc(date))}
+            ${detailRow(T.time, esc(time))}
+            ${servicesRow(toServiceList(service))}
           </table>
         </td>
       </tr>

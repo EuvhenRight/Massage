@@ -19,6 +19,21 @@ import {
 import { findBookableServiceForSelection } from "@/lib/services";
 import { toggleNotifyChannel } from "@/lib/notify-channels";
 import {
+  addBookingItem,
+  bookingDayCountForCart,
+  bookingItemFromServiceRow,
+  canAddBookingItem,
+  hasBookingItem,
+  isTbdCart,
+  joinItemTitles,
+  removeBookingItem,
+  sumItemPrices,
+  totalDurationMinutes,
+  type AddItemCheck,
+  type BookingItem,
+  type CartPriceTotal,
+} from "@/lib/booking-items";
+import {
   normalizeItemBookingDayCount,
   type SexKey,
 } from "@/types/price-catalog";
@@ -52,18 +67,17 @@ function clampBookingDurationMinutes(
   return Math.min(Math.max(n, 15), MAX_BOOKING_DURATION_MINUTES);
 }
 
-export interface BookingFlowState {
+/**
+ * What the flow actually stores. `items` is the source of truth for everything
+ * service-related — title, duration, granularity and price are all derived from
+ * it (see {@link deriveBookingFlowState}), so a one-service and a five-service
+ * booking travel the exact same code path.
+ */
+export interface BookingCoreState {
   step: BookingStep;
-  service: string;
+  items: BookingItem[];
   date: Date | null;
   time: string | null; // HH:mm
-  durationMinutes: number;
-  bookingGranularity: BookingGranularity;
-  bookingDayCount: number;
-  /** Shown on step 2 when bookingGranularity is "tbd" */
-  scheduleTbdCustomerMessage: string;
-  /** Sent to Firestore for admin when bookingGranularity is "tbd" */
-  scheduleTbdAdminHint: string;
   fullName: string;
   email: string;
   phone: string;
@@ -77,16 +91,26 @@ export interface BookingFlowState {
   catalogSex: SexKey | null;
 }
 
-const initialState: BookingFlowState = {
+export interface BookingFlowState extends BookingCoreState {
+  /** Denormalized join of every item title — kept for legacy readers and emails. */
+  service: string;
+  /** Sum of all item durations (the block the customer occupies). */
+  durationMinutes: number;
+  bookingGranularity: BookingGranularity;
+  bookingDayCount: number;
+  /** Shown on step 2 when bookingGranularity is "tbd" */
+  scheduleTbdCustomerMessage: string;
+  /** Sent to Firestore for admin when bookingGranularity is "tbd" */
+  scheduleTbdAdminHint: string;
+  /** Running total across the cart, with sale prices already applied. */
+  priceTotal: CartPriceTotal;
+}
+
+const initialCoreState: BookingCoreState = {
   step: 1,
-  service: "",
+  items: [],
   date: null,
   time: null,
-  durationMinutes: 60,
-  bookingGranularity: "time",
-  bookingDayCount: 1,
-  scheduleTbdCustomerMessage: "",
-  scheduleTbdAdminHint: "",
   fullName: "",
   email: "",
   phone: "",
@@ -100,6 +124,26 @@ const initialState: BookingFlowState = {
   notifyByWhatsApp: true,
   catalogSex: null,
 };
+
+/** Project the cart onto the flat shape every step component already consumes. */
+function deriveBookingFlowState(core: BookingCoreState): BookingFlowState {
+  const tbd = isTbdCart(core.items);
+  const first = core.items[0];
+  return {
+    ...core,
+    service: joinItemTitles(core.items),
+    durationMinutes: core.items.length
+      ? totalDurationMinutes(core.items)
+      : 60,
+    bookingGranularity: tbd ? "tbd" : "time",
+    bookingDayCount: bookingDayCountForCart(core.items),
+    scheduleTbdCustomerMessage: tbd
+      ? (first?.scheduleTbdCustomerMessage ?? "")
+      : "",
+    scheduleTbdAdminHint: tbd ? (first?.scheduleTbdAdminHint ?? "") : "",
+    priceTotal: sumItemPrices(core.items),
+  };
+}
 
 function granularityFromService(
   svc:
@@ -125,8 +169,55 @@ function dayCountFromService(
   return Math.min(14, n);
 }
 
+/**
+ * Build the single cart line a preset (`?service=`, `defaultService`) implies.
+ * The catalog step later refines duration/granularity once the catalog loads.
+ */
+function presetItem(
+  title: string,
+  svc:
+    | {
+        id?: string;
+        durationMinutes?: number;
+        bookingGranularity?: string;
+        bookingDayCount?: number;
+        scheduleTbdMessage?: string;
+        scheduleTbdAdminNote?: string;
+        titleSk?: string;
+        titleEn?: string;
+        titleRu?: string;
+        titleUk?: string;
+      }
+    | undefined,
+  fallbackDuration: number
+): BookingItem {
+  return bookingItemFromServiceRow({
+    id: svc?.id,
+    title,
+    durationMinutes: svc?.durationMinutes ?? fallbackDuration,
+    bookingGranularity: svc?.bookingGranularity,
+    bookingDayCount: svc?.bookingDayCount,
+    scheduleTbdMessage: svc?.scheduleTbdMessage,
+    scheduleTbdAdminNote: svc?.scheduleTbdAdminNote,
+    titleSk: svc?.titleSk,
+    titleEn: svc?.titleEn,
+    titleRu: svc?.titleRu,
+    titleUk: svc?.titleUk,
+  });
+}
+
 interface BookingFlowContextValue extends BookingFlowState {
+  /** Replace the whole cart with one line. Empty string clears it. */
   setService: (v: string, catalog?: CatalogBookingOverrides | null) => void;
+  /** Append a line. No-op when {@link canAddItem} would reject it. */
+  addItem: (item: BookingItem) => void;
+  removeItem: (key: string) => void;
+  /** Add when absent, remove when present — catalog rows behave like checkboxes. */
+  toggleItem: (item: BookingItem) => void;
+  clearItems: () => void;
+  hasItem: (key: string) => boolean;
+  /** Ask before adding so the UI can explain *why* a line was refused. */
+  canAddItem: (item: BookingItem) => AddItemCheck;
   setCatalogSex: (v: SexKey | null) => void;
   /** Second arg: when set, stores that time; when omitted, clears time (normal date change). */
   setDate: (v: Date | null, presetTime?: string | null) => void;
@@ -184,36 +275,24 @@ export function BookingFlowProvider({
   onComplete,
 }: BookingFlowProviderProps) {
   const firstService = services[0];
-  const [state, setState] = useState<BookingFlowState>(() => {
+  const [state, setState] = useState<BookingCoreState>(() => {
     if (typeof window === "undefined") {
+      const title = (defaultService || firstService?.title) ?? "";
       return {
-        ...initialState,
-        service: (defaultService || firstService?.title) ?? "",
-        durationMinutes: firstService?.durationMinutes ?? defaultDuration,
-        bookingGranularity: granularityFromService(firstService),
-        bookingDayCount: dayCountFromService(firstService),
-        scheduleTbdCustomerMessage: granularityFromService(firstService) === "tbd"
-          ? (firstService?.scheduleTbdMessage ?? "")
-          : "",
-        scheduleTbdAdminHint:
-          granularityFromService(firstService) === "tbd"
-            ? (firstService?.scheduleTbdAdminNote ?? "")
-            : "",
+        ...initialCoreState,
+        items: title
+          ? [presetItem(title, firstService, defaultDuration)]
+          : [],
       };
     }
     const draft = skipDraftRestore ? null : loadBookingDraft(place);
     if (draft) {
       const parsed = parseDraftToState(draft);
       return {
-        step: parsed.step as BookingFlowState["step"],
-        service: parsed.service,
+        step: parsed.step as BookingStep,
+        items: parsed.items,
         date: parsed.date,
         time: parsed.time,
-        durationMinutes: parsed.durationMinutes,
-        bookingGranularity: parsed.bookingGranularity,
-        bookingDayCount: parsed.bookingDayCount ?? 1,
-        scheduleTbdCustomerMessage: parsed.scheduleTbdCustomerMessage,
-        scheduleTbdAdminHint: parsed.scheduleTbdAdminHint,
         fullName: parsed.fullName,
         email: parsed.email,
         phone: parsed.phone,
@@ -227,24 +306,11 @@ export function BookingFlowProvider({
       };
     }
     const preset = defaultService?.trim() ?? "";
-    const matched = preset
-      ? findBookableServiceForSelection(preset, services)
-      : undefined;
-    const baseSvc = matched ?? firstService;
+    if (!preset) return { ...initialCoreState };
+    const matched = findBookableServiceForSelection(preset, services);
     return {
-      ...initialState,
-      service: preset,
-      durationMinutes: baseSvc?.durationMinutes ?? defaultDuration,
-      bookingGranularity: granularityFromService(baseSvc),
-      bookingDayCount: dayCountFromService(baseSvc),
-      scheduleTbdCustomerMessage:
-        granularityFromService(baseSvc) === "tbd"
-          ? (baseSvc?.scheduleTbdMessage ?? "")
-          : "",
-      scheduleTbdAdminHint:
-        granularityFromService(baseSvc) === "tbd"
-          ? (baseSvc?.scheduleTbdAdminNote ?? "")
-          : "",
+      ...initialCoreState,
+      items: [presetItem(preset, matched ?? firstService, defaultDuration)],
     };
   });
 
@@ -253,34 +319,40 @@ export function BookingFlowProvider({
     clearBookingDraft(place);
   }, [skipDraftRestore, place]);
 
-  /** Draft may reference a service line removed from the catalog or an old locale title — unstick the flow. */
+  /**
+   * A draft may reference lines removed from the catalog or stored under an old
+   * locale title. Drop only those lines — nuking the whole cart would throw away
+   * the other services the customer already picked.
+   */
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!services.length) return;
     setState((s) => {
-      const title = s.service.trim();
-      if (!title) return s;
-      if (findBookableServiceForSelection(title, services)) return s;
-      clearBookingDraft(place);
-      const first = services[0];
-      return {
-        ...initialState,
-        service: defaultService?.trim() ?? "",
-        durationMinutes: first?.durationMinutes ?? defaultDuration,
-        bookingGranularity: granularityFromService(first),
-        bookingDayCount: dayCountFromService(first),
-        scheduleTbdCustomerMessage:
-          granularityFromService(first) === "tbd"
-            ? (first?.scheduleTbdMessage ?? "")
-            : "",
-        scheduleTbdAdminHint:
-          granularityFromService(first) === "tbd"
-            ? (first?.scheduleTbdAdminNote ?? "")
-            : "",
-        catalogSex: null,
-        notifyByEmail: false,
-        notifyByWhatsApp: true,
-      };
+      if (!s.items.length) return s;
+      const kept = s.items.filter((i) =>
+        findBookableServiceForSelection(i.title, services)
+      );
+      if (kept.length === s.items.length) return s;
+      if (kept.length === 0) {
+        clearBookingDraft(place);
+        const preset = defaultService?.trim() ?? "";
+        return {
+          ...initialCoreState,
+          items: preset
+            ? [
+                presetItem(
+                  preset,
+                  findBookableServiceForSelection(preset, services) ??
+                    services[0],
+                  defaultDuration
+                ),
+              ]
+            : [],
+        };
+      }
+      // Losing a line can invalidate a chosen slot (the block got shorter/longer),
+      // so send the customer back to date/time rather than to a stale confirmation.
+      return { ...s, items: kept, step: Math.min(s.step, 2) as BookingStep };
     });
   }, [services, place, defaultDuration, defaultService]);
 
@@ -290,30 +362,24 @@ export function BookingFlowProvider({
     const preset = defaultService?.trim();
     if (!preset || !services.length) return;
     setState((s) => {
-      if (s.service.trim() !== preset) return s;
+      // Only refine the untouched single-line preset; once the customer has
+      // built a cart, the catalog must not rewrite it underneath them.
+      if (s.items.length !== 1) return s;
+      const only = s.items[0]!;
+      if (only.title.trim() !== preset) return s;
       const svc = findBookableServiceForSelection(preset, services);
       if (!svc) return s;
-      const gran = granularityFromService(svc);
-      const nextDuration = svc.durationMinutes ?? s.durationMinutes;
+      const next = presetItem(preset, svc, defaultDuration);
       if (
-        s.durationMinutes === nextDuration &&
-        s.bookingGranularity === gran &&
-        s.bookingDayCount === dayCountFromService(svc)
+        only.durationMinutes === next.durationMinutes &&
+        only.granularity === next.granularity &&
+        only.bookingDayCount === next.bookingDayCount
       ) {
         return s;
       }
-      return {
-        ...s,
-        durationMinutes: nextDuration,
-        bookingGranularity: gran,
-        bookingDayCount: dayCountFromService(svc),
-        scheduleTbdCustomerMessage:
-          gran === "tbd" ? (svc.scheduleTbdMessage ?? "") : "",
-        scheduleTbdAdminHint:
-          gran === "tbd" ? (svc.scheduleTbdAdminNote ?? "") : "",
-      };
+      return { ...s, items: [next] };
     });
-  }, [services, defaultService]);
+  }, [services, defaultService, defaultDuration]);
 
   const isFirstMount = useRef(true);
   useEffect(() => {
@@ -323,14 +389,9 @@ export function BookingFlowProvider({
     }
     saveBookingDraft(place, {
       step: state.step,
-      service: state.service,
+      items: state.items,
       date: state.date,
       time: state.time,
-      durationMinutes: state.durationMinutes,
-      bookingGranularity: state.bookingGranularity,
-      bookingDayCount: state.bookingDayCount,
-      scheduleTbdCustomerMessage: state.scheduleTbdCustomerMessage,
-      scheduleTbdAdminHint: state.scheduleTbdAdminHint,
       fullName: state.fullName,
       email: state.email,
       phone: state.phone,
@@ -343,14 +404,9 @@ export function BookingFlowProvider({
   }, [
     place,
     state.step,
-    state.service,
+    state.items,
     state.date,
     state.time,
-    state.durationMinutes,
-    state.bookingGranularity,
-    state.bookingDayCount,
-    state.scheduleTbdCustomerMessage,
-    state.scheduleTbdAdminHint,
     state.fullName,
     state.email,
     state.phone,
@@ -365,49 +421,104 @@ export function BookingFlowProvider({
     clearBookingDraft(place);
   }, [place]);
 
+  /** Replace the whole cart with a single line (dropdown-style selection, or clear with ""). */
   const setService = useCallback(
     (service: string, catalog?: CatalogBookingOverrides | null) => {
       setState((s) => {
         const trimmed = service.trim();
-        const svc = trimmed
-          ? findBookableServiceForSelection(service, services)
-          : undefined;
-        const fallbackDuration = svc?.durationMinutes ?? defaultDuration;
-        const duration = catalog
-          ? clampBookingDurationMinutes(catalog.durationMinutes, fallbackDuration)
-          : clampBookingDurationMinutes(fallbackDuration, 60);
-        const bookingGranularity = catalog
+        if (!trimmed) return { ...s, items: [] };
+        const svc = findBookableServiceForSelection(service, services);
+        const granularity = catalog
           ? granularityFromService({
               bookingGranularity: catalog.bookingGranularity,
             })
           : granularityFromService(svc);
-        const bookingDayCount = catalog?.bookingDayCount != null
-          ? normalizeItemBookingDayCount(catalog.bookingDayCount)
-          : dayCountFromService(svc);
-        return {
-          ...s,
-          service,
-          durationMinutes: duration,
-          bookingGranularity,
-          bookingDayCount,
-          date: bookingGranularity === "tbd" ? null : s.date,
-          time: bookingGranularity === "tbd" ? null : s.time,
+        const item: BookingItem = {
+          key: svc?.id || trimmed,
+          title: service,
+          serviceId: svc?.id,
+          titleSk: svc?.titleSk,
+          titleEn: svc?.titleEn,
+          titleRu: svc?.titleRu,
+          titleUk: svc?.titleUk,
+          durationMinutes: clampBookingDurationMinutes(
+            catalog ? catalog.durationMinutes : svc?.durationMinutes,
+            svc?.durationMinutes ?? defaultDuration
+          ),
+          granularity: granularity === "tbd" ? "tbd" : "time",
+          bookingDayCount:
+            granularity === "tbd"
+              ? catalog?.bookingDayCount != null
+                ? normalizeItemBookingDayCount(catalog.bookingDayCount)
+                : dayCountFromService(svc)
+              : undefined,
           scheduleTbdCustomerMessage:
-            bookingGranularity === "tbd"
+            granularity === "tbd"
               ? (catalog?.scheduleTbdCustomerMessage?.trim() ||
                   svc?.scheduleTbdMessage ||
                   "")
-              : "",
+              : undefined,
           scheduleTbdAdminHint:
-            bookingGranularity === "tbd"
+            granularity === "tbd"
               ? (catalog?.scheduleTbdAdminHint?.trim() ||
                   svc?.scheduleTbdAdminNote ||
                   "")
-              : "",
+              : undefined,
+        };
+        return {
+          ...s,
+          items: [item],
+          date: granularity === "tbd" ? null : s.date,
+          time: granularity === "tbd" ? null : s.time,
         };
       });
     },
     [services, defaultDuration]
+  );
+
+  /**
+   * Cart mutations. Every one of them clears the chosen time: the block length
+   * changed, so the slot the customer picked may no longer fit or may now
+   * collide with the next appointment. Date survives — only the time is at risk.
+   */
+  const addItem = useCallback((item: BookingItem) => {
+    setState((s) => {
+      const items = addBookingItem(s.items, item);
+      if (items === s.items) return s;
+      return { ...s, items, time: null };
+    });
+  }, []);
+
+  const removeItem = useCallback((key: string) => {
+    setState((s) => {
+      const items = removeBookingItem(s.items, key);
+      if (items.length === s.items.length) return s;
+      return { ...s, items, time: null };
+    });
+  }, []);
+
+  const toggleItem = useCallback((item: BookingItem) => {
+    setState((s) => {
+      const items = hasBookingItem(s.items, item.key)
+        ? removeBookingItem(s.items, item.key)
+        : addBookingItem(s.items, item);
+      if (items === s.items) return s;
+      return { ...s, items, time: null };
+    });
+  }, []);
+
+  const clearItems = useCallback(() => {
+    setState((s) => (s.items.length ? { ...s, items: [], time: null } : s));
+  }, []);
+
+  const hasItem = useCallback(
+    (key: string) => hasBookingItem(state.items, key),
+    [state.items]
+  );
+
+  const canAddItem = useCallback(
+    (item: BookingItem) => canAddBookingItem(state.items, item),
+    [state.items]
   );
 
   const setDate = useCallback((date: Date | null, presetTime?: string | null) => {
@@ -472,30 +583,18 @@ export function BookingFlowProvider({
   }, []);
 
   const reset = useCallback(() => {
-    const first = services[0];
-    setState({
-      ...initialState,
-      service: "",
-      durationMinutes: first?.durationMinutes ?? defaultDuration,
-      bookingGranularity: granularityFromService(first),
-      bookingDayCount: dayCountFromService(first),
-      scheduleTbdCustomerMessage:
-        granularityFromService(first) === "tbd"
-          ? (first?.scheduleTbdMessage ?? "")
-          : "",
-      scheduleTbdAdminHint:
-        granularityFromService(first) === "tbd"
-          ? (first?.scheduleTbdAdminNote ?? "")
-          : "",
-      catalogSex: null,
-      notifyByEmail: false,
-      notifyByWhatsApp: true,
-    });
-  }, [defaultDuration, services]);
+    setState({ ...initialCoreState });
+  }, []);
 
   const value: BookingFlowContextValue = {
-    ...state,
+    ...deriveBookingFlowState(state),
     setService,
+    addItem,
+    removeItem,
+    toggleItem,
+    clearItems,
+    hasItem,
+    canAddItem,
     setDate,
     setTime,
     setCatalogSex,

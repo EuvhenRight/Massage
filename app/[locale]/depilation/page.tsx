@@ -388,18 +388,18 @@ export default function DepilationPage() {
 							initial={{ y: 16 }}
 							animate={{ y: 0 }}
 							transition={{ delay: 0.38, duration: 0.5, ease: EASE_EXPO_OUT }}
-							className='mt-6 flex flex-wrap justify-center gap-3'
+							className='mt-6 flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-3 w-full max-w-[17rem] sm:max-w-none mx-auto'
 						>
 							<Link
 								href={`/${locale}/depilation/booking`}
-								className='group inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-colors duration-300'
+								className='group inline-flex w-full sm:w-auto items-center justify-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-colors duration-300'
 							>
 								{t('heroBookButton')}
 								<ChevronRight className='w-4 h-4 group-hover:translate-x-0.5 transition-transform' />
 							</Link>
 							<Link
 								href={`/${locale}/depilation/price`}
-								className='inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-colors duration-300'
+								className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-7 py-3.5 rounded-2xl bg-nearBlack/45 backdrop-blur-md border border-white/25 text-icyWhite text-sm font-semibold tracking-wider uppercase shadow-[0_4px_24px_-8px_rgba(0,0,0,0.55)] hover:border-gold-soft/50 hover:text-gold-soft transition-colors duration-300'
 							>
 								{t('heroPricesButton')}
 							</Link>

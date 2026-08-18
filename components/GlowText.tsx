@@ -129,6 +129,15 @@ export default function GlowText({
 		canvas.height = h * dpr
 		canvas.style.width = `${w}px`
 		canvas.style.height = `${h}px`
+		/*
+		 * `padX`/`padY` give the blur room to bleed, but they are empty pixels that
+		 * still occupy layout space — they pushed whatever sits above and below the
+		 * wordmark away by half a font size (21px on a phone), which is why the hero
+		 * logo read as floating, detached from the title. Pull the box back onto the
+		 * glyphs so a caller's `mb-3` means 3, not 3 + 21. The glow still paints into
+		 * the overflow.
+		 */
+		canvas.style.margin = `${-padY}px ${-padX}px`
 		ctx.scale(dpr, dpr)
 
 		ctx.clearRect(0, 0, w, h)

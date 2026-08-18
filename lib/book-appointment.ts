@@ -22,6 +22,7 @@ import { getSchedule } from "./schedule-firestore";
 import type { ScheduleData } from "./schedule-firestore";
 import { normalizeStoredPhone } from "./phone-e164";
 import { upsertClientFromBooking } from "./clients-firestore";
+import { bookingItemToFirestore, type BookingItem } from "./booking-items";
 
 /**
  * Mirror customer details into the `clients` collection so birthday + re-engagement
@@ -51,6 +52,14 @@ export interface AppointmentData {
   adminBookingMode?: "time" | "day";
   multiDayFullDayCount?: number;
   adminFullDayDates?: string[];
+  /**
+   * Every line the customer booked. One appointment can hold several services
+   * (legs + arms + piercing) sharing one contiguous block. Absent on
+   * pre-multi-service docs — read via `bookingItemsFromFirestore`, which falls
+   * back to the denormalized {@link AppointmentData.service} string.
+   */
+  items?: Record<string, unknown>[];
+  /** Denormalized join of every item title. Authoritative for legacy docs. */
   service: string;
   serviceId?: string;
   serviceSk?: string;
@@ -92,6 +101,8 @@ export interface BookingInput {
   startTime: string; // HH:mm
   durationMinutes: number;
   service: string;
+  /** Per-line breakdown of a multi-service booking; omit for a single service. */
+  items?: BookingItem[];
   fullName: string;
   email: string;
   phone: string;
@@ -121,6 +132,26 @@ const TBD_PLACEHOLDER_START = new Date(2099, 0, 1, 9, 0, 0, 0);
 
 const MAX_TIMED_BOOKING_DURATION_MINUTES = 24 * 60;
 
+/**
+ * Upper bound for an admin-entered duration. Deliberately far above a single
+ * service: a multi-service booking is one contiguous block whose length is the
+ * SUM of its lines, so six 45-minute services legitimately runs 4.5 hours. The
+ * old 240-minute cap silently truncated such a block, leaving the calendar
+ * shorter than the real visit and letting a later booking overlap it.
+ */
+export const MAX_ADMIN_BOOKING_DURATION_MINUTES = 12 * 60;
+export const MIN_ADMIN_BOOKING_DURATION_MINUTES = 5;
+
+/** Clamp an admin-entered duration into the supported range. */
+export function clampAdminBookingDurationMinutes(raw: unknown): number {
+  const n = Math.floor(Number(raw));
+  if (!Number.isFinite(n) || n <= 0) return 60;
+  return Math.min(
+    Math.max(n, MIN_ADMIN_BOOKING_DURATION_MINUTES),
+    MAX_ADMIN_BOOKING_DURATION_MINUTES
+  );
+}
+
 function safeTimedBookingDurationMinutes(raw: unknown): number {
   const n = Math.floor(Number(raw));
   if (!Number.isFinite(n) || n <= 0) return 60;
@@ -129,6 +160,8 @@ function safeTimedBookingDurationMinutes(raw: unknown): number {
 
 export interface ScheduleTbdBookingInput {
   service: string;
+  /** Always one line for TBD (mixing with timed services is blocked in the UI). */
+  items?: BookingItem[];
   fullName: string;
   email: string;
   phone: string;
@@ -155,6 +188,12 @@ export interface AdminBookingInput {
   date: string;
   startTime: string;
   durationMinutes?: number;
+  /**
+   * Per-service breakdown when admin books several services at once. They form
+   * ONE contiguous block — `durationMinutes` is their sum and there is no gap
+   * between them (the prep buffer applies only around the booking as a whole).
+   */
+  items?: BookingItem[];
   adminBookingMode?: "time" | "day";
   adminFullDayDates?: string[];
   multiDayFullDayCount?: number;
@@ -170,6 +209,8 @@ export interface AdminBookingInput {
 /** Admin can update any field */
 export interface AdminAppointmentUpdate {
   service?: string;
+  /** Replaces the stored per-service breakdown. Pass `[]` to clear it. */
+  items?: BookingItem[];
   fullName?: string;
   email?: string;
   phone?: string;
@@ -566,6 +607,9 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
     if (input.serviceRu) baseData.serviceRu = input.serviceRu;
     if (input.serviceUk) baseData.serviceUk = input.serviceUk;
 
+    const itemRows = (input.items ?? []).map(bookingItemToFirestore);
+    if (itemRows.length > 0) baseData.items = itemRows;
+
     if (typeof input.notifyByEmail === "boolean") baseData.notifyByEmail = input.notifyByEmail;
     if (typeof input.notifyByWhatsApp === "boolean") baseData.notifyByWhatsApp = input.notifyByWhatsApp;
 
@@ -583,6 +627,7 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
       startTime: Timestamp.fromDate(newStart),
       endTime: Timestamp.fromDate(newEnd),
       service: input.service,
+      items: itemRows.length > 0 ? itemRows : undefined,
       serviceId: input.serviceId,
       serviceSk: input.serviceSk,
       serviceEn: input.serviceEn,
@@ -652,6 +697,11 @@ export async function bookScheduleTbdAppointment(
   if (input.serviceEn) baseData.serviceEn = input.serviceEn;
   if (input.serviceRu) baseData.serviceRu = input.serviceRu;
   if (input.serviceUk) baseData.serviceUk = input.serviceUk;
+
+  // A TBD booking always holds exactly one line (mixing is blocked in the UI),
+  // but the array is written anyway so every appointment doc has the same shape.
+  const tbdItemRows = (input.items ?? []).map(bookingItemToFirestore);
+  if (tbdItemRows.length > 0) baseData.items = tbdItemRows;
 
   const ref = await addDoc(collection(db, "appointments"), baseData);
 
@@ -890,6 +940,9 @@ export async function getAppointment(appointmentId: string): Promise<Appointment
           ? storedMulti
           : undefined,
     service: (d.service as string) ?? "",
+    items: Array.isArray(d.items)
+      ? (d.items as Record<string, unknown>[])
+      : undefined,
     serviceId: d.serviceId as string | undefined,
     serviceSk: d.serviceSk as string | undefined,
     serviceEn: d.serviceEn as string | undefined,
@@ -929,7 +982,7 @@ export async function bookAppointmentAdmin(input: AdminBookingInput, place: Plac
   const mode = input.adminBookingMode === "day" ? "day" : "time";
   const dayDates = normalizeFullDayDates(input.adminFullDayDates);
   const dayCount = dayDates.length > 0 ? dayDates.length : clampFullDayCount(input.multiDayFullDayCount);
-  const duration = input.durationMinutes ?? 60;
+  const duration = clampAdminBookingDurationMinutes(input.durationMinutes ?? 60);
   const newStart = new Date(`${dateStr}T${String(startH).padStart(2, "0")}:${String(startM).padStart(2, "0")}:00`);
   const newEnd = new Date(newStart.getTime() + duration * 60 * 1000);
 
@@ -940,6 +993,7 @@ export async function bookAppointmentAdmin(input: AdminBookingInput, place: Plac
     adminFullDayDates: mode === "day" ? dayDates : undefined,
     multiDayFullDayCount: mode === "day" ? dayCount : undefined,
     service: input.service?.trim() || "—",
+    items: input.items,
     fullName: input.fullName?.trim() || "—",
     email: input.email?.trim() || "",
     phone: input.phone?.trim() ? normalizeStoredPhone(input.phone) : "—",
@@ -1047,7 +1101,21 @@ export async function updateAppointment(
   }
 
   const fieldUpdates: Record<string, unknown> = {};
-  if (updates.service !== undefined) fieldUpdates.service = updates.service || "—";
+  if (updates.service !== undefined) {
+    fieldUpdates.service = updates.service || "—";
+  }
+  if (updates.items !== undefined) {
+    // Explicit breakdown wins.
+    fieldUpdates.items =
+      updates.items.length > 0
+        ? updates.items.map(bookingItemToFirestore)
+        : deleteField();
+  } else if (updates.service !== undefined && Array.isArray(data.items)) {
+    // Service string edited without a breakdown: the stored one is now stale.
+    // Drop it rather than let the two disagree — readers fall back to the
+    // string when `items` is absent.
+    fieldUpdates.items = deleteField();
+  }
   if (updates.fullName !== undefined) fieldUpdates.fullName = updates.fullName || "—";
   if (updates.email !== undefined) fieldUpdates.email = updates.email || "";
   if (updates.phone !== undefined) {

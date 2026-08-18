@@ -127,7 +127,17 @@
     "tbdYourSelectionTitle": "Vaša voľba",
     "tbdYourSelectionDays": "{count, plural, one {# kalendárny deň (celý deň)} few {# kalendárne dni (celý deň)} other {# kalendárnych dní (celý deň)}}",
     "tbdSidebarMetaTitle": "Typ rezervácie",
-    "successFullDayScope": "{count, plural, one {Požadujete # kalendárny deň (celý deň) pre túto službu.} few {Požadujete # kalendárne dni (celý deň) pre túto službu.} other {Požadujete # kalendárnych dní (celý deň) pre túto službu.}}"
+    "successFullDayScope": "{count, plural, one {Požadujete # kalendárny deň (celý deň) pre túto službu.} few {Požadujete # kalendárne dni (celý deň) pre túto službu.} other {Požadujete # kalendárnych dní (celý deň) pre túto službu.}}",
+    "hoursShort": "h",
+    "close": "Zavrieť",
+    "cartServiceCount": "{count, plural, one {# služba} few {# služby} other {# služieb}}",
+    "cartTotalLabel": "Spolu",
+    "cartTotalFrom": "od {amount}",
+    "cartRemoveItem": "Odstrániť {service} z rezervácie",
+    "cartMaxItems": "Do jednej rezervácie môžete pridať najviac {count} služieb.",
+    "cartTbdCannotJoin": "Túto službu dohadujeme individuálne, preto sa rezervuje samostatne. Dokončite túto rezerváciu a vyžiadajte si ju zvlášť.",
+    "cartCannotJoinTbd": "Táto rezervácia sa dohaduje individuálne — služby s časovým slotom k nej nie je možné pridať. Rezervujte ich samostatne.",
+    "cartTbdOnlyOne": "Každú takúto službu dohadujeme zvlášť — naraz si môžete vybrať iba jednu."
   },
   "validation": {
     "fullNameMin": "Meno musí mať aspoň 3 znaky",
@@ -1328,7 +1338,6 @@
     "viewMonth": "Mesiac",
     "calendarRegionAria": "Kalendár rezervácií",
     "previousMonth": "Predchádzajúci mesiac",
-    "nextMonth": "Nasledujúci mesiac",
     "monthMoreCount": "+{count} ďalších",
     "calendarEmpty": "Žiadne rezervácie",
     "previousDay": "← Predchádzajúci deň",
@@ -1380,7 +1389,12 @@
     "zoneUsesSectionCalendarColor": "Farba v kalendári pochádza z nadradenej sekcie.",
     "directItemsColorInCalendar": "Táto farba sa v kalendári použije pre tieto riadky.",
     "servicesManagedInPriceCatalog": "Rezervačné služby nastavíte v cenníku: služby, sekcie, zóny a ceny, potom Uložiť. Farby v kalendári sledujú každú sekciu (alebo každú zónu na najvyššej úrovni). Samostatný zoznam služieb tu už nie je.",
-    "openPriceCatalogForServices": "Otvoriť cenník →"
+    "openPriceCatalogForServices": "Otvoriť cenník →",
+    "minutesShort": "min",
+    "servicesSelectedCount": "{count, plural, one {# služba} few {# služby} other {# služieb}}",
+    "servicesBackToBackHint": "Služby nasledujú za sebou bez prestávky — rezervácia trvá presne ich súčet.",
+    "searchServicePlaceholder": "Hľadať službu",
+    "noServicesFound": "Nič sa nenašlo"
   },
   "adminSignin": {
     "signIn": "Prihlásiť sa",

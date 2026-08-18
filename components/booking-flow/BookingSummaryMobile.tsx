@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import { useMemo } from 'react'
 import { useBookingFlow } from './BookingFlowContext'
 import BookingServiceTitleDisplay from './BookingServiceTitleDisplay'
+import { useCartPriceLabel, useDurationLabel } from './BookingCart'
 
 interface BookingSummaryMobileProps {
 	place?: Place
@@ -20,8 +21,11 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 	const t = useTranslations('booking')
 	const tCommon = useTranslations('common')
 	const tPrice = useTranslations('price')
+	const durationLabel = useDurationLabel()
+	const priceLabel = useCartPriceLabel()
 	const {
-		service,
+		items,
+		priceTotal,
 		catalogSex,
 		date,
 		time,
@@ -30,7 +34,11 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 		bookingDayCount,
 	} = useBookingFlow()
 
-	if (!service && !date && !(time || bookingGranularity === 'tbd')) return null
+	if (!items.length && !date && !(time || bookingGranularity === 'tbd')) {
+		return null
+	}
+
+	const cartPrice = priceLabel(priceTotal)
 
 	return (
 		<motion.div
@@ -45,13 +53,19 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 				{t('bookingSummary')}
 			</h4>
 			<dl className="space-y-2.5 text-sm">
-				{service && (
+				{items.length > 0 && (
 					<div className="flex items-start justify-between gap-3 min-w-0">
 						<dt className="text-icyWhite/50 shrink-0 min-w-[3.5rem] pt-0.5">
 							{tCommon('services')}
 						</dt>
 						<dd className="flex-1 min-w-0 flex flex-col items-end gap-1">
-							<BookingServiceTitleDisplay service={service} variant="mobile" />
+							{items.map(item => (
+								<BookingServiceTitleDisplay
+									key={item.key}
+									service={item.title}
+									variant="mobile"
+								/>
+							))}
 							{catalogSex && (
 								<span className="text-icyWhite/60 text-xs text-right">
 									{tPrice('sex')}: {tPrice(catalogSex)}
@@ -59,7 +73,8 @@ export default function BookingSummaryMobile({ place = 'massage' }: BookingSumma
 							)}
 							{bookingGranularity !== 'tbd' && durationMinutes > 0 && (
 								<span className="text-icyWhite/50 text-xs shrink-0 tabular-nums">
-									{durationMinutes} min
+									{durationLabel(durationMinutes)}
+									{cartPrice && ` · ${cartPrice}`}
 								</span>
 							)}
 						</dd>

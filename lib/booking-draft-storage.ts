@@ -1,11 +1,18 @@
 import { getDateKey } from "./booking";
+import {
+  bookingItemsFromFirestore,
+  bookingItemToFirestore,
+  isTbdCart,
+  normalizeItemDurationMinutes,
+  type BookingItem,
+} from "./booking-items";
 
 /** Booking draft storage key prefix */
 const STORAGE_PREFIX = "booking-draft-";
 const TTL_MS = 60 * 60 * 1000; // 1 hour
 
 /** Bump when on-disk shape or rules change so we can invalidate bad drafts. */
-export const BOOKING_DRAFT_FORMAT_VERSION = 4;
+export const BOOKING_DRAFT_FORMAT_VERSION = 5;
 
 const MAX_BOOKING_DURATION_MINUTES = 24 * 60;
 
@@ -15,6 +22,12 @@ export interface BookingDraft {
   /** Format version; v2+ uses dateKey and stricter validation */
   v?: number;
   step: number;
+  /**
+   * v5+: the cart. Older drafts carry a single `service` string, which
+   * {@link sanitizeBookingDraft} folds into a one-element array.
+   */
+  items?: Record<string, unknown>[];
+  /** Denormalized join of item titles — still written so v4 readers degrade gracefully. */
   service: string;
   date: string | null;
   /** Local calendar YYYY-MM-DD — stable across timezones (preferred over legacy ISO `date`) */
@@ -38,6 +51,35 @@ export interface BookingDraft {
   /** Price-catalog woman/man branch (optional). */
   catalogSex?: "woman" | "man" | null;
   savedAt: number;
+}
+
+/**
+ * Read the cart out of a draft. Pre-v5 drafts have no `items`, so the single
+ * `service` string is promoted to one line — an in-progress booking made before
+ * the upgrade keeps working instead of being silently dropped.
+ */
+export function draftItems(draft: BookingDraft): BookingItem[] {
+  const parsed = bookingItemsFromFirestore(draft.items);
+  if (parsed.length > 0) return parsed;
+  const title = typeof draft.service === "string" ? draft.service.trim() : "";
+  if (!title) return [];
+  const tbd =
+    draft.bookingGranularity === "day" || draft.bookingGranularity === "tbd";
+  return [
+    {
+      key: title,
+      title,
+      durationMinutes: normalizeItemDurationMinutes(draft.durationMinutes),
+      granularity: tbd ? "tbd" : "time",
+      bookingDayCount: tbd
+        ? Math.min(14, Math.max(1, Math.floor(Number(draft.bookingDayCount)) || 1))
+        : undefined,
+      scheduleTbdCustomerMessage: tbd
+        ? (draft.scheduleTbdCustomerMessage ?? "")
+        : undefined,
+      scheduleTbdAdminHint: tbd ? (draft.scheduleTbdAdminHint ?? "") : undefined,
+    },
+  ];
 }
 
 function storageKey(place: string): string {
@@ -95,12 +137,31 @@ function sanitizeBookingDraft(draft: BookingDraft): BookingDraft {
     out.catalogSex = null;
   }
 
-  let dur = Math.floor(Number(draft.durationMinutes));
-  if (!Number.isFinite(dur) || dur < 15) dur = 60;
-  out.durationMinutes = Math.min(dur, MAX_BOOKING_DURATION_MINUTES);
+  // Re-derive every service-shaped field from the cart so a hand-edited or
+  // half-migrated draft can never disagree with itself.
+  const items = draftItems(draft);
+  out.items = items.map(bookingItemToFirestore);
+  out.service = items.map((i) => i.title).join(" + ");
+  const granTbd = isTbdCart(items);
+  out.bookingGranularity = granTbd ? "tbd" : "time";
+  out.bookingDayCount = granTbd ? (items[0]?.bookingDayCount ?? 1) : 1;
+  out.scheduleTbdCustomerMessage = granTbd
+    ? (items[0]?.scheduleTbdCustomerMessage ?? "")
+    : "";
+  out.scheduleTbdAdminHint = granTbd
+    ? (items[0]?.scheduleTbdAdminHint ?? "")
+    : "";
 
-  const granTbd =
-    draft.bookingGranularity === "day" || draft.bookingGranularity === "tbd";
+  const dur = items.reduce(
+    (acc, i) => acc + normalizeItemDurationMinutes(i.durationMinutes),
+    0
+  );
+  out.durationMinutes = items.length
+    ? Math.min(dur, MAX_BOOKING_DURATION_MINUTES)
+    : 60;
+
+  // An empty cart cannot support a date/time or a confirmation screen.
+  if (items.length === 0) out.step = 1;
 
   let dateKey =
     draft.dateKey && /^\d{4}-\d{2}-\d{2}$/.test(draft.dateKey)
@@ -189,14 +250,9 @@ export function loadBookingDraft(place: string): BookingDraft | null {
 
 export interface BookingDraftInput {
   step: number;
-  service: string;
+  items: BookingItem[];
   date: Date | string | null;
   time: string | null;
-  durationMinutes: number;
-  bookingGranularity?: DraftBookingGranularity;
-  bookingDayCount?: number;
-  scheduleTbdCustomerMessage?: string;
-  scheduleTbdAdminHint?: string;
   fullName: string;
   email: string;
   phone: string;
@@ -212,15 +268,31 @@ export function saveBookingDraft(place: string, state: BookingDraftInput): void 
   try {
     const cal = state.date ? new Date(state.date) : null;
     const dateKey = cal && !Number.isNaN(cal.getTime()) ? getDateKey(cal) : null;
+    const items = state.items ?? [];
+    const tbd = isTbdCart(items);
     const draft: BookingDraft = {
       v: BOOKING_DRAFT_FORMAT_VERSION,
-      ...state,
+      step: state.step,
+      items: items.map(bookingItemToFirestore),
+      // Denormalized mirrors: a v4 reader (an older tab still open on the same
+      // device) can still show something sensible instead of an empty booking.
+      service: items.map((i) => i.title).join(" + "),
+      durationMinutes: items.reduce(
+        (acc, i) => acc + normalizeItemDurationMinutes(i.durationMinutes),
+        0
+      ),
+      bookingGranularity: tbd ? "tbd" : "time",
+      bookingDayCount: tbd ? (items[0]?.bookingDayCount ?? 1) : 1,
+      scheduleTbdCustomerMessage: tbd
+        ? (items[0]?.scheduleTbdCustomerMessage ?? "")
+        : "",
+      scheduleTbdAdminHint: tbd ? (items[0]?.scheduleTbdAdminHint ?? "") : "",
+      time: state.time,
+      fullName: state.fullName,
+      email: state.email,
+      phone: state.phone,
       date: cal ? cal.toISOString() : null,
       dateKey,
-      bookingGranularity: state.bookingGranularity,
-      bookingDayCount: state.bookingDayCount,
-      scheduleTbdCustomerMessage: state.scheduleTbdCustomerMessage,
-      scheduleTbdAdminHint: state.scheduleTbdAdminHint,
       catalogSex: state.catalogSex ?? null,
       notifyByEmail: state.notifyByEmail !== false,
       notifyByWhatsApp: state.notifyByWhatsApp !== false,
@@ -239,14 +311,9 @@ export function saveBookingDraft(place: string, state: BookingDraftInput): void 
 
 export function parseDraftToState(draft: BookingDraft): {
   step: number;
-  service: string;
+  items: BookingItem[];
   date: Date | null;
   time: string | null;
-  durationMinutes: number;
-  bookingGranularity: DraftBookingGranularity;
-  bookingDayCount: number;
-  scheduleTbdCustomerMessage: string;
-  scheduleTbdAdminHint: string;
   fullName: string;
   email: string;
   phone: string;
@@ -256,8 +323,8 @@ export function parseDraftToState(draft: BookingDraft): {
   optInMarketing: boolean;
   catalogSex: "woman" | "man" | null;
 } {
-  const granTbd =
-    draft.bookingGranularity === "day" || draft.bookingGranularity === "tbd";
+  const items = draftItems(draft);
+  const granTbd = isTbdCart(items);
   const cal = granTbd ? null : calendarDateFromDraft(draft);
   const timeNorm = granTbd ? null : normalizeDraftTime(draft.time);
   let notifyByEmail =
@@ -271,23 +338,9 @@ export function parseDraftToState(draft: BookingDraft): {
   }
   return {
     step: draft.step,
-    service: draft.service,
+    items,
     date: cal,
     time: timeNorm,
-    durationMinutes: draft.durationMinutes,
-    bookingGranularity: granTbd ? "tbd" : "time",
-    bookingDayCount:
-      typeof draft.bookingDayCount === "number" && draft.bookingDayCount >= 1
-        ? Math.min(14, draft.bookingDayCount)
-        : 1,
-    scheduleTbdCustomerMessage:
-      typeof draft.scheduleTbdCustomerMessage === "string"
-        ? draft.scheduleTbdCustomerMessage
-        : "",
-    scheduleTbdAdminHint:
-      typeof draft.scheduleTbdAdminHint === "string"
-        ? draft.scheduleTbdAdminHint
-        : "",
     fullName: draft.fullName,
     email: draft.email,
     phone: draft.phone,

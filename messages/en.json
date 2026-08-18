@@ -127,7 +127,17 @@
     "tbdYourSelectionTitle": "Your selection",
     "tbdYourSelectionDays": "{count, plural, one {# full calendar day} other {# full calendar days}}",
     "tbdSidebarMetaTitle": "Booking type",
-    "successFullDayScope": "{count, plural, one {You requested # full calendar day for this service.} other {You requested # full calendar days for this service.}}"
+    "successFullDayScope": "{count, plural, one {You requested # full calendar day for this service.} other {You requested # full calendar days for this service.}}",
+    "hoursShort": "h",
+    "close": "Close",
+    "cartServiceCount": "{count, plural, one {# service} other {# services}}",
+    "cartTotalLabel": "Total",
+    "cartTotalFrom": "from {amount}",
+    "cartRemoveItem": "Remove {service} from your booking",
+    "cartMaxItems": "You can add up to {count} services to one booking.",
+    "cartTbdCannotJoin": "We arrange this service with you individually, so it is booked on its own. Finish this booking and request it separately.",
+    "cartCannotJoinTbd": "This booking is arranged individually — services with a time slot cannot be added to it. Please book those separately.",
+    "cartTbdOnlyOne": "Each of these services is arranged separately — you can pick only one at a time."
   },
   "validation": {
     "fullNameMin": "Full name must be at least 3 characters",
@@ -1328,7 +1338,6 @@
     "viewMonth": "Month",
     "calendarRegionAria": "Bookings calendar",
     "previousMonth": "Previous month",
-    "nextMonth": "Next month",
     "monthMoreCount": "+{count} more",
     "calendarEmpty": "No bookings",
     "previousDay": "← Previous day",
@@ -1380,7 +1389,12 @@
     "zoneUsesSectionCalendarColor": "Calendar color comes from the parent section.",
     "directItemsColorInCalendar": "This color is used in the admin calendar for these line items.",
     "servicesManagedInPriceCatalog": "Define bookable services in the Price catalog: add services, sections, zones and price lines, then Save. Calendar colors follow each section (or each top-level zone). You no longer maintain a separate service list here.",
-    "openPriceCatalogForServices": "Open Price catalog →"
+    "openPriceCatalogForServices": "Open Price catalog →",
+    "minutesShort": "min",
+    "servicesSelectedCount": "{count, plural, one {# service} other {# services}}",
+    "servicesBackToBackHint": "Services run back-to-back with no break — the booking lasts exactly their combined time.",
+    "searchServicePlaceholder": "Search service",
+    "noServicesFound": "Nothing found"
   },
   "adminSignin": {
     "signIn": "Sign in",

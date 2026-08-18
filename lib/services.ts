@@ -36,6 +36,12 @@ export interface ServiceData {
   scheduleTbdMessage?: string;
   /** Resolved admin hint when bookingGranularity is "tbd" */
   scheduleTbdAdminNote?: string;
+  /**
+   * Price-catalog branch this line belongs to. The same service can exist under
+   * both with a DIFFERENT price and duration (e.g. "full face": 35 min for
+   * women, 65 for men), so admin must book against the right branch.
+   */
+  sex?: "woman" | "man";
 }
 
 /** For matching stored booking strings to catalog rows (booking UI may omit `color`, etc.). */

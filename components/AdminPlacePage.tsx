@@ -10,7 +10,10 @@ import AdminPriceCatalog, {
 	type AdminPriceCatalogHandle,
 } from '@/components/AdminPriceCatalog'
 import BookingCalendarGrid from '@/components/BookingCalendarGrid'
-import { buildAdminCalendarServices } from '@/lib/admin-calendar-services'
+import {
+	buildAdminBookableServices,
+	buildAdminCalendarServices,
+} from '@/lib/admin-calendar-services'
 import { getPrepBufferMinutes } from '@/lib/availability-firestore'
 import { getPlaceAccentUi } from '@/lib/place-accent-ui'
 import {
@@ -203,6 +206,8 @@ export default function AdminPlacePage({
 	const section = sectionProp
 	const [services, setServices] = useState<ServiceData[]>([])
 	const [calendarServices, setCalendarServices] = useState<ServiceData[]>([])
+	/** Every bookable catalog LINE — what the booking modal offers to pick. */
+	const [bookableServices, setBookableServices] = useState<ServiceData[]>([])
 	const [addModalOpen, setAddModalOpen] = useState(false)
 	const [editModalOpen, setEditModalOpen] = useState(false)
 	const [editSlot, setEditSlot] = useState<{
@@ -236,7 +241,16 @@ export default function AdminPlacePage({
 	)
 	const priceCatalogRef = useRef<AdminPriceCatalogHandle | null>(null)
 	const prepBuffer = getPrepBufferMinutes(schedule)
-	const addModalServices = calendarServices.length > 0 ? calendarServices : services
+	/**
+	 * The picker needs concrete lines, not categories: full catalog leaves first,
+	 * then the Firestore rows as a fallback for places without a price catalog.
+	 */
+	const addModalServices =
+		bookableServices.length > 0
+			? bookableServices
+			: calendarServices.length > 0
+				? calendarServices
+				: services
 
 	/**
 	 * Firestore-synced line items first (stable ids + colors from catalog sync), then
@@ -379,8 +393,14 @@ export default function AdminPlacePage({
 				setCalendarServices(
 					buildAdminCalendarServices(catalog, place, locale),
 				)
+				setBookableServices(
+					buildAdminBookableServices(catalog, place, locale),
+				)
 			} catch {
-				if (!cancelled) setCalendarServices([])
+				if (!cancelled) {
+					setCalendarServices([])
+					setBookableServices([])
+				}
 			}
 		}
 

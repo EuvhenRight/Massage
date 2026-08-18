@@ -37,6 +37,19 @@ const nextConfig = {
 				message:
 					/A Node\.js API is used \((?:CompressionStream|DecompressionStream)[^)]*\) which is not supported in the Edge Runtime/,
 			},
+			// `@protobufjs/inquire` is a deliberate "require it only if present"
+			// helper — a dynamic `require(moduleName)` wrapped in try/catch.
+			// webpack cannot resolve the expression statically and flags it, but
+			// the failure is the handled path: it returns null and protobufjs
+			// carries on. It reaches us transitively, and only server-side:
+			//   firebase/firestore → index.node.mjs → @grpc/proto-loader
+			//   → protobufjs → @protobufjs/inquire
+			// Scoped to that one module AND that one message, so any other
+			// "Critical dependency" — including a real one — still surfaces.
+			{
+				module: /node_modules[\\/]@protobufjs[\\/]inquire[\\/]/,
+				message: /Critical dependency: the request of a dependency is an expression/,
+			},
 		]
 		return config
 	},

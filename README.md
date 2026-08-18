@@ -163,6 +163,30 @@ GET|POST|PATCH|DELETE /api/admin/clients
 
 Admin CRUD, guarded by the NextAuth session.
 
+## Testing
+
+```bash
+npm run typecheck            # tsc --noEmit
+npm run lint                 # next lint
+npm test                     # Vitest: unit + integration
+npm run test:e2e             # Playwright, full suite
+```
+
+Both suites run against the **Firestore emulator**, never a real project.
+
+Vitest relies on the Node SDK auto-honouring `FIRESTORE_EMULATOR_HOST`. A
+browser cannot see that variable, so `npm run test:e2e` wraps Playwright in
+`firebase emulators:exec` and hands the dev server
+`NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST`; [lib/firebase.ts](lib/firebase.ts)
+connects to the emulator only when that variable is set, so every real
+deployment is unaffected. [e2e/emulator-isolation.spec.ts](e2e/emulator-isolation.spec.ts)
+watches live network traffic to keep the guarantee honest, and the emulator
+starts empty — [e2e/helpers/seed-emulator.ts](e2e/helpers/seed-emulator.ts)
+seeds the working hours and price catalog the specs read.
+
+`npm run test:e2e:live` runs against the configured project instead. It writes
+real data; the name is deliberately explicit.
+
 ## Deployment
 
 Vercel from `master`; production URL is [v2studio.sk](https://v2studio.sk). Two cron jobs (reminders at 06:00 UTC, status finalization at 03:00 UTC) are declared in [vercel.json](vercel.json); Firestore rules and composite indexes ship from the repo root.
@@ -177,7 +201,7 @@ Vercel from `master`; production URL is [v2studio.sk](https://v2studio.sk). Two 
 
 ## Roadmap
 
-**Done:** Quadrilingual public site · admin drag-and-drop calendar · WhatsApp + Resend notification pipeline · Vercel Cron reminders and status finalization · Firestore emulator CI (typecheck + Vitest + Playwright smoke).
+**Done:** Quadrilingual public site · admin drag-and-drop calendar · multi-service bookings (one contiguous block) · WhatsApp + Resend notification pipeline · Vercel Cron reminders and status finalization · Firestore emulator CI (typecheck + Vitest + full Playwright suite).
 
 **Next:** TODO — confirm with author.
 

@@ -3,6 +3,16 @@ import { defineConfig, devices } from "@playwright/test";
 
 config({ path: ".env.local" });
 
+/**
+ * When the suite runs under `firebase emulators:exec` the Node side already
+ * sees FIRESTORE_EMULATOR_HOST. The browser cannot, so the dev server is
+ * handed NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST too — that is what keeps a real
+ * browser from writing into the production database (see lib/firebase.ts).
+ */
+const emulatorHost = process.env.FIRESTORE_EMULATOR_HOST;
+/** Separate port so an emulator run can never reuse a plain dev server. */
+const PORT = emulatorHost ? 3008 : 3007;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
@@ -17,7 +27,7 @@ export default defineConfig({
   timeout: 90000,
   reporter: "list",
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3007",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`,
     trace: "on-first-retry",
     // Locator actions (.fill(), .click(), .toBeVisible()) — also need to
     // tolerate the cold-compile delay for the first-touched route.
@@ -28,9 +38,15 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "npm run dev -- -p 3007",
-    url: "http://localhost:3007",
-    reuseExistingServer: true,
+    command: `npm run dev -- -p ${PORT}`,
+    url: `http://localhost:${PORT}`,
+    // Never reuse a server in emulator mode: an already-running dev server
+    // would be pointed at the real project and the run would silently write
+    // production data while claiming to be isolated.
+    reuseExistingServer: !emulatorHost,
     timeout: 120000,
+    env: emulatorHost
+      ? { NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST: emulatorHost }
+      : undefined,
   },
 });

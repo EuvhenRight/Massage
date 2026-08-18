@@ -13,12 +13,24 @@ import { parseWhatsappE164 } from '@/lib/phone-e164'
 import type { Place } from '@/lib/places'
 import type { PriceCatalogStructure } from '@/types/price-catalog'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Search as SearchIcon } from 'lucide-react'
+import { ChevronUp, Search as SearchIcon, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import {
+	useCallback,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react'
 import { toast } from 'sonner'
 import { BookingFlowProvider, useBookingFlow } from './BookingFlowContext'
+import {
+	BookingCartList,
+	BookingCartSummaryLine,
+	BookingCartTotals,
+	useCartPriceLabel,
+} from './BookingCart'
 import BookingSidebar from './BookingSidebar'
 import { Input } from '@/components/ui/input'
 import BookingStepProgress from './BookingStepProgress'
@@ -64,12 +76,17 @@ function BookingFlowInner({
 }: BookingFlowProps) {
 	const accent = useMemo(() => getBookingAccent(place), [place])
 	const t = useTranslations('booking')
+	const tCommon = useTranslations('common')
 	const tValidation = useTranslations('validation')
+	const cartPriceLabel = useCartPriceLabel()
 	const locale = useLocale()
 	const router = useRouter()
 	const {
 		step,
 		service,
+		items,
+		removeItem,
+		priceTotal,
 		date,
 		time,
 		durationMinutes,
@@ -89,14 +106,39 @@ function BookingFlowInner({
 		clearDraft,
 	} = useBookingFlow()
 	const [searchQuery, setSearchQuery] = useState('')
+	const [mobileCartOpen, setMobileCartOpen] = useState(false)
+	/**
+	 * True while a back press stays inside the flow (walking up the catalog
+	 * tree). Drives the button's wording: it must promise what it will actually
+	 * do — "Cancel" on a press that only goes back one level made people think
+	 * they were about to lose their booking.
+	 */
+	const [catalogCanGoBack, setCatalogCanGoBack] = useState(false)
+	/** Live height of the fixed mobile bar, so the scroll area can clear it. */
+	const bottomBarRef = useRef<HTMLDivElement | null>(null)
+	const [bottomBarHeight, setBottomBarHeight] = useState(0)
+	useLayoutEffect(() => {
+		const el = bottomBarRef.current
+		if (!el || typeof ResizeObserver === 'undefined') return
+		const sync = () => setBottomBarHeight(el.getBoundingClientRect().height)
+		sync()
+		const ro = new ResizeObserver(sync)
+		ro.observe(el)
+		return () => ro.disconnect()
+	}, [])
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [successMessage, setSuccessMessage] = useState<string | null>(null)
 	const [formValid, setFormValid] = useState(false)
 	const stepCustomerRef = useRef<StepCustomerInfoHandle | null>(null)
 	const stepCatalogRef = useRef<StepServiceFromPriceCatalogHandle | null>(null)
 
+	/** Only the press that truly abandons the booking should say "Cancel". */
+	const leavesFlowOnBack = step === 1 && !catalogCanGoBack
+
+	const mobileCartPrice = cartPriceLabel(priceTotal)
+
 	const canNextStep12 =
-		(step === 1 && !!service) ||
+		(step === 1 && items.length > 0) ||
 		(step === 2 &&
 			(bookingGranularity === 'tbd' ||
 				(bookingGranularity === 'time' && !!date && !!time)))
@@ -156,6 +198,16 @@ function BookingFlowInner({
 				return
 			}
 			if (bookingGranularity !== 'tbd' && !date) return
+
+			// Success screen shows the leaf name per line, with the full catalog
+			// path underneath when it adds information.
+			const bookedLines = items.map(i => ({
+				leaf: i.title.includes(' › ')
+					? (i.title.split(' › ').pop() ?? i.title)
+					: i.title,
+				full: i.title,
+			}))
+
 			if (bookingGranularity === 'tbd') {
 				const dataTbd: BookingFormData = formData ?? {
 					service: service || '',
@@ -173,6 +225,7 @@ function BookingFlowInner({
 					await bookScheduleTbdAppointment(
 						{
 							service: finalService,
+							items,
 							fullName: dataTbd.fullName,
 							email: dataTbd.email,
 							phone: dataTbd.phone,
@@ -203,6 +256,9 @@ function BookingFlowInner({
 							date: t('emailScheduleTbdDateLine'),
 							time: t('emailScheduleTbdTimeLine'),
 							service: finalService,
+							// Per-service titles so the email lists them instead of
+							// relying on the route splitting the joined string.
+							serviceTitles: items.map(i => i.title),
 							fullCalendarDayCount: bookingDayCount,
 							bookingPlace: place,
 							notifyByEmail,
@@ -243,14 +299,10 @@ function BookingFlowInner({
 							}
 						}
 						clearDraft()
-						const itemName = finalService.includes(' › ')
-							? (finalService.split(' › ').pop() ?? finalService)
-							: finalService
 						setSuccessMessage(
 							JSON.stringify({
 								title: t('bookingConfirmed'),
-								service: itemName,
-								fullService: finalService,
+								services: bookedLines,
 								fullDayCount: bookingDayCount,
 							}),
 						)
@@ -289,6 +341,7 @@ function BookingFlowInner({
 						startTime,
 						durationMinutes,
 						service: finalService,
+						items,
 						serviceId: selected?.id,
 						serviceSk: selected?.titleSk ?? finalService,
 						serviceEn: selected?.titleEn ?? finalService,
@@ -320,6 +373,7 @@ function BookingFlowInner({
 						date: formatDateForEmail(slotDate),
 						time: formatTimeForEmail(slotDate),
 						service: finalService,
+						serviceTitles: items.map(i => i.title),
 						bookingPlace: place,
 						notifyByEmail,
 						notifyByWhatsApp,
@@ -359,11 +413,11 @@ function BookingFlowInner({
 						}
 					}
 					clearDraft()
-					const itemName = finalService.includes(' › ')
-						? (finalService.split(' › ').pop() ?? finalService)
-						: finalService
 					setSuccessMessage(
-						JSON.stringify({ title: t('bookingConfirmed'), service: itemName }),
+						JSON.stringify({
+							title: t('bookingConfirmed'),
+							services: bookedLines,
+						}),
 					)
 				}
 				onSuccess?.()
@@ -384,6 +438,7 @@ function BookingFlowInner({
 			durationMinutes,
 			bookingGranularity,
 			service,
+			items,
 			services,
 			scheduleTbdAdminHint,
 			bookingDayCount,
@@ -446,24 +501,24 @@ function BookingFlowInner({
 
 	if (successMessage) {
 		let title = t('bookingConfirmed')
-		let serviceName = ''
-		let fullServiceLine = ''
+		let bookedServices: { leaf: string; full: string }[] = []
 		let fullDayCount: number | undefined
 		try {
 			const parsed = JSON.parse(successMessage)
 			title = parsed.title ?? title
-			serviceName = parsed.service ?? ''
-			fullServiceLine =
-				typeof parsed.fullService === 'string' ? parsed.fullService : ''
+			bookedServices = Array.isArray(parsed.services)
+				? parsed.services.filter(
+						(s: unknown): s is { leaf: string; full: string } =>
+							!!s &&
+							typeof (s as { leaf?: unknown }).leaf === 'string' &&
+							typeof (s as { full?: unknown }).full === 'string',
+					)
+				: []
 			const n = Number(parsed.fullDayCount)
 			fullDayCount = Number.isFinite(n) && n >= 1 ? Math.min(14, n) : undefined
 		} catch {
 			title = successMessage
 		}
-		const showFullPath =
-			fullServiceLine &&
-			fullServiceLine !== serviceName &&
-			fullServiceLine.length > (serviceName?.length ?? 0)
 		return (
 			<motion.div
 				className='flex-1 flex items-center justify-center p-6 sm:p-8'
@@ -484,15 +539,28 @@ function BookingFlowInner({
 					<p className='font-serif text-xl sm:text-2xl text-icyWhite'>
 						{title}
 					</p>
-					{serviceName && (
-						<p className='text-icyWhite/80 text-base sm:text-lg'>
-							{serviceName}
-						</p>
-					)}
-					{showFullPath && (
-						<p className='text-icyWhite/55 text-sm leading-snug px-1 break-words'>
-							{fullServiceLine}
-						</p>
+					{bookedServices.length > 0 && (
+						<ul className='space-y-2.5 text-left mx-auto max-w-sm'>
+							{bookedServices.map((s, i) => {
+								const showFullPath =
+									s.full && s.full !== s.leaf && s.full.length > s.leaf.length
+								return (
+									<li
+										key={`${s.full}-${i}`}
+										className='rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5'
+									>
+										<p className='text-icyWhite/90 text-base leading-snug break-words'>
+											{s.leaf}
+										</p>
+										{showFullPath && (
+											<p className='text-icyWhite/50 text-xs leading-snug mt-0.5 break-words'>
+												{s.full}
+											</p>
+										)}
+									</li>
+								)
+							})}
+						</ul>
 					)}
 					{fullDayCount != null && (
 						<p className='text-icyWhite/70 text-sm'>
@@ -523,13 +591,22 @@ function BookingFlowInner({
 			{/* Body: main + sidebar — tablet/laptop: row; mobile: column, full height to bottom button */}
 			<div className='flex-1 flex min-h-0 md:flex-row flex-col overflow-hidden'>
 				{/* Main content — full width mobile, flex-1 tablet+ */}
-				<main className='flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden pb-12 md:pb-0'>
+				<main
+					className='flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden'
+					/*
+					 * Reserve exactly the fixed bottom bar's height. A constant used to
+					 * work when the bar was a single button, but the cart strip made it
+					 * taller and it started covering the time picker. The bar is
+					 * `md:hidden`, so on desktop it measures 0 and this is a no-op.
+					 */
+					style={{ paddingBottom: bottomBarHeight }}
+				>
 					<div className='px-4 py-2 sm:px-5 flex-shrink-0 flex items-center justify-between gap-3 sm:gap-4'>
 						<button
 							type='button'
 							onClick={handleBack}
 							className='flex items-center gap-1.5 text-icyWhite/60 hover:text-icyWhite text-sm font-medium transition-colors shrink-0 min-h-[44px] pl-0 pr-1 py-0 md:py-2 -ml-1 rounded-lg active:bg-white/5 touch-manipulation'
-							aria-label={step === 1 ? t('cancel') : t('back')}
+							aria-label={leavesFlowOnBack ? t('cancel') : t('back')}
 						>
 							<svg
 								className='w-5 h-5 shrink-0'
@@ -544,7 +621,7 @@ function BookingFlowInner({
 									d='M15 19l-7-7 7-7'
 								/>
 							</svg>
-							<span>{step === 1 ? t('cancel') : t('back')}</span>
+							<span>{leavesFlowOnBack ? t('cancel') : t('back')}</span>
 						</button>
 						{step === 1 &&
 							priceCatalog &&
@@ -597,6 +674,7 @@ function BookingFlowInner({
 											services={services}
 											searchQuery={searchQuery}
 											setSearchQuery={setSearchQuery}
+											onCanGoBackChange={setCatalogCanGoBack}
 										/>
 									</motion.div>
 								) : step <= 2 ? (
@@ -675,8 +753,37 @@ function BookingFlowInner({
 				</aside>
 			</div>
 
-			{/* Mobile-only: fixed bottom button — steps 1–4 */}
-			<div className='md:hidden fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-nearBlack/95 backdrop-blur-md pb-[env(safe-area-inset-bottom,0)]'>
+			{/* Mobile-only: fixed bottom bar — steps 1–4. The cart digest sits above
+			    the CTA so "what am I booking and how long is it" is always on screen
+			    without scrolling, and tapping it opens the editable list. */}
+			<div
+				ref={bottomBarRef}
+				className='md:hidden fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-nearBlack/95 backdrop-blur-md pb-[env(safe-area-inset-bottom,0)]'
+			>
+				{items.length > 0 && step <= 2 && (
+					<button
+						type='button'
+						onClick={() => setMobileCartOpen(true)}
+						aria-expanded={mobileCartOpen}
+						className='w-full flex items-center justify-between gap-3 px-4 py-2.5 min-h-[44px] border-b border-white/10 text-left active:bg-white/5 transition-colors touch-manipulation'
+					>
+						<span className='flex items-center gap-2 min-w-0 text-sm text-icyWhite'>
+							<span
+								className={`shrink-0 inline-flex items-center justify-center size-5 rounded-full text-[11px] font-bold ${accent.pillActive}`}
+							>
+								{items.length}
+							</span>
+							<BookingCartSummaryLine
+								items={items}
+								durationMinutes={durationMinutes}
+							/>
+						</span>
+						<span className='flex items-center gap-1.5 shrink-0 text-xs text-icyWhite/60'>
+							{mobileCartPrice}
+							<ChevronUp className='size-4' aria-hidden />
+						</span>
+					</button>
+				)}
 				<div className='px-4 py-3 sm:py-4'>
 					<button
 						type='button'
@@ -694,6 +801,57 @@ function BookingFlowInner({
 					</button>
 				</div>
 			</div>
+
+			{/* Mobile cart sheet — full list with per-line removal. */}
+			<AnimatePresence>
+				{mobileCartOpen && (
+					<>
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							transition={{ duration: 0.18 }}
+							onClick={() => setMobileCartOpen(false)}
+							className='md:hidden fixed inset-0 z-40 bg-nearBlack/70 backdrop-blur-sm'
+							aria-hidden
+						/>
+						<motion.div
+							role='dialog'
+							aria-modal='true'
+							aria-label={t('bookingSummary')}
+							initial={{ y: '100%' }}
+							animate={{ y: 0 }}
+							exit={{ y: '100%' }}
+							transition={{ duration: 0.24, ease: [0.25, 0.46, 0.45, 0.94] }}
+							className='md:hidden fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-white/15 bg-nearBlack max-h-[80vh] flex flex-col pb-[env(safe-area-inset-bottom,0)]'
+						>
+							<div className='flex items-center justify-between gap-3 px-4 py-3 border-b border-white/10 shrink-0'>
+								<h3 className='font-serif text-base font-semibold text-icyWhite'>
+									{tCommon('services')}
+								</h3>
+								<button
+									type='button'
+									onClick={() => setMobileCartOpen(false)}
+									aria-label={t('close')}
+									className='p-2 -mr-2 rounded-lg text-icyWhite/60 hover:text-icyWhite active:bg-white/10 transition-colors touch-manipulation'
+								>
+									<X className='size-5' aria-hidden />
+								</button>
+							</div>
+							<div className='flex-1 min-h-0 overflow-y-auto px-4 py-4'>
+								<BookingCartList items={items} onRemove={removeItem} />
+							</div>
+							<div className='px-4 py-3 border-t border-white/10 shrink-0'>
+								<BookingCartTotals
+									items={items}
+									durationMinutes={durationMinutes}
+									priceTotal={priceTotal}
+								/>
+							</div>
+						</motion.div>
+					</>
+				)}
+			</AnimatePresence>
 		</div>
 	)
 }

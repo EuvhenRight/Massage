@@ -18,6 +18,7 @@ import {
 } from "@/lib/whatsapp-admin-notify";
 import { parseWhatsappE164 } from "@/lib/phone-e164";
 import { resolveNotifyChannels } from "@/lib/notify-channels";
+import { splitBookingServiceTitles } from "@/lib/split-catalog-service-title";
 
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -41,6 +42,29 @@ type EmailType = "new" | "rescheduled" | "cancelled";
 
 function parseBookingPlace(body: Record<string, unknown>): BookingPlace {
   return body.bookingPlace === "depilation" ? "depilation" : "massage";
+}
+
+/**
+ * Per-service titles for a booking.
+ *
+ * The caller sends `serviceTitles` when it holds the structured cart, which is
+ * authoritative. Admin-created and legacy callers only send the joined
+ * `service` string, so fall back to splitting it — good enough for display,
+ * and identical to the old behaviour for single-service bookings.
+ */
+function parseServiceTitles(
+  body: Record<string, unknown>,
+  serviceStr: string
+): string[] {
+  const raw = body.serviceTitles;
+  if (Array.isArray(raw)) {
+    const titles = raw
+      .filter((t): t is string => typeof t === "string")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (titles.length > 0) return titles;
+  }
+  return splitBookingServiceTitles(serviceStr);
 }
 
 export async function POST(request: Request) {
@@ -87,6 +111,7 @@ export async function POST(request: Request) {
       const dateStr = String(date);
       const timeStr = String(time);
       const serviceStr = service ? String(service) : "";
+      const serviceTitles = parseServiceTitles(body, serviceStr);
       const dayCountRaw = fullCalendarDayCount;
       const dayCountNum =
         typeof dayCountRaw === "number"
@@ -118,7 +143,7 @@ export async function POST(request: Request) {
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: [toStr],
           subject: SUBJECTS.new(dateStr, timeStr),
-          html: buildConfirmationEmail(nameStr, dateStr, timeStr, serviceStr, fullDayCount),
+          html: buildConfirmationEmail(nameStr, dateStr, timeStr, serviceTitles, fullDayCount),
         });
       } else {
         customerResult = { error: null };
@@ -133,7 +158,7 @@ export async function POST(request: Request) {
           from: `${FROM_NAME} <${FROM_EMAIL}>`,
           to: [ADMIN_EMAIL],
           subject: SUBJECTS.newAdmin(nameStr, dateStr, timeStr),
-          html: buildAdminNewBooking(nameStr, toStr, dateStr, timeStr, serviceStr, fullDayCount),
+          html: buildAdminNewBooking(nameStr, toStr, dateStr, timeStr, serviceTitles, fullDayCount),
         });
         errMsg = adminResult.error?.message;
       }
@@ -232,6 +257,7 @@ export async function POST(request: Request) {
       const newDateStr = String(newDate);
       const newTimeStr = String(newTime);
       const serviceStr = service ? String(service) : "";
+      const serviceTitles = parseServiceTitles(body, serviceStr);
 
       if (notifyByEmail) {
         const customerResult = await resend.emails.send({
@@ -240,7 +266,7 @@ export async function POST(request: Request) {
           subject: SUBJECTS.rescheduled(newDateStr, newTimeStr),
           html: buildRescheduledEmail(
             nameStr,
-            serviceStr,
+            serviceTitles,
             oldDateStr,
             oldTimeStr,
             newDateStr,
@@ -311,6 +337,7 @@ export async function POST(request: Request) {
       const dateStr = String(date);
       const timeStr = String(time);
       const serviceStr = service ? String(service) : "";
+      const serviceTitles = parseServiceTitles(body, serviceStr);
 
       const [customerResult, adminResult] = await Promise.all([
         notifyByEmail
@@ -318,7 +345,7 @@ export async function POST(request: Request) {
               from: `${FROM_NAME} <${FROM_EMAIL}>`,
               to: [toStr],
               subject: SUBJECTS.cancelled,
-              html: buildCancelledEmail(nameStr, dateStr, timeStr, serviceStr),
+              html: buildCancelledEmail(nameStr, dateStr, timeStr, serviceTitles),
             })
           : Promise.resolve({ error: null as { message?: string } | null }),
         // Mirror customer's channel choice for the admin copy (see "new" branch).
@@ -327,7 +354,7 @@ export async function POST(request: Request) {
               from: `${FROM_NAME} <${FROM_EMAIL}>`,
               to: [ADMIN_EMAIL],
               subject: SUBJECTS.cancelledAdmin(nameStr, dateStr, timeStr),
-              html: buildAdminCancelled(nameStr, toStr, dateStr, timeStr, serviceStr),
+              html: buildAdminCancelled(nameStr, toStr, dateStr, timeStr, serviceTitles),
             })
           : Promise.resolve({ error: null as { message?: string } | null }),
       ]);

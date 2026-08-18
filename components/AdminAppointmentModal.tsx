@@ -30,7 +30,17 @@ import {
 	updateAppointment,
 	type AdminBookingInput,
 	type AppointmentData,
+	clampAdminBookingDurationMinutes,
+	MAX_ADMIN_BOOKING_DURATION_MINUTES,
 } from '@/lib/book-appointment'
+import type { SexKey } from '@/types/price-catalog'
+import {
+	bookingItemFromServiceRow,
+	bookingItemsFromFirestore,
+	joinItemTitles,
+	totalDurationMinutes,
+	type BookingItem,
+} from '@/lib/booking-items'
 import { getDateKey } from '@/lib/booking'
 import { db } from '@/lib/firebase'
 import {
@@ -49,7 +59,7 @@ import {
 	type ServiceData,
 } from '@/lib/services'
 import { clsx } from 'clsx'
-import { RotateCcw, X } from 'lucide-react'
+import { Check, Minus, Plus, RotateCcw, Search, X } from 'lucide-react'
 import {
 	collection,
 	doc,
@@ -145,6 +155,51 @@ function disabledKeysForFullDaySlot(
 	return Array.from(new Set([...base, ...pickedOnOtherSlots]))
 }
 
+/**
+ * Seed the service cart when the modal opens on an existing appointment.
+ * Multi-service bookings carry `items`; older ones only have the joined
+ * `service` string, which becomes a single line so editing still works.
+ */
+const SERVICE_PATH_SEP = ' › '
+
+/** Breadcrumb part of a catalog path ("A › B › Leaf" → "A › B"). */
+function servicePath(title: string): string {
+	const parts = title.split(SERVICE_PATH_SEP)
+	return parts.length > 1 ? parts.slice(0, -1).join(SERVICE_PATH_SEP) : ''
+}
+
+/** The bookable line itself ("A › B › Leaf" → "Leaf"). */
+function serviceLeaf(title: string): string {
+	const parts = title.split(SERVICE_PATH_SEP)
+	return parts[parts.length - 1] ?? title
+}
+
+function initialSelectedItems(
+	appointment: AppointmentData | null,
+	services: ServiceData[],
+): BookingItem[] {
+	if (!appointment) return []
+	const stored = bookingItemsFromFirestore(appointment.items)
+	if (stored.length > 0) return stored
+	const title =
+		findServiceDataForAppointment(appointment, services)?.title ??
+		appointment.service ??
+		''
+	if (!title.trim() || title.trim() === '—') return []
+	const match = services.find(x => x.title === title)
+	return [
+		bookingItemFromServiceRow({
+			id: match?.id,
+			title,
+			durationMinutes: match?.durationMinutes,
+			titleSk: match?.titleSk,
+			titleEn: match?.titleEn,
+			titleRu: match?.titleRu,
+			titleUk: match?.titleUk,
+		}),
+	]
+}
+
 interface AdminAppointmentModalProps {
 	isOpen: boolean
 	onClose: () => void
@@ -174,6 +229,7 @@ export default function AdminAppointmentModal({
 	const ui = useMemo(() => getPlaceAccentUi(place), [place])
 	const t = useTranslations('admin')
 	const tCommon = useTranslations('common')
+	const tPrice = useTranslations('price')
 	const isEdit = mode === 'edit' && appointment
 	const endDateForPast =
 		appointment &&
@@ -234,7 +290,27 @@ export default function AdminAppointmentModal({
 	)
 	const [occupiedDayKeys, setOccupiedDayKeys] = useState<string[]>([])
 	const [duration, setDuration] = useState(durationMinutes)
-	const [service, setService] = useState(appointment?.service ?? '')
+	/**
+	 * Services on this booking. Admin can stack several; they form ONE
+	 * contiguous block whose length is their sum — there is no gap between
+	 * them, because a booking is a single time range, not a chain. The prep
+	 * buffer applies only around the booking as a whole.
+	 */
+	const [selectedItems, setSelectedItems] = useState<BookingItem[]>(() =>
+		initialSelectedItems(appointment ?? null, services),
+	)
+	/** The picker lists the whole price catalog, so it needs a filter. */
+	const [serviceQuery, setServiceQuery] = useState('')
+	/**
+	 * Which catalog branch the picker shows. Not cosmetic: the same line exists
+	 * under both with a different price AND duration, so booking against the
+	 * wrong branch puts a wrong-length block on the calendar.
+	 */
+	const [pickerSex, setPickerSex] = useState<SexKey>(
+		() => initialSelectedItems(appointment ?? null, services)[0]?.sex ?? 'woman',
+	)
+	/** Denormalized title used by the save payload, notifications and headings. */
+	const service = useMemo(() => joinItemTitles(selectedItems), [selectedItems])
 	const [fullName, setFullName] = useState(appointment?.fullName ?? '')
 	const [email, setEmail] = useState(appointment?.email ?? '')
 	const [phone, setPhone] = useState(appointment?.phone ?? '')
@@ -276,7 +352,7 @@ export default function AdminAppointmentModal({
 				),
 			)
 			setDuration(Math.round((apEnd.getTime() - apStart.getTime()) / 60000))
-			setService(appointment.service ?? '')
+			setSelectedItems(initialSelectedItems(appointment, services))
 			setFullName(appointment.fullName ?? '')
 			setEmail(appointment.email ?? '')
 			setPhone(appointment.phone ?? '')
@@ -291,7 +367,7 @@ export default function AdminAppointmentModal({
 			setDaySlotValues([])
 			setAllDayDayCount(1)
 			setDuration(60)
-			setService('')
+			setSelectedItems([])
 			setFullName('')
 			setEmail('')
 			setPhone('')
@@ -327,6 +403,12 @@ export default function AdminAppointmentModal({
 			undefined
 		)
 	}, [appointmentCatalogService, services, service])
+
+	/** Per-service breakdown; empty for pre-multi-service appointments. */
+	const modalItems = useMemo(
+		() => bookingItemsFromFirestore(appointment?.items),
+		[appointment?.items],
+	)
 
 	const serviceDayCount = useMemo(() => {
 		if (
@@ -396,19 +478,54 @@ export default function AdminAppointmentModal({
 		return d
 	}, [])
 
+	/**
+	 * Catalog lines grouped by their category path. The full catalog runs to
+	 * ~135 lines, which is unusable as one flat list — the admin opens the
+	 * category they need and picks inside it.
+	 */
+	/** Only show the branch toggle when the catalog actually splits by sex. */
+	const catalogHasSexSplit = useMemo(
+		() => services.some(s => s.sex === 'woman') && services.some(s => s.sex === 'man'),
+		[services],
+	)
+
 	const groupedServices = useMemo(() => {
-		const groups: { color: string; items: ServiceData[] }[] = []
-		const colorMap = new Map<string, ServiceData[]>()
-		for (const s of services) {
-			const key = s.color || '__none__'
-			if (!colorMap.has(key)) colorMap.set(key, [])
-			colorMap.get(key)!.push(s)
+		const q = serviceQuery.trim().toLocaleLowerCase()
+		// Match anywhere in the path so "губа" finds "… › Лицо › Верхняя губа".
+		// Rows without a branch come from places with no price catalog — always show them.
+		const forSex = services.filter(s => !s.sex || s.sex === pickerSex)
+		const visible = q
+			? forSex.filter(s => s.title.toLocaleLowerCase().includes(q))
+			: forSex
+		const byPath = new Map<string, ServiceData[]>()
+		for (const s of visible) {
+			const key = servicePath(s.title) || s.title
+			const list = byPath.get(key)
+			if (list) list.push(s)
+			else byPath.set(key, [s])
 		}
-		for (const [color, items] of Array.from(colorMap.entries())) {
-			groups.push({ color, items })
-		}
-		return groups
-	}, [services])
+		return Array.from(byPath.entries())
+			.map(([path, items]) => ({
+				path,
+				color: items[0]?.color ?? '',
+				items: items
+					.slice()
+					.sort((a, b) => serviceLeaf(a.title).localeCompare(serviceLeaf(b.title))),
+			}))
+			.sort((a, b) => a.path.localeCompare(b.path))
+	}, [services, serviceQuery, pickerSex])
+
+	const [openCategories, setOpenCategories] = useState<Set<string>>(new Set())
+	const toggleCategory = useCallback((path: string) => {
+		setOpenCategories(prev => {
+			const next = new Set(prev)
+			if (next.has(path)) next.delete(path)
+			else next.add(path)
+			return next
+		})
+	}, [])
+	/** While searching, every matching category is open — hiding hits defeats the search. */
+	const searching = serviceQuery.trim().length > 0
 
 	const blockedDayKeysForPicker = useMemo(() => {
 		if (!isDayMode) return []
@@ -416,8 +533,53 @@ export default function AdminAppointmentModal({
 		return occupiedDayKeys.filter(k => !ownDays.has(k))
 	}, [daySlotValues, isDayMode, occupiedDayKeys])
 
+	/** Sum of the picked services — the block length with no gaps between them. */
+	const selectedServicesTotalMinutes = useMemo(
+		() => totalDurationMinutes(selectedItems),
+		[selectedItems],
+	)
+
+	/**
+	 * Tick a service on or off.
+	 *
+	 * The duration field follows the sum on every change: services in one
+	 * booking run back-to-back, so the block is exactly the sum of its parts —
+	 * no padding, no break. The admin can still type a different duration
+	 * afterwards (e.g. to leave room for a chat); the next tick re-syncs it.
+	 */
+	const toggleService = useCallback(
+		(row: ServiceData) => {
+			setSelectedItems(prev => {
+				const key = row.id || row.title
+				const next = prev.some(i => i.key === key)
+					? prev.filter(i => i.key !== key)
+					: [
+							...prev,
+							bookingItemFromServiceRow({
+								id: row.id,
+								title: row.title,
+								sex: row.sex,
+								durationMinutes: row.durationMinutes,
+								bookingGranularity: row.bookingGranularity,
+								bookingDayCount: row.bookingDayCount,
+								scheduleTbdMessage: row.scheduleTbdMessage,
+								scheduleTbdAdminNote: row.scheduleTbdAdminNote,
+								titleSk: row.titleSk,
+								titleEn: row.titleEn,
+								titleRu: row.titleRu,
+								titleUk: row.titleUk,
+							}),
+						]
+				const total = totalDurationMinutes(next)
+				if (total > 0) setDuration(total)
+				return next
+			})
+		},
+		[],
+	)
+
 	const effectiveDurationMinutes = useMemo(
-		() => Math.max(5, Math.min(240, Number.isFinite(duration) ? duration : 60)),
+		() => clampAdminBookingDurationMinutes(duration),
 		[duration],
 	)
 
@@ -617,11 +779,7 @@ export default function AdminAppointmentModal({
 					: [],
 			)
 			setDuration(Math.round((e.getTime() - s.getTime()) / 60000))
-			setService(
-				findServiceDataForAppointment(appointment, services)?.title ??
-					appointment.service ??
-					'',
-			)
+			setSelectedItems(initialSelectedItems(appointment, services))
 			setFullName(appointment.fullName ?? '')
 			setEmail(appointment.email ?? '')
 			setPhone(appointment.phone ?? '')
@@ -636,7 +794,7 @@ export default function AdminAppointmentModal({
 			setAllDayDayCount(1)
 			setDaySlotValues([])
 			setDuration(services[0]?.durationMinutes ?? 60)
-			setService(services[0]?.title ?? '')
+			setSelectedItems([])
 			setFullName('')
 			setEmail('')
 			setPhone('')
@@ -784,7 +942,7 @@ export default function AdminAppointmentModal({
 				: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
 			const dur = isDayMode
 				? undefined
-				: Math.max(5, Math.min(240, Number.isFinite(duration) ? duration : 60))
+				: clampAdminBookingDurationMinutes(duration)
 			const noteValue = adminNote.trim() || undefined
 
 			const effectiveNotifyByEmail =
@@ -804,6 +962,9 @@ export default function AdminAppointmentModal({
 					appointment.id,
 					{
 						service: service || undefined,
+						// Replace the stored breakdown; a single service sends [] so no
+						// stale multi-service array survives the edit.
+						items: selectedItems.length > 1 ? selectedItems : [],
 						fullName: fullName || undefined,
 						email: email || undefined,
 						phone: phone || undefined,
@@ -884,6 +1045,7 @@ export default function AdminAppointmentModal({
 					adminBookingMode: bookingMode,
 					adminFullDayDates: isDayMode ? normalizedDayDates : undefined,
 					service: service || undefined,
+					items: selectedItems.length > 1 ? selectedItems : undefined,
 					fullName: fullName || undefined,
 					email: email || undefined,
 					phone: phone || undefined,
@@ -909,6 +1071,7 @@ export default function AdminAppointmentModal({
 									? t('allDayNoClockTime')
 									: formatTimeForEmail(slotDate),
 								service: service || undefined,
+								serviceTitles: selectedItems.map(i => i.title),
 								bookingPlace: place,
 								notifyByEmail: effectiveNotifyByEmail,
 								notifyByWhatsApp: effectiveNotifyByWhatsApp,
@@ -1006,9 +1169,29 @@ export default function AdminAppointmentModal({
 				{isEdit && appointment && (
 					<div className='mb-4 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 space-y-1'>
 						<div className='flex items-center justify-between gap-2'>
-							<span className='text-sm font-medium text-icyWhite truncate'>
-								{appointment.service || '—'}
-							</span>
+							{/* Multi-service bookings list each line with its own duration;
+							    the joined string would just truncate into uselessness. */}
+							{modalItems.length > 1 ? (
+								<ul className='min-w-0 flex-1 space-y-0.5'>
+									{modalItems.map(item => (
+										<li
+											key={item.key}
+											className='flex items-baseline justify-between gap-2 text-sm font-medium text-icyWhite'
+										>
+											<span className='min-w-0 break-words'>{item.title}</span>
+											{item.granularity === 'time' ? (
+												<span className='shrink-0 tabular-nums text-xs text-icyWhite/45'>
+													{item.durationMinutes} min
+												</span>
+											) : null}
+										</li>
+									))}
+								</ul>
+							) : (
+								<span className='text-sm font-medium text-icyWhite truncate'>
+									{appointment.service || '—'}
+								</span>
+							)}
 							{serviceDayCount > 0 && (
 								<span className='shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-xs text-icyWhite/80'>
 									{t('dayCountValue', { count: serviceDayCount })}
@@ -1036,9 +1219,15 @@ export default function AdminAppointmentModal({
 				)}
 
 				<form onSubmit={handleSubmit} className='space-y-4'>
+					{/*
+					 * `min-w-0`: a <fieldset> defaults to `min-inline-size: min-content`
+					 * in the UA stylesheet, so it refuses to shrink below its widest
+					 * content. Long catalog paths pushed that past the modal width and
+					 * dragged every field out with it.
+					 */}
 					<fieldset
 						disabled={!!isPastAppointment}
-						className='space-y-4 [&:disabled]:opacity-75'
+						className='min-w-0 space-y-4 [&:disabled]:opacity-75'
 					>
 						{/* ── Appointment type toggle ── */}
 						<div className='space-y-1.5'>
@@ -1226,40 +1415,140 @@ export default function AdminAppointmentModal({
 								</>
 							) : (
 								<>
-									<Label className='text-icyWhite/80'>
-										{tCommon('services')}
-									</Label>
-									<Select
-										value={service || 'none'}
-										onValueChange={v => {
-											const val = v === 'none' ? '' : v
-											setService(val)
-											const svc = services.find(s => s.title === val)
-											if (svc) setDuration(svc.durationMinutes)
-										}}
-									>
-										<SelectTrigger className='select-menu'>
-											<SelectValue placeholder={t('chooseService')} />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value='none'>—</SelectItem>
-											{groupedServices.map((group, gi) => (
-												<SelectGroup key={group.color}>
-													{gi > 0 && <SelectSeparator />}
-													{group.items.map(s => (
-														<SelectItem key={s.id} value={s.title}>
-															<span className='flex items-center gap-2'>
-																<span
-																	className={`inline-block w-2.5 h-2.5 rounded-full border ${s.color}`}
-																/>
-																{s.title}
-															</span>
-														</SelectItem>
-													))}
-												</SelectGroup>
+									<div className='flex items-baseline justify-between gap-2'>
+										<Label className='text-icyWhite/80'>{tCommon('services')}</Label>
+										{selectedItems.length > 0 && (
+											<span className='text-xs tabular-nums text-icyWhite/50'>
+												{t('servicesSelectedCount', { count: selectedItems.length })}
+												{' · '}
+												{selectedServicesTotalMinutes} {t('minutesShort')}
+											</span>
+										)}
+									</div>
+									{/* Multi-select over the FULL price catalog. Categories collapse so the
+									    ~135 bookable lines stay navigable; opening one reveals its services.
+									    Several picked services share one contiguous block. */}
+									{/* Branch picker: prices and durations differ between them. */}
+									{catalogHasSexSplit && (
+										<div className='grid grid-cols-2 gap-2'>
+											{(['woman', 'man'] as SexKey[]).map(sx => (
+												<button
+													key={sx}
+													type='button'
+													aria-pressed={pickerSex === sx}
+													onClick={() => setPickerSex(sx)}
+													className={`min-h-[40px] rounded-lg border px-3 text-sm font-medium transition-colors ${
+														pickerSex === sx
+															? 'border-icyWhite/40 bg-white/[0.12] text-icyWhite'
+															: 'border-white/10 bg-white/[0.03] text-icyWhite/60 hover:bg-white/[0.07]'
+													}`}
+												>
+													{tPrice(sx)}
+												</button>
 											))}
-										</SelectContent>
-									</Select>
+										</div>
+									)}
+									<div className='relative'>
+										<Search
+											className='pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-icyWhite/40'
+											aria-hidden
+										/>
+										<Input
+											type='search'
+											value={serviceQuery}
+											onChange={e => setServiceQuery(e.target.value)}
+											placeholder={t('searchServicePlaceholder')}
+											aria-label={t('searchServicePlaceholder')}
+											className='pl-9'
+										/>
+									</div>
+									<ul className='max-h-64 space-y-1 overflow-y-auto overflow-x-hidden rounded-lg border border-white/10 bg-white/[0.02] p-1.5'>
+										{groupedServices.length === 0 && (
+											<li className='px-2.5 py-3 text-center text-sm text-icyWhite/45'>
+												{t('noServicesFound')}
+											</li>
+										)}
+										{groupedServices.map(group => {
+											const open = searching || openCategories.has(group.path)
+											const pickedHere = group.items.filter(s =>
+												selectedItems.some(i => i.key === (s.id || s.title)),
+											).length
+											return (
+												<li key={group.path} className='min-w-0'>
+													<button
+														type='button'
+														aria-expanded={open}
+														onClick={() => toggleCategory(group.path)}
+														className='flex w-full min-w-0 items-center gap-2 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-white/[0.06]'
+													>
+														{open ? (
+															<Minus className='size-4 shrink-0 text-icyWhite/50' />
+														) : (
+															<Plus className='size-4 shrink-0 text-icyWhite/50' />
+														)}
+														<span
+															className={`inline-block size-2.5 shrink-0 rounded-full border ${group.color}`}
+															aria-hidden
+														/>
+														<span className='min-w-0 flex-1 truncate text-sm text-icyWhite/85'>
+															{group.path}
+														</span>
+														{pickedHere > 0 && (
+															<span className='shrink-0 rounded-full bg-icyWhite px-1.5 text-[11px] font-bold tabular-nums text-nearBlack'>
+																{pickedHere}
+															</span>
+														)}
+														<span className='shrink-0 tabular-nums text-xs text-icyWhite/35'>
+															{group.items.length}
+														</span>
+													</button>
+													{open && (
+														<ul className='mb-1 ml-4 space-y-0.5 border-l border-white/10 pl-2'>
+															{group.items.map(s => {
+																const checked = selectedItems.some(
+																	i => i.key === (s.id || s.title),
+																)
+																return (
+																	<li key={s.id} className='min-w-0'>
+																		<button
+																			type='button'
+																			aria-pressed={checked}
+																			onClick={() => toggleService(s)}
+																			className={`flex w-full min-w-0 items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition-colors ${
+																				checked
+																					? 'bg-white/[0.12] text-icyWhite'
+																					: 'text-icyWhite/80 hover:bg-white/[0.06]'
+																			}`}
+																		>
+																			<span
+																				className={`flex size-4 shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
+																					checked
+																						? 'border-icyWhite bg-icyWhite text-nearBlack'
+																						: 'border-white/25 text-transparent'
+																				}`}
+																				aria-hidden
+																			>
+																				<Check className='size-3' strokeWidth={3} />
+																			</span>
+																			<span className='min-w-0 flex-1 truncate'>
+																				{serviceLeaf(s.title)}
+																			</span>
+																			<span className='shrink-0 tabular-nums text-xs text-icyWhite/45'>
+																				{s.durationMinutes} {t('minutesShort')}
+																			</span>
+																		</button>
+																	</li>
+																)
+															})}
+														</ul>
+													)}
+												</li>
+											)
+										})}
+									</ul>
+									{selectedItems.length > 1 && (
+										<p className='text-xs text-icyWhite/50'>{t('servicesBackToBackHint')}</p>
+									)}
 								</>
 							)}
 						</div>
@@ -1271,7 +1560,7 @@ export default function AdminAppointmentModal({
 								<Input
 									type='number'
 									min={5}
-									max={240}
+									max={MAX_ADMIN_BOOKING_DURATION_MINUTES}
 									step={5}
 									value={Number.isFinite(duration) ? duration : ''}
 									onChange={e => {
