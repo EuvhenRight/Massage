@@ -212,6 +212,39 @@
 	}
 }
 
+/* SectionDivider RuleLine (массаж) — волосяные линии выезжают от центральной
+   точки наружу. Отдельный от волны рисунок, чтобы страница массажа читалась
+   иначе, чем депиляция. */
+@keyframes sd-rule-draw {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+
+.sd-rule-line {
+	transform: scaleX(0);
+}
+
+/*
+ * Кривая мягче, чем у волны. У волны (0.22,1,0.36,1) 76% пути проходится за
+ * первую четверть времени — для штриха вдоль дуги это читается, а прямая линия
+ * при таком разгоне просто «выстреливает». ease-out трогается сразу, но
+ * оставшиеся 60% пути растягивает на три четверти времени — рисовку видно.
+ */
+.sd-rule-line--play {
+	animation: sd-rule-draw 1.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sd-rule-line--play {
+		animation-duration: 0.4s;
+		animation-timing-function: ease-out;
+	}
+}
+
 /* Mobile/laptop parity: декоративный float крутится и на телефоне (паузится
    off-screen через useInViewPause). Глушим только при prefers-reduced-motion. */
 @media (prefers-reduced-motion: reduce) {

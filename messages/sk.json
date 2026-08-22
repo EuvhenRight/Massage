@@ -150,7 +150,7 @@
     "mostPopular": "Najobľúbenejšie",
     "select": "Vybrať",
     "selectMembership": "Vybrať členstvo {tier}",
-    "hero": "Relaxácia. Obnova. Hlboké uzdravenie.",
+    "hero": "S pozornosťou a starostlivosťou. S teplom rúk. Pre vašu ľahkosť, beztiaž, silu a energiu.",
     "heroBadge": "V2Studio — Prémiová Masáž, Bratislava",
     "heroSeoHeading": "Terapeutická, športová a relaxačná masáž v Bratislave — V2studio, Krížna 36",
     "heroBookButton": "Rezervovať",
@@ -162,11 +162,11 @@
     "bookNow": "Rezervovať",
     "trustBarLabel": "Referencie",
     "trust": {
-      "trustYears": "10+ Rokov Skúseností",
-      "trustCertified": "Certifikovaní Terapeuti",
-      "trustMedical": "Medicínsky Prístup",
-      "trustTechniques": "8 Masážnych Techník",
-      "trustClients": "2000+ Spokojných Klientov"
+      "trustYears": "5+ Rokov Skúseností",
+      "trustCertified": "Certifikovaný Masér",
+      "trustIndividual": "Individuálny Prístup",
+      "trustTechniques": "Viac Ako 10 Masážnych Techník",
+      "trustClients": "1000+ Spokojných Klientov"
     },
     "aboutTitle": "O Našom Štúdiu",
     "aboutIntro": "Vitajte vo V Studio Massage — vašom útočisku relaxácie v srdci Bratislavy. Kombinujeme tradičné masážne techniky s modernými terapeutickými prístupmi.",
@@ -188,7 +188,7 @@
     "achievement2": "Výcvik v thajských, švédskych a hlbokých tkanivových modalitách",
     "achievement3": "Uvedení v Bratislavskom Top Wellness Sprievodcovi",
     "achievement4": "Partnerstvá so športovými tímami a rehabilitačnými centrami",
-    "achievement5": "Viac ako 2 000 spokojných klientov po celej Európe",
+    "achievement5": "Viac ako 1 000 spokojných klientov po celej Európe",
     "serviceMenu": {
       "title": "Cenník Masáží",
       "subtitle": "Všetky techniky. Prispôsobené pre vás. Transparentné ceny.",
@@ -279,7 +279,7 @@
         "name": "Serhij Volik",
         "role": "Zakladateľ a hlavný špecialista na masáž",
         "specialty": "Klasická · Športová · Anticelulitídna · Lymfodrenáž · Prístrojová · Gua sha",
-        "bio": "Skúsenosti od roku 2022. Medzinárodné certifikáty škôl na Ukrajine a na Slovensku. Všetky masážne techniky."
+        "bio": "5+ rokov praxe. Medzinárodné certifikáty škôl na Ukrajine a na Slovensku. Všetky masážne techniky."
       },
       "natalie": {
         "name": "Natálie Volik",

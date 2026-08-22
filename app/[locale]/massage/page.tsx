@@ -2,6 +2,7 @@
 
 import { useCookieConsent } from '@/components/CookieConsentContext'
 import GlowText from '@/components/GlowText'
+import Marquee from '@/components/Marquee'
 import Navbar from '@/components/Navbar'
 import SectionDivider from '@/components/SectionDivider'
 import {
@@ -64,7 +65,7 @@ import { useMemo, useRef, useState } from 'react'
 const TRUST_ITEMS = [
 	'trustYears',
 	'trustCertified',
-	'trustMedical',
+	'trustIndividual',
 	'trustTechniques',
 	'trustClients',
 ] as const
@@ -164,7 +165,7 @@ export default function MassagePage() {
 
 	// `minimal` теперь всегда false (см. site-motion.ts) — анимация играет
 	// независимо от системного Reduce Motion. `compact` тюнит мобильные дистанции.
-	const { minimal, compact } = useSiteMotion()
+	const { minimal, compact, narrowPhone, tablet } = useSiteMotion()
 	const ry = useMemo(() => scrollRevealY(minimal, compact), [minimal, compact])
 	const rxLeft = useMemo(
 		() => scrollRevealX(minimal, 'left', compact),
@@ -181,6 +182,7 @@ export default function MassagePage() {
 	// Hero без gating — играет на iPhone с Low Power Mode тоже.
 	const heroMotion = useMemo(() => heroEnter(false), [])
 	const heroMotionDelayed = useMemo(() => heroEnter(false, { delay: 0.06 }), [])
+	const trustSegment = TRUST_ITEMS.map(key => t(`trust.${key}`))
 
 	const scrollSlider = (
 		ref: React.RefObject<HTMLDivElement | null>,
@@ -311,32 +313,32 @@ export default function MassagePage() {
 					</motion.div>
 				</div>
 
-				<div
-					className='hero-trust-bar-massage relative z-10 py-3 border-t border-white/5 bg-nearBlack/60 backdrop-blur-sm'
-					aria-label={t('trustBarLabel')}
+				{/* Trust bar — бегущая строка, как на depilation. iOS-safe: WAAPI по
+				    измеренной в пикселях дистанции, размытый фон — sibling трека, а не
+				    его предок. Скорость по уровням: телефон 36 (узкий экран, текст
+				    должен успеть прочитаться), планшет 48, десктоп 60. */}
+				<Marquee
+					speed={narrowPhone ? 36 : tablet ? 48 : 60}
+					gradientEdges
+					pauseOnHover
+					ariaLabel={t('trustBarLabel')}
+					className='hero-trust-bar-massage z-10 shrink-0 py-3 border-t border-white/5'
+					backgroundClassName='bg-nearBlack/60 backdrop-blur-sm'
 				>
-					<div className='max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-8 gap-y-1.5'>
-						{TRUST_ITEMS.map((key, i) => (
-							<span
-								key={key}
-								className='text-gold-glow/80 text-[10px] sm:text-xs lg:text-sm tracking-wider uppercase whitespace-nowrap'
-							>
-								{i > 0 && (
-									<span
-										className='text-white/20 mr-4 sm:mr-8 hidden sm:inline'
-										aria-hidden
-									>
-										|
-									</span>
-								)}
-								{t(`trust.${key}`)}
+					{trustSegment.map((text, i) => (
+						<span
+							key={`trust-${i}`}
+							className='flex items-center gap-2 sm:gap-3 md:gap-4 pl-3 pr-2.5 sm:pl-4 sm:pr-3 md:px-5 shrink-0'
+						>
+							<span className='text-gold-glow/80 text-[10px] sm:text-xs lg:text-sm tracking-wider uppercase whitespace-nowrap'>
+								{text}
 							</span>
-						))}
-					</div>
-				</div>
+						</span>
+					))}
+				</Marquee>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 3. ABOUT */}
 			<section
@@ -396,7 +398,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 4. PHILOSOPHY */}
 			<section
@@ -421,7 +423,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 5. ACHIEVEMENTS */}
 			<section
@@ -475,7 +477,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 6. WHAT WE OFFER */}
 			<section
@@ -516,7 +518,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 7. SERVICE MENU */}
 			<section
@@ -593,7 +595,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 8. PROCESS */}
 			<section
@@ -648,7 +650,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 9. TEAM */}
 			<section
@@ -801,7 +803,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 10. HYGIENE */}
 			<section
@@ -848,7 +850,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 11. TESTIMONIALS */}
 			<section
@@ -926,7 +928,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 12. FAQ */}
 			<section
@@ -972,7 +974,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 13. CONTACT */}
 			<section
@@ -1213,7 +1215,7 @@ export default function MassagePage() {
 				</div>
 			</section>
 
-			<SectionDivider />
+			<SectionDivider variant='rule' />
 
 			{/* 14. FINAL BOOKING CTA */}
 			<section

@@ -5,7 +5,6 @@ import { useInView, useReducedMotion } from 'framer-motion'
 import { useId, useRef } from 'react'
 import { cn } from '@/lib/utils'
 
-/** Studio divider — metallic wave line + centered gold orb (single unit). */
 const LINE_GOLD = '#a68b4d'
 const ORB_GOLD = '#d4af37'
 
@@ -22,12 +21,23 @@ export type SectionDividerProps = {
 	className?: string
 	size?: 'full' | 'inline'
 	orientation?: 'horizontal' | 'vertical'
+	/** Рисунок разделителя. `wave` — дуга вокруг точки, `rule` — линии от точки. */
+	variant?: 'wave' | 'rule'
 }
 
+/**
+ * Studio divider — centered gold orb on a drawn-in line.
+ *
+ * Two рисунка, чтобы разделы на разных страницах не выглядели одинаково:
+ *   - `wave` (депиляция, портал) — металлическая волна, огибающая точку;
+ *   - `rule` (массаж) — прямые волосяные линии, расходящиеся от точки
+ *     в обе стороны: ——— o ———.
+ */
 export default function SectionDivider({
 	className,
 	size = 'full',
 	orientation = 'horizontal',
+	variant = 'wave',
 }: SectionDividerProps) {
 	const reduce = useReducedMotion()
 	const { minimal: minimalDevice } = useSiteMotion()
@@ -54,7 +64,11 @@ export default function SectionDivider({
 					isInline ? 'max-w-[4.5rem]' : 'max-w-5xl',
 				)}
 			>
-				<WaveStroke reduce={calm} compact={isInline} />
+				{variant === 'rule' ? (
+					<RuleStroke reduce={calm} compact={isInline} />
+				) : (
+					<WaveStroke reduce={calm} compact={isInline} />
+				)}
 			</div>
 		</div>
 	)
@@ -158,6 +172,72 @@ function WaveStroke({
 			<div
 				aria-hidden
 				className='pointer-events-none absolute left-1/2 top-[57.1429%] z-[1] size-14 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d4af37]/15 blur-xl'
+			/>
+		</div>
+	)
+}
+
+/** ——— o ——— : точка по центру, линии выезжают от неё к краям. */
+function RuleStroke({
+	reduce,
+	compact,
+}: {
+	reduce: boolean
+	compact: boolean
+}) {
+	const wrapRef = useRef<HTMLDivElement>(null)
+	// Отрицательный margin (в отличие от волны, где он +120px): триггер ждёт,
+	// пока разделитель войдёт в кадр на 64px. С упреждением анимация успевала
+	// доиграть за краем экрана, и рисовки никто не видел.
+	const isInView = useInView(wrapRef, {
+		once: true,
+		amount: 'some',
+		margin: '-64px 0px -64px 0px',
+	})
+
+	const play = isInView
+	// Обе линии растут от центра: левая тянется из своего правого края, правая —
+	// из левого, поэтому transform-origin у них зеркальные.
+	const lineClass = cn('sd-rule-line h-px flex-1', play && 'sd-rule-line--play')
+	const lineStyle = reduce ? { animationDuration: '0.4s' } : undefined
+
+	return (
+		<div
+			ref={wrapRef}
+			className={cn(
+				'relative mx-auto flex w-full items-center justify-center',
+				compact ? 'min-h-[2.75rem] gap-2' : 'min-h-[3.5rem] gap-3 sm:gap-4',
+			)}
+		>
+			<div
+				aria-hidden
+				className={cn(
+					lineClass,
+					'origin-right bg-gradient-to-l from-[#a68b4d]/90 to-transparent',
+				)}
+				style={lineStyle}
+			/>
+			<span className='relative flex shrink-0 items-center justify-center'>
+				<span
+					aria-hidden
+					className='pointer-events-none absolute size-14 rounded-full bg-[#d4af37]/15 blur-xl'
+				/>
+				<span
+					aria-hidden
+					className='relative block size-[11px] rounded-full sm:size-[13px]'
+					style={{
+						backgroundColor: ORB_GOLD,
+						boxShadow: `0 0 18px 5px ${ORB_GOLD}66, 0 0 42px 14px ${ORB_GOLD}22`,
+					}}
+				/>
+			</span>
+			<div
+				aria-hidden
+				className={cn(
+					lineClass,
+					'origin-left bg-gradient-to-r from-[#a68b4d]/90 to-transparent',
+				)}
+				style={lineStyle}
 			/>
 		</div>
 	)

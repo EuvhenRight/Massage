@@ -150,7 +150,7 @@
     "mostPopular": "Most Popular",
     "select": "Select",
     "selectMembership": "Select {tier} membership",
-    "hero": "Relaxation. Renewal. Deep healing.",
+    "hero": "With attention and care. With the warmth of hands. For your lightness, weightlessness, strength and energy.",
     "heroBadge": "V2Studio — Premium Massage, Bratislava",
     "heroSeoHeading": "Therapeutic, sports and relaxation massage in Bratislava — V2studio, Krížna 36",
     "heroBookButton": "Book",
@@ -162,11 +162,11 @@
     "bookNow": "Book",
     "trustBarLabel": "Credentials",
     "trust": {
-      "trustYears": "10+ Years of Experience",
-      "trustCertified": "Certified Therapists",
-      "trustMedical": "Medical Approach",
-      "trustTechniques": "8 Massage Techniques",
-      "trustClients": "2000+ Happy Clients"
+      "trustYears": "5+ Years of Experience",
+      "trustCertified": "Certified Massage Therapist",
+      "trustIndividual": "Individual Approach",
+      "trustTechniques": "10+ Massage Techniques",
+      "trustClients": "1000+ Happy Clients"
     },
     "aboutTitle": "About Our Studio",
     "aboutIntro": "Welcome to V Studio Massage — your sanctuary of relaxation in the heart of Bratislava. We combine traditional massage techniques with modern therapeutic approaches.",
@@ -188,7 +188,7 @@
     "achievement2": "Trained in Thai, Swedish, and deep tissue modalities",
     "achievement3": "Featured in Bratislava's Top Wellness Guide",
     "achievement4": "Partnerships with sports teams and rehabilitation centers",
-    "achievement5": "Over 2,000 satisfied clients across Europe",
+    "achievement5": "Over 1,000 satisfied clients across Europe",
     "serviceMenu": {
       "title": "Massage Menu",
       "subtitle": "All techniques. Tailored for you. Transparent pricing.",
@@ -279,7 +279,7 @@
         "name": "Serhiy Volyk",
         "role": "Founder & lead massage specialist",
         "specialty": "Classic · Sports · Anti-cellulite · Lymphatic drainage · Device-assisted · Gua sha",
-        "bio": "Practicing since 2022. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
+        "bio": "5+ years of practice. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
       },
       "natalie": {
         "name": "Natalie Volik",
