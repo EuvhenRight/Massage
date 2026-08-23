@@ -3,6 +3,7 @@
 import { useCookieConsent } from '@/components/CookieConsentContext'
 import GlowText from '@/components/GlowText'
 import Marquee from '@/components/Marquee'
+import MassageServiceSections from '@/components/MassageServiceSections'
 import Navbar from '@/components/Navbar'
 import SectionDivider from '@/components/SectionDivider'
 import {
@@ -22,7 +23,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useIntersectionVisible } from '@/lib/use-intersection-visible'
-import { SITE_CONFIG } from '@/lib/site-config'
+import { PLACE_CONTACTS } from '@/lib/site-config'
 import {
 	EASE_EXPO_OUT,
 	enterDelay,
@@ -40,27 +41,29 @@ import {
 	Calendar,
 	ChevronLeft,
 	ChevronRight,
-	Clock,
-	Facebook,
-	Heart,
-	Instagram,
-	Leaf,
+	Droplets,
+	Droplet,
+	Feather,
+	Fingerprint,
+	HeartHandshake,
+	Hand,
+	Layers,
+	Lock,
 	Mail,
 	MapPin,
 	MessageCircle,
 	Navigation,
 	Phone,
 	Send,
-	ShieldCheck,
-	Sparkles,
+	SprayCan,
 	Star,
-	Users,
+	Waves,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useMemo, useRef, useState } from 'react'
+import { type ReactNode, useMemo, useRef, useState } from 'react'
 
 const TRUST_ITEMS = [
 	'trustYears',
@@ -70,73 +73,68 @@ const TRUST_ITEMS = [
 	'trustClients',
 ] as const
 
-const VALUES = [
-	{ key: 'valueRelaxation' as const, icon: Heart },
-	{ key: 'valueProfessional' as const, icon: Users },
-	{ key: 'valueIndividual' as const, icon: Sparkles },
-	{ key: 'valueAmbiance' as const, icon: Calendar },
-	{ key: 'valueProducts' as const, icon: Leaf },
-]
-
-const ACHIEVEMENTS = [
-	'achievement1',
-	'achievement2',
-	'achievement3',
-	'achievement4',
-	'achievement5',
+const ABOUT_PARAGRAPHS = [
+	'aboutJourney',
+	'aboutLearning',
+	'aboutApproach',
+	'aboutTouch',
+	'aboutQuality',
 ] as const
 
-const SERVICE_ZONES = [
-	{
-		key: 'relaxation' as const,
-		items: [
-			{ key: 'swedishClassic', duration: 60, price: 55 },
-			{ key: 'swedishDeep', duration: 60, price: 65 },
-			{ key: 'hotStone', duration: 75, price: 80 },
-			{ key: 'aromatherapy', duration: 60, price: 60 },
-		],
-	},
-	{
-		key: 'therapeutic' as const,
-		items: [
-			{ key: 'deepTissue', duration: 60, price: 70 },
-			{ key: 'sportsMassage', duration: 60, price: 70 },
-			{ key: 'backNeck', duration: 30, price: 35 },
-			{ key: 'lymphatic', duration: 60, price: 60 },
-		],
-	},
-	{
-		key: 'specialty' as const,
-		items: [
-			{ key: 'thaiTraditional', duration: 90, price: 85 },
-			{ key: 'headScalp', duration: 30, price: 30 },
-			{ key: 'footReflexology', duration: 45, price: 40 },
-			{ key: 'couplesRetreat', duration: 75, price: 150 },
-		],
-	},
+const VALUES = [
+	{ key: 'valueRelaxation' as const, icon: Waves },
+	{ key: 'valueIndividual' as const, icon: Fingerprint },
+	{ key: 'valueAtmosphere' as const, icon: HeartHandshake },
+	{ key: 'valueProducts' as const, icon: Droplets },
+	{ key: 'valueLightness' as const, icon: Feather },
+]
+
+const CREDENTIALS = [
+	'certificates',
+	'licenses',
+	'development',
+	'sports',
+	'geography',
+	'trust',
 ] as const
 
 const PROCESS_STEPS = [
-	{ key: 'consultation' as const, step: 1 },
+	{ key: 'intake' as const, step: 1 },
 	{ key: 'preparation' as const, step: 2 },
 	{ key: 'procedure' as const, step: 3 },
-	{ key: 'aftercare' as const, step: 4 },
+	{ key: 'closing' as const, step: 4 },
 ] as const
 
 const HYGIENE_ITEMS = [
-	{ key: 'freshLinens' as const, icon: ShieldCheck },
-	{ key: 'sanitization' as const, icon: Sparkles },
-	{ key: 'organicProducts' as const, icon: Leaf },
-	{ key: 'certified' as const, icon: BadgeCheck },
+	{ key: 'hands' as const, icon: Hand },
+	{ key: 'disposables' as const, icon: Layers },
+	{ key: 'equipment' as const, icon: SprayCan },
+	{ key: 'products' as const, icon: Droplet },
+	{ key: 'privacy' as const, icon: Lock },
 ] as const
 
 const TESTIMONIALS = [
-	'review1',
-	'review2',
-	'review3',
-	'review4',
-	'review5',
-	'review6',
+	'ermolaev',
+	'kononova',
+	'gladkaya',
+	'hrechukha',
+	'gulyaeva',
+	'tokhtar',
+	'mykhalov',
+	'lanozka',
+	'semova',
+	'yezhova',
+	'bukhantsova',
+	'korniienko',
+	'nuggets',
+	'titova',
+	'djazz',
+	'yakovenko',
+	'tuls',
+	'funin',
+	'volyk',
+	'nicole',
+	'yakovchenko',
 ] as const
 
 const FAQ_ITEMS = [
@@ -157,6 +155,7 @@ export default function MassagePage() {
 	const { openPreferences } = useCookieConsent()
 	const params = useParams()
 	const locale = (params?.locale as string) ?? 'sk'
+	const contact = PLACE_CONTACTS.massage
 	const sliderRef = useRef<HTMLDivElement>(null)
 	const testimonialRef = useRef<HTMLDivElement>(null)
 	const [footerRef, footerInView] = useIntersectionVisible()
@@ -180,6 +179,16 @@ export default function MassagePage() {
 	const rxAbout = rxLeft
 	const rfAbout = rf
 	// Hero без gating — играет на iPhone с Low Power Mode тоже.
+	const richStudioBrand = useMemo(
+		() => ({
+			brand: (chunks: ReactNode) => (
+				<span className='inline font-semibold text-gold-glow tracking-[0.06em] drop-shadow-[0_0_12px_rgba(255,214,51,0.35)] normal-case'>
+					{chunks}
+				</span>
+			),
+		}),
+		[],
+	);
 	const heroMotion = useMemo(() => heroEnter(false), [])
 	const heroMotionDelayed = useMemo(() => heroEnter(false, { delay: 0.06 }), [])
 	const trustSegment = TRUST_ITEMS.map(key => t(`trust.${key}`))
@@ -350,16 +359,24 @@ export default function MassagePage() {
 					<div className='grid lg:grid-cols-2 gap-12 lg:gap-16 items-center'>
 						<motion.div
 							{...rxAbout}
-							className='relative aspect-[4/3] rounded-2xl overflow-hidden border border-white/10'
+							className='relative aspect-[3/4] max-w-md w-full mx-auto lg:mx-0 rounded-2xl overflow-hidden border border-white/10'
 						>
 							<Image
-								src='https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80'
-								alt='Massage studio'
+								src='/images/massage/serhiy-volyk.png'
+								alt={t('team.therapist1.name')}
 								fill
 								className='object-cover'
 								sizes='(max-width: 1024px) 100vw, 50vw'
 							/>
-							<div className='absolute inset-0 bg-gradient-to-t from-nearBlack/40 to-transparent' />
+							<div className='absolute inset-0 bg-gradient-to-t from-nearBlack via-nearBlack/25 to-transparent' />
+							<div className='absolute bottom-0 left-0 right-0 p-6'>
+								<p className='font-serif text-2xl text-icyWhite'>
+									{t('team.therapist1.name')}
+								</p>
+								<p className='text-gold-glow/90 text-sm mt-1'>
+									{t('team.therapist1.role')}
+								</p>
+							</div>
 						</motion.div>
 						<div>
 							<motion.h2
@@ -375,53 +392,22 @@ export default function MassagePage() {
 							>
 								{t('aboutIntro')}
 							</motion.p>
-							<motion.p
-								{...rfAbout}
-								className='text-icyWhite/70 leading-relaxed mb-4'
-							>
-								{t('aboutJourney')}
-							</motion.p>
-							<motion.p
-								{...rfAbout}
-								className='text-icyWhite/70 leading-relaxed mb-4'
-							>
-								{t('aboutExpertise')}
-							</motion.p>
-							<motion.p
-								{...rfAbout}
-								className='text-icyWhite/70 leading-relaxed'
-							>
-								{t('aboutMedical')} {t('aboutContinuous')}
-							</motion.p>
+							{ABOUT_PARAGRAPHS.map((key, i) => (
+								<motion.p
+									key={key}
+									{...rfAbout}
+									className={`text-icyWhite/70 leading-relaxed${
+										i < ABOUT_PARAGRAPHS.length - 1 ? ' mb-4' : ''
+									}`}
+								>
+									{t(key)}
+								</motion.p>
+							))}
 						</div>
 					</div>
 				</div>
 			</section>
 
-			<SectionDivider variant='rule' />
-
-			{/* 4. PHILOSOPHY */}
-			<section
-				id='philosophy'
-				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
-				aria-labelledby='philosophy-heading'
-			>
-				<div className='max-w-4xl mx-auto text-center'>
-					<motion.h2
-						id='philosophy-heading'
-						{...ry}
-						className='font-serif text-3xl md:text-4xl text-icyWhite mb-8'
-					>
-						{t('philosophyTitle')}
-					</motion.h2>
-					<motion.blockquote
-						{...rf}
-						className='font-serif text-2xl md:text-3xl lg:text-4xl text-gold-glow/95 leading-relaxed'
-					>
-						&ldquo;{t('philosophyQuote')}&rdquo;
-					</motion.blockquote>
-				</div>
-			</section>
 
 			<SectionDivider variant='rule' />
 
@@ -457,18 +443,23 @@ export default function MassagePage() {
 								/>
 								{t('achievementsTitle')}
 							</motion.h2>
-							<ul className='space-y-3'>
-								{ACHIEVEMENTS.map((key, i) => (
+							<ul className='space-y-4'>
+								{CREDENTIALS.map((key, i) => (
 									<motion.li
 										key={key}
 										{...rxRight}
-								transition={staggerTransition(minimal, i, 0.03, compact)}
-										className='flex items-start gap-3 text-icyWhite/80'
+										transition={staggerTransition(minimal, i, 0.03, compact)}
+										className='flex items-start gap-3'
 									>
-										<span className='text-gold-soft shrink-0 mt-0.5'>
-											&#10022;
+										<span className='text-gold-soft shrink-0 mt-1'>&#10022;</span>
+										<span>
+											<span className='block text-icyWhite font-medium'>
+												{t(`credentials.${key}.title`)}
+											</span>
+											<span className='block text-icyWhite/60 text-sm leading-relaxed mt-0.5'>
+												{t(`credentials.${key}.desc`)}
+											</span>
 										</span>
-										{t(key)}
 									</motion.li>
 								))}
 							</ul>
@@ -489,29 +480,24 @@ export default function MassagePage() {
 					<motion.h2
 						id='how-we-help-heading'
 						{...ry}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+						className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite text-center max-w-4xl mx-auto leading-tight sm:leading-snug mb-14'
 					>
-						{t('howIHelpTitle')}
+						{t.rich('howIHelpTitle', richStudioBrand)}
 					</motion.h2>
-					<motion.p
-						{...rf}
-						className='text-icyWhite/60 text-center mb-12'
-					>
-						{t('howIHelpIntro')}
-					</motion.p>
-					<div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4'>
+					<div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4'>
 						{VALUES.map(({ key, icon: Icon }, i) => (
 							<motion.div
 								key={key}
 								{...ry}
-							transition={staggerTransition(minimal, i, 0.04, compact)}
-								className='p-6 rounded-xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/30 hover:bg-white/[0.04] transition-[background-color,border-color,color,box-shadow] duration-300'
+								transition={staggerTransition(minimal, i, 0.04, compact)}
+								className='group relative p-6 sm:p-7 rounded-2xl glass-card hover:shadow-card-hover transition-[border-color,box-shadow] duration-300 cursor-default'
 							>
-								<Icon
-									className='w-8 h-8 text-gold-glow/90 mb-3'
-									aria-hidden
-								/>
-								<p className='text-icyWhite font-medium text-sm'>{t(key)}</p>
+								<div className='w-12 h-12 rounded-xl bg-gold-soft/10 flex items-center justify-center mb-4 group-hover:bg-gold-soft/20 group-hover:scale-110 transition-[background-color,transform] duration-300'>
+									<Icon className='w-6 h-6 text-gold-soft/90' aria-hidden />
+								</div>
+								<p className='text-icyWhite font-medium text-sm leading-snug'>
+									{t(key)}
+								</p>
 							</motion.div>
 						))}
 					</div>
@@ -520,78 +506,14 @@ export default function MassagePage() {
 
 			<SectionDivider variant='rule' />
 
-			{/* 7. SERVICE MENU */}
+			{/* 7. SERVICES — photo wall */}
 			<section
 				id='services'
 				className='py-14 sm:py-20 lg:py-28 px-5 sm:px-6 lg:px-8'
 				aria-labelledby='services-heading'
 			>
 				<div className='max-w-6xl mx-auto'>
-					<motion.h2
-						id='services-heading'
-						{...ry}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
-					>
-						{t('serviceMenu.title')}
-					</motion.h2>
-					<motion.p
-						{...rf}
-						className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'
-					>
-						{t('serviceMenu.subtitle')}
-					</motion.p>
-
-					<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8'>
-						{SERVICE_ZONES.map(({ key: zoneKey, items }, zi) => (
-							<motion.div
-								key={zoneKey}
-								{...ry}
-								transition={staggerTransition(minimal, zi, 0.06, compact)}
-								className='rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden'
-							>
-								<div className='px-6 py-5 border-b border-white/10'>
-									<h3 className='font-serif text-2xl text-icyWhite'>
-										{t(`serviceMenu.zone.${zoneKey}`)}
-									</h3>
-								</div>
-								<ul className='divide-y divide-white/5'>
-									{items.map(item => {
-										const title = t(`serviceMenu.items.${item.key}.name`)
-										return (
-											<li
-												key={item.key}
-												className='px-6 py-4 hover:bg-white/[0.02] transition-colors'
-											>
-												<div className='flex items-start justify-between gap-3'>
-													<div className='min-w-0'>
-														<p className='text-icyWhite font-medium text-sm'>
-															{title}
-														</p>
-														<p className='text-icyWhite/50 text-xs mt-1'>
-															{t(`serviceMenu.items.${item.key}.desc`)}
-														</p>
-													</div>
-													<Link
-														href={`/${locale}/massage/booking?service=${encodeURIComponent(title)}&duration=${item.duration}`}
-														className='shrink-0 text-right rounded-lg px-1.5 -mx-1.5 py-1 -my-1 hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft/35 transition-colors'
-														aria-label={`${title} — ${t('serviceMenu.from')} ${item.price} €`}
-													>
-														<p className='text-gold-glow font-medium text-sm'>
-															{t('serviceMenu.from')} {item.price} &euro;
-														</p>
-														<p className='text-icyWhite/40 text-xs flex items-center justify-end gap-1 mt-0.5'>
-															<Clock className='w-3 h-3' aria-hidden />
-															{item.duration} {t('serviceMenu.min')}
-														</p>
-													</Link>
-												</div>
-											</li>
-										)
-									})}
-								</ul>
-							</motion.div>
-						))}
-					</div>
+					<MassageServiceSections locale={locale} headingMotion={ry} />
 				</div>
 			</section>
 
@@ -607,16 +529,10 @@ export default function MassagePage() {
 					<motion.h2
 						id='process-heading'
 						{...ry}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-4'
+						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite text-center mb-14'
 					>
 						{t('process.title')}
 					</motion.h2>
-					<motion.p
-						{...rf}
-						className='text-icyWhite/60 text-center mb-14 max-w-2xl mx-auto'
-					>
-						{t('process.subtitle')}
-					</motion.p>
 
 					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-6'>
 						{PROCESS_STEPS.map(({ key, step }, i) => (
@@ -624,11 +540,12 @@ export default function MassagePage() {
 								key={key}
 								{...ry}
 							transition={staggerTransition(minimal, i, 0.06, compact)}
-								className='relative p-6 rounded-2xl border border-white/10 bg-white/[0.02]'
+								className='group relative p-6 rounded-2xl glass-card'
 							>
-								<span className='text-gold-soft/30 font-serif text-5xl absolute top-4 right-5'>
+								<span className='absolute top-4 right-5 font-serif text-5xl text-gold-soft/25 transition-colors duration-500 group-hover:text-gold-soft/50'>
 									{step}
 								</span>
+								<div className='mb-5 h-0.5 w-8 rounded-full bg-gold-soft/40 transition-[width] duration-300 group-hover:w-12' />
 								<h3 className='font-serif text-xl text-icyWhite mb-3 relative'>
 									{t(`process.${key}.title`)}
 								</h3>
@@ -638,15 +555,6 @@ export default function MassagePage() {
 							</motion.div>
 						))}
 					</div>
-
-					<motion.div
-						{...rf}
-						className='mt-12 max-w-3xl mx-auto p-6 rounded-2xl border border-gold-soft/15 bg-gold-soft/[0.03]'
-					>
-						<p className='text-icyWhite/70 text-sm leading-relaxed text-center'>
-							{t('process.expectation')}
-						</p>
-					</motion.div>
 				</div>
 			</section>
 
@@ -804,7 +712,6 @@ export default function MassagePage() {
 			</section>
 
 			<SectionDivider variant='rule' />
-
 			{/* 10. HYGIENE */}
 			<section
 				id='hygiene'
@@ -826,18 +733,15 @@ export default function MassagePage() {
 						{t('hygiene.subtitle')}
 					</motion.p>
 
-					<div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-6'>
+					<div className='flex flex-wrap justify-center gap-6'>
 						{HYGIENE_ITEMS.map(({ key, icon: Icon }, i) => (
 							<motion.div
 								key={key}
 								{...ry}
-							transition={staggerTransition(minimal, i, 0.05, compact)}
-								className='p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/25 transition-[background-color,border-color,color,box-shadow] duration-300'
+								transition={staggerTransition(minimal, i, 0.05, compact)}
+								className='w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] p-6 rounded-2xl border border-white/10 bg-white/[0.02] hover:border-gold-soft/25 transition-[background-color,border-color,color,box-shadow] duration-300'
 							>
-								<Icon
-									className='w-8 h-8 text-gold-glow/90 mb-4'
-									aria-hidden
-								/>
+								<Icon className='w-8 h-8 text-gold-glow/90 mb-4' aria-hidden />
 								<h3 className='text-icyWhite font-medium text-sm mb-2'>
 									{t(`hygiene.${key}.title`)}
 								</h3>
@@ -876,7 +780,7 @@ export default function MassagePage() {
 					<div className='relative'>
 						<div
 							ref={testimonialRef}
-							className='flex gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x touch-pan-y snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
+							className='flex items-start gap-6 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x touch-pan-y snap-x snap-mandatory scroll-smooth pb-4 -mx-6 px-6 scrollbar-hide'
 						>
 							{TESTIMONIALS.map((key, i) => (
 								<motion.blockquote
@@ -896,12 +800,9 @@ export default function MassagePage() {
 									<p className='text-icyWhite/80 text-sm leading-relaxed mb-4 italic'>
 										&ldquo;{t(`testimonials.${key}.text`)}&rdquo;
 									</p>
-									<footer className='flex items-center justify-between'>
+									<footer>
 										<span className='text-icyWhite/60 text-xs font-medium'>
 											{t(`testimonials.${key}.author`)}
-										</span>
-										<span className='text-gold-soft/50 text-xs'>
-											{t(`testimonials.${key}.service`)}
 										</span>
 									</footer>
 								</motion.blockquote>
@@ -1005,7 +906,7 @@ export default function MassagePage() {
 						>
 							<div className='relative min-h-[260px] flex-1 overflow-hidden rounded-2xl ring-1 ring-white/10 sm:min-h-[280px] lg:min-h-0'>
 								<iframe
-									src={SITE_CONFIG.googleMapsEmbed}
+									src={contact.googleMapsEmbed}
 									className='absolute inset-0 h-full w-full border-0'
 									allowFullScreen
 									loading='lazy'
@@ -1018,15 +919,15 @@ export default function MassagePage() {
 									<MapPin className='w-5 h-5 text-gold-soft shrink-0 mt-0.5' />
 									<div>
 										<p className='text-icyWhite font-medium text-sm'>
-											{SITE_CONFIG.addressSubtitle}
+											{contact.addressSubtitle}
 										</p>
 										<p className='text-icyWhite/60 text-sm mt-0.5'>
-											{SITE_CONFIG.address}
+											{contact.address}
 										</p>
 									</div>
 								</div>
 								<a
-									href={SITE_CONFIG.googleMaps}
+									href={contact.googleMaps}
 									target='_blank'
 									rel='noopener noreferrer'
 									className='inline-flex items-center justify-center gap-2 shrink-0 px-4 py-2.5 rounded-lg bg-gold-soft/15 text-gold-glow text-sm font-medium hover:bg-gold-soft/25 transition-colors'
@@ -1045,18 +946,18 @@ export default function MassagePage() {
 							<div className='flex h-full min-h-0 flex-col rounded-2xl bg-white/[0.04] p-6 ring-1 ring-white/10'>
 								<div className='space-y-2 mb-6'>
 									<a
-										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
+										href={`tel:${contact.phone.replace(/\s/g, '')}`}
 										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
 									>
 										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-gold-soft/10 text-gold-glow group-hover:bg-gold-soft/20 transition-colors'>
 											<Phone className='w-4 h-4' />
 										</span>
 										<span className='text-icyWhite text-sm font-medium group-hover:text-gold-glow transition-colors'>
-											{SITE_CONFIG.phone}
+											{contact.phone}
 										</span>
 									</a>
 									<a
-										href={SITE_CONFIG.whatsapp}
+										href={contact.whatsapp}
 										target='_blank'
 										rel='noopener noreferrer'
 										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
@@ -1069,36 +970,15 @@ export default function MassagePage() {
 										</span>
 									</a>
 									<a
-										href={`mailto:${SITE_CONFIG.email}`}
+										href={`mailto:${contact.email}`}
 										className='flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-colors group'
 									>
 										<span className='flex w-9 h-9 items-center justify-center rounded-lg bg-gold-soft/10 text-gold-glow group-hover:bg-gold-soft/20 transition-colors'>
 											<Mail className='w-4 h-4' />
 										</span>
 										<span className='text-icyWhite text-sm font-medium truncate group-hover:text-gold-glow transition-colors'>
-											{SITE_CONFIG.email}
+											{contact.email}
 										</span>
-									</a>
-								</div>
-
-								<div className='flex items-center gap-2 mb-6'>
-									<a
-										href={SITE_CONFIG.instagram}
-										target='_blank'
-										rel='noopener noreferrer'
-										className='flex w-10 h-10 items-center justify-center rounded-lg bg-white/[0.06] text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors'
-										aria-label='Instagram'
-									>
-										<Instagram className='w-5 h-5' />
-									</a>
-									<a
-										href={SITE_CONFIG.facebook}
-										target='_blank'
-										rel='noopener noreferrer'
-										className='flex w-10 h-10 items-center justify-center rounded-lg bg-white/[0.06] text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors'
-										aria-label='Facebook'
-									>
-										<Facebook className='w-5 h-5' />
 									</a>
 								</div>
 
@@ -1217,42 +1097,54 @@ export default function MassagePage() {
 
 			<SectionDivider variant='rule' />
 
-			{/* 14. FINAL BOOKING CTA */}
+			{/* 14. FINAL BOOKING CTA — оформление то же, что на странице депиляции:
+			    вертикальный градиент + мягкое золотое пятно за текстом, крупнее
+			    заголовок, кнопки rounded-2xl. Анимация оставлена массажная
+			    (`ry`/`rf`), депиляционные variants сюда не тянутся. */}
 			<section
 				id='booking'
-				className='py-16 sm:py-24 lg:py-32 px-5 sm:px-6 lg:px-8 bg-nearBlack/50'
+				className='relative py-24 sm:py-32 lg:py-44 px-5 sm:px-6 lg:px-8 overflow-hidden'
 				aria-labelledby='booking-heading'
 			>
-				<div className='max-w-3xl mx-auto text-center'>
+				<div className='absolute inset-0 bg-gradient-to-b from-nearBlack via-nearBlack/95 to-nearBlack' />
+				<div className='absolute inset-0 overflow-hidden pointer-events-none'>
+					<div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-gold-soft/[0.04] blur-[120px]' />
+				</div>
+
+				<div className='relative max-w-3xl mx-auto text-center'>
 					<motion.h2
 						id='booking-heading'
 						{...ry}
-						className='font-serif text-3xl sm:text-4xl md:text-5xl text-icyWhite mb-6'
+						className='font-serif text-4xl sm:text-5xl md:text-6xl text-icyWhite mb-6'
 					>
 						{t('reserveTitle')}
 					</motion.h2>
 					<motion.p
 						{...rf}
-						className='text-icyWhite/70 mb-10 leading-relaxed'
+						className='text-icyWhite/60 mb-12 leading-relaxed text-lg max-w-xl mx-auto'
 					>
-						{t('reserveDesc')}
+						{t.rich('reserveDesc', richStudioBrand)}
 					</motion.p>
-					<div className='grid w-full max-w-xl mx-auto grid-cols-1 sm:grid-cols-2 gap-4'>
+					<motion.div
+						{...ry}
+						transition={staggerTransition(minimal, 2, 0.06, compact)}
+						className='grid w-full max-w-xl mx-auto grid-cols-1 sm:grid-cols-2 gap-4'
+					>
 						<Link
 							href={`/${locale}/massage/booking`}
-							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gold-soft/20 border border-gold-soft/50 text-gold-glow text-sm font-medium tracking-wider uppercase hover:bg-gold-soft/30 hover:shadow-glow transition-[background-color,border-color,color,box-shadow] duration-300'
+							className='group inline-flex w-full min-h-[3.5rem] items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-gold-soft/15 border border-gold-soft/40 text-gold-soft text-sm font-semibold tracking-wider uppercase hover:bg-gold-soft/25 hover:border-gold-soft/60 hover:shadow-glow transition-[background-color,border-color,box-shadow] duration-300'
 						>
 							{t('bookNow')}
-							<ChevronRight className='w-4 h-4 shrink-0' />
+							<ChevronRight className='w-4 h-4 shrink-0 group-hover:translate-x-0.5 transition-transform' />
 						</Link>
 						<a
-							href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
-							className='inline-flex w-full min-h-[3.25rem] items-center justify-center gap-2 px-6 py-4 rounded-xl border border-white/20 text-icyWhite/80 text-sm font-medium tracking-wider uppercase hover:border-gold-soft/40 hover:text-gold-glow transition-colors'
+							href={`tel:${contact.phone.replace(/\s/g, '')}`}
+							className='inline-flex w-full min-h-[3.5rem] items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-white/10 text-icyWhite/60 text-sm font-semibold tracking-wider uppercase hover:border-gold-soft/30 hover:text-gold-soft/80 transition-colors duration-300'
 						>
 							<Phone className='w-4 h-4 shrink-0' />
 							{t('callNow')}
 						</a>
-					</div>
+					</motion.div>
 				</div>
 			</section>
 
@@ -1286,7 +1178,7 @@ export default function MassagePage() {
 							</h4>
 							<ul className='space-y-2'>
 								{[
-									{ href: '#services', label: t('serviceMenu.title') },
+									{ href: '#services', label: t('serviceSections.title') },
 									{ href: '#team', label: t('team.title') },
 									{ href: '#faq', label: t('faq.title') },
 									{ href: '#contact', label: t('contact.title') },
@@ -1309,21 +1201,21 @@ export default function MassagePage() {
 							<ul className='space-y-2 text-sm'>
 								<li>
 									<a
-										href={`tel:${SITE_CONFIG.phone.replace(/\s/g, '')}`}
+										href={`tel:${contact.phone.replace(/\s/g, '')}`}
 										className='text-icyWhite/60 hover:text-gold-glow transition-colors'
 									>
-										{SITE_CONFIG.phone}
+										{contact.phone}
 									</a>
 								</li>
 								<li>
 									<a
-										href={`mailto:${SITE_CONFIG.email}`}
+										href={`mailto:${contact.email}`}
 										className='text-icyWhite/60 hover:text-gold-glow transition-colors'
 									>
-										{SITE_CONFIG.email}
+										{contact.email}
 									</a>
 								</li>
-								<li className='text-icyWhite/40'>{SITE_CONFIG.address}</li>
+								<li className='text-icyWhite/40'>{contact.address}</li>
 							</ul>
 						</div>
 						<div>
@@ -1332,25 +1224,7 @@ export default function MassagePage() {
 							</h4>
 							<div className='flex items-center gap-4'>
 								<a
-									href={SITE_CONFIG.instagram}
-									target='_blank'
-									rel='noopener noreferrer'
-									className='text-icyWhite/50 hover:text-[#E4405F] transition-colors'
-									aria-label='Instagram'
-								>
-									<Instagram className='w-5 h-5' />
-								</a>
-								<a
-									href={SITE_CONFIG.facebook}
-									target='_blank'
-									rel='noopener noreferrer'
-									className='text-icyWhite/50 hover:text-[#1877F2] transition-colors'
-									aria-label='Facebook'
-								>
-									<Facebook className='w-5 h-5' />
-								</a>
-								<a
-									href={SITE_CONFIG.whatsapp}
+									href={contact.whatsapp}
 									target='_blank'
 									rel='noopener noreferrer'
 									className='text-icyWhite/50 hover:text-[#25D366] transition-colors'

@@ -1,5 +1,5 @@
 import { defaultLocale, type Locale } from "@/i18n";
-import { SITE_CONFIG } from "@/lib/site-config";
+import { PLACE_CONTACTS, SITE_CONFIG } from "@/lib/site-config";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { getSiteUrl } from "@/lib/site-url";
 import { getTranslations } from "next-intl/server";
@@ -19,18 +19,83 @@ function hreflangTag(locale: string): string {
   }
 }
 
-/** Local business + WebSite JSON-LD for Google rich results and entity clarity. */
+const AREA_SERVED = {
+  "@type": "City",
+  name: "Bratislava",
+  containedInPlace: {
+    "@type": "Country",
+    name: "Slovakia",
+  },
+} as const;
+
+/**
+ * Local business + WebSite JSON-LD for Google rich results and entity clarity.
+ *
+ * The studio operates two locations with separate addresses and phone numbers,
+ * so the graph models an `Organization` with two branch nodes rather than a
+ * single business. Emitting one node made Google attribute the depilation
+ * address and phone to the massage page as well.
+ *
+ * This component renders from the locale layout, which does not know which
+ * page is open — hence both branches are always present, each with its own
+ * `@id`, address, phone and booking action. Page-level metadata (og:phone,
+ * og:email) is narrowed per page in `lib/seo.ts`.
+ */
 export async function JsonLd({ locale }: { locale: string }) {
   const url = getSiteUrl();
   const businessId = `${url}/#business`;
   const websiteId = `${url}/#website`;
-  const bookingUrl = `${url}/${defaultLocale}/booking`;
   const t = await getTranslations({
     locale: locale as Locale,
     namespace: "metadata",
   });
   const description = t("description");
   const brandImage = `${url}/images/Gemini_yellow2.png`;
+
+  const branch = (
+    place: keyof typeof PLACE_CONTACTS,
+    type: "BeautySalon" | "DaySpa",
+    extra: Record<string, unknown> = {}
+  ) => {
+    const c = PLACE_CONTACTS[place];
+    const social = [c.instagram, c.facebook].flatMap((v) => (v ? [v] : []));
+    return {
+      "@type": type,
+      "@id": `${url}/#${place}`,
+      name: SITE_CONFIG.name,
+      description,
+      image: [DEFAULT_OG_IMAGE, brandImage],
+      url: `${url}/${defaultLocale}/${place}`,
+      telephone: c.phone.replace(/\s/g, ""),
+      email: c.email,
+      address: {
+        "@type": "PostalAddress",
+        ...c.postal,
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        ...c.geo,
+      },
+      hasMap: c.googleMaps,
+      areaServed: AREA_SERVED,
+      parentOrganization: { "@id": businessId },
+      priceRange: "$$",
+      potentialAction: {
+        "@type": "ReserveAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${url}/${defaultLocale}/${place}/booking`,
+          actionPlatform: [
+            "http://schema.org/DesktopWebPlatform",
+            "http://schema.org/MobileWebPlatform",
+          ],
+        },
+      },
+      // Only the depilation location has social profiles so far.
+      ...(social.length ? { sameAs: social } : {}),
+      ...extra,
+    };
+  };
 
   const graph = [
     {
@@ -43,50 +108,24 @@ export async function JsonLd({ locale }: { locale: string }) {
       publisher: { "@id": businessId },
     },
     {
-      "@type": "BeautySalon",
+      "@type": "Organization",
       "@id": businessId,
       name: SITE_CONFIG.name,
-      alternateName: ["Epilroom Bratislava", SITE_CONFIG.addressSubtitle],
-      description,
-      image: [DEFAULT_OG_IMAGE, brandImage],
       url,
-      telephone: SITE_CONFIG.phone.replace(/\s/g, ""),
+      logo: brandImage,
+      image: [DEFAULT_OG_IMAGE, brandImage],
       email: SITE_CONFIG.email,
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: "Krížna 36",
-        addressLocality: "Bratislava",
-        postalCode: "811 07",
-        addressCountry: "SK",
-      },
-      geo: {
-        "@type": "GeoCoordinates",
-        latitude: 48.1548,
-        longitude: 17.1241,
-      },
-      hasMap: SITE_CONFIG.googleMaps,
-      areaServed: {
-        "@type": "City",
-        name: "Bratislava",
-        containedInPlace: {
-          "@type": "Country",
-          name: "Slovakia",
-        },
-      },
+      areaServed: AREA_SERVED,
       sameAs: [SITE_CONFIG.instagram, SITE_CONFIG.facebook],
-      priceRange: "$$",
-      potentialAction: {
-        "@type": "ReserveAction",
-        target: {
-          "@type": "EntryPoint",
-          urlTemplate: bookingUrl,
-          actionPlatform: [
-            "http://schema.org/DesktopWebPlatform",
-            "http://schema.org/MobileWebPlatform",
-          ],
-        },
-      },
+      department: [
+        { "@id": `${url}/#massage` },
+        { "@id": `${url}/#depilation` },
+      ],
     },
+    branch("massage", "DaySpa"),
+    branch("depilation", "BeautySalon", {
+      alternateName: ["Epilroom Bratislava", SITE_CONFIG.addressSubtitle],
+    }),
   ];
 
   return (

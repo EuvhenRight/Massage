@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { defaultLocale, locales, type Locale } from "@/i18n";
-import { SITE_CONFIG } from "@/lib/site-config";
+import { PLACE_CONTACTS, SITE_CONFIG } from "@/lib/site-config";
 import { getSiteUrl } from "@/lib/site-url";
 import {
   getTwitterCreatorHandle,
@@ -36,6 +36,20 @@ export type SeoPageKey =
   | "depilationPrice"
   | "cookies"
   | "privacy";
+
+/**
+ * Which physical location a page belongs to. The two places have separate
+ * phone numbers, so og:phone_number must follow the page, not the site.
+ * Keys absent here (home, legal pages) fall back to the site-wide block.
+ */
+const PLACE_BY_KEY: Partial<Record<SeoPageKey, keyof typeof PLACE_CONTACTS>> = {
+  massage: "massage",
+  massageBooking: "massage",
+  massagePrice: "massage",
+  depilation: "depilation",
+  depilationBooking: "depilation",
+  depilationPrice: "depilation",
+};
 
 const PATH_BY_KEY: Record<SeoPageKey, string> = {
   home: "",
@@ -147,6 +161,8 @@ export async function buildPageMetadata(
   const twitterSite = getTwitterSiteHandle();
   const twitterCreator = getTwitterCreatorHandle();
   const ogImage = ogImageUrlForPageKey(pageKey);
+  const place = PLACE_BY_KEY[pageKey];
+  const contact = place ? PLACE_CONTACTS[place] : SITE_CONFIG;
 
   return {
     title,
@@ -164,8 +180,8 @@ export async function buildPageMetadata(
       siteName: t("siteName"),
       title,
       description,
-      emails: SITE_CONFIG.email,
-      phoneNumbers: SITE_CONFIG.phone,
+      emails: contact.email,
+      phoneNumbers: contact.phone,
       images: [
         {
           url: ogImage,

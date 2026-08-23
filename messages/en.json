@@ -168,109 +168,114 @@
       "trustTechniques": "10+ Massage Techniques",
       "trustClients": "1000+ Happy Clients"
     },
-    "aboutTitle": "About Our Studio",
-    "aboutIntro": "Welcome to V Studio Massage — your sanctuary of relaxation in the heart of Bratislava. We combine traditional massage techniques with modern therapeutic approaches.",
-    "aboutJourney": "Our team of certified therapists brings years of experience in sports, therapeutic, and relaxation massage. Every session is tailored to your individual needs.",
-    "aboutExpertise": "We specialize in deep tissue, Swedish, Thai, and hot stone massage techniques. Each therapist is trained and certified in multiple modalities.",
-    "aboutMedical": "With a focus on therapeutic outcomes, our sessions address chronic pain, stress relief, and rehabilitation with clinical precision.",
-    "aboutContinuous": "Our team regularly participates in advanced training programs and international wellness conferences to bring you the latest techniques.",
-    "philosophyTitle": "Philosophy",
-    "philosophyQuote": "Massage is not a luxury — it is a path to balance, health, and inner harmony.",
-    "howIHelpTitle": "What We Offer",
-    "howIHelpIntro": "In our studio you receive",
+    "aboutTitle": "About Me",
+    "aboutIntro": "My name is Serhiy Volyk. I'm a massage therapist with five years of experience. Welcome to V2Studio.",
+    "aboutJourney": "My path into massage began in Kyiv, after a back injury. I went through a long road of rehabilitation and recovery, and that was when I first truly felt how much massage can do to give the body back its lightness and wellbeing.",
+    "aboutLearning": "I wanted to understand more deeply how massage works, how different techniques affect the body, and what actually helps a person recover. I began to study massage, practising on family and friends, building my skills step by step. I earned international certificates and in time opened my own practice.",
+    "aboutApproach": "Today I work with a range of massage techniques and tailor the approach to each person — to the state of the body, to how you feel, and to the result you are after.",
+    "aboutTouch": "What matters to me is not only technique and professionalism, but how you feel during and after the massage. Warm, sensitive hands and smooth, caring touch help you relax and let go of tension, while strong, intensive work builds up strength and energy.",
+    "aboutQuality": "Throughout my practice I pay particular attention to the quality of the massage, to safety and to the result. It matters to me that afterwards you feel not merely relaxed, but a real lightness, a surge of energy and a sense of weightlessness.",
+    "howIHelpTitle": "At <brand>V2Studio</brand> you get",
     "valueRelaxation": "Deep relaxation and stress relief",
-    "valueProfessional": "Certified professional therapists",
-    "valueIndividual": "Personalized treatment plans",
-    "valueAmbiance": "Premium spa atmosphere",
-    "valueProducts": "Organic oils and premium products",
-    "achievementsTitle": "Professional Recognition",
-    "achievement1": "Certified by the International Spa Association",
-    "achievement2": "Trained in Thai, Swedish, and deep tissue modalities",
-    "achievement3": "Featured in Bratislava's Top Wellness Guide",
-    "achievement4": "Partnerships with sports teams and rehabilitation centers",
-    "achievement5": "Over 1,000 satisfied clients across Europe",
-    "serviceMenu": {
-      "title": "Massage Menu",
-      "subtitle": "All techniques. Tailored for you. Transparent pricing.",
-      "from": "from",
-      "min": "min",
-      "book": "Book",
-      "zone": {
-        "relaxation": "Relaxation",
-        "therapeutic": "Therapeutic",
-        "specialty": "Specialty"
+    "valueIndividual": "An individual approach",
+    "valueAtmosphere": "A calm, trusting atmosphere",
+    "valueProducts": "Premium oils and creams",
+    "valueLightness": "Lightness, weightlessness and energy after every session",
+    "achievementsTitle": "Qualifications & Client Trust",
+    "credentials": {
+      "certificates": {
+        "title": "International certificates",
+        "desc": "Professional training and verified qualifications in massage therapy."
       },
-      "items": {
-        "swedishClassic": {
-          "name": "Swedish — Classic",
-          "desc": "Full-body relaxation massage with long flowing strokes."
+      "licenses": {
+        "title": "Licences",
+        "desc": "Working experience and massage therapist licences in Ukraine and Slovakia."
+      },
+      "development": {
+        "title": "Continuous development",
+        "desc": "Regularly learning new techniques and advancing my professional qualifications."
+      },
+      "sports": {
+        "title": "Sports focus",
+        "desc": "Experience working with athletes and recovery after physical strain."
+      },
+      "geography": {
+        "title": "Reach",
+        "desc": "Over 1,000 satisfied clients from many countries."
+      },
+      "trust": {
+        "title": "Long-term trust",
+        "desc": "Clients recommend me to their family and friends."
+      }
+    },
+    "serviceSections": {
+      "title": "Services",
+      "tapHint": "Services",
+      "learnMore": "Learn more",
+      "closeModal": "Close",
+      "viewPrices": "Full price list",
+      "book": "Book now",
+      "cards": {
+        "relaxing": {
+          "title": "Relaxing massage",
+          "body": "A blend of flowing strokes and deep muscle kneading that lets the body release completely, lifts tension and restores inner balance."
         },
-        "swedishDeep": {
-          "name": "Swedish — Deep Pressure",
-          "desc": "Deeper pressure for chronic tension and muscle recovery."
+        "classic": {
+          "title": "Classic massage",
+          "body": "The foundation of professional bodywork and one of the most effective ways to bring the body back into balance. It gently releases muscular tension, improves circulation, eases back and neck pain, and returns a feeling of lightness."
         },
-        "hotStone": {
-          "name": "Hot Stone Massage",
-          "desc": "Heated basalt stones melt away stress and muscle tightness."
+        "sports": {
+          "title": "Sports massage",
+          "body": "Made for people who live actively and put their body under regular load. It helps muscles recover faster after training, lowers the risk of injury, improves flexibility and builds endurance."
         },
-        "aromatherapy": {
-          "name": "Aromatherapy Massage",
-          "desc": "Essential oils combined with gentle strokes for total relaxation."
-        },
-        "deepTissue": {
-          "name": "Deep Tissue — Full Body",
-          "desc": "Targets deep muscle layers. Ideal for chronic pain and stiffness."
-        },
-        "sportsMassage": {
-          "name": "Sports Massage",
-          "desc": "Pre and post-event recovery. Injury prevention and flexibility."
-        },
-        "backNeck": {
-          "name": "Back & Neck Focus",
-          "desc": "Concentrated work on upper body tension and office-related pain."
-        },
-        "thaiTraditional": {
-          "name": "Thai Traditional",
-          "desc": "Ancient stretching and acupressure on a floor mat. Clothed session."
+        "antiCellulite": {
+          "title": "Anti-cellulite massage",
+          "body": "Focused on deep tissue work and on waking up the metabolic processes in problem areas. It helps reduce the appearance of cellulite, improves microcirculation and leaves the skin smoother and firmer."
         },
         "lymphatic": {
-          "name": "Lymphatic Drainage",
-          "desc": "Gentle rhythmic strokes to stimulate lymph flow and reduce swelling."
+          "title": "Lymphatic drainage massage",
+          "body": "Gently activates the lymphatic system and helps the body clear excess fluid and toxins. Swelling subsides after the first sessions, the body feels lighter and the skin looks fresher and firmer."
         },
-        "headScalp": {
-          "name": "Head & Scalp Massage",
-          "desc": "Relieves headaches, eye strain, and mental fatigue."
+        "cupping": {
+          "title": "Cupping massage",
+          "body": "Performed with special vacuum cups that strongly stimulate circulation and the metabolic processes in the tissue. It helps reduce the appearance of cellulite, release muscular knots and improve skin tone."
         },
-        "footReflexology": {
-          "name": "Foot Reflexology",
-          "desc": "Pressure points on feet connected to organs. Deep relaxation."
+        "honey": {
+          "title": "Honey massage",
+          "body": "Combines an intensive massage technique with the natural properties of pure honey. It actively stimulates circulation, helps flush out toxins and clears the skin. Performed with honey."
         },
-        "couplesRetreat": {
-          "name": "Couples Retreat",
-          "desc": "Side-by-side massage for two. The ultimate shared relaxation."
+        "guaSha": {
+          "title": "Gua sha",
+          "body": "An ancient massage technique performed with a special scraper that activates circulation and releases deep muscular knots. It helps improve the condition of the skin, raise tissue tone and speed up the body's recovery."
+        },
+        "vacuumRoller": {
+          "title": "Vacuum-roller (apparatus) massage",
+          "body": "A modern body technology that reaches the deep layers of tissue. It effectively stimulates lymph flow, improves circulation and helps sculpt the body's contours. Performed with a dedicated device."
+        },
+        "antiCelluliteWraps": {
+          "title": "Anti-cellulite wraps",
+          "body": "An effective treatment for improving skin condition and refining body contours. Active ingredients work deep into the tissue, stimulating circulation and metabolism, helping reduce the appearance of cellulite and firm the skin."
         }
       }
     },
     "process": {
-      "title": "How Your Visit Works",
-      "subtitle": "From arrival to total relaxation — simple, comfortable, and professional.",
-      "consultation": {
-        "title": "Welcome",
-        "desc": "We discuss your goals, tension areas, and select the ideal technique together."
+      "title": "How a visit goes",
+      "intake": {
+        "title": "Introduction & questionnaire",
+        "desc": "We get acquainted, fill in a short questionnaire and go over the details that matter before the treatment."
       },
       "preparation": {
         "title": "Preparation",
-        "desc": "The room is prepared with your preferred temperature, music, and aroma."
+        "desc": "We talk through your goals, your wishes and how your body feels. Together we choose the right technique and intensity."
       },
       "procedure": {
-        "title": "Session",
-        "desc": "Your therapist works with precision, adjusting pressure and technique to your comfort."
+        "title": "The treatment",
+        "desc": "The massage is performed professionally and attentively, accounting for your individual needs and how you feel during the session."
       },
-      "aftercare": {
-        "title": "Aftercare",
-        "desc": "Herbal tea and personalized recommendations for continued wellness at home."
-      },
-      "expectation": "Most clients feel immediate relief and deep relaxation. For chronic issues, a course of 4-6 sessions is recommended. We provide personalized aftercare advice to maintain results between visits."
+      "closing": {
+        "title": "Finishing up",
+        "desc": "After the massage you can rest for 3–5 minutes, and take a shower if you wish. At the end I give you personal recommendations for keeping the result."
+      }
     },
     "team": {
       "title": "Your specialists",
@@ -278,8 +283,8 @@
       "therapist1": {
         "name": "Serhiy Volyk",
         "role": "Founder & lead massage specialist",
-        "specialty": "Classic · Sports · Anti-cellulite · Lymphatic drainage · Device-assisted · Gua sha",
-        "bio": "5+ years of practice. International certificates from training schools in Ukraine and Slovakia. Full range of massage techniques."
+        "specialty": "Relaxing · Classic massage · Sports massage · Anti-cellulite massage · Lymphatic drainage massage · Cupping massage · Honey massage · Gua sha · Vacuum-roller · Anti-cellulite wraps",
+        "bio": "5 years of experience. Certified massage therapist. Over 1,000 satisfied clients from many countries."
       },
       "natalie": {
         "name": "Natalie Volik",
@@ -288,62 +293,120 @@
         "bio": "14 years of experience. Medical education. Champion of Ukraine in depilation. Certified technologist for Terra, Enova, and Biolaif. I treat every client as the only one."
       },
       "workspace": {
-        "title": "Our Space",
+        "title": "Our Studio",
         "desc": "A tranquil, private environment designed for complete relaxation. Ambient lighting, soothing music, and premium organic products."
       }
     },
     "hygiene": {
       "title": "Standards & Quality",
-      "subtitle": "Your comfort and safety are our top priority.",
-      "freshLinens": {
-        "title": "Fresh Linens",
-        "desc": "Clean, premium linens for every session. Laundered at high temperature with hypoallergenic detergent."
+      "subtitle": "Your comfort and safety are the first priority.",
+      "hands": {
+        "title": "Hand hygiene",
+        "desc": "Hands are thoroughly cleaned before and after every client."
       },
-      "sanitization": {
-        "title": "Room Sanitization",
-        "desc": "Each treatment room is fully sanitized between sessions. Hospital-grade disinfectants."
+      "disposables": {
+        "title": "Single-use supplies",
+        "desc": "Disposable sheets, wipes and other materials are used wherever needed."
       },
-      "organicProducts": {
-        "title": "Organic Products",
-        "desc": "We use only certified organic massage oils and creams. Free from parabens and artificial fragrances."
+      "equipment": {
+        "title": "Equipment disinfection",
+        "desc": "The massage table, pillows, bolsters and every surface the client touches are treated regularly."
       },
-      "certified": {
-        "title": "Certified Therapists",
-        "desc": "All therapists hold international certifications and undergo regular continuing education."
+      "products": {
+        "title": "Quality massage products",
+        "desc": "Professional oils and preparations suited to massage treatments."
+      },
+      "privacy": {
+        "title": "Confidentiality",
+        "desc": "Personal details and anything shared during the consultation stay confidential."
       }
     },
     "testimonials": {
-      "title": "What Clients Say",
-      "subtitle": "Real experiences from real people.",
-      "review1": {
-        "text": "The best massage I've ever had. Anna found every knot and worked through it with incredible skill. I left feeling like a new person.",
-        "author": "David R.",
-        "service": "Deep Tissue"
+      "title": "Reviews",
+      "subtitle": "Real reviews from the studio's clients.",
+      "ermolaev": {
+        "text": "The massage fully matched my expectations. I want to highlight how easy booking is (WhatsApp) and the chance to discuss my wishes in advance. The client focus, the hospitality, the pleasant atmosphere and the skilled hands together leave a very good impression.",
+        "author": "Sergey Ermolaev"
       },
-      "review2": {
-        "text": "The hot stone massage was pure heaven. The room, the music, the technique — everything was perfect. Already booked my next session.",
-        "author": "Jana M.",
-        "service": "Hot Stone"
+      "kononova": {
+        "text": "I really want to thank Serhiy for the effective treatment, his sensitivity, his attentive and kind manner and his professional approach. I took a course of neck and shoulder massage with him. The result is excellent. Thank you so much for your work!",
+        "author": "Анастасия Кононова"
       },
-      "review3": {
-        "text": "I've been dealing with chronic back pain for years. After 4 sessions here, the improvement is remarkable. Truly professional.",
-        "author": "Martin K.",
-        "service": "Therapeutic"
+      "gladkaya": {
+        "text": "I have been to Serhiy for a massage several times and can confidently recommend him to anyone in Bratislava! Serhiy is a very attentive and talented specialist.",
+        "author": "Olga Gladkaya"
       },
-      "review4": {
-        "text": "My partner and I did the couples retreat for our anniversary. It was an unforgettable experience. Highly recommend!",
-        "author": "Sofia & Tomas",
-        "service": "Couples"
+      "hrechukha": {
+        "text": "A good massage, I liked everything. Calm, comfortable and to the point 👍",
+        "author": "Viktoriia Hrechukha"
       },
-      "review5": {
-        "text": "The Thai massage was authentic and amazing. I could feel the difference from other places immediately. Expert hands.",
-        "author": "Peter L.",
-        "service": "Thai"
+      "gulyaeva": {
+        "text": "An excellent therapist — he listens to your wishes and works the muscles well. He is also good company, which matters too )))",
+        "author": "Анжелика Гуляева"
       },
-      "review6": {
-        "text": "Online booking was easy, the studio is beautiful, and the massage exceeded expectations. Five stars without hesitation.",
-        "author": "Monika S.",
-        "service": "Swedish"
+      "tokhtar": {
+        "text": "Excellent massage, professional and with a pleasant person! I liked everything!",
+        "author": "Oleksandr Tokhtar"
+      },
+      "mykhalov": {
+        "text": "I want to say a sincere thank you for the course of back massage. I came in with a bad knot and a nagging pain in my lower back. He listened carefully, found every problem area and worked the tight muscles out beautifully. It was much easier after the first sessions, and by the end of the course the pain was gone entirely. A true professional with golden hands!",
+        "author": "Serhii Mykhalov"
+      },
+      "lanozka": {
+        "text": "Serhiy is an excellent therapist. After his session my back pain was gone and I felt a strong sense of lightness, relaxation and fresh energy. His hands are both sensitive and strong. An amazing therapist — his hands feel every centimetre of the body.",
+        "author": "Svetlanka Lanozka"
+      },
+      "semova": {
+        "text": "I recommend it. A very good massage and a pleasant atmosphere. Thank you, Serhiy — a master of his craft. I took the full course and my body simply came back to life… thank you!",
+        "author": "Желя Семова"
+      },
+      "yezhova": {
+        "text": "I really enjoyed the massage, and the whole treatment took place in a very pleasant, comfortable atmosphere. He came across as highly professional — it was obvious he has a lot of experience. I came in with shoulder pain and felt a significant improvement the next day. I definitely recommend this place to anyone looking for a professional approach.",
+        "author": "Nastya Yezhova"
+      },
+      "bukhantsova": {
+        "text": "I recommend Serhiy without reservation 💜 I had five massage sessions with him, and after the first few I already felt huge relief in my back. The head massage surprised me most — it was incredibly relaxing. Serhiy genuinely senses what the body needs.",
+        "author": "natali bukhantsova"
+      },
+      "korniienko": {
+        "text": "I want to thank Serhiy warmly for an approach that is professional and deeply human at the same time. I have been a regular client for a long time and can honestly say I am always completely satisfied. Every visit is not only a good massage but also time to rest and recover. It is genuinely hard these days to find a therapist you can fully trust.",
+        "author": "Olha Korniienko"
+      },
+      "nuggets": {
+        "text": "Thank you for a great massage. It was relaxing and enjoyable at the same time. Strong and gentle hands. P.S. He speaks English.",
+        "author": "Nuggets Chicken"
+      },
+      "titova": {
+        "text": "I have been a massage fan all my life and tried every method and technique out there. I thought I had found my best place in Miami, where I live. Until I came to visit Bratislava and by pure accident ended up at V2studio. Never before have I experienced such a top-quality anti-cellulite massage — and that was after only one session! I feel so bad that I live 8,000 miles away, but I'm already saving up for my next visit.",
+        "author": "jenya titova"
+      },
+      "djazz": {
+        "text": "Thank you for the massage. Everything was very pleasant and beneficial. I felt relief from the very first session.",
+        "author": "Aleksandr Djazz"
+      },
+      "yakovenko": {
+        "text": "I went to V2studio for a classic back and neck massage. He was very pleasant and professional — he understood right away what needed work. After the massage I was completely satisfied and relaxed. I will definitely be back and highly recommend it!",
+        "author": "Denis Yakovenko"
+      },
+      "tuls": {
+        "text": "An excellent therapist and a pleasant atmosphere. I got exactly what I was looking for — after the massage my body felt alive again. I will certainly come back.",
+        "author": "Ilona Tuls"
+      },
+      "funin": {
+        "text": "Thank you for the massage, it was wonderful! I strongly recommend it to everyone!",
+        "author": "Sergey Funin"
+      },
+      "volyk": {
+        "text": "I want to thank Serhiy for his wonderful work. He is very professional, attentive and knows exactly what to focus on during the massage. Afterwards I felt far more relaxed and light.",
+        "author": "Анна Волик"
+      },
+      "nicole": {
+        "text": "Great sports massage. Booking was easy, communication was clear, and my back feels much better. Thank you, Serhiy!",
+        "author": "Nicole Nicole"
+      },
+      "yakovchenko": {
+        "text": "Serhiy is a true professional with golden hands. I recommend him to everyone who has not been yet.",
+        "author": "Дарья Яковченко"
       }
     },
     "faq": {

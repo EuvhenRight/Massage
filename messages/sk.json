@@ -168,109 +168,114 @@
       "trustTechniques": "Viac Ako 10 Masážnych Techník",
       "trustClients": "1000+ Spokojných Klientov"
     },
-    "aboutTitle": "O Našom Štúdiu",
-    "aboutIntro": "Vitajte vo V Studio Massage — vašom útočisku relaxácie v srdci Bratislavy. Kombinujeme tradičné masážne techniky s modernými terapeutickými prístupmi.",
-    "aboutJourney": "Náš tím certifikovaných terapeutov prináša roky skúseností v športovej, terapeutickej a relaxačnej masáži. Každé sedenie je prispôsobené vašim individuálnym potrebám.",
-    "aboutExpertise": "Špecializujeme sa na hlboké tkanivové, švédske, thajské a masáže horúcimi kameňmi. Každý terapeut je vyškolený a certifikovaný vo viacerých modalitách.",
-    "aboutMedical": "So zameraním na terapeutické výsledky naše sedenia riešia chronickú bolesť, úľavu od stresu a rehabilitáciu s klinickou precíznosťou.",
-    "aboutContinuous": "Náš tím sa pravidelne zúčastňuje pokročilých školení a medzinárodných wellness konferencií, aby vám priniesol najnovšie techniky.",
-    "philosophyTitle": "Filozofia",
-    "philosophyQuote": "Masáž nie je luxus — je to cesta k rovnováhe, zdraviu a vnútornej harmónii.",
-    "howIHelpTitle": "Čo Ponúkame",
-    "howIHelpIntro": "V našom štúdiu získate",
-    "valueRelaxation": "Hlbokú relaxáciu a úľavu od stresu",
-    "valueProfessional": "Certifikovaných profesionálnych terapeutov",
-    "valueIndividual": "Individuálne liečebné plány",
-    "valueAmbiance": "Prémiovú spa atmosféru",
-    "valueProducts": "Organické oleje a prémiové produkty",
-    "achievementsTitle": "Profesionálne Uznanie",
-    "achievement1": "Certifikácia Medzinárodnou Spa Asociáciou",
-    "achievement2": "Výcvik v thajských, švédskych a hlbokých tkanivových modalitách",
-    "achievement3": "Uvedení v Bratislavskom Top Wellness Sprievodcovi",
-    "achievement4": "Partnerstvá so športovými tímami a rehabilitačnými centrami",
-    "achievement5": "Viac ako 1 000 spokojných klientov po celej Európe",
-    "serviceMenu": {
-      "title": "Cenník Masáží",
-      "subtitle": "Všetky techniky. Prispôsobené pre vás. Transparentné ceny.",
-      "from": "od",
-      "min": "min",
-      "book": "Rezervovať",
-      "zone": {
-        "relaxation": "Relaxačné",
-        "therapeutic": "Terapeutické",
-        "specialty": "Špeciálne"
+    "aboutTitle": "O mne",
+    "aboutIntro": "Volám sa Serhij Volik. Som masér s päťročnou praxou. Rád vás vítam vo V2Studio.",
+    "aboutJourney": "Moja cesta k masážam sa začala v Kyjeve po úraze chrbta. Prešiel som dlhou rehabilitáciou a zotavovaním a práve vtedy som prvýkrát naozaj pocítil, ako veľmi dokáže masáž vrátiť telu ľahkosť a dobrý pocit.",
+    "aboutLearning": "Chcel som hlbšie pochopiť, ako masáž funguje, ako jednotlivé techniky pôsobia na organizmus a čo človeku skutočne pomáha zotaviť sa. Začal som masáž študovať, precvičovať si ju na blízkych a známych a postupne si budovať zručnosti. Získal som medzinárodné certifikáty a časom som si otvoril vlastnú prax.",
+    "aboutApproach": "Dnes pracujem s rôznymi masážnymi technikami a prístup volím individuálne — podľa stavu tela, vašich pocitov a želaného výsledku.",
+    "aboutTouch": "Nejde mi len o techniku a profesionalitu, ale aj o to, ako sa počas masáže a po nej cítite. Teplé a citlivé ruky, plynulé a starostlivé dotyky vám pomôžu uvoľniť sa a pustiť napätie, a silné a intenzívne pohyby nabrať silu a energiu.",
+    "aboutQuality": "Počas celej svojej praxe venujem osobitnú pozornosť kvalite masáže, bezpečnosti a výsledku. Záleží mi na tom, aby ste po procedúre cítili nielen uvoľnenie, ale skutočnú ľahkosť, príval energie a pocit beztiaže.",
+    "howIHelpTitle": "V <brand>V2Studio</brand> získate",
+    "valueRelaxation": "Hlboké uvoľnenie a odbúranie stresu",
+    "valueIndividual": "Individuálny prístup",
+    "valueAtmosphere": "Pokojnú atmosféru plnú dôvery",
+    "valueProducts": "Prémiové oleje a krémy",
+    "valueLightness": "Ľahkosť, beztiaž a energiu po každom sedení",
+    "achievementsTitle": "Kvalifikácia a dôvera klientov",
+    "credentials": {
+      "certificates": {
+        "title": "Medzinárodné certifikáty",
+        "desc": "Profesionálne vzdelanie a overené kvalifikácie v oblasti masáží."
       },
-      "items": {
-        "swedishClassic": {
-          "name": "Švédska — Klasická",
-          "desc": "Celotelová relaxačná masáž s dlhými plynulými ťahmi."
+      "licenses": {
+        "title": "Licencie",
+        "desc": "Prax a licencie maséra na Ukrajine a na Slovensku."
+      },
+      "development": {
+        "title": "Neustály rozvoj",
+        "desc": "Pravidelné štúdium nových techník a zvyšovanie odbornej kvalifikácie."
+      },
+      "sports": {
+        "title": "Športové zameranie",
+        "desc": "Skúsenosti so športovcami a s regeneráciou po fyzickej záťaži."
+      },
+      "geography": {
+        "title": "Dosah",
+        "desc": "Viac ako 1000 spokojných klientov z rôznych krajín."
+      },
+      "trust": {
+        "title": "Dlhodobá dôvera",
+        "desc": "Klienti ma odporúčajú svojim blízkym a priateľom."
+      }
+    },
+    "serviceSections": {
+      "title": "Služby",
+      "tapHint": "Služby",
+      "learnMore": "Viac informácií",
+      "closeModal": "Zavrieť",
+      "viewPrices": "Celý cenník",
+      "book": "Rezervovať",
+      "cards": {
+        "relaxing": {
+          "title": "Relaxačná masáž",
+          "body": "Spojenie plynulých ťahov a hlbokého premasírovania svalov, ktoré telu dovolí úplne sa uvoľniť, zbaviť sa napätia a obnoviť vnútornú rovnováhu."
         },
-        "swedishDeep": {
-          "name": "Švédska — Hlboký Tlak",
-          "desc": "Hlbší tlak pre chronické napätie a regeneráciu svalov."
+        "classic": {
+          "title": "Klasická masáž",
+          "body": "Základ profesionálnej práce s telom a jeden z najúčinnejších spôsobov, ako obnoviť rovnováhu organizmu. Jemne uvoľňuje svalové napätie, zlepšuje krvný obeh, zmierňuje bolesti chrbta a krku a vracia telu pocit ľahkosti."
         },
-        "hotStone": {
-          "name": "Masáž Horúcimi Kameňmi",
-          "desc": "Horúce bazaltové kamene rozpúšťajú stres a svalové napätie."
+        "sports": {
+          "title": "Športová masáž",
+          "body": "Určená pre ľudí, ktorí žijú aktívne a pravidelne zaťažujú svoje telo. Pomáha svalom rýchlejšie sa zotaviť po tréningu, znižuje riziko zranení, zlepšuje pružnosť a zvyšuje výdrž."
         },
-        "aromatherapy": {
-          "name": "Aromaterapeutická Masáž",
-          "desc": "Éterické oleje kombinované s jemnými ťahmi pre totálnu relaxáciu."
-        },
-        "deepTissue": {
-          "name": "Hlboké Tkanivo — Celé Telo",
-          "desc": "Cieli na hlboké svalové vrstvy. Ideálne pre chronickú bolesť."
-        },
-        "sportsMassage": {
-          "name": "Športová Masáž",
-          "desc": "Regenerácia pred a po výkone. Prevencia zranení a flexibilita."
-        },
-        "backNeck": {
-          "name": "Chrbát a Krk",
-          "desc": "Sústredená práca na napätie hornej časti tela a kancelársku bolesť."
-        },
-        "thaiTraditional": {
-          "name": "Thajská Tradičná",
-          "desc": "Starodávne strečingy a akupresúra na podlahovej podložke."
+        "antiCellulite": {
+          "title": "Anticelulitídna masáž",
+          "body": "Zameriava sa na hlbokú prácu s tkanivom a naštartovanie látkovej výmeny v problémových partiách. Pomáha zmierniť prejavy celulitídy, zlepšiť mikrocirkuláciu a spraviť pokožku hladšou a pevnejšou."
         },
         "lymphatic": {
-          "name": "Lymfatická Drenáž",
-          "desc": "Jemné rytmické ťahy na stimuláciu lymfatického toku."
+          "title": "Lymfodrenážna masáž",
+          "body": "Jemne aktivuje lymfatický systém a pomáha telu zbaviť sa prebytočnej vody a toxínov. Už po prvých procedúrach ustupujú opuchy, telo je ľahšie a pokožka vyzerá sviežejšie a pevnejšie."
         },
-        "headScalp": {
-          "name": "Masáž Hlavy a Pokožky",
-          "desc": "Zmierňuje bolesti hlavy, námahu očí a mentálnu únavu."
+        "cupping": {
+          "title": "Baňkovanie",
+          "body": "Vykonáva sa špeciálnymi vákuovými baňkami, ktoré výrazne stimulujú krvný obeh a látkovú výmenu v tkanivách. Pomáha zmierniť prejavy celulitídy, uvoľniť svalové bloky a zlepšiť tonus pokožky."
         },
-        "footReflexology": {
-          "name": "Reflexológia Nôh",
-          "desc": "Tlakové body na nohách prepojené s orgánmi. Hlboká relaxácia."
+        "honey": {
+          "title": "Medová masáž",
+          "body": "Spája intenzívnu masážnu techniku s prirodzenými vlastnosťami pravého medu. Aktívne stimuluje krvný obeh, pomáha odvádzať toxíny a čistí pokožku. Vykonáva sa na mede."
         },
-        "couplesRetreat": {
-          "name": "Párový Oddych",
-          "desc": "Masáž vedľa seba pre dvoch. Ultimátna spoločná relaxácia."
+        "guaSha": {
+          "title": "Gua sha",
+          "body": "Starodávna masážna technika vykonávaná špeciálnou škrabkou, ktorá aktivuje krvný obeh a uvoľňuje hlboké svalové bloky. Pomáha zlepšiť stav pokožky, zvýšiť tonus tkanív a urýchliť regeneráciu organizmu."
+        },
+        "vacuumRoller": {
+          "title": "Vákuovo-valčeková (prístrojová) masáž",
+          "body": "Moderná technológia práce s telom, ktorá dosiahne až do hlbokých vrstiev tkaniva. Účinne stimuluje lymfatický tok, zlepšuje krvný obeh a pomáha modelovať kontúry tela. Vykonáva sa špeciálnym prístrojom."
+        },
+        "antiCelluliteWraps": {
+          "title": "Anticelulitídne zábaly",
+          "body": "Účinná procedúra na zlepšenie stavu pokožky a korekciu kontúr tela. Aktívne zložky pôsobia hlboko v tkanive, stimulujú krvný obeh a látkovú výmenu, pomáhajú zmierniť prejavy celulitídy a spevniť pokožku."
         }
       }
     },
     "process": {
-      "title": "Ako Prebieha Vaša Návšteva",
-      "subtitle": "Od príchodu po totálnu relaxáciu — jednoducho, pohodlne a profesionálne.",
-      "consultation": {
-        "title": "Privítanie",
-        "desc": "Prediskutujeme vaše ciele, oblasti napätia a spoločne vyberieme ideálnu techniku."
+      "title": "Ako prebieha návšteva",
+      "intake": {
+        "title": "Zoznámenie a dotazník",
+        "desc": "Zoznámime sa, vyplníme krátky dotazník a prejdeme si dôležité veci pred procedúrou."
       },
       "preparation": {
         "title": "Príprava",
-        "desc": "Miestnosť je pripravená s vašou preferovanou teplotou, hudbou a arómou."
+        "desc": "Preberieme vaše ciele, želania a stav vášho tela. Spoločne vyberieme vhodnú techniku a intenzitu masáže."
       },
       "procedure": {
-        "title": "Sedenie",
-        "desc": "Váš terapeut pracuje s presnosťou a prispôsobuje tlak a techniku vášmu komfortu."
+        "title": "Procedúra",
+        "desc": "Masáž prebieha profesionálne a pozorne, s ohľadom na vaše individuálne potreby a pocity počas procedúry."
       },
-      "aftercare": {
-        "title": "Následná Starostlivosť",
-        "desc": "Bylinkový čaj a personalizované odporúčania pre pokračujúci wellness doma."
-      },
-      "expectation": "Väčšina klientov pociťuje okamžitú úľavu a hlbokú relaxáciu. Pri chronických problémoch odporúčame kurz 4–6 sedení. Poskytujeme personalizované rady pre udržanie výsledkov."
+      "closing": {
+        "title": "Záver",
+        "desc": "Po masáži si môžete 3–5 minút oddýchnuť, v prípade potreby sa osprchovať. Na záver vám dám osobné odporúčania na udržanie výsledku."
+      }
     },
     "team": {
       "title": "Vaši špecialisti",
@@ -278,8 +283,8 @@
       "therapist1": {
         "name": "Serhij Volik",
         "role": "Zakladateľ a hlavný špecialista na masáž",
-        "specialty": "Klasická · Športová · Anticelulitídna · Lymfodrenáž · Prístrojová · Gua sha",
-        "bio": "5+ rokov praxe. Medzinárodné certifikáty škôl na Ukrajine a na Slovensku. Všetky masážne techniky."
+        "specialty": "Relaxačná · Klasická masáž · Športová masáž · Anticelulitídna masáž · Lymfodrenážna masáž · Baňkovanie · Medová masáž · Gua sha · Vákuovo-valčeková · Anticelulitídne zábaly",
+        "bio": "5 rokov praxe. Certifikovaný masér. Viac ako 1000 spokojných klientov z rôznych krajín."
       },
       "natalie": {
         "name": "Natálie Volik",
@@ -288,62 +293,120 @@
         "bio": "14 rokov skúseností. Medicínske vzdelanie. Šampiónka Ukrajiny v depilácii. Certifikovaná technologička Terra, Enova, Biolaif."
       },
       "workspace": {
-        "title": "Náš Priestor",
+        "title": "Naše Štúdio",
         "desc": "Pokojné, súkromné prostredie navrhnuté pre úplnú relaxáciu. Ambient osvetlenie, upokojujúca hudba, prémiové organické produkty."
       }
     },
     "hygiene": {
       "title": "Štandardy a Kvalita",
-      "subtitle": "Váš komfort a bezpečnosť sú naša najvyššia priorita.",
-      "freshLinens": {
-        "title": "Čerstvé Plachty",
-        "desc": "Čisté, prémiové plachty pre každé sedenie. Prané pri vysokej teplote s hypoalergénnym prostriedkom."
+      "subtitle": "Vaše pohodlie a bezpečnosť sú na prvom mieste.",
+      "hands": {
+        "title": "Hygiena rúk",
+        "desc": "Dôkladná dezinfekcia rúk pred každým klientom aj po ňom."
       },
-      "sanitization": {
-        "title": "Sanitácia Miestnosti",
-        "desc": "Každá ošetrovňa je plne dezinfikovaná medzi sedeniami."
+      "disposables": {
+        "title": "Jednorazový materiál",
+        "desc": "Jednorazové plachty, obrúsky a ďalšie materiály všade, kde je to potrebné."
       },
-      "organicProducts": {
-        "title": "Organické Produkty",
-        "desc": "Používame iba certifikované organické masážne oleje a krémy. Bez parabénov."
+      "equipment": {
+        "title": "Dezinfekcia vybavenia",
+        "desc": "Pravidelné ošetrenie masážneho stola, vankúšov, valcov a všetkých plôch, s ktorými klient prichádza do kontaktu."
       },
-      "certified": {
-        "title": "Certifikovaní Terapeuti",
-        "desc": "Všetci terapeuti majú medzinárodné certifikácie a pravidelne sa vzdelávajú."
+      "products": {
+        "title": "Kvalitné masážne prípravky",
+        "desc": "Profesionálne oleje a prípravky vhodné na masážne procedúry."
+      },
+      "privacy": {
+        "title": "Dôvernosť",
+        "desc": "Osobné údaje klienta a informácie z konzultácie zostávajú dôverné."
       }
     },
     "testimonials": {
-      "title": "Čo Hovoria Klienti",
-      "subtitle": "Skutočné skúsenosti od skutočných ľudí.",
-      "review1": {
-        "text": "Najlepšia masáž, akú som kedy zažil. Anna našla každý uzol a prepracovala ho s neuveriteľnou zručnosťou.",
-        "author": "Dávid R.",
-        "service": "Hlboké Tkanivo"
+      "title": "Recenzie",
+      "subtitle": "Skutočné recenzie klientov štúdia.",
+      "ermolaev": {
+        "text": "Masáž úplne splnila moje očakávania. Chcem vyzdvihnúť jednoduché objednanie (WhatsApp) a možnosť vopred prebrať svoje želania. Prístup ku klientovi, pohostinnosť, príjemná atmosféra a šikovné ruky spolu zanechajú veľmi dobrý dojem.",
+        "author": "Sergey Ermolaev"
       },
-      "review2": {
-        "text": "Masáž horúcimi kameňmi bola čistý raj. Miestnosť, hudba, technika — všetko bolo dokonalé.",
-        "author": "Jana M.",
-        "service": "Horúce Kamene"
+      "kononova": {
+        "text": "Veľmi sa chcem poďakovať masérovi Sergejovi za účinnú liečbu, citlivosť, pozorný a láskavý prístup a profesionalitu. Absolvovala som u neho kúru masáže krčnej a ramennej oblasti. Výsledok je vynikajúci. Veľmi pekne ďakujem za vašu prácu!",
+        "author": "Анастасия Кононова"
       },
-      "review3": {
-        "text": "Roky som trpel chronickou bolesťou chrbta. Po 4 sedeniach tu je zlepšenie pozoruhodné.",
-        "author": "Martin K.",
-        "service": "Terapeutická"
+      "gladkaya": {
+        "text": "Bola som u Sergeja na masáži viackrát a môžem ho s istotou odporučiť každému v Bratislave! Sergej je veľmi pozorný a talentovaný odborník.",
+        "author": "Olga Gladkaya"
       },
-      "review4": {
-        "text": "S partnerom sme si urobili párový oddych na výročie. Nezabudnuteľný zážitok!",
-        "author": "Sofia a Tomáš",
-        "service": "Párový"
+      "hrechukha": {
+        "text": "Dobrá masáž, všetko sa mi páčilo. Pokojne, pohodlne a vecne 👍",
+        "author": "Viktoriia Hrechukha"
       },
-      "review5": {
-        "text": "Thajská masáž bola autentická a úžasná. Rozdiel oproti iným miestam som pocítil okamžite.",
-        "author": "Peter L.",
-        "service": "Thajská"
+      "gulyaeva": {
+        "text": "Výborný masér, počúva želania a svaly poriadne premasíruje. A navyše príjemný spoločník, čo je tiež dôležité )))",
+        "author": "Анжелика Гуляева"
       },
-      "review6": {
-        "text": "Online rezervácia bola jednoduchá, štúdio je krásne a masáž prekonala očakávania.",
-        "author": "Monika S.",
-        "service": "Švédska"
+      "tokhtar": {
+        "text": "Výborná masáž, profesionálne a s príjemným človekom! Všetko sa mi páčilo!",
+        "author": "Oleksandr Tokhtar"
+      },
+      "mykhalov": {
+        "text": "Chcem úprimne poďakovať za kúru masáží chrbta. Prišiel som so silným blokom a tupou bolesťou v krížoch. Masér ma pozorne vypočul, našiel všetky problémové miesta a stuhnuté svaly výborne uvoľnil. Už po prvých sedeniach sa mi výrazne uľavilo a na konci kúry bolesť úplne zmizla. Profesionál so zlatými rukami!",
+        "author": "Serhii Mykhalov"
+      },
+      "lanozka": {
+        "text": "Sergej je vynikajúci masér. Po jeho sedení ma prestal bolieť chrbát a prišiel silný pocit ľahkosti, uvoľnenia a novej energie. Ruky má veľmi citlivé a zároveň silné. Úžasný masér — ruky cítia každý centimeter tela.",
+        "author": "Svetlanka Lanozka"
+      },
+      "semova": {
+        "text": "Odporúčam. Veľmi kvalitná masáž a príjemná atmosféra. Ďakujem Sergejovi — majster svojho remesla. Absolvovala som celú kúru a telo jednoducho ožilo… ďakujem!",
+        "author": "Желя Семова"
+      },
+      "yezhova": {
+        "text": "Masáž sa mi veľmi páčila a celá procedúra prebehla vo veľmi príjemnej a pohodlnej atmosfére. Masér pôsobil veľmi profesionálne, bolo zrejmé, že má veľa skúseností. Prišla som s bolesťou ramena a na druhý deň som cítila výrazné zlepšenie. Určite odporúčam každému, kto hľadá profesionálny prístup.",
+        "author": "Nastya Yezhova"
+      },
+      "bukhantsova": {
+        "text": "Sergeja odporúčam bez váhania 💜 Absolvovala som u neho päť masáží a už po prvých som cítila obrovskú úľavu v chrbte. Najviac ma prekvapila masáž hlavy — bola neuveriteľne uvoľňujúca. Sergej naozaj cíti, čo telo potrebuje.",
+        "author": "natali bukhantsova"
+      },
+      "korniienko": {
+        "text": "Chcem sa veľmi poďakovať Sergejovi za jeho profesionálny a zároveň veľmi ľudský prístup. Už dlhší čas som jeho stála klientka a úprimne môžem povedať, že som vždy maximálne spokojná. Každá návšteva je pre mňa nielen kvalitná masáž, ale aj chvíľa oddychu a regenerácie. Dnes je naozaj ťažké nájsť maséra, ktorému môže človek úplne dôverovať.",
+        "author": "Olha Korniienko"
+      },
+      "nuggets": {
+        "text": "Ďakujem za skvelú masáž. Bola zároveň uvoľňujúca aj príjemná. Silné a jemné ruky. P.S. Masér hovorí po anglicky.",
+        "author": "Nuggets Chicken"
+      },
+      "titova": {
+        "text": "Celý život som fanúšička masáží a vyskúšala som všetky možné metódy a techniky. Myslela som si, že najlepšie miesto som našla v Miami, kde žijem. Kým som neprišla do Bratislavy a čírou náhodou neskončila vo V2studio. Takú kvalitnú anticelulitídnu masáž som nezažila nikdy — a to po jedinom sedení! Mrzí ma, že bývam 8 000 míľ ďaleko, ale už si šetrím na ďalšiu návštevu.",
+        "author": "jenya titova"
+      },
+      "djazz": {
+        "text": "Ďakujem za masáž. Všetko bolo veľmi príjemné a prospešné. Úľavu som pocítil hneď po prvom sedení.",
+        "author": "Aleksandr Djazz"
+      },
+      "yakovenko": {
+        "text": "Bol som vo V2studio na klasickej masáži chrbta a krku. Masér bol veľmi príjemný a profesionálny — hneď pochopil, na čom treba popracovať. Po masáži som bol úplne spokojný a uvoľnený. Určite sa vrátim a vrelo odporúčam!",
+        "author": "Denis Yakovenko"
+      },
+      "tuls": {
+        "text": "Vynikajúci masér a príjemná atmosféra. Dostala som presne to, čo som hľadala — po masáži moje telo akoby ožilo. Určite prídem znova.",
+        "author": "Ilona Tuls"
+      },
+      "funin": {
+        "text": "Ďakujem za masáž, bolo to úžasné! Vrelo odporúčam všetkým!",
+        "author": "Sergey Funin"
+      },
+      "volyk": {
+        "text": "Chcem sa poďakovať masérovi Sergejovi za jeho skvelú prácu. Je veľmi profesionálny, pozorný a presne vie, na čo sa počas masáže sústrediť. Po masáži som sa cítila oveľa uvoľnenejšie a ľahšie.",
+        "author": "Анна Волик"
+      },
+      "nicole": {
+        "text": "Skvelá športová masáž. Objednanie bolo jednoduché, komunikácia zrozumiteľná a chrbát mi je oveľa lepšie. Ďakujem, Sergej!",
+        "author": "Nicole Nicole"
+      },
+      "yakovchenko": {
+        "text": "Sergej je profesionál so zlatými rukami. Odporúčam všetkým, ktorí tam ešte neboli.",
+        "author": "Дарья Яковченко"
       }
     },
     "faq": {
