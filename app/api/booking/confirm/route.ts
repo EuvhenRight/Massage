@@ -139,6 +139,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 				{ bookingPlace },
 			),
 			notifyCustomerWhatsAppConfirmed({
+				place: bookingPlace,
 				customerPhone,
 				customerName,
 				service,

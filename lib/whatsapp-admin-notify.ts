@@ -57,10 +57,40 @@ const CONTENT_SID_ENV = {
 	reEngagement: 'TWILIO_CONTENT_SID_RE_ENGAGEMENT',
 } as const
 
+export type BookingPlace = 'massage' | 'depilation'
+
 type ContentTemplateKey = keyof typeof CONTENT_SID_ENV
 
-function getContentSid(key: ContentTemplateKey): string | undefined {
-	const v = process.env[CONTENT_SID_ENV[key]]?.trim()
+const CONTENT_SID_PREFIX = 'TWILIO_CONTENT_SID_'
+
+/**
+ * Env var holding the place-specific template, e.g.
+ * `TWILIO_CONTENT_SID_BOOKING_NEW` → `TWILIO_CONTENT_SID_MASSAGE_BOOKING_NEW`.
+ */
+function placeScopedEnvName(baseEnvName: string, place: BookingPlace): string {
+	return baseEnvName.replace(
+		CONTENT_SID_PREFIX,
+		`${CONTENT_SID_PREFIX}${place.toUpperCase()}_`,
+	)
+}
+
+/**
+ * Resolve the approved template to send.
+ *
+ * Each place may have its own approved templates (different wording, different
+ * studio). When a place-scoped var is set it wins; otherwise the shared var is
+ * used, so a place without its own template keeps working on the common one.
+ */
+function getContentSid(
+	key: ContentTemplateKey,
+	place?: BookingPlace,
+): string | undefined {
+	const base = CONTENT_SID_ENV[key]
+	if (place) {
+		const scoped = process.env[placeScopedEnvName(base, place)]?.trim()
+		if (scoped) return scoped
+	}
+	const v = process.env[base]?.trim()
 	return v || undefined
 }
 
@@ -89,8 +119,6 @@ function twilioConfigured(): boolean {
 		twilioMessagingCoreConfigured() && process.env.ADMIN_WHATSAPP_PHONE,
 	)
 }
-
-export type BookingPlace = 'massage' | 'depilation'
 
 function depilationMasterPhoneTrimmed(): string | undefined {
 	const v = process.env.DEPILATION_MASTER_WHATSAPP_PHONE?.trim()
@@ -152,11 +180,12 @@ async function sendTwilioWhatsAppTemplate(
 	templateKey: ContentTemplateKey,
 	variables: Record<string, string>,
 	logContext: LogContext,
+	place?: BookingPlace,
 ): Promise<{ ok: true } | { ok: false; error: string; twilioCode?: number }> {
 	if (!twilioMessagingCoreConfigured()) {
 		return { ok: false, error: 'Twilio messaging not configured' }
 	}
-	const contentSid = getContentSid(templateKey)
+	const contentSid = getContentSid(templateKey, place)
 	if (!contentSid) {
 		return {
 			ok: false,
@@ -313,6 +342,7 @@ export function twilioWhatsAppEnvSummary(): {
 type StaffNewPayload = {
 	customerName: string
 	customerPhone: string
+	place?: BookingPlace
 	email: string
 	date: string
 	time: string
@@ -322,6 +352,7 @@ type StaffNewPayload = {
 type StaffCancelPayload = {
 	customerName: string
 	customerPhone: string
+	place?: BookingPlace
 	date: string
 	time: string
 	service: string
@@ -331,6 +362,7 @@ async function sendStaffNew(
 	rawPhone: string,
 	payload: StaffNewPayload,
 	logContext: 'admin' | 'depilation-master',
+	place?: BookingPlace,
 ): Promise<WhatsAppNotifyResult> {
 	if (!twilioMessagingCoreConfigured()) return 'skipped'
 	const result = await sendTwilioWhatsAppTemplate(
@@ -345,6 +377,7 @@ async function sendStaffNew(
 			'6': payload.time,
 		},
 		logContext,
+		place,
 	)
 	if (!result.ok) {
 		const tag =
@@ -361,6 +394,7 @@ async function sendStaffCancelled(
 	rawPhone: string,
 	payload: StaffCancelPayload,
 	logContext: 'admin' | 'depilation-master',
+	place?: BookingPlace,
 ): Promise<WhatsAppNotifyResult> {
 	if (!twilioMessagingCoreConfigured()) return 'skipped'
 	const result = await sendTwilioWhatsAppTemplate(
@@ -374,6 +408,7 @@ async function sendStaffCancelled(
 			'5': payload.time,
 		},
 		logContext,
+		place,
 	)
 	if (!result.ok) {
 		const tag =
@@ -394,6 +429,7 @@ export async function notifyAdminWhatsAppNew(
 		process.env.ADMIN_WHATSAPP_PHONE!.trim(),
 		payload,
 		'admin',
+		payload.place,
 	)
 }
 
@@ -405,6 +441,7 @@ export async function notifyAdminWhatsAppCancelled(
 		process.env.ADMIN_WHATSAPP_PHONE!.trim(),
 		payload,
 		'admin',
+		payload.place,
 	)
 }
 
@@ -418,7 +455,7 @@ export async function notifyStaffWhatsAppNew(
 		return { staff: 'skipped' }
 	}
 	const ctx = staffLogContextForRecipient(bookingPlace, phone)
-	const staff = await sendStaffNew(phone, payload, ctx)
+	const staff = await sendStaffNew(phone, payload, ctx, bookingPlace)
 	return { staff }
 }
 
@@ -432,7 +469,7 @@ export async function notifyStaffWhatsAppCancelled(
 		return { staff: 'skipped' }
 	}
 	const ctx = staffLogContextForRecipient(bookingPlace, phone)
-	const staff = await sendStaffCancelled(phone, payload, ctx)
+	const staff = await sendStaffCancelled(phone, payload, ctx, bookingPlace)
 	return { staff }
 }
 
@@ -452,7 +489,7 @@ export async function notifyStaffWhatsAppCustomerConfirmed(
 	if (!phone || !twilioMessagingCoreConfigured()) {
 		return { staff: 'skipped' }
 	}
-	if (!getContentSid('staffCustomerConfirmed')) {
+	if (!getContentSid('staffCustomerConfirmed', bookingPlace)) {
 		return { staff: 'skipped' }
 	}
 	const ctx = staffLogContextForRecipient(bookingPlace, phone)
@@ -467,6 +504,7 @@ export async function notifyStaffWhatsAppCustomerConfirmed(
 			'5': payload.time,
 		},
 		ctx,
+		bookingPlace,
 	)
 	if (!result.ok) {
 		const tag =
@@ -483,6 +521,7 @@ export async function notifyStaffWhatsAppCustomerConfirmed(
 
 export async function notifyCustomerWhatsAppNew(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	date: string
 	time: string
@@ -497,7 +536,7 @@ export async function notifyCustomerWhatsAppNew(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('bookingNew')) {
+	if (!getContentSid('bookingNew', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -510,6 +549,7 @@ export async function notifyCustomerWhatsAppNew(payload: {
 			'4': payload.time,
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -520,6 +560,7 @@ export async function notifyCustomerWhatsAppNew(payload: {
 
 export async function notifyCustomerWhatsAppRescheduled(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	service: string
 	oldDate: string
@@ -536,7 +577,7 @@ export async function notifyCustomerWhatsAppRescheduled(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('bookingRescheduled')) {
+	if (!getContentSid('bookingRescheduled', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -551,6 +592,7 @@ export async function notifyCustomerWhatsAppRescheduled(payload: {
 			'6': payload.newTime,
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -567,6 +609,7 @@ export async function notifyCustomerWhatsAppRescheduled(payload: {
  */
 export async function notifyCustomerWhatsAppConfirmed(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	service: string
 	date: string
@@ -581,7 +624,7 @@ export async function notifyCustomerWhatsAppConfirmed(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('bookingConfirmed')) {
+	if (!getContentSid('bookingConfirmed', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -594,6 +637,7 @@ export async function notifyCustomerWhatsAppConfirmed(payload: {
 			'4': payload.time,
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -604,6 +648,7 @@ export async function notifyCustomerWhatsAppConfirmed(payload: {
 
 export async function notifyCustomerWhatsAppCancelled(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	date: string
 	time: string
@@ -611,7 +656,7 @@ export async function notifyCustomerWhatsAppCancelled(payload: {
 }): Promise<WhatsAppNotifyResult> {
 	const e164 = parseWhatsappE164(payload.customerPhone)
 	if (!e164 || !twilioMessagingCoreConfigured()) return 'skipped'
-	if (!getContentSid('bookingCancelled')) return 'skipped'
+	if (!getContentSid('bookingCancelled', payload.place)) return 'skipped'
 	const result = await sendTwilioWhatsAppTemplate(
 		e164,
 		'bookingCancelled',
@@ -621,6 +666,7 @@ export async function notifyCustomerWhatsAppCancelled(payload: {
 			'3': payload.time,
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -635,6 +681,7 @@ export async function notifyCustomerWhatsAppCancelled(payload: {
  *  token used by both buttons; the path (/confirm vs /cancel) encodes intent. */
 export async function notifyCustomerWhatsAppReminder2Days(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	service: string
 	date: string
@@ -650,7 +697,7 @@ export async function notifyCustomerWhatsAppReminder2Days(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('reminder2Days')) {
+	if (!getContentSid('reminder2Days', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -664,6 +711,7 @@ export async function notifyCustomerWhatsAppReminder2Days(payload: {
 			'5': payload.actionToken,
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -674,6 +722,7 @@ export async function notifyCustomerWhatsAppReminder2Days(payload: {
 
 export async function notifyCustomerWhatsAppReminder1Day(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	service: string
 	date: string
@@ -689,7 +738,7 @@ export async function notifyCustomerWhatsAppReminder1Day(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('reminder1Day')) {
+	if (!getContentSid('reminder1Day', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -703,6 +752,7 @@ export async function notifyCustomerWhatsAppReminder1Day(payload: {
 			'5': payload.actionToken,
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -720,6 +770,7 @@ export async function notifyCustomerWhatsAppReminder1Day(payload: {
  */
 export async function notifyCustomerWhatsAppReminderSameDay(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	service: string
 	date: string
@@ -735,7 +786,7 @@ export async function notifyCustomerWhatsAppReminderSameDay(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('reminderSameDay')) {
+	if (!getContentSid('reminderSameDay', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -749,6 +800,7 @@ export async function notifyCustomerWhatsAppReminderSameDay(payload: {
 			'5': payload.actionToken,
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -770,6 +822,7 @@ export async function notifyCustomerWhatsAppReminderSameDay(payload: {
  */
 export async function notifyCustomerWhatsAppReminder1DayConfirmed(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	service: string
 	date: string
@@ -785,7 +838,7 @@ export async function notifyCustomerWhatsAppReminder1DayConfirmed(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('reminder1DayConfirmed')) {
+	if (!getContentSid('reminder1DayConfirmed', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -799,6 +852,7 @@ export async function notifyCustomerWhatsAppReminder1DayConfirmed(payload: {
 			'5': payload.actionToken,
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -818,6 +872,7 @@ export async function notifyCustomerWhatsAppReminder1DayConfirmed(payload: {
  */
 export async function notifyCustomerWhatsAppReminderSameDayConfirmed(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	service: string
 	date: string
@@ -833,7 +888,7 @@ export async function notifyCustomerWhatsAppReminderSameDayConfirmed(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('reminder0DayConfirmed')) {
+	if (!getContentSid('reminder0DayConfirmed', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -847,6 +902,7 @@ export async function notifyCustomerWhatsAppReminderSameDayConfirmed(payload: {
 			'5': payload.actionToken,
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -878,6 +934,7 @@ export function bookingUrlFor(place: 'massage' | 'depilation' | null): string {
  */
 export async function notifyCustomerWhatsAppBirthday(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	/** Ignored — template hardcodes the booking link. Kept for caller parity. */
 	bookingUrl?: string
@@ -891,7 +948,7 @@ export async function notifyCustomerWhatsAppBirthday(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('birthday')) {
+	if (!getContentSid('birthday', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -901,6 +958,7 @@ export async function notifyCustomerWhatsAppBirthday(payload: {
 			'1': firstName(payload.customerName),
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)
@@ -916,6 +974,7 @@ export async function notifyCustomerWhatsAppBirthday(payload: {
  */
 export async function notifyCustomerWhatsAppReEngagement(payload: {
 	customerPhone: string
+	place?: BookingPlace
 	customerName: string
 	/** Ignored — template hardcodes the booking link. */
 	bookingUrl?: string
@@ -929,7 +988,7 @@ export async function notifyCustomerWhatsAppReEngagement(payload: {
 	if (!twilioMessagingCoreConfigured()) {
 		return { status: 'skipped', skipReason: 'twilio_env' }
 	}
-	if (!getContentSid('reEngagement')) {
+	if (!getContentSid('reEngagement', payload.place)) {
 		return { status: 'skipped', skipReason: 'missing_content_sid' }
 	}
 	const result = await sendTwilioWhatsAppTemplate(
@@ -939,6 +998,7 @@ export async function notifyCustomerWhatsAppReEngagement(payload: {
 			'1': firstName(payload.customerName),
 		},
 		'customer',
+		payload.place,
 	)
 	if (!result.ok) {
 		console.error('[whatsapp-customer] Twilio error:', result.error)

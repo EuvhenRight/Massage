@@ -187,6 +187,7 @@ export async function POST(request: Request) {
             }),
         notifyByWhatsApp
           ? notifyCustomerWhatsAppNew({
+              place: bookingPlace,
               customerPhone: customerPhoneRaw,
               customerName: nameStr,
               date: dateStr,
@@ -217,6 +218,7 @@ export async function POST(request: Request) {
         );
       }
     } else if (type === "rescheduled") {
+      const bookingPlace = parseBookingPlace(body);
       const { to, customerName, service, oldDate, oldTime, newDate, newTime } = body;
 
       // Resolve channels first so required-field checks know whether email
@@ -281,6 +283,7 @@ export async function POST(request: Request) {
 
       if (notifyByWhatsApp) {
         const waCustResult = await notifyCustomerWhatsAppRescheduled({
+          place: bookingPlace,
           customerPhone: customerPhoneRaw,
           customerName: nameStr,
           service: serviceStr,
@@ -380,6 +383,7 @@ export async function POST(request: Request) {
         ),
         notifyByWhatsApp
           ? notifyCustomerWhatsAppCancelled({
+              place: bookingPlace,
               customerPhone: customerPhoneRaw,
               customerName: nameStr,
               date: dateStr,

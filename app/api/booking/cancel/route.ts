@@ -118,6 +118,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 			{ bookingPlace },
 		),
 		notifyCustomerWhatsAppCancelled({
+			place: bookingPlace,
 			customerPhone,
 			customerName,
 			date: dateStr,

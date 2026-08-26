@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest'
 import {
 	bookingServiceLineTitles,
 	flattenServiceTitlesForWhatsApp,
+	messageServiceLabel,
 	splitBookingServiceTitles,
 	splitCatalogServiceTitle,
 } from '@/lib/split-catalog-service-title'
@@ -128,6 +129,40 @@ describe('email HTML escaping', () => {
 	})
 })
 
+describe('service label — variant-only leaves', () => {
+	// Massage lines end in the duration, so the leaf alone said "1 hour" and the
+	// customer never learned which massage they had booked.
+	it('prepends the parent when the leaf is only a duration', () => {
+		expect(messageServiceLabel('Massage › Sports › 1 hour')).toBe('Sports — 1 hour')
+		expect(messageServiceLabel('Массаж › Расслабляющий › 1 час')).toBe(
+			'Расслабляющий — 1 час',
+		)
+		expect(messageServiceLabel('Masáž › Relaxačná › 1,5 hodiny')).toBe(
+			'Relaxačná — 1,5 hodiny',
+		)
+		expect(messageServiceLabel('Масаж › Спортивний › 2 години')).toBe(
+			'Спортивний — 2 години',
+		)
+	})
+
+	it('prepends the parent for the catch-all body-parts line', () => {
+		expect(
+			messageServiceLabel('Masáž › Medová masáž › jednotlivé časti tela (nohy, ruky)'),
+		).toBe('Medová masáž — jednotlivé časti tela (nohy, ruky)')
+	})
+
+	it('leaves a leaf that names a real service untouched', () => {
+		expect(
+			messageServiceLabel('Masáž › Anticelulitídové zábaly › Anticelulitídové telové zábaly'),
+		).toBe('Anticelulitídové telové zábaly')
+		expect(messageServiceLabel('Depilácia › Nohy › Lýtko')).toBe('Lýtko')
+	})
+
+	it('returns the whole title when there is no breadcrumb', () => {
+		expect(messageServiceLabel('Lazerová epilácia')).toBe('Lazerová epilácia')
+	})
+})
+
 describe('WhatsApp service variable', () => {
 	it('names every booked service — the bug was showing only the last', () => {
 		expect(flattenServiceTitlesForWhatsApp(MULTI)).toBe('Lýtko, Predlaktie')
@@ -135,6 +170,14 @@ describe('WhatsApp service variable', () => {
 
 	it('renders a single service exactly as before', () => {
 		expect(flattenServiceTitlesForWhatsApp('A › B › Leaf')).toBe('Leaf')
+	})
+
+	it('names each massage by its service, not just its duration', () => {
+		expect(
+			flattenServiceTitlesForWhatsApp(
+				'Massage › Sports › 1 hour + Masáž › Medová masáž › 2 hodiny',
+			),
+		).toBe('Sports — 1 hour, Medová masáž — 2 hodiny')
 	})
 
 	it('marks overflow instead of dropping services', () => {

@@ -61,6 +61,41 @@ export function bookingServiceLineTitles(service: string): string[] {
 }
 
 /**
+ * A leaf that only names a *variant* of its parent and is meaningless alone.
+ *
+ * Massage lines are shaped `Masáž › Relaxačná › 1 hodina`: the leaf carries the
+ * duration, the parent carries which massage it is. Taking the leaf alone left
+ * the customer with a WhatsApp message that said "1 hodina" and never named the
+ * service. Depilation lines end in a real name (`… › Lýtko`), so they are
+ * unaffected by this and keep rendering exactly as before.
+ *
+ * Two shapes, across sk / en / ru / uk:
+ *   - a duration — "1 hodina", "1,5 часа", "2 hours", "90 min"
+ *   - the catch-all body-parts line — "jednotlivé časti tela (…)"
+ */
+const VARIANT_ONLY_LEAF =
+  /^\s*\d+(?:[.,]\d+)?\s*(?:hod(?:ina|iny|ín)?|hour(?:s)?|h|час(?:а|ов|у)?|годин(?:а|и|у)?|min(?:\.|út|uty|utes)?|мин(?:\.|ут|уты)?|хв(?:\.|илин)?)\s*$|(?:časti\s+tela|части\s+тела|частини\s+тіла|body\s+parts|parts\s+of\s+the\s+body)/i;
+
+/**
+ * Customer-facing label for one booked service in a notification.
+ *
+ * Normally the leaf — that is the line the customer picked. When the leaf only
+ * names a variant ({@link VARIANT_ONLY_LEAF}) the immediate parent is prepended,
+ * so "1 hodina" becomes "Relaxačná — 1 hodina".
+ */
+export function messageServiceLabel(fullTitle: string): string {
+  const { breadcrumb, lineTitle } = splitCatalogServiceTitle(fullTitle);
+  const leaf = lineTitle || fullTitle.trim();
+  if (!breadcrumb || !VARIANT_ONLY_LEAF.test(leaf)) return leaf;
+  const parents = breadcrumb
+    .split(CATALOG_SERVICE_TITLE_SEP)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const parent = parents[parents.length - 1];
+  return parent ? `${parent} — ${leaf}` : leaf;
+}
+
+/**
  * Approved Twilio Content Templates expose a booking's services as one
  * variable, so a multi-service booking must be flattened into a single string.
  * A runaway list would push the rendered template past what WhatsApp displays,
@@ -72,7 +107,7 @@ export function flattenServiceTitlesForWhatsApp(
   service: string,
   maxChars: number = WHATSAPP_SERVICE_MAX_CHARS
 ): string {
-  const titles = bookingServiceLineTitles(service);
+  const titles = splitBookingServiceTitles(service).map(messageServiceLabel);
   if (titles.length === 0) return service;
   const joined = titles.join(", ");
   if (joined.length <= maxChars) return joined;

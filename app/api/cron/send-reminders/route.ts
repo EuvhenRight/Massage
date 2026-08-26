@@ -38,6 +38,7 @@ import {
 	notifyCustomerWhatsAppReminderSameDay,
 	notifyCustomerWhatsAppReminderSameDayConfirmed,
 	parseWhatsappE164,
+	type BookingPlace,
 } from '@/lib/whatsapp-admin-notify'
 import {
 	findClientsForReEngagement,
@@ -101,6 +102,8 @@ function sentFlagField(w: Window): string {
 interface ReminderDispatchInput {
 	window: Window
 	isConfirmed: boolean
+	/** Chooses the place-specific approved template when one is configured. */
+	place?: BookingPlace
 	phone: string
 	customerName: string
 	service: string
@@ -123,6 +126,7 @@ async function sendReminder(
 	input: ReminderDispatchInput,
 ): Promise<ReminderHelperResult> {
 	const payload = {
+		place: input.place,
 		customerPhone: input.phone,
 		customerName: input.customerName,
 		service: input.service,
@@ -296,6 +300,7 @@ export async function GET(request: Request) {
 			const r = await sendReminder({
 				window,
 				isConfirmed,
+				place: data.place === 'depilation' ? 'depilation' : 'massage',
 				phone: phoneRaw,
 				customerName,
 				service,

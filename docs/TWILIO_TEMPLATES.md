@@ -142,3 +142,29 @@ the source of truth):
 | `TWILIO_CONTENT_SID_STAFF_CUSTOMER_CONFIRMED` | Staff alert when customer confirms |
 | `TWILIO_CONTENT_SID_BIRTHDAY` | Birthday greeting |
 | `TWILIO_CONTENT_SID_RE_ENGAGEMENT` | Dormant client re-engagement |
+
+## Place-specific templates
+
+The studio runs two places (`massage`, `depilation`) and each may have its own
+approved templates — different wording, different studio, different master.
+
+Insert the place after the prefix to override one template for one place:
+
+| Shared (fallback) | Massage override |
+|---|---|
+| `TWILIO_CONTENT_SID_BOOKING_NEW` | `TWILIO_CONTENT_SID_MASSAGE_BOOKING_NEW` |
+| `TWILIO_CONTENT_SID_BOOKING_RESCHEDULED` | `TWILIO_CONTENT_SID_MASSAGE_BOOKING_RESCHEDULED` |
+| …any key above | `TWILIO_CONTENT_SID_MASSAGE_*` / `TWILIO_CONTENT_SID_DEPILATION_*` |
+
+Resolution order in `getContentSid(key, place)`:
+
+1. `TWILIO_CONTENT_SID_<PLACE>_<KEY>` — used when set,
+2. `TWILIO_CONTENT_SID_<KEY>` — the shared template,
+3. nothing set → the message is skipped with `skipReason: 'missing_content_sid'`.
+
+So a place without its own approved template keeps sending on the shared one;
+adding an override is purely additive and needs no code change.
+
+The place travels with the notification: booking routes read it from the
+appointment (`place`), the reminder cron reads it per appointment document, and
+staff alerts already resolve it through `bookingPlace`.
