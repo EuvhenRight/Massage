@@ -100,14 +100,14 @@ export async function POST(request: Request) {
       const isAdminCreated = source === "admin";
       const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
         resolveNotifyChannels(body, { defaultWhatsApp: !isAdminCreated });
-      if (!customerName || !date || !time || (notifyByEmail && !to)) {
+      if (!String(customerName ?? "").trim() || !date || !time || (notifyByEmail && !to)) {
         return NextResponse.json(
           { error: "Missing required fields: to, customerName, date, time" },
           { status: 400 }
         );
       }
       const toStr = to ? String(to) : "";
-      const nameStr = String(customerName);
+      const nameStr = String(customerName).trim();
       const dateStr = String(date);
       const timeStr = String(time);
       const serviceStr = service ? String(service) : "";
@@ -227,7 +227,7 @@ export async function POST(request: Request) {
       const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
         resolveNotifyChannels(body);
 
-      if (!customerName || !oldDate || !oldTime || !newDate || !newTime) {
+      if (!String(customerName ?? "").trim() || !oldDate || !oldTime || !newDate || !newTime) {
         return NextResponse.json(
           { error: "Missing required fields: customerName, oldDate, oldTime, newDate, newTime" },
           { status: 400 }
@@ -253,7 +253,7 @@ export async function POST(request: Request) {
       }
 
       const toStr = to ? String(to) : "";
-      const nameStr = String(customerName);
+      const nameStr = String(customerName).trim();
       const oldDateStr = String(oldDate);
       const oldTimeStr = String(oldTime);
       const newDateStr = String(newDate);
@@ -316,7 +316,7 @@ export async function POST(request: Request) {
       const { email: notifyByEmail, whatsapp: notifyByWhatsApp } =
         resolveNotifyChannels(body);
 
-      if (!customerName || !date || !time) {
+      if (!String(customerName ?? "").trim() || !date || !time) {
         return NextResponse.json(
           { error: "Missing required fields: customerName, date, time" },
           { status: 400 }
@@ -336,7 +336,7 @@ export async function POST(request: Request) {
       }
 
       const toStr = to ? String(to) : "";
-      const nameStr = String(customerName);
+      const nameStr = String(customerName).trim();
       const dateStr = String(date);
       const timeStr = String(time);
       const serviceStr = service ? String(service) : "";

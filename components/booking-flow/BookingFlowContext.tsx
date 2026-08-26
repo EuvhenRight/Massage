@@ -231,7 +231,7 @@ interface BookingFlowContextValue extends BookingFlowState {
   nextStep: () => void;
   prevStep: () => void;
   reset: () => void;
-  clearDraft: () => void;
+  resetAfterBooking: () => void;
 }
 
 const BookingFlowContext = createContext<BookingFlowContextValue | null>(null);
@@ -387,6 +387,22 @@ export function BookingFlowProvider({
       isFirstMount.current = false;
       return;
     }
+    // Nothing worth restoring — and persisting it would immediately recreate the
+    // key that `resetAfterBooking` just deleted. Storage mirrors state: pristine
+    // state means no draft.
+    const pristine =
+      state.items.length === 0 &&
+      !state.date &&
+      !state.time &&
+      !state.fullName &&
+      !state.email &&
+      !state.phone &&
+      !state.birthday &&
+      state.step === 1;
+    if (pristine) {
+      clearBookingDraft(place);
+      return;
+    }
     saveBookingDraft(place, {
       step: state.step,
       items: state.items,
@@ -417,8 +433,18 @@ export function BookingFlowProvider({
     state.notifyByWhatsApp,
   ]);
 
-  const clearDraft = useCallback(() => {
+  /**
+   * Wipe everything after a booking goes through: the persisted draft *and* the
+   * in-memory state.
+   *
+   * Clearing only storage was not enough — the state still held the finished
+   * booking, so the customer saw last time's services when they opened the form
+   * again, and the auto-save effect wrote them straight back to localStorage on
+   * the next state change. Both halves must happen together, hence one function.
+   */
+  const resetAfterBooking = useCallback(() => {
     clearBookingDraft(place);
+    setState({ ...initialCoreState });
   }, [place]);
 
   /** Replace the whole cart with a single line (dropdown-style selection, or clear with ""). */
@@ -607,7 +633,7 @@ export function BookingFlowProvider({
     nextStep,
     prevStep,
     reset,
-    clearDraft,
+    resetAfterBooking,
   };
 
   return (

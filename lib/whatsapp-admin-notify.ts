@@ -175,6 +175,42 @@ export type StaffWhatsAppNotifyResult = {
 
 type LogContext = 'admin' | 'customer' | 'depilation-master'
 
+/**
+ * WhatsApp renders a template's *approved sample* whenever a parameter arrives
+ * empty — so a blank name reached the customer as a literal "[Meno]" instead of
+ * failing loudly. Never let an empty value through: trim everything, and where
+ * one is still blank, log it and substitute a neutral dash so the message stays
+ * readable and the gap is visible in the logs.
+ */
+const EMPTY_VARIABLE_FALLBACK = '—'
+
+function sanitizeContentVariables(
+	templateKey: ContentTemplateKey,
+	variables: Record<string, string>,
+	logContext: LogContext,
+): Record<string, string> {
+	const out: Record<string, string> = {}
+	const blanks: string[] = []
+	for (const [key, raw] of Object.entries(variables)) {
+		const value = String(raw ?? '').trim()
+		if (value) {
+			out[key] = value
+			continue
+		}
+		blanks.push(key)
+		out[key] = EMPTY_VARIABLE_FALLBACK
+	}
+	if (blanks.length) {
+		console.error(
+			'[whatsapp-%s] %s: empty template variable(s) {{%s}} — WhatsApp would have shown the approved sample text instead',
+			logContext,
+			templateKey,
+			blanks.join('}}, {{'),
+		)
+	}
+	return out
+}
+
 async function sendTwilioWhatsAppTemplate(
 	toE164OrWhatsapp: string,
 	templateKey: ContentTemplateKey,
@@ -217,6 +253,8 @@ async function sendTwilioWhatsAppTemplate(
 		return { ok: false, error: 'same From and To (see logs)' }
 	}
 
+	const safeVariables = sanitizeContentVariables(templateKey, variables, logContext)
+
 	const params = new URLSearchParams()
 	if (senderIsMessagingService) {
 		params.set('MessagingServiceSid', senderRaw)
@@ -225,7 +263,7 @@ async function sendTwilioWhatsAppTemplate(
 	}
 	params.set('To', toFinal)
 	params.set('ContentSid', contentSid)
-	params.set('ContentVariables', JSON.stringify(variables))
+	params.set('ContentVariables', JSON.stringify(safeVariables))
 
 	const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`
 	const auth = Buffer.from(`${accountSid}:${token}`).toString('base64')

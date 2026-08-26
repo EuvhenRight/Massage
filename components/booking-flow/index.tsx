@@ -103,7 +103,7 @@ function BookingFlowInner({
 		notifyByWhatsApp,
 		nextStep,
 		prevStep,
-		clearDraft,
+		resetAfterBooking,
 	} = useBookingFlow()
 	const [searchQuery, setSearchQuery] = useState('')
 	const [mobileCartOpen, setMobileCartOpen] = useState(false)
@@ -298,7 +298,7 @@ function BookingFlowInner({
 								)
 							}
 						}
-						clearDraft()
+						resetAfterBooking()
 						setSuccessMessage(
 							JSON.stringify({
 								title: t('bookingConfirmed'),
@@ -412,7 +412,7 @@ function BookingFlowInner({
 							)
 						}
 					}
-					clearDraft()
+					resetAfterBooking()
 					setSuccessMessage(
 						JSON.stringify({
 							title: t('bookingConfirmed'),
@@ -453,7 +453,7 @@ function BookingFlowInner({
 			place,
 			t,
 			tValidation,
-			clearDraft,
+			resetAfterBooking,
 		],
 	)
 

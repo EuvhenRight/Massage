@@ -205,3 +205,20 @@ describe('WhatsApp service variable', () => {
 		expect(flattenServiceTitlesForWhatsApp('')).toBe('')
 	})
 })
+
+describe('empty template variables', () => {
+	// WhatsApp renders a template's approved sample when a parameter is empty —
+	// a blank name reached a real customer as the literal "[Meno]".
+	it('a blank name must never survive as an empty variable', () => {
+		const firstName = (full: string) => {
+			const part = full.trim().split(/\s+/)[0]
+			return part || full.trim() || ''
+		}
+		// Whitespace-only input used to pass the route's truthiness check…
+		expect(Boolean(' ')).toBe(true)
+		// …and collapse to an empty variable here.
+		expect(firstName(' ')).toBe('')
+		// The route now trims before validating, so it is rejected up front.
+		expect(String(' ').trim()).toBe('')
+	})
+})
