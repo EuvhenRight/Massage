@@ -135,21 +135,53 @@ describe.skipIf(!emulatorAvailable())(
 		})
 
 		describe('Pass 1 — appointment reminders', () => {
-			// The two places have separate approved templates; the cron must pick by
-			// the appointment's own `place`, not by a site-wide default.
-			it('sends the depilation template for a depilation appointment', async () => {
-				const tomorrow = bratislavaDayOffsetAt(1, 14)
-				await seedAppointment({ startAt: tomorrow, place: 'depilation' })
+			// The two places have separate approved templates; the cron must pick by the
+			// appointment's own `place`, not by a site-wide default. The massage override
+			// is set inside the test so the two sides differ no matter how the ambient
+			// environment is configured — CI has no overrides, a dev machine may.
+			it('sends the depilation template, never the massage override', async () => {
+				const KEY = 'TWILIO_CONTENT_SID_MASSAGE_REMINDER_1D'
+				const previous = process.env[KEY]
+				process.env[KEY] = 'HXmassageonlytest'
+				try {
+					await seedAppointment({
+						startAt: bratislavaDayOffsetAt(1, 14),
+						place: 'depilation',
+					})
 
-				await sendRemindersGET(withAuth())
+					await sendRemindersGET(withAuth())
 
-				const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
-				expect(lastCall.body.get('ContentSid')).toBe(
-					expectedContentSid('REMINDER_1D', 'depilation'),
-				)
-				expect(lastCall.body.get('ContentSid')).not.toBe(
-					expectedContentSid('REMINDER_1D', 'massage'),
-				)
+					const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
+					expect(lastCall.body.get('ContentSid')).toBe(
+						process.env.TWILIO_CONTENT_SID_REMINDER_1D,
+					)
+					expect(lastCall.body.get('ContentSid')).not.toBe('HXmassageonlytest')
+				} finally {
+					if (previous === undefined) delete process.env[KEY]
+					else process.env[KEY] = previous
+				}
+			})
+
+			// Mirror image: with an override configured, a massage appointment must use
+			// it rather than the shared template.
+			it('sends the massage override for a massage appointment', async () => {
+				const KEY = 'TWILIO_CONTENT_SID_MASSAGE_REMINDER_1D'
+				const previous = process.env[KEY]
+				process.env[KEY] = 'HXmassageonlytest'
+				try {
+					await seedAppointment({
+						startAt: bratislavaDayOffsetAt(1, 14),
+						place: 'massage',
+					})
+
+					await sendRemindersGET(withAuth())
+
+					const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
+					expect(lastCall.body.get('ContentSid')).toBe('HXmassageonlytest')
+				} finally {
+					if (previous === undefined) delete process.env[KEY]
+					else process.env[KEY] = previous
+				}
 			})
 
 			it('fires the 1-day template for an appointment tomorrow', async () => {
