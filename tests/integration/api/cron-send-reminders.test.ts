@@ -61,6 +61,21 @@ interface SeedAppointmentInput {
 	bookingStatus?: 'pending' | 'confirmed' | 'cancelled'
 }
 
+/**
+ * Approved template a place should send. Reminders are place-scoped: a
+ * `TWILIO_CONTENT_SID_<PLACE>_<KEY>` override wins, otherwise the shared var is
+ * used. Resolved here rather than hard-coded so the test states the rule and
+ * keeps passing whether or not an override is configured.
+ */
+function expectedContentSid(
+	key: string,
+	place: 'massage' | 'depilation',
+): string | undefined {
+	const scoped =
+		process.env[`TWILIO_CONTENT_SID_${place.toUpperCase()}_${key}`]?.trim()
+	return scoped || process.env[`TWILIO_CONTENT_SID_${key}`]?.trim()
+}
+
 async function seedAppointment(input: SeedAppointmentInput): Promise<string> {
 	const id =
 		input.id ?? `apt-test-${Math.random().toString(36).slice(2, 10)}`
@@ -120,6 +135,23 @@ describe.skipIf(!emulatorAvailable())(
 		})
 
 		describe('Pass 1 — appointment reminders', () => {
+			// The two places have separate approved templates; the cron must pick by
+			// the appointment's own `place`, not by a site-wide default.
+			it('sends the depilation template for a depilation appointment', async () => {
+				const tomorrow = bratislavaDayOffsetAt(1, 14)
+				await seedAppointment({ startAt: tomorrow, place: 'depilation' })
+
+				await sendRemindersGET(withAuth())
+
+				const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
+				expect(lastCall.body.get('ContentSid')).toBe(
+					expectedContentSid('REMINDER_1D', 'depilation'),
+				)
+				expect(lastCall.body.get('ContentSid')).not.toBe(
+					expectedContentSid('REMINDER_1D', 'massage'),
+				)
+			})
+
 			it('fires the 1-day template for an appointment tomorrow', async () => {
 				const tomorrow = bratislavaDayOffsetAt(1, 14)
 				const id = await seedAppointment({ startAt: tomorrow })
@@ -131,7 +163,7 @@ describe.skipIf(!emulatorAvailable())(
 				expect(requestLogs.twilio.length).toBeGreaterThanOrEqual(1)
 				const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
 				expect(lastCall.body.get('ContentSid')).toBe(
-					process.env.TWILIO_CONTENT_SID_REMINDER_1D,
+					expectedContentSid('REMINDER_1D', 'massage'),
 				)
 				expect(lastCall.body.get('To')).toBe('whatsapp:+421912345678')
 
@@ -208,7 +240,7 @@ describe.skipIf(!emulatorAvailable())(
 
 				const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
 				expect(lastCall.body.get('ContentSid')).toBe(
-					process.env.TWILIO_CONTENT_SID_REMINDER_1D_CONFIRMED,
+					expectedContentSid('REMINDER_1D_CONFIRMED', 'massage'),
 				)
 			})
 
@@ -229,7 +261,7 @@ describe.skipIf(!emulatorAvailable())(
 
 				const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
 				expect(lastCall.body.get('ContentSid')).toBe(
-					process.env.TWILIO_CONTENT_SID_REMINDER_0D_CONFIRMED,
+					expectedContentSid('REMINDER_0D_CONFIRMED', 'massage'),
 				)
 			})
 
@@ -247,7 +279,7 @@ describe.skipIf(!emulatorAvailable())(
 
 				const lastCall = requestLogs.twilio[requestLogs.twilio.length - 1]!
 				expect(lastCall.body.get('ContentSid')).toBe(
-					process.env.TWILIO_CONTENT_SID_REMINDER_0D,
+					expectedContentSid('REMINDER_0D', 'massage'),
 				)
 				// Same-day reminders now carry an action token in {{5}} for the
 				// Confirm/Cancel buttons — assert the variables are populated so
