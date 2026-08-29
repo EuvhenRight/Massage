@@ -23,6 +23,42 @@ import type { ScheduleData } from "./schedule-firestore";
 import { normalizeStoredPhone } from "./phone-e164";
 import { upsertClientFromBooking } from "./clients-firestore";
 import { bookingItemToFirestore, type BookingItem } from "./booking-items";
+import {
+  CATALOG_SERVICE_TITLE_SEP,
+  flattenServiceTitlesForWhatsApp,
+} from "./split-catalog-service-title";
+
+/**
+ * Human-readable service string stored on the appointment.
+ *
+ * Which title the client sends depends on how the customer picked the service:
+ * the catalog step sends the full path (`Masáž › Športová › 1 hodina`), other
+ * entry points send only the leaf — and a massage leaf is just a duration, which
+ * reads as meaningless in the admin calendar. Take whichever variant still
+ * carries the catalog path and render it through the same helper the WhatsApp
+ * templates use, so the admin, the calendar and the customer's message all show
+ * the identical label. The per-locale `serviceSk/En/Ru/Uk` fields keep the raw
+ * path untouched.
+ */
+function storedServiceLabel(input: {
+  service: string;
+  serviceSk?: string;
+  serviceEn?: string;
+  serviceRu?: string;
+  serviceUk?: string;
+}): string {
+  const candidates = [
+    input.service,
+    input.serviceSk,
+    input.serviceEn,
+    input.serviceRu,
+    input.serviceUk,
+  ];
+  const withPath = candidates.find(
+    (c) => typeof c === "string" && c.includes(CATALOG_SERVICE_TITLE_SEP)
+  );
+  return flattenServiceTitlesForWhatsApp(withPath ?? input.service ?? "");
+}
 
 /**
  * Mirror customer details into the `clients` collection so birthday + re-engagement
@@ -447,7 +483,7 @@ async function bookFullDayAppointment(
       adminBookingMode: "day",
       multiDayFullDayCount: normalizedDateKeys.length,
       adminFullDayDates: normalizedDateKeys,
-      service: input.service,
+      service: storedServiceLabel(input),
       fullName: input.fullName,
       email: input.email,
       phone: normalizeStoredPhone(input.phone),
@@ -494,7 +530,7 @@ async function bookFullDayAppointment(
       adminBookingMode: "day",
       multiDayFullDayCount: normalizedDateKeys.length,
       adminFullDayDates: normalizedDateKeys,
-      service: input.service,
+      service: storedServiceLabel(input),
       serviceId: input.serviceId,
       serviceSk: input.serviceSk,
       serviceEn: input.serviceEn,
@@ -593,7 +629,7 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
     const baseData: Record<string, unknown> = {
       startTime: Timestamp.fromDate(newStart),
       endTime: Timestamp.fromDate(newEnd),
-      service: input.service,
+      service: storedServiceLabel(input),
       fullName: input.fullName,
       email: input.email,
       phone: normalizeStoredPhone(input.phone),
@@ -626,7 +662,7 @@ export async function bookAppointment(input: BookingInput, place: Place = "massa
       id,
       startTime: Timestamp.fromDate(newStart),
       endTime: Timestamp.fromDate(newEnd),
-      service: input.service,
+      service: storedServiceLabel(input),
       items: itemRows.length > 0 ? itemRows : undefined,
       serviceId: input.serviceId,
       serviceSk: input.serviceSk,
@@ -674,7 +710,7 @@ export async function bookScheduleTbdAppointment(
   const baseData: Record<string, unknown> = {
     startTime: Timestamp.fromDate(newStart),
     endTime: Timestamp.fromDate(newEnd),
-    service: input.service,
+    service: storedServiceLabel(input),
     fullName: input.fullName,
     email: input.email,
     phone: normalizeStoredPhone(input.phone),
@@ -721,7 +757,7 @@ export async function bookScheduleTbdAppointment(
     id: ref.id,
     startTime: Timestamp.fromDate(newStart),
     endTime: Timestamp.fromDate(newEnd),
-    service: input.service,
+    service: storedServiceLabel(input),
     serviceId: input.serviceId,
     serviceSk: input.serviceSk,
     serviceEn: input.serviceEn,
