@@ -126,3 +126,39 @@ export function flattenServiceTitlesForWhatsApp(
   }
   return `${kept.join(", ")} …`;
 }
+
+/**
+ * Display label for a booked service, derived from a stored appointment.
+ *
+ * Which field carries the catalog path depends on when — and through which
+ * entry point — the appointment was written: older docs kept only the leaf in
+ * `service` while `serviceSk/En/Ru/Uk` still hold the full path, and a massage
+ * leaf on its own is just a duration. Deriving the label at read time rather
+ * than trusting one field means every message and every admin view shows the
+ * same thing, including for appointments booked before the write side was
+ * fixed — no data migration needed.
+ *
+ * Idempotent: a label that already carries its parent has no catalog path left,
+ * so it passes through unchanged.
+ */
+export function appointmentServiceLabel(appointment: {
+  service?: string | null;
+  serviceSk?: string | null;
+  serviceEn?: string | null;
+  serviceRu?: string | null;
+  serviceUk?: string | null;
+}): string {
+  const withPath = [
+    appointment.service,
+    appointment.serviceSk,
+    appointment.serviceEn,
+    appointment.serviceRu,
+    appointment.serviceUk,
+  ].find(
+    (c) => typeof c === "string" && c.includes(CATALOG_SERVICE_TITLE_SEP)
+  );
+  const source = withPath ?? appointment.service ?? "";
+  return splitBookingServiceTitles(source)
+    .map(messageServiceLabel)
+    .join(BOOKING_SERVICE_JOIN_SEP);
+}

@@ -21,6 +21,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { Timestamp } from 'firebase/firestore'
 import { getAppointment } from '@/lib/book-appointment'
+import { appointmentServiceLabel } from '@/lib/split-catalog-service-title'
 import { verifyActionToken } from '@/lib/booking-action-token'
 import { transitionBookingStatus } from '@/lib/booking-transitions'
 import { reminderTokenSourceToStatusSource } from '@/lib/booking-status'
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 				: (appointment.startTime as Timestamp).toDate()
 		const dateStr = formatBratislavaDate(start)
 		const timeStr = formatBratislavaTime(start)
-		const service = appointment.service || '—'
+		const service = appointmentServiceLabel(appointment) || '—'
 		const customerName = appointment.fullName || '—'
 		const customerPhone = appointment.phone || '—'
 		const bookingPlace = appointment.place ?? 'massage'

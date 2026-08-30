@@ -22,16 +22,8 @@ import { getSchedule } from "./schedule-firestore";
 import type { ScheduleData } from "./schedule-firestore";
 import { normalizeStoredPhone } from "./phone-e164";
 import { upsertClientFromBooking } from "./clients-firestore";
-import {
-  bookingItemToFirestore,
-  SERVICE_TITLE_SEPARATOR,
-  type BookingItem,
-} from "./booking-items";
-import {
-  CATALOG_SERVICE_TITLE_SEP,
-  messageServiceLabel,
-  splitBookingServiceTitles,
-} from "./split-catalog-service-title";
+import { bookingItemToFirestore, type BookingItem } from "./booking-items";
+import { appointmentServiceLabel } from "./split-catalog-service-title";
 
 /**
  * Human-readable service string stored on the appointment.
@@ -52,23 +44,7 @@ function storedServiceLabel(input: {
   serviceRu?: string;
   serviceUk?: string;
 }): string {
-  const candidates = [
-    input.service,
-    input.serviceSk,
-    input.serviceEn,
-    input.serviceRu,
-    input.serviceUk,
-  ];
-  const withPath = candidates.find(
-    (c) => typeof c === "string" && c.includes(CATALOG_SERVICE_TITLE_SEP)
-  );
-  const source = withPath ?? input.service ?? "";
-  // Label each line, then rejoin with the canonical separator. Not the WhatsApp
-  // flattener: that one joins with ", " and truncates at 120 chars — fine for a
-  // message, wrong for stored data, which readers split back on " + ".
-  return splitBookingServiceTitles(source)
-    .map(messageServiceLabel)
-    .join(SERVICE_TITLE_SEPARATOR);
+  return appointmentServiceLabel(input);
 }
 
 /**

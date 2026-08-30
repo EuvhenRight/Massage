@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest'
 import {
 	bookingServiceLineTitles,
+	appointmentServiceLabel,
 	flattenServiceTitlesForWhatsApp,
 	messageServiceLabel,
 	splitBookingServiceTitles,
@@ -220,5 +221,45 @@ describe('empty template variables', () => {
 		expect(firstName(' ')).toBe('')
 		// The route now trims before validating, so it is rejected up front.
 		expect(String(' ').trim()).toBe('')
+	})
+})
+
+describe('appointmentServiceLabel', () => {
+	// Appointments booked before the write side was fixed keep only the leaf in
+	// `service` — and a massage leaf is a bare duration or "body parts", which
+	// told the customer nothing. The full path survives in the locale fields, so
+	// the label is derived at read time and old bookings render correctly too.
+	it('recovers the parent from the locale fields for legacy docs', () => {
+		expect(
+			appointmentServiceLabel({
+				service: 'окремі частини тіла (ноги, руки, стопи, шия)',
+				serviceUk: 'Масаж › Спортивний › окремі частини тіла (ноги, руки, стопи, шия)',
+			}),
+		).toBe('Спортивний — окремі частини тіла (ноги, руки, стопи, шия)')
+	})
+
+	it('leaves an already-labelled service untouched', () => {
+		expect(appointmentServiceLabel({ service: 'Спортивний — 1 година' })).toBe(
+			'Спортивний — 1 година',
+		)
+	})
+
+	it('keeps the multi-service separator so the string still splits back', () => {
+		const label = appointmentServiceLabel({ service: 'Legs + Arms' })
+		expect(label).toBe('Legs + Arms')
+		expect(splitBookingServiceTitles(label)).toEqual(['Legs', 'Arms'])
+	})
+
+	it('does not touch depilation, whose leaf is already a real name', () => {
+		expect(
+			appointmentServiceLabel({
+				service: 'Ruky po lakeť (+ lakeť)',
+				serviceSk: 'Depilácia › Cukrová › Ruky a telo › Ruky po lakeť (+ lakeť)',
+			}),
+		).toBe('Ruky po lakeť (+ lakeť)')
+	})
+
+	it('returns an empty string when there is nothing to label', () => {
+		expect(appointmentServiceLabel({ service: '' })).toBe('')
 	})
 })

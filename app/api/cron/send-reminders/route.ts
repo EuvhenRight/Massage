@@ -28,6 +28,7 @@ import {
 	where,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { appointmentServiceLabel } from '@/lib/split-catalog-service-title'
 import {
 	bookingUrlFor,
 	notifyCustomerWhatsAppBirthday,
@@ -265,10 +266,7 @@ export async function GET(request: Request) {
 
 		const customerName =
 			typeof data.fullName === 'string' ? data.fullName : '—'
-		const service =
-			typeof data.service === 'string' && data.service.length > 0
-				? data.service
-				: '—'
+		const service = appointmentServiceLabel(data) || '—'
 		const dateStr = formatBratislavaDate(start)
 		const timeStr = formatBratislavaTime(start)
 		// Sign the reminder window into the token so the confirm/cancel routes
